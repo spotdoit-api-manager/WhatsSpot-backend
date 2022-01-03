@@ -65,3 +65,14 @@ export const getPaginationInfo = (pageNo:number=1)=>{
   const skip = (pageNo-1)*limit;
   return {limit,skip};
 }
+
+
+export  const validateMobile=(phone:any)=>{
+    var regmm='^([0|+[0-9]{1,5})?([7-9][0-9]{9})$';
+    var regmob = new RegExp(regmm);
+    if(regmob.test(phone)){
+        return true;
+    }
+        return false;
+       
+}

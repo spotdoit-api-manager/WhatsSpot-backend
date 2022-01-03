@@ -16,8 +16,7 @@ const Port:number = process.env.PORT ? + process.env.PORT : 8000;
 // // Create http server [non ssl]
 const server = createServer(app);
 
-let io = new Server(8080);
-socketServer(io);
+socketServer(server);
 
 server.listen(Port, () => {
     console.log(`Listening to port ${Port}`);

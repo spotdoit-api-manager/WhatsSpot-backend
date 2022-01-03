@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPaginationInfo = exports.mongoDBProjectFields = exports.applyRoutes = exports.applyMiddleware = void 0;
+exports.validateMobile = exports.getPaginationInfo = exports.mongoDBProjectFields = exports.applyRoutes = exports.applyMiddleware = void 0;
 const auth_middleware_1 = require("../middleware/auth.middleware");
 // load all middleware with this function call
 exports.applyMiddleware = (middlewareWrappers, router) => {
@@ -43,5 +43,13 @@ exports.getPaginationInfo = (pageNo = 1) => {
     const limit = 20;
     const skip = (pageNo - 1) * limit;
     return { limit, skip };
+};
+exports.validateMobile = (phone) => {
+    var regmm = '^([0|+[0-9]{1,5})?([7-9][0-9]{9})$';
+    var regmob = new RegExp(regmm);
+    if (regmob.test(phone)) {
+        return true;
+    }
+    return false;
 };
 //# sourceMappingURL=index.js.map

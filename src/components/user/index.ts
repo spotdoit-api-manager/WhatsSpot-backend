@@ -1,100 +1,100 @@
 import userController from "./user.controller";
 
 export default [
-  {
-    path: "/user",
-    method: "get",
-    handler: [userController.fetchAll]
-  },
-  {
-    path: "/user",
-    method: "post",
-    handler: [userController.create]
-  },
+  // {
+  //   path: "/user",
+  //   method: "get",
+  //   handler: [userController.fetchAll]
+  // },
+  // {
+  //   path: "/user",
+  //   method: "post",
+  //   handler: [userController.create]
+  // },
 
-  {
-    path: "/user/loggeduser",
-    method: "get",
-    handler:[userController.getLoggedUser]
-  },
-  {
-    path: "/login",
-    method: "post",
-    escapeAuth:true,
-    handler:[userController.logIn]
-  },
   // {
-  //   path: "/logout",
-  //   method: "post",
-  //   escapeAuth: true,
-  //   handler: [userController.logIn]
+  //   path: "/user/loggeduser",
+  //   method: "get",
+  //   handler:[userController.getLoggedUser]
   // },
-  {
-    path: "/signup",
-    method: "post",
-    escapeAuth:true,
-    handler:[userController.signUp]
-  },
-  {
-    path: "/follower/:id",
-    method: "post",
-    handler:[userController.addFollower]
-  },
-  {
-    path: "/following/:id",
-    method: "post",
-    handler:[userController.addFollowing]
-  },
-  {
-    path: "/followrequest/:id",
-    method: "post",
-    handler:[userController.addFolowRequest]
-  },
-  {
-    path: "/auth",
-    method: "post",
-    escapeAuth:true,
-    handler:[userController.loginViaSocialAccessToken]
-  },
-  {
-    path: "/user/:id",
-    method: "get",
-    handler: [userController.fetch]
-  },
-  {
-    path: "/user/:id",
-    method: "patch",
-    handler: [userController.update]
-  },
   // {
-  //   path: "/user/verifyUser",
-  //   escapeAuth: true,
+  //   path: "/login",
   //   method: "post",
-  //   handler:[userController.verifyUser]
+  //   escapeAuth:true,
+  //   handler:[userController.logIn]
   // },
-  {
-    path: "/user/addPhoneNumber",
-    method: "post",
-    handler:[userController.addPhoneNumber]
-  },
-  {
-    path: "/user/:id/verify-otp",
-    method: "get",
-    escapeAuth: true,
-    handler: [userController.verifyOtp]
-  },
-  {
-    path: "/user/generateOTP",
-    escapeAuth:true,
-    method: "post",
-    handler:[userController.generateOTP]
-  },
-  {
-    path: "/user/login/socialAuth/addphone",
-    method: "get",
-    escapeAuth: true,
-    handler: [userController.socialAuthAddPhone]
-  },
+  // // {
+  // //   path: "/logout",
+  // //   method: "post",
+  // //   escapeAuth: true,
+  // //   handler: [userController.logIn]
+  // // },
+  // {
+  //   path: "/signup",
+  //   method: "post",
+  //   escapeAuth:true,
+  //   handler:[userController.signUp]
+  // },
+  // {
+  //   path: "/follower/:id",
+  //   method: "post",
+  //   handler:[userController.addFollower]
+  // },
+  // {
+  //   path: "/following/:id",
+  //   method: "post",
+  //   handler:[userController.addFollowing]
+  // },
+  // {
+  //   path: "/followrequest/:id",
+  //   method: "post",
+  //   handler:[userController.addFolowRequest]
+  // },
+  // {
+  //   path: "/auth",
+  //   method: "post",
+  //   escapeAuth:true,
+  //   handler:[userController.loginViaSocialAccessToken]
+  // },
+  // {
+  //   path: "/user/:id",
+  //   method: "get",
+  //   handler: [userController.fetch]
+  // },
+  // {
+  //   path: "/user/:id",
+  //   method: "patch",
+  //   handler: [userController.update]
+  // },
+  // // {
+  // //   path: "/user/verifyUser",
+  // //   escapeAuth: true,
+  // //   method: "post",
+  // //   handler:[userController.verifyUser]
+  // // },
+  // {
+  //   path: "/user/addPhoneNumber",
+  //   method: "post",
+  //   handler:[userController.addPhoneNumber]
+  // },
+  // {
+  //   path: "/user/:id/verify-otp",
+  //   method: "get",
+  //   escapeAuth: true,
+  //   handler: [userController.verifyOtp]
+  // },
+  // {
+  //   path: "/user/generateOTP",
+  //   escapeAuth:true,
+  //   method: "post",
+  //   handler:[userController.generateOTP]
+  // },
+  // {
+  //   path: "/user/login/socialAuth/addphone",
+  //   method: "get",
+  //   escapeAuth: true,
+  //   handler: [userController.socialAuthAddPhone]
+  // },
 //   {
 //     path: "/user/:id/photos",
 //     method: "get",

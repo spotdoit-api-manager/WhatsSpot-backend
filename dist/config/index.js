@@ -17,8 +17,8 @@ exports.mongoUrl = () => {
 exports.configCors = {
     // Allow your domains to restrict ill apis.
     allowOrigin: [
-        'http://localhost:3000'
-        //add your origin
+        'http://localhost:3000',
+        'http://127.0.0.1:5500',
     ],
     // Expose additional which are restricted.
     exposedHeaders: ["X-Auth"]
