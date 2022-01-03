@@ -18,6 +18,12 @@ const deviceSchema = new Schema(
       required: true,
       validate: [validateMobile, "invalid phone number"],
     },
+    authState: Boolean,
+    reason: {
+      statusCode: Number,
+      message: String,
+      error: String
+    }
   },
   {
     timestamps: true,

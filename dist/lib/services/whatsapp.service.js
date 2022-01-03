@@ -31,85 +31,56 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Whatsapp = void 0;
+const events_1 = require("events");
 const pino_1 = __importDefault(require("pino"));
 const baileys_md_1 = __importStar(require("@adiwajshing/baileys-md"));
-const whatsapp_client_service_1 = require("./whatsapp-client.service");
 const clients_data_1 = __importDefault(require("../../data/clients.data"));
-class Whatsapp {
-    constructor() {
+const client_model_1 = __importDefault(require("../../components/client/client.model"));
+// export  declare interface Whatsapp {
+//   on(event: 'qr', listener: (name: string) => void): this;
+//   // on(event: string, listener: Function): this;
+// }
+class Whatsapp extends events_1.EventEmitter {
+    constructor(phone) {
+        super();
+        this.authState = false;
+        this.qr = new events_1.EventEmitter();
         // start a connection
-        this.startSock = (phone, state) => {
-            return new Promise((resolve) => {
-                try {
-                    const sock = baileys_md_1.default({
-                        logger: pino_1.default({ level: "info" }),
-                        printQRInTerminal: false,
-                        auth: state,
-                        // implement to handle retries
-                        getMessage: (key) => __awaiter(this, void 0, void 0, function* () {
-                            console.log("get message ", key);
-                            return {
-                                conversation: "hello",
-                            };
-                        }),
-                    });
-                    resolve({ sock, error: false });
-                }
-                catch (e) {
-                    resolve({ error: true, message: e.message });
-                    console.log("error catch in startsock ", e);
-                }
+        this.startSock = () => {
+            const sock = baileys_md_1.default({
+                logger: pino_1.default({ level: "info" }),
+                printQRInTerminal: false,
+                auth: this.state,
+                // implement to handle retries
+                getMessage: (key) => __awaiter(this, void 0, void 0, function* () {
+                    console.log("get message ", key);
+                    return {
+                        conversation: "hello",
+                    };
+                }),
             });
+            return sock;
         };
-        this.addClient = (phone, getQr = false) => __awaiter(this, void 0, void 0, function* () {
-            const state = baileys_md_1.useSingleFileAuthState(`${phone}_cred.json`).state;
-            const saveState = baileys_md_1.useSingleFileAuthState(`${phone}_cred.json`).saveState;
-            const sockData = yield this.startSock(phone, state);
-            if (sockData.error)
-                console.log("error in creating sock ", sockData.message);
-            const clientData = {
-                client: sockData.sock,
-                auth: false,
-                phone: phone,
-                saveState: saveState,
-            };
-            clients_data_1.default[phone] = clientData;
-            this.startBasicEventListners(phone, saveState);
-            if (getQr)
-                yield this.getQr(phone);
-            return clientData;
-        });
-        this.getQr = (phone) => __awaiter(this, void 0, void 0, function* () {
-            let clientData = clients_data_1.default[phone];
-            if (!clientData) {
-                clientData = yield this.addClient(phone, false);
-                console.log("client not available (get qr)");
-            }
-            if (clientData.auth) {
-                console.log("client is already authenticated");
-            }
-            else {
-                clientData.client.ev.on("connection.update", (update) => __awaiter(this, void 0, void 0, function* () {
-                    var _a, _b;
-                    const { connection, lastDisconnect } = update;
-                    if (update.qr) {
-                        whatsapp_client_service_1.eventEmitter.emit("qr_update", {
-                            phone: clientData.phone,
-                            qr: update.qr,
-                        });
-                        return;
-                    }
-                    else if (lastDisconnect &&
-                        ((_b = (_a = lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.payload.message) ==
-                            "QR refs attempts ended") {
-                        whatsapp_client_service_1.eventEmitter.emit("qr_exceeded", { phone: clientData.phone });
-                        this.closeClient(clientData.phone);
-                        this.removeClient(clientData.phone);
-                        return;
-                    }
-                }));
-            }
+        this.getQr = () => __awaiter(this, void 0, void 0, function* () {
+            this.client.ev.on("connection.update", (update) => __awaiter(this, void 0, void 0, function* () {
+                var _a, _b, _c;
+                console.log("connection update (getQr) ", update);
+                const { connection, lastDisconnect } = update;
+                console.log("connection update (getQr) ", (_a = lastDisconnect === null || lastDisconnect === void 0 ? void 0 : lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output);
+                if (connection === "connecting")
+                    return;
+                if (update.qr) {
+                    this.emit("qr", { qr: update.qr, error: false });
+                    return;
+                }
+                else if (lastDisconnect &&
+                    ((_c = (_b = lastDisconnect.error) === null || _b === void 0 ? void 0 : _b.output) === null || _c === void 0 ? void 0 : _c.payload.message) ==
+                        "QR refs attempts ended") {
+                    this.client.ev.removeAllListeners();
+                    this.emit("qr", { error: true, message: "qr retry exceeded" });
+                    return;
+                }
+            }));
         });
         this.closeClient = (phone) => {
             console.log("client connection closing ", phone);
@@ -128,58 +99,63 @@ class Whatsapp {
             return console.log("client removed ", clientData.phone);
         };
         this.sendMessageWTyping = (phone, msg, jid) => __awaiter(this, void 0, void 0, function* () {
-            const clientData = clients_data_1.default[phone];
-            yield clientData.client.ev.presenceSubscribe(jid);
+            yield this.client.presenceSubscribe(jid);
             yield baileys_md_1.delay(500);
-            yield clientData.client.sendPresenceUpdate('composing', jid);
+            yield this.client.sendPresenceUpdate('composing', jid);
             yield baileys_md_1.delay(2000);
-            yield clientData.client.sendPresenceUpdate('paused', jid);
-            yield clientData.client.sendMessage(jid, msg);
+            yield this.client.sendPresenceUpdate('paused', jid);
+            yield this.client.sendMessage(jid, msg);
         });
+        this.state = baileys_md_1.useSingleFileAuthState(`${phone}_cred.json`).state;
+        this.saveState = baileys_md_1.useSingleFileAuthState(`${phone}_cred.json`).saveState;
+        this.client = this.startSock();
+        this.startBasicEventListners();
     }
-    startBasicEventListners(phone, saveState) {
-        const clientData = clients_data_1.default[phone];
-        if (!clientData)
-            return console.log("client not availabel (startBasicListner)");
-        // console.log(`cred update for ${phone}`);
+    startBasicEventListners() {
         //cred update listner
-        clientData.client.ev.on("creds.update", clientData.saveState);
+        this.client.ev.on("creds.update", this.saveState);
         //connection update
-        clientData.client.ev.on("connection.update", (update) => __awaiter(this, void 0, void 0, function* () {
+        this.client.ev.on("connection.update", (update) => __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c;
             const { connection, lastDisconnect } = update;
-            console.log(update);
+            if (connection === 'open') {
+                this.emit("authenticated");
+                const data = client_model_1.default.addOrUpdateClient(this.phone, { authState: true });
+                return this.authState = true;
+            }
             if (connection === "close") {
+                const data = client_model_1.default.addOrUpdateClient(this.phone, { authState: false });
                 if (((_b = (_a = lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.statusCode) !==
                     baileys_md_1.DisconnectReason.loggedOut) {
                     console.log("connection closed (not logged out)");
                     console.log((_c = lastDisconnect.error) === null || _c === void 0 ? void 0 : _c.output);
-                    yield this.reconnectClient(phone);
+                    yield this.reconnectClient();
                 }
             }
             else {
-                console.log("connection update ", update);
-                // console.log((lastDisconnect?.error as Boom)?.output);
+                console.log("connection update (basic listners)", update);
             }
         }));
         // message upsert 
-        clientData.client.ev.on('messages.upsert', (m) => __awaiter(this, void 0, void 0, function* () {
+        this.client.ev.on('messages.upsert', (m) => __awaiter(this, void 0, void 0, function* () {
             console.log("message upser");
-            console.log(JSON.stringify(m, undefined, 2));
+            // console.log(JSON.stringify(m, undefined, 2))
             const msg = m.messages[0];
             if (!msg.key.fromMe && m.type === 'notify') {
                 console.log('replying to', m.messages[0].key.remoteJid);
-                yield clientData.client.sendReadReceipt(msg.key.remoteJid, msg.key.participant, [msg.key.id]);
-                yield this.sendMessageWTyping(clientData.phone, { text: 'Hello there!' }, msg.key.remoteJid);
+                yield this.client.sendReadReceipt(msg.key.remoteJid, msg.key.participant, [msg.key.id]);
+                // await this.sendMessageWTyping(this.phone, { text: 'Hello there!' }, msg.key.remoteJid)
             }
         }));
     }
-    reconnectClient(phone) {
+    reconnectClient() {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.addClient(phone);
+            console.log("RETRYING CONNECTION..");
+            this.client = this.startSock();
+            this.startBasicEventListners();
         });
     }
 }
-exports.Whatsapp = Whatsapp;
-exports.default = new Whatsapp();
+exports.default = Whatsapp;
+// export default new Whatsapp();
 //# sourceMappingURL=whatsapp.service.js.map

@@ -1,10 +1,9 @@
 import deviceModel from './../../components/device/device.model';
-import { initateEventListners } from "./whatsapp-client.service";
 import { Socket } from "socket.io";
 import { schedule } from "node-cron";
 import { configCors, rateLimitConfig } from "../../config";
 import { io } from "socket.io-client";
-import whatsappService from "./whatsapp.service";
+import whatsappService from "./whatsapp/whatsapp.service";
 
 let webClient: Socket;
 
@@ -14,7 +13,6 @@ export const socketServer = async (server: any) => {
     origin: configCors.allowOrigin,
   });
 
-  initateEventListners();
 
   io.on("connection", (socket: Socket) => {
     console.log("socket connected ");
@@ -33,6 +31,11 @@ export const sendClientError = (phone:string,error:any)=>{
    if(!webClient) return console.log("webClient not connected..");
    webClient.emit(`${phone}_qr`, { qr });
   };
+
+  export const sendAuthenticated = (phone:string)=>{
+    if(!webClient) return console.log("webClient not connected..");
+    webClient.emit(`${phone}_authenticated`);
+  }
 
   export const sendQrRetryExceed = (data:any) => {
     if(!webClient) return console.log("webClient not connected..");

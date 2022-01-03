@@ -34,6 +34,18 @@ export class DeviceController {
     }
   };
 
+  public deleteAuth = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+        console.log("qr request");
+        
+        responseHandler.reqRes(req, res).onFetch("auth deleted", await deviceModel.deleteAuth(req.params)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
 }
 
 

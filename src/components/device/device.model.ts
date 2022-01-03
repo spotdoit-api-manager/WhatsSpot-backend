@@ -1,27 +1,69 @@
 import { HTTP400Error } from './../../lib/utils/httpErrors';
-import whatsappService, { Whatsapp } from "./../../lib/services/whatsapp.service";
 import { IDevice } from "./device.interface";
 import { Device } from "./device.shema";
-export class DeviceModel{
-    public async newDevice(body:IDevice){
+import whatsappClientService from '../../lib/services/whatsapp/whatsapp-client.service';
+import fileManagement from '../../lib/helpers/file.management';
+import { DisconnectReason } from '@adiwajshing/baileys-md';
+
+export class DeviceModel {
+    public async newDevice(body: IDevice) {
         console.log(body);
         const device = await this.findDeviceByPhone(body.phone);
-        if(device) throw new HTTP400Error("DEVICE_ALREADY_PRESENT");
+        if (device) throw new HTTP400Error("DEVICE_ALREADY_PRESENT");
         const newDevice = new Device(body);
         const data = await newDevice.saveDevice();
         return data;
     }
-    
-    public async getQr(body:any){
-        const device = await this.findDeviceByPhone(body.phone);
-        if(!device) throw new HTTP400Error("DEVICE_NOT_AVAILABLE");
-        const data = await whatsappService.getQr(body.phone);
-        return {message:"QR_REQUESTED"};
+
+    public async getQr(body: any) {
+        const device = await this.findDeviceById(body.deviceId);
+        if (!device) throw new HTTP400Error("DEVICE_NOT_AVAILABLE");
+        console.log("qr request for phone ",device.phone);
+        if(device.authState) return {message:"ALREADY_AUTHENTICATED"};
+        if(!device.authState && device.reason && device.reason.statusCode===DisconnectReason.loggedOut){
+            return {message:"DEVICE_LOGGED_OUT"};
+        }
+        const data =  whatsappClientService.getQr(device.phone);
+        return { message: "QR_REQUESTED" };
     };
 
-    public async findDeviceByPhone(phone:string){
-        const device = await Device.findOne({phone});
-        return device; 
+    
+    public async deleteAuth(body: any) {
+        const device = await this.findDeviceById(body.deviceId);
+        if (!device) throw new HTTP400Error("DEVICE_NOT_AVAILABLE");
+        console.log("delete auth request for phone ",device.phone);
+        const authFilePath = `${device.phone}_cred.json`;
+        fileManagement.deleteFile(authFilePath);
+        await this.updateDevice(device.phone,{reason:null});
+        return { message: "AUTH_DELETED" };
+    };
+
+    public async updateDevice(phone:string,clientData:any){
+        console.log("updaing client ",phone,clientData);
+        if(!phone) return console.log("phone not provided in client update");
+         //;{error:true,message:"phone not provided"};
+       const  options = { upsert: true, new: true, setDefaultsOnInsert: true };
+        const client = await Device.findOneAndUpdate({phone:phone},{...clientData},options);
+        if(!client) return {error:true,message:"some error occured"};
+        return {error:false}
+    }
+
+
+    public async findDeviceByPhone(phone: string) {
+        const device = await Device.findOne({ phone });
+        return device;
+    }
+
+    public async findDeviceById(id: string) {
+        const device = await Device.findById(id);
+        return device;
+    }
+
+    public async findDeviceByCondition(condition){
+        const data = await Device.aggregate([{
+            $match:condition
+        }])
+        return data;
     }
 }
 

@@ -8,9 +8,15 @@ export default [
         handler:[deviceController.newDevice]
     },
     {
-        path:"/device/getQr/:phone",
+        path:"/device/getQr/:deviceId",
         method:"get",
         escapeAuth:true,
         handler:[deviceController.getQr]
+    },
+    {
+        path:"/device/auth/:deviceId",
+        method:"delete",
+        escapeAuth:true,
+        handler:[deviceController.deleteAuth]
     }
 ];

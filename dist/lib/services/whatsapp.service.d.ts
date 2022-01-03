@@ -1,19 +1,19 @@
-interface WhatsappClient {
-    phone: string;
+/// <reference types="node" />
+import { EventEmitter } from 'events';
+import { AuthenticationState } from "@adiwajshing/baileys-md";
+export default class Whatsapp extends EventEmitter {
     client: any;
-    auth: any;
+    phone: string;
+    state: AuthenticationState;
     saveState: any;
-}
-export declare class Whatsapp {
-    constructor();
+    authState: boolean;
+    qr: any;
+    constructor(phone: string);
     private startSock;
-    addClient: (phone: string, getQr?: boolean) => Promise<WhatsappClient>;
-    getQr: (phone: string) => Promise<void>;
+    getQr: () => Promise<void>;
     closeClient: (phone: string) => void;
     removeClient: (phone: string) => boolean | void;
     private startBasicEventListners;
     private reconnectClient;
     private sendMessageWTyping;
 }
-declare const _default: Whatsapp;
-export default _default;

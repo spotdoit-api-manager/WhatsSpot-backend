@@ -12,10 +12,16 @@ exports.default = [
         handler: [device_controller_1.default.newDevice]
     },
     {
-        path: "/device/getQr/:phone",
+        path: "/device/getQr/:deviceId",
         method: "get",
         escapeAuth: true,
         handler: [device_controller_1.default.getQr]
+    },
+    {
+        path: "/device/auth/:deviceId",
+        method: "delete",
+        escapeAuth: true,
+        handler: [device_controller_1.default.deleteAuth]
     }
 ];
 //# sourceMappingURL=index.js.map

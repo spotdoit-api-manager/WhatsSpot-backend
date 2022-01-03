@@ -9,8 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendError = exports.sendConnectionClosed = exports.sendQrRetryExceed = exports.sendQrCode = exports.sendClientError = exports.socketServer = void 0;
-const whatsapp_client_service_1 = require("./whatsapp-client.service");
+exports.sendError = exports.sendConnectionClosed = exports.sendQrRetryExceed = exports.sendAuthenticated = exports.sendQrCode = exports.sendClientError = exports.socketServer = void 0;
 const config_1 = require("../../config");
 let webClient;
 exports.socketServer = (server) => __awaiter(void 0, void 0, void 0, function* () {
@@ -18,7 +17,6 @@ exports.socketServer = (server) => __awaiter(void 0, void 0, void 0, function* (
         cors: true,
         origin: config_1.configCors.allowOrigin,
     });
-    whatsapp_client_service_1.initateEventListners();
     io.on("connection", (socket) => {
         console.log("socket connected ");
         console.log(socket.id);
@@ -35,6 +33,11 @@ exports.sendQrCode = (phone, qr) => {
     if (!webClient)
         return console.log("webClient not connected..");
     webClient.emit(`${phone}_qr`, { qr });
+};
+exports.sendAuthenticated = (phone) => {
+    if (!webClient)
+        return console.log("webClient not connected..");
+    webClient.emit(`${phone}_authenticated`);
 };
 exports.sendQrRetryExceed = (data) => {
     if (!webClient)
