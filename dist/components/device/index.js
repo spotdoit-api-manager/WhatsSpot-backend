@@ -18,10 +18,28 @@ exports.default = [
         handler: [device_controller_1.default.getQr]
     },
     {
-        path: "/device/auth/:deviceId",
+        path: "/device/auth/delete/:deviceId",
         method: "delete",
         escapeAuth: true,
         handler: [device_controller_1.default.deleteAuth]
+    },
+    {
+        path: "/device/auth/logout/:deviceId",
+        method: "get",
+        escapeAuth: true,
+        handler: [device_controller_1.default.logoutDevice]
+    },
+    {
+        path: "/device/message/addMessageToQueue/:deviceId",
+        method: "post",
+        escapeAuth: true,
+        handler: [device_controller_1.default.addMessageToQueue]
+    },
+    {
+        path: "/device/send/textMessage/:deviceId",
+        method: "post",
+        escapeAuth: true,
+        handler: [device_controller_1.default.sendTextMessage]
     }
 ];
 //# sourceMappingURL=index.js.map

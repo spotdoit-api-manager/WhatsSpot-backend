@@ -13,45 +13,78 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WhatsappClient = exports.eventEmitter = void 0;
+const socket_1 = __importDefault(require("./../socket"));
 const events_1 = require("events");
-const socket_1 = require("../socket");
 const clients_data_1 = __importDefault(require("../../../data/clients.data"));
 const whatsapp_service_1 = __importDefault(require("./whatsapp.service"));
 const device_model_1 = __importDefault(require("../../../components/device/device.model"));
+const message_queue_service_1 = __importDefault(require("./message-queue.service"));
 exports.eventEmitter = new events_1.EventEmitter();
 class WhatsappClient {
     constructor() {
-        this.getQr = (phone) => {
-            const client = new whatsapp_service_1.default(phone);
-            clients_data_1.default[phone] = client;
+        this.getClientQr = (phone) => __awaiter(this, void 0, void 0, function* () {
+            const client = this.addClient(phone);
             client.on("qr", (qrData) => {
                 console.log("got qr ", qrData.qr);
                 if (qrData.error)
                     return;
-                socket_1.sendQrCode(phone, qrData.qr);
+                socket_1.default.sendQrCode(phone, qrData);
             });
             client.on("authenticated", (client) => {
                 console.log("got authenticated ", client.phone);
-                socket_1.sendAuthenticated(client.phone);
+                socket_1.default.sendAuthenticated(client.phone);
             });
             client.getQr();
-        };
+        });
         this.addClient = (phone) => {
             const client = new whatsapp_service_1.default(phone);
             clients_data_1.default[phone] = client;
+            return client;
         };
+        this.getClient = (phone) => {
+            return clients_data_1.default[phone];
+        };
+        this.sendTextMessage = (phone, to, message) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                console.log("sending message to ", to);
+                const client = this.getClient(phone);
+                if (!client)
+                    return { error: true, message: "CLIENT_NOT_FOUND" };
+                if (!client.authState)
+                    return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+                const data = yield client.sendTextMessage(to, message);
+                console.log("sent data is ", data);
+                return data;
+            }
+            catch (e) {
+                return { error: true, message: e.message };
+            }
+        });
+    }
+    logoutClient(phone) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                clients_data_1.default[phone].client.logout();
+                return { error: false };
+            }
+            catch (e) {
+                return { error: true, message: e.message };
+            }
+        });
     }
     initializeAllClients() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("INITIALIZING ALL CLIENTS...");
+            console.info("INITIALIZING ALL CLIENTS...");
             const condition = { authState: true };
             const devices = yield device_model_1.default.findDeviceByCondition(condition);
-            console.log("Total Clients to Initialize: ", devices.length);
+            console.info("Total Clients to Initialize: ", devices.length);
             for (let i = 0; i < devices.length; i++) {
                 const device = devices[i];
                 console.log(`client${i}:${device.phone}`);
                 this.addClient(device.phone);
             }
+            message_queue_service_1.default.getPendingsMessages();
+            console.log("STARTED_MESSAGE_QUEUE_SERVICE...");
         });
     }
 }

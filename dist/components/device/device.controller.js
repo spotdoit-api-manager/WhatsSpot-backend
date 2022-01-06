@@ -53,6 +53,39 @@ class DeviceController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.logoutDevice = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("qr request");
+                responseHandler.reqRes(req, res).onFetch("auth deleted", yield device_model_1.default.logoutDevice(req.params)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.addMessageToQueue = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("qr request");
+                responseHandler.reqRes(req, res).onFetch("added to queue", yield device_model_1.default.addMessageToQueue(req.body, req.params.deviceId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.sendTextMessage = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("qr request");
+                responseHandler.reqRes(req, res).onFetch("sent", yield device_model_1.default.sendTextMessage(req.body, req.params.deviceId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
     }
 }
 exports.DeviceController = DeviceController;

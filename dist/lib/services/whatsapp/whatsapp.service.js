@@ -31,14 +31,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const whatsapp_utils_1 = require("./whatsapp-utils");
 const events_1 = require("events");
 const pino_1 = __importDefault(require("pino"));
 const baileys_md_1 = __importStar(require("@adiwajshing/baileys-md"));
 const device_model_1 = __importDefault(require("./../../../components/device/device.model"));
-// export  declare interface Whatsapp {
-//   on(event: 'qr', listener: (name: string) => void): this;
-//   // on(event: string, listener: Function): this;
-// }
 class Whatsapp extends events_1.EventEmitter {
     constructor(phone) {
         super();
@@ -67,7 +64,7 @@ class Whatsapp extends events_1.EventEmitter {
                     ((_b = (_a = lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.payload.message) ==
                         "QR refs attempts ended") {
                     this.client.ev.removeAllListeners();
-                    this.emit("qr", { error: true, message: "qr retry exceeded" });
+                    this.emit("qr", { error: true, message: "QR_RETRY_EXCEEDED" });
                     return;
                 }
             }));
@@ -79,6 +76,29 @@ class Whatsapp extends events_1.EventEmitter {
             yield baileys_md_1.delay(2000);
             yield this.client.sendPresenceUpdate("paused", jid);
             yield this.client.sendMessage(jid, msg);
+        });
+        this.sendTextMessage = (to, msg) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                // await this.client.presenceSubscribe(jid);
+                // await delay(500);
+                // await this.client.sendPresenceUpdate("composing", jid);
+                // await delay(2000);
+                // await this.client.sendPresenceUpdate("paused", jid);
+                const jid = whatsapp_utils_1.getSerializedPhone(to);
+                yield this.client.presenceSubscribe(jid);
+                yield baileys_md_1.delay(500);
+                console.log("serialized phone ", jid);
+                console.log("message is ", msg);
+                const result = yield this.client.sendMessage(jid, { text: msg });
+                if (result.status != 1) {
+                    return { error: true };
+                }
+                return { error: false };
+            }
+            catch (e) {
+                console.log(e);
+                return { error: true, message: e.message };
+            }
         });
         this.state = baileys_md_1.useSingleFileAuthState(`${phone}_cred.json`).state;
         this.saveState = baileys_md_1.useSingleFileAuthState(`${phone}_cred.json`).saveState;
@@ -146,7 +166,7 @@ class Whatsapp extends events_1.EventEmitter {
     }
     reconnectClient() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("RETRYING CONNECTION..");
+            console.log("RETRYING CONNECTION..", this.phone);
             this.client = this.startSock();
             this.startBasicEventListners();
         });

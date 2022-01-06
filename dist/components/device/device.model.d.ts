@@ -4,7 +4,14 @@ export declare class DeviceModel {
     getQr(body: any): Promise<{
         message: string;
     }>;
+    addMessageToQueue(body: any, deviceId: string): Promise<{
+        message: string;
+    }>;
+    sendTextMessage(body: any, deviceId: string): Promise<void>;
     deleteAuth(body: any): Promise<{
+        message: string;
+    }>;
+    logoutDevice(body: any): Promise<{
         message: string;
     }>;
     updateDevice(phone: string, clientData: any): Promise<void | {

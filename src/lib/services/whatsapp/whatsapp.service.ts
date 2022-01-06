@@ -1,3 +1,4 @@
+import { getSerializedPhone } from './whatsapp-utils';
 import { IReason } from './whatsapp.interface';
 import { EventEmitter } from "events";
 import P from "pino";
@@ -9,20 +10,14 @@ import makeWASocket, {
   useSingleFileAuthState,
   AuthenticationState,
 } from "@adiwajshing/baileys-md";
-import { eventEmitter } from "./whatsapp-client.service";
-import clients from "../../../data/clients.data";
 import deviceModel from './../../../components/device/device.model';
-// export  declare interface Whatsapp {
-//   on(event: 'qr', listener: (name: string) => void): this;
-//   // on(event: string, listener: Function): this;
-// }
 
 export default class Whatsapp extends EventEmitter {
   client: any;
   phone: string;
   state: AuthenticationState;
   saveState: any;
-  authState: boolean = false;
+  public authState: boolean = false;
   qr: any = new EventEmitter();
 
   constructor(phone: string) {
@@ -66,7 +61,7 @@ export default class Whatsapp extends EventEmitter {
           "QR refs attempts ended"
       ) {
         this.client.ev.removeAllListeners();
-        this.emit("qr", { error: true, message: "qr retry exceeded" });
+        this.emit("qr", { error: true, message: "QR_RETRY_EXCEEDED" });
         return;
       }
     });
@@ -141,7 +136,7 @@ export default class Whatsapp extends EventEmitter {
   }
 
   private async reconnectClient() {
-    console.log("RETRYING CONNECTION..");
+    console.log("RETRYING CONNECTION..",this.phone);
 
     this.client = this.startSock();
     this.startBasicEventListners();
@@ -162,6 +157,39 @@ export default class Whatsapp extends EventEmitter {
 
     await this.client.sendMessage(jid, msg);
   };
+
+  public sendTextMessage = async (
+    to: string,
+    msg: AnyMessageContent,
+  ) => {
+    try{
+
+      // await this.client.presenceSubscribe(jid);
+      // await delay(500);
+      
+      // await this.client.sendPresenceUpdate("composing", jid);
+      // await delay(2000);
+
+      // await this.client.sendPresenceUpdate("paused", jid);
+      const jid = getSerializedPhone(to);
+      await this.client.presenceSubscribe(jid);
+      await delay(500);
+      console.log("serialized phone ",jid);
+      console.log("message is ",msg);
+      
+      const result  = await this.client.sendMessage(jid, {text:msg});
+      if(result.status!=1){
+        return {error:true};
+      }
+      return {error:false};
+    }catch(e){
+      console.log(e);
+      
+      return {error:true,message:e.message}
+    }
+  };
+
+
   // startSock()
 }
 

@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { EventEmitter } from "events";
-import { AuthenticationState } from "@adiwajshing/baileys-md";
+import { AnyMessageContent, AuthenticationState } from "@adiwajshing/baileys-md";
 export default class Whatsapp extends EventEmitter {
     client: any;
     phone: string;
@@ -14,4 +14,11 @@ export default class Whatsapp extends EventEmitter {
     private startBasicEventListners;
     private reconnectClient;
     private sendMessageWTyping;
+    sendTextMessage: (to: string, msg: AnyMessageContent) => Promise<{
+        error: boolean;
+        message?: undefined;
+    } | {
+        error: boolean;
+        message: any;
+    }>;
 }

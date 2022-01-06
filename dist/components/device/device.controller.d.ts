@@ -3,6 +3,9 @@ export declare class DeviceController {
     newDevice: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     getQr: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     deleteAuth: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    logoutDevice: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    addMessageToQueue: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    sendTextMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 }
 declare const _default: DeviceController;
 export default _default;

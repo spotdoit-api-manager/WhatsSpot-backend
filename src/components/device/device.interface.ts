@@ -5,3 +5,8 @@ export interface IDevice{
     authState:boolean,
     reason:IReason
 }
+
+export interface TextMessage{
+    message:String,
+    numbers:string
+}

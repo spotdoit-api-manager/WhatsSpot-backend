@@ -1,9 +1,12 @@
+import { IMessage } from './../messages/message.interface';
 import { HTTP400Error } from './../../lib/utils/httpErrors';
-import { IDevice } from "./device.interface";
+import { IDevice, TextMessage } from "./device.interface";
 import { Device } from "./device.shema";
 import whatsappClientService from '../../lib/services/whatsapp/whatsapp-client.service';
 import fileManagement from '../../lib/helpers/file.management';
 import { DisconnectReason } from '@adiwajshing/baileys-md';
+import messageModel from '../messages/message.model';
+import { body } from 'express-validator';
 
 export class DeviceModel {
     public async newDevice(body: IDevice) {
@@ -17,35 +20,65 @@ export class DeviceModel {
 
     public async getQr(body: any) {
         const device = await this.findDeviceById(body.deviceId);
-        if (!device) throw new HTTP400Error("DEVICE_NOT_AVAILABLE");
-        console.log("qr request for phone ",device.phone);
-        if(device.authState) return {message:"ALREADY_AUTHENTICATED"};
-        if(!device.authState && device.reason && device.reason.statusCode===DisconnectReason.loggedOut){
-            return {message:"DEVICE_LOGGED_OUT"};
+        if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
+        console.log("qr request for phone ", device.phone);
+        if (device.authState) return { message: "ALREADY_AUTHENTICATED" };
+        if (!device.authState && device.reason && device.reason.statusCode === DisconnectReason.loggedOut) {
+            return { message: "DEVICE_LOGGED_OUT" };
         }
-        const data =  whatsappClientService.getQr(device.phone);
+        const data = whatsappClientService.getClientQr(device.phone);
         return { message: "QR_REQUESTED" };
     };
 
+    public async addMessageToQueue(body:any,deviceId:string){
+        console.log("send text message request");
+        const device = await this.findDeviceById(deviceId);
+        if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
+        const numbers = body.numbers.split(",");
+        for (let i = 0; i < numbers.length; i++) {
+            const to = numbers[i];
+            const newBody:IMessage = {phone:device.phone,to,message:body.message,status:"pending"}
+            const result =await messageModel.addMessageToQueue(newBody);
+        }
+       
+        return {message:"Message Added To Queue"}
+    }
     
+    public async sendTextMessage(body:any,deviceId:string){
+        const device = await this.findDeviceById(deviceId);
+        if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
+        const result =await whatsappClientService.sendTextMessage(device.phone,body.to,body.message);
+        console.log(result);
+        
+
+    }
+
     public async deleteAuth(body: any) {
         const device = await this.findDeviceById(body.deviceId);
-        if (!device) throw new HTTP400Error("DEVICE_NOT_AVAILABLE");
-        console.log("delete auth request for phone ",device.phone);
+        if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
+        console.log("delete auth request for phone ", device.phone);
         const authFilePath = `${device.phone}_cred.json`;
         fileManagement.deleteFile(authFilePath);
-        await this.updateDevice(device.phone,{reason:null});
+        await this.updateDevice(device.phone, { reason: null });
         return { message: "AUTH_DELETED" };
     };
 
-    public async updateDevice(phone:string,clientData:any){
-        console.log("updaing client ",phone,clientData);
-        if(!phone) return console.log("phone not provided in client update");
-         //;{error:true,message:"phone not provided"};
-       const  options = { upsert: true, new: true, setDefaultsOnInsert: true };
-        const client = await Device.findOneAndUpdate({phone:phone},{...clientData},options);
-        if(!client) return {error:true,message:"some error occured"};
-        return {error:false}
+    public async logoutDevice(body: any) {
+        const device = await this.findDeviceById(body.deviceId);
+        if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
+        const data = await whatsappClientService.logoutClient(device.phone);
+        if (data.error) throw new HTTP400Error(data.message);
+        return { message: "DEVICE_LOGGED_OUT" };
+
+    }
+
+    public async updateDevice(phone: string, clientData: any) {
+        console.log("updaing client ", phone, clientData);
+        if (!phone) return console.log("phone not provided in client update");
+        const options = { upsert: true, new: true, setDefaultsOnInsert: true };
+        const client = await Device.findOneAndUpdate({ phone: phone }, { ...clientData }, options);
+        if (!client) return { error: true, message: "some error occured" };
+        return { error: false }
     }
 
 
@@ -59,9 +92,9 @@ export class DeviceModel {
         return device;
     }
 
-    public async findDeviceByCondition(condition){
+    public async findDeviceByCondition(condition) {
         const data = await Device.aggregate([{
-            $match:condition
+            $match: condition
         }])
         return data;
     }

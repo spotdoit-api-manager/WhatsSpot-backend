@@ -18,6 +18,7 @@ const device_shema_1 = require("./device.shema");
 const whatsapp_client_service_1 = __importDefault(require("../../lib/services/whatsapp/whatsapp-client.service"));
 const file_management_1 = __importDefault(require("../../lib/helpers/file.management"));
 const baileys_md_1 = require("@adiwajshing/baileys-md");
+const message_model_1 = __importDefault(require("../messages/message.model"));
 class DeviceModel {
     newDevice(body) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -34,23 +35,47 @@ class DeviceModel {
         return __awaiter(this, void 0, void 0, function* () {
             const device = yield this.findDeviceById(body.deviceId);
             if (!device)
-                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_AVAILABLE");
+                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             console.log("qr request for phone ", device.phone);
             if (device.authState)
                 return { message: "ALREADY_AUTHENTICATED" };
             if (!device.authState && device.reason && device.reason.statusCode === baileys_md_1.DisconnectReason.loggedOut) {
                 return { message: "DEVICE_LOGGED_OUT" };
             }
-            const data = whatsapp_client_service_1.default.getQr(device.phone);
+            const data = whatsapp_client_service_1.default.getClientQr(device.phone);
             return { message: "QR_REQUESTED" };
         });
     }
     ;
+    addMessageToQueue(body, deviceId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("send text message request");
+            const device = yield this.findDeviceById(deviceId);
+            if (!device)
+                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
+            const numbers = body.numbers.split(",");
+            for (let i = 0; i < numbers.length; i++) {
+                const to = numbers[i];
+                const newBody = { phone: device.phone, to, message: body.message, status: "pending" };
+                const result = yield message_model_1.default.addMessageToQueue(newBody);
+            }
+            return { message: "Message Added To Queue" };
+        });
+    }
+    sendTextMessage(body, deviceId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const device = yield this.findDeviceById(deviceId);
+            if (!device)
+                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
+            const result = yield whatsapp_client_service_1.default.sendTextMessage(device.phone, body.to, body.message);
+            console.log(result);
+        });
+    }
     deleteAuth(body) {
         return __awaiter(this, void 0, void 0, function* () {
             const device = yield this.findDeviceById(body.deviceId);
             if (!device)
-                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_AVAILABLE");
+                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             console.log("delete auth request for phone ", device.phone);
             const authFilePath = `${device.phone}_cred.json`;
             file_management_1.default.deleteFile(authFilePath);
@@ -59,12 +84,22 @@ class DeviceModel {
         });
     }
     ;
+    logoutDevice(body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const device = yield this.findDeviceById(body.deviceId);
+            if (!device)
+                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
+            const data = yield whatsapp_client_service_1.default.logoutClient(device.phone);
+            if (data.error)
+                throw new httpErrors_1.HTTP400Error(data.message);
+            return { message: "DEVICE_LOGGED_OUT" };
+        });
+    }
     updateDevice(phone, clientData) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("updaing client ", phone, clientData);
             if (!phone)
                 return console.log("phone not provided in client update");
-            //;{error:true,message:"phone not provided"};
             const options = { upsert: true, new: true, setDefaultsOnInsert: true };
             const client = yield device_shema_1.Device.findOneAndUpdate({ phone: phone }, Object.assign({}, clientData), options);
             if (!client)

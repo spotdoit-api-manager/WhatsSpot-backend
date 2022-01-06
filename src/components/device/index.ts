@@ -14,9 +14,27 @@ export default [
         handler:[deviceController.getQr]
     },
     {
-        path:"/device/auth/:deviceId",
+        path:"/device/auth/delete/:deviceId",
         method:"delete",
         escapeAuth:true,
         handler:[deviceController.deleteAuth]
+    },
+    {
+        path:"/device/auth/logout/:deviceId",
+        method:"get",
+        escapeAuth:true,
+        handler:[deviceController.logoutDevice]
+    },
+    {
+        path:"/device/message/addMessageToQueue/:deviceId",
+        method:"post",
+        escapeAuth:true,
+        handler:[deviceController.addMessageToQueue]
+    },
+    {
+        path:"/device/send/textMessage/:deviceId",
+        method:"post",
+        escapeAuth:true,
+        handler:[deviceController.sendTextMessage]
     }
 ];
