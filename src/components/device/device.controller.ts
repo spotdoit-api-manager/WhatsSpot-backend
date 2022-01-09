@@ -82,6 +82,20 @@ export class DeviceController {
     }
   };
 
+  
+  public sendImageMessage = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+        console.log("qr request");
+        req.body.locationUrl = req.file.location;
+
+        responseHandler.reqRes(req, res).onFetch("sent", await deviceModel.sendImageMessage(req.body,req.params.deviceId)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
 }
 
 

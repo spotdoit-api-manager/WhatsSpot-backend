@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const s3_1 = require("../../lib/services/s3");
 const device_controller_1 = __importDefault(require("./device.controller"));
 exports.default = [
     {
@@ -40,6 +41,12 @@ exports.default = [
         method: "post",
         escapeAuth: true,
         handler: [device_controller_1.default.sendTextMessage]
+    },
+    {
+        path: "/device/send/imageMessage/:deviceId",
+        method: "post",
+        escapeAuth: true,
+        handler: [s3_1.s3UploadMulter.single('file'), device_controller_1.default.sendImageMessage]
     }
 ];
 //# sourceMappingURL=index.js.map

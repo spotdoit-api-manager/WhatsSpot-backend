@@ -1,3 +1,4 @@
+import { IImageMessage } from './../../lib/services/whatsapp/whatsapp.interface';
 import { IMessage } from './../messages/message.interface';
 import { HTTP400Error } from './../../lib/utils/httpErrors';
 import { IDevice, TextMessage } from "./device.interface";
@@ -36,7 +37,7 @@ export class DeviceModel {
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const numbers = body.numbers.split(",");
         for (let i = 0; i < numbers.length; i++) {
-            const to = numbers[i];
+            const to = "91"+numbers[i];
             const newBody:IMessage = {phone:device.phone,to,message:body.message,status:"pending"}
             const result =await messageModel.addMessageToQueue(newBody);
         }
@@ -49,9 +50,17 @@ export class DeviceModel {
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const result =await whatsappClientService.sendTextMessage(device.phone,body.to,body.message);
         console.log(result);
-        
-
     }
+
+    public async sendImageMessage(body:any,deviceId:string){
+        const device = await this.findDeviceById(deviceId);
+        if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
+        const to = body.to;
+        const msg:IImageMessage = {image:body.locationUrl,caption:body.caption||''};
+        const result =await whatsappClientService.sendImageMessage(device.phone,to,msg);
+        console.log(result);
+    }
+
 
     public async deleteAuth(body: any) {
         const device = await this.findDeviceById(body.deviceId);

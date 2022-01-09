@@ -8,6 +8,7 @@ export declare class DeviceModel {
         message: string;
     }>;
     sendTextMessage(body: any, deviceId: string): Promise<void>;
+    sendImageMessage(body: any, deviceId: string): Promise<void>;
     deleteAuth(body: any): Promise<{
         message: string;
     }>;

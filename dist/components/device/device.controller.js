@@ -86,6 +86,18 @@ class DeviceController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.sendImageMessage = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("qr request");
+                req.body.locationUrl = req.file.location;
+                responseHandler.reqRes(req, res).onFetch("sent", yield device_model_1.default.sendImageMessage(req.body, req.params.deviceId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
     }
 }
 exports.DeviceController = DeviceController;

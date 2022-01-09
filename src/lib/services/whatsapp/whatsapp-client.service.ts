@@ -6,6 +6,7 @@ import clients from '../../../data/clients.data';
 import Whatsapp from './whatsapp.service';
 import deviceModel from '../../../components/device/device.model';
 import messageQueueService from './message-queue.service';
+import { IImageMessage } from './whatsapp.interface';
 
 
 export const eventEmitter = new EventEmitter();
@@ -53,6 +54,23 @@ export class WhatsappClient {
             if (!client.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             const data = await client.sendTextMessage(to,message);
             console.log("sent data is ",data);
+            
+            return data;
+        } catch (e) {
+            return {error:true,message:e.message};
+        }
+    };
+
+    public sendImageMessage =async (phone: string,to:string,msg: IImageMessage) => {
+        try {
+            console.log("sending image message to ",to);
+            
+            const client = this.getClient(phone);
+            if (!client) return { error: true, message: "CLIENT_NOT_FOUND" };
+            if (!client.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+            
+            const data = await client.sendImageMessage(to,msg);
+            console.log("image sent data is ",data);
             
             return data;
         } catch (e) {

@@ -1,3 +1,4 @@
+import { s3UploadMulter } from "../../lib/services/s3";
 import deviceController from "./device.controller";
 
 export default [
@@ -36,5 +37,11 @@ export default [
         method:"post",
         escapeAuth:true,
         handler:[deviceController.sendTextMessage]
+    },
+    {
+        path:"/device/send/imageMessage/:deviceId",
+        method:"post",
+        escapeAuth:true,
+        handler:[s3UploadMulter.single('file'),deviceController.sendImageMessage]
     }
 ];

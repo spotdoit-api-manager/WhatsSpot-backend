@@ -79,17 +79,36 @@ class Whatsapp extends events_1.EventEmitter {
         });
         this.sendTextMessage = (to, msg) => __awaiter(this, void 0, void 0, function* () {
             try {
-                // await this.client.presenceSubscribe(jid);
-                // await delay(500);
-                // await this.client.sendPresenceUpdate("composing", jid);
-                // await delay(2000);
-                // await this.client.sendPresenceUpdate("paused", jid);
                 const jid = whatsapp_utils_1.getSerializedPhone(to);
                 yield this.client.presenceSubscribe(jid);
                 yield baileys_md_1.delay(500);
                 console.log("serialized phone ", jid);
                 console.log("message is ", msg);
-                const result = yield this.client.sendMessage(jid, { text: msg });
+                const result = yield this.client.sendMessage(jid, {
+                    text: msg, detectLinks: true,
+                });
+                if (result.status != 1) {
+                    return { error: true };
+                }
+                return { error: false };
+            }
+            catch (e) {
+                console.log(e);
+                return { error: true, message: e.message };
+            }
+        });
+        this.sendMediaMessage = (to, msg) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const jid = whatsapp_utils_1.getSerializedPhone(to);
+                yield this.client.presenceSubscribe(jid);
+                yield baileys_md_1.delay(500);
+                console.log("serialized phone ", jid);
+                console.log("message is ", msg);
+                let msgBody = {
+                    image: msg.image,
+                    caption: msg.caption
+                };
+                const result = yield this.client.sendMessage(jid, msgBody);
                 if (result.status != 1) {
                     return { error: true };
                 }
@@ -156,6 +175,10 @@ class Whatsapp extends events_1.EventEmitter {
             if (!msg.key.fromMe) {
                 console.log(`received msg :${msg.message.conversation}`);
                 console.log(`From: ${msg.key.remoteJid}`);
+            }
+            else {
+                console.log(`sent msg :${JSON.stringify(msg.message)}`);
+                console.log(`to: ${msg.key.remoteJid}`);
             }
             if (!msg.key.fromMe && m.type === "notify") {
                 // console.log("replying to", m.messages[0].key.remoteJid);

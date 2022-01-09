@@ -55,7 +55,7 @@ class DeviceModel {
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const numbers = body.numbers.split(",");
             for (let i = 0; i < numbers.length; i++) {
-                const to = numbers[i];
+                const to = "91" + numbers[i];
                 const newBody = { phone: device.phone, to, message: body.message, status: "pending" };
                 const result = yield message_model_1.default.addMessageToQueue(newBody);
             }
@@ -68,6 +68,17 @@ class DeviceModel {
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const result = yield whatsapp_client_service_1.default.sendTextMessage(device.phone, body.to, body.message);
+            console.log(result);
+        });
+    }
+    sendImageMessage(body, deviceId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const device = yield this.findDeviceById(deviceId);
+            if (!device)
+                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
+            const to = body.to;
+            const msg = { image: body.locationUrl, caption: body.caption || '' };
+            const result = yield whatsapp_client_service_1.default.sendImageMessage(device.phone, to, msg);
             console.log(result);
         });
     }

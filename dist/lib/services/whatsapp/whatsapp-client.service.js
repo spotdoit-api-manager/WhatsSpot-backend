@@ -60,6 +60,22 @@ class WhatsappClient {
                 return { error: true, message: e.message };
             }
         });
+        this.sendImageMessage = (phone, to, msg) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                console.log("sending image message to ", to);
+                const client = this.getClient(phone);
+                if (!client)
+                    return { error: true, message: "CLIENT_NOT_FOUND" };
+                if (!client.authState)
+                    return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+                const data = yield client.sendImageMessage(to, msg);
+                console.log("image sent data is ", data);
+                return data;
+            }
+            catch (e) {
+                return { error: true, message: e.message };
+            }
+        });
     }
     logoutClient(phone) {
         return __awaiter(this, void 0, void 0, function* () {

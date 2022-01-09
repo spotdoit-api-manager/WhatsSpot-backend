@@ -1,5 +1,5 @@
 import { getSerializedPhone } from './whatsapp-utils';
-import { IReason } from './whatsapp.interface';
+import { IImageMessage, IReason } from './whatsapp.interface';
 import { EventEmitter } from "events";
 import P from "pino";
 import { Boom } from "@hapi/boom";
@@ -34,13 +34,6 @@ export default class Whatsapp extends EventEmitter {
       logger: P({ level: "info" }),
       printQRInTerminal: false,
       auth: this.state,
-      // implement to handle retries
-      // getMessage: async (key: any) => {
-      //   console.log("get message ", key);
-      //   return {
-      //     conversation: "hello",
-      //   };
-      // },
     });
 
     return sock;
@@ -58,7 +51,7 @@ export default class Whatsapp extends EventEmitter {
       } else if (
         lastDisconnect &&
         (lastDisconnect.error as Boom)?.output?.payload.message ==
-          "QR refs attempts ended"
+        "QR refs attempts ended"
       ) {
         this.client.ev.removeAllListeners();
         this.emit("qr", { error: true, message: "QR_RETRY_EXCEEDED" });
@@ -74,43 +67,43 @@ export default class Whatsapp extends EventEmitter {
     //connection update
     this.client.ev.on("connection.update", async (update: any) => {
       const { connection, lastDisconnect } = update;
-      let reason:IReason;
-      if(lastDisconnect && (lastDisconnect.error as Boom)?.output.payload){
+      let reason: IReason;
+      if (lastDisconnect && (lastDisconnect.error as Boom)?.output.payload) {
         reason = (lastDisconnect.error as Boom)?.output.payload;
       }
       console.log(update);
-      
-      console.log("connection update (listner)",reason);
-      
+
+      console.log("connection update (listner)", reason);
+
 
       if (connection === "open") {
         const data = deviceModel.updateDevice(this.phone, {
-          authState: true,reason:null
+          authState: true, reason: null
         });
-        this.emit("authenticated",{phone:this.phone});
+        this.emit("authenticated", { phone: this.phone });
         return this.authState = true;
-      }else if (connection === "close") {
-      
+      } else if (connection === "close") {
+
         if (
           (lastDisconnect.error as Boom)?.output?.statusCode !==
           DisconnectReason.loggedOut
         ) {
           console.log("connection closed (not logged out)");
           const data = deviceModel.updateDevice(this.phone, {
-            authState: false,reason
+            authState: false, reason
           });
           await this.reconnectClient();
-        }else{
+        } else {
           const data = deviceModel.updateDevice(this.phone, {
-            authState: false,reason
+            authState: false, reason
           });
           console.log("connection update (logged out)", reason);
         }
-      } else if(!update.qr){        
+      } else if (!update.qr) {
         // const data = deviceModel.updateDevice(this.phone, {
         //   authState: false,reason
         // });
-        console.log("connection update (not open| not close)", update,reason);
+        console.log("connection update (not open| not close)", update, reason);
       }
     });
 
@@ -118,10 +111,13 @@ export default class Whatsapp extends EventEmitter {
     this.client.ev.on("messages.upsert", async (m: any) => {
       // console.log(JSON.stringify(m, undefined, 2))
       const msg = m.messages[0];
-     
-      if(!msg.key.fromMe){
+
+      if (!msg.key.fromMe) {
         console.log(`received msg :${msg.message.conversation}`);
         console.log(`From: ${msg.key.remoteJid}`);
+      }else{
+        console.log(`sent msg :${JSON.stringify(msg.message)}`);
+        console.log(`to: ${msg.key.remoteJid}`);
       }
       if (!msg.key.fromMe && m.type === "notify") {
         // console.log("replying to", m.messages[0].key.remoteJid);
@@ -136,7 +132,7 @@ export default class Whatsapp extends EventEmitter {
   }
 
   private async reconnectClient() {
-    console.log("RETRYING CONNECTION..",this.phone);
+    console.log("RETRYING CONNECTION..", this.phone);
 
     this.client = this.startSock();
     this.startBasicEventListners();
@@ -162,32 +158,54 @@ export default class Whatsapp extends EventEmitter {
     to: string,
     msg: AnyMessageContent,
   ) => {
-    try{
-
-      // await this.client.presenceSubscribe(jid);
-      // await delay(500);
-      
-      // await this.client.sendPresenceUpdate("composing", jid);
-      // await delay(2000);
-
-      // await this.client.sendPresenceUpdate("paused", jid);
+    try {
       const jid = getSerializedPhone(to);
       await this.client.presenceSubscribe(jid);
       await delay(500);
-      console.log("serialized phone ",jid);
-      console.log("message is ",msg);
-      
-      const result  = await this.client.sendMessage(jid, {text:msg});
-      if(result.status!=1){
-        return {error:true};
+      console.log("serialized phone ", jid);
+      console.log("message is ", msg);
+
+      const result = await this.client.sendMessage(jid, {
+        text: msg, detectLinks: true,
+      });
+      if (result.status != 1) {
+        return { error: true };
       }
-      return {error:false};
-    }catch(e){
+      return { error: false };
+    } catch (e) {
       console.log(e);
-      
-      return {error:true,message:e.message}
+
+      return { error: true, message: e.message }
     }
   };
+
+  public sendMediaMessage = async (
+    to: string,
+    msg: IImageMessage,
+  ) => {
+    try {
+      const jid = getSerializedPhone(to);
+      await this.client.presenceSubscribe(jid);
+      await delay(500);
+      console.log("serialized phone ", jid);
+      console.log("message is ", msg);
+      let msgBody = {
+        image: msg.image,
+        caption: msg.caption
+      }
+      const result = await this.client.sendMessage(jid, msgBody);
+      if (result.status != 1) {
+        return { error: true };
+      }
+      return { error: false };
+    } catch (e) {
+      console.log(e);
+
+      return { error: true, message: e.message }
+    }
+  };
+
+  public send
 
 
   // startSock()
