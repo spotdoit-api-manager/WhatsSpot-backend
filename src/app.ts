@@ -82,7 +82,7 @@ const r1 = express.Router();
 //   console.log("Running job 2......");
 // });
 
-app.use("/", applyRoutes(routes, r1)); // default api
+app.use("/multi", applyRoutes(routes, r1)); // default api
 app.all("*", (req, res, next) => {
   // res.send("hii");
   next(new HTTP400Error(`Can't found ${req.originalUrl} on  server`));
