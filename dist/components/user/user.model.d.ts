@@ -1,3 +1,4 @@
+import { IUser, ITokenData } from './user.interface';
 import { IUserModel } from "./user.schema";
 export declare class UserModel {
     fetchAll(): Promise<IUserModel[]>;
@@ -7,15 +8,23 @@ export declare class UserModel {
     add(body: any): Promise<{
         _id: any;
     }>;
+    registerWithPhone(body: IUser): Promise<{
+        phone: string;
+        _id: any;
+    }>;
     signUp(body: IUserModel): Promise<{
         token: string;
-        user: IUserModel;
+        expiresIn: string;
     }>;
     isUserExist(body: any): Promise<void>;
     login(body: any): Promise<{
         token: string;
-        user: IUserModel;
+        expiresIn: string;
     }>;
+    verifyUser(otp: string, userId: string): Promise<{
+        proceed: boolean;
+    }>;
+    isUserExistByPhone(phone: string): Promise<IUserModel>;
     authenticateWithAccesToken(data: any): Promise<{
         userInfo: IUserModel;
         isExisted: boolean;
@@ -27,7 +36,7 @@ export declare class UserModel {
     }>;
     loginViaSocialAccessToken(body: any): Promise<{
         token: string;
-        user: IUserModel;
+        expiresIn: string;
     }>;
     addFollower(id: string, userId: string): Promise<IUserModel>;
     addFollowing(id: string, userId: string): Promise<IUserModel>;
@@ -38,20 +47,24 @@ export declare class UserModel {
         proceed: boolean;
     } | {
         proceed: boolean;
+    } | {
+        proceed: boolean;
     }>;
     signToken: (id: string) => string;
     addNewToken(id: string): Promise<{
         token: string;
-        user: IUserModel;
+        expiresIn: string;
     }>;
     fetchOnOtp(id: string, otp: number): Promise<IUserModel>;
     verifyOtp(id: string, otp: number): Promise<{
-        data: any;
-        token: {
+        tokenData: {
             token: string;
-            user: IUserModel;
+            expiresIn: string;
         };
+        data: any;
+        cookie: string;
     }>;
+    createCookie(tokenData: ITokenData): string;
     private generateValidUsername;
     private randomString;
     addPhone(body: any): Promise<{
@@ -59,7 +72,7 @@ export declare class UserModel {
         isExisted: boolean;
         token: Promise<{
             token: string;
-            user: IUserModel;
+            expiresIn: string;
         }>;
     } | {
         _id: any;
@@ -68,6 +81,8 @@ export declare class UserModel {
     }>;
     genrateOTP(phone: string): Promise<{
         res: {
+            proceed: boolean;
+        } | {
             proceed: boolean;
         } | {
             proceed: boolean;

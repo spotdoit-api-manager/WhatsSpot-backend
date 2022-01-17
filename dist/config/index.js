@@ -19,9 +19,11 @@ exports.configCors = {
     allowOrigin: [
         'http://localhost:3000',
         'http://127.0.0.1:5500',
+        'http://localhost:4200'
+        //add your origin
     ],
     // Expose additional which are restricted.
-    exposedHeaders: ["X-Auth"]
+    exposedHeaders: ["X-Auth", "Set-Cookie"]
 };
 exports.rateLimitConfig = {
     inTime: process.env.REQUEST_TIME || 60 * 1000,

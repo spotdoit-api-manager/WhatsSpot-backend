@@ -2,6 +2,8 @@ import axios from 'axios';
 import {textLocalConfig} from "../../config";
 
 export const sendMessage = (to: string, body: string) => {
+  const env = process.env.NODE_ENV;
+  if(env=='development') return {proceed:true};
   console.log(to, body,textLocalConfig.apiKey,'hi');
   return axios.get('https://api.textlocal.in/send/', {
     params: {

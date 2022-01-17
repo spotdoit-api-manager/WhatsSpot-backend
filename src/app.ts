@@ -87,6 +87,7 @@ app.all("*", (req, res, next) => {
   // res.send("hii");
   next(new HTTP400Error(`Can't found ${req.originalUrl} on  server`));
 });
+console.log("current env is ",process.env.NODE_ENV );
 
 /*---------------------------------------git push -u myorigin
 | API VERSIONS CONFIGURATION [END]

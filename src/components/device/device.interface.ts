@@ -1,12 +1,13 @@
 import { IReason } from './../../lib/services/whatsapp/whatsapp.interface';
-export interface IDevice{
-    name:string,
-    phone:string,
-    authState:boolean,
-    reason:IReason
+export interface IDevice {
+    name: string,
+    phone: string,
+    authState: boolean,
+    reason: IReason,
+    userId: string
 }
 
-export interface TextMessage{
-    message:String,
-    numbers:string
+export interface TextMessage {
+    message: String,
+    numbers: string
 }

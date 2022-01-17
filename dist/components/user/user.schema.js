@@ -19,18 +19,15 @@ exports.UserSchema = new mongoose_1.Schema({
     firstName: {
         type: String,
         minlength: 2,
-        required: true
     },
     lastName: {
         type: String,
         minlength: 2,
-        required: true
     },
     username: {
         type: String,
         unique: true,
         sparse: true
-        //required: true,
     },
     password: {
         type: String,
@@ -41,6 +38,7 @@ exports.UserSchema = new mongoose_1.Schema({
     email: {
         type: String,
         minlength: 3,
+        unique: true
     },
     dateOfBirth: Date,
     role: {
@@ -54,6 +52,8 @@ exports.UserSchema = new mongoose_1.Schema({
     phone: {
         type: String,
         minlength: 3,
+        unique: true,
+        required: true
     },
     gender: {
         type: String,
@@ -74,7 +74,7 @@ exports.UserSchema = new mongoose_1.Schema({
         default: 0
     },
     avatar: {
-        type: Buffer
+        type: String
     }
 }, {
     timestamps: true

@@ -83,6 +83,35 @@ class UserModel {
             return { _id: data._id };
         });
     }
+    registerWithPhone(body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            body.role = "user";
+            console.log("register with phone ", body);
+            try {
+                const existingUser = yield this.isUserExistByPhone(body.phone);
+                let data;
+                if (!existingUser) {
+                    const newUser = new user_schema_1.User(body);
+                    data = yield newUser.addNewUser();
+                    if (!data)
+                        throw new httpErrors_1.HTTP400Error("SOME_ERROR_OCCURED");
+                }
+                const otp = this.updateOtp((data === null || data === void 0 ? void 0 : data._id) || existingUser._id);
+                const otpData = yield this.sendOtpToMobile(otp, body.phone);
+                if (otpData.proceed) {
+                    return { phone: body.phone, _id: (data === null || data === void 0 ? void 0 : data._id) || existingUser._id };
+                }
+                throw new httpErrors_1.HTTP400Error("OTP_NOT_SENT");
+            }
+            catch (e) {
+                console.log(e);
+                if (e.code == 11000) {
+                    throw new httpErrors_1.HTTP400Error(e.keyPattern.email ? "EMAIL_ALREADY_REGISTERED" : "PHONE_ALREADY_REGISTERED");
+                }
+                throw new httpErrors_1.HTTP400Error(e.message);
+            }
+        });
+    }
     signUp(body) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -151,6 +180,18 @@ class UserModel {
         });
     }
     ;
+    verifyUser(otp, userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("verify user ", userId, otp);
+            return { proceed: true };
+        });
+    }
+    isUserExistByPhone(phone) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield user_schema_1.User.findOne({ phone: phone }).lean();
+            return user;
+        });
+    }
     authenticateWithAccesToken(data) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -279,21 +320,19 @@ class UserModel {
     sendOtpToMobile(otp, phone) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(`send this ${otp} to ${phone}`);
-            const message = `Your Polbol login OTP is ${otp}.`;
+            const message = `Your SpotDoit Services login OTP is ${otp}.`;
             return textlocal_1.sendMessage(phone, message);
         });
     }
     addNewToken(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            // const responseHandler = new ResponseHandler();
-            const user = yield user_schema_1.User.findById(id);
+            // const user = await User.findById(id);
             const token = this.signToken(id);
             // console.log(ikcbalance);
-            // user.ikcbalance = ikcbalance;
-            console.log(user);
+            // console.log(user);
             const data = {
                 token,
-                user
+                expiresIn: process.env.JWT_EXPIRES_IN
             };
             return data;
         });
@@ -312,20 +351,24 @@ class UserModel {
                 let data;
                 data = yield this.fetchOnOtp(id, otp);
                 if (!data) {
-                    throw new httpErrors_1.HTTP400Error("The otp you have provided is not correct");
+                    throw new httpErrors_1.HTTP400Error("WRONG_OTP");
                 }
-                if (data.phone !== '9876543219') {
+                if (data.phone !== '917984545163') {
                     this.updateOtp(id);
                 }
                 data = yield user_schema_1.User.findOneAndUpdate({ _id: new bson_1.ObjectID(id) }, { $set: { isVerified: true } }, { new: true });
-                const token = yield this.addNewToken(id);
-                return { data, token };
+                const tokenData = yield this.addNewToken(id);
+                const cookie = this.createCookie(tokenData);
+                return { tokenData, data, cookie };
             }
             catch (e) {
                 console.log(e.message);
                 throw new httpErrors_1.HTTP400Error(e.message);
             }
         });
+    }
+    createCookie(tokenData) {
+        return `Authorization=${tokenData.token}; HttpOnly; Max-Age=${tokenData.expiresIn};`;
     }
     generateValidUsername(firstName, id = null) {
         return __awaiter(this, void 0, void 0, function* () {

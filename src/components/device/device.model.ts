@@ -10,10 +10,11 @@ import messageModel from '../messages/message.model';
 import { body } from 'express-validator';
 
 export class DeviceModel {
-    public async newDevice(body: IDevice) {
+    public async newDevice(body: IDevice, userId: string) {
         console.log(body);
+        body.userId = userId;
         const device = await this.findDeviceByPhone(body.phone);
-        if (device) throw new HTTP400Error("DEVICE_ALREADY_PRESENT");
+        if (device) return device;
         const newDevice = new Device(body);
         const data = await newDevice.saveDevice();
         return data;
@@ -24,40 +25,51 @@ export class DeviceModel {
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         console.log("qr request for phone ", device.phone);
         if (device.authState) return { message: "ALREADY_AUTHENTICATED" };
-        if (!device.authState && device.reason && device.reason.statusCode === DisconnectReason.loggedOut) {
-            return { message: "DEVICE_LOGGED_OUT" };
-        }
+        // if (!device.authState && device.reason && device.reason.statusCode === DisconnectReason.loggedOut) {
+        //     return { message: "DEVICE_LOGGED_OUT" };
+        // }
         const data = whatsappClientService.getClientQr(device.phone);
         return { message: "QR_REQUESTED" };
     };
 
-    public async addMessageToQueue(body:any,deviceId:string){
+    public fetchAllDevices = async (userId: string) => {
+        console.log("fetch all device request", userId);
+
+        const devices = await this.findDeviceByUseId(userId);
+        if (!devices || !devices.length) throw new HTTP400Error("NO_DEVICE_ADDED");
+        return devices;
+    }
+    public fetchDevice = async (deviceId: string, userId: string) => {
+
+    }
+
+    public async addMessageToQueue(body: any, deviceId: string) {
         console.log("send text message request");
         const device = await this.findDeviceById(deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const numbers = body.numbers.split(",");
         for (let i = 0; i < numbers.length; i++) {
-            const to = "91"+numbers[i];
-            const newBody:IMessage = {phone:device.phone,to,message:body.message,status:"pending"}
-            const result =await messageModel.addMessageToQueue(newBody);
+            const to = "91" + numbers[i];
+            const newBody: IMessage = { phone: device.phone, to, message: body.message, status: "pending" }
+            const result = await messageModel.addMessageToQueue(newBody);
         }
-       
-        return {message:"Message Added To Queue"}
+
+        return { message: "Message Added To Queue" }
     }
-    
-    public async sendTextMessage(body:any,deviceId:string){
+
+    public async sendTextMessage(body: any, deviceId: string) {
         const device = await this.findDeviceById(deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-        const result =await whatsappClientService.sendTextMessage(device.phone,body.to,body.message);
+        const result = await whatsappClientService.sendTextMessage(device.phone, body.to, body.message);
         console.log(result);
     }
 
-    public async sendImageMessage(body:any,deviceId:string){
+    public async sendImageMessage(body: any, deviceId: string) {
         const device = await this.findDeviceById(deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const to = body.to;
-        const msg:IImageMessage = {image:body.locationUrl,caption:body.caption||''};
-        const result =await whatsappClientService.sendImageMessage(device.phone,to,msg);
+        const msg: IImageMessage = { image: body.locationUrl, caption: body.caption || '' };
+        const result = await whatsappClientService.sendImageMessage(device.phone, to, msg);
         console.log(result);
     }
 
@@ -101,12 +113,19 @@ export class DeviceModel {
         return device;
     }
 
+    public async findDeviceByUseId(userId: string) {
+        const devices = await Device.find({ userId: userId }).lean();
+        return devices;
+    }
+
     public async findDeviceByCondition(condition) {
         const data = await Device.aggregate([{
             $match: condition
         }])
         return data;
     }
+
+
 }
 
 export default new DeviceModel();

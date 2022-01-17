@@ -1,28 +1,34 @@
 import userController from "./user.controller";
 
 export default [
-  // {
-  //   path: "/user",
-  //   method: "get",
-  //   handler: [userController.fetchAll]
-  // },
-  // {
-  //   path: "/user",
-  //   method: "post",
-  //   handler: [userController.create]
-  // },
+  {
+    path: "/user",
+    method: "get",
+    handler: [userController.fetchAll]
+  },
+  {
+    path: "/user",
+    method: "post",
+    handler: [userController.create]
+  },
+  {
+    path:"/user/registerWithPhone",
+    method:"post",
+    escapeAuth:true,
+    handler:[userController.registerWithPhone]
+  },
 
-  // {
-  //   path: "/user/loggeduser",
-  //   method: "get",
-  //   handler:[userController.getLoggedUser]
-  // },
-  // {
-  //   path: "/login",
-  //   method: "post",
-  //   escapeAuth:true,
-  //   handler:[userController.logIn]
-  // },
+  {
+    path: "/user/loggeduser",
+    method: "get",
+    handler:[userController.getLoggedUser]
+  },
+  {
+    path: "/login",
+    method: "post",
+    escapeAuth:true,
+    handler:[userController.logIn]
+  },
   // // {
   // //   path: "/logout",
   // //   method: "post",
@@ -77,12 +83,12 @@ export default [
   //   method: "post",
   //   handler:[userController.addPhoneNumber]
   // },
-  // {
-  //   path: "/user/:id/verify-otp",
-  //   method: "get",
-  //   escapeAuth: true,
-  //   handler: [userController.verifyOtp]
-  // },
+  {
+    path: "/user/:id/verifyOtp",
+    method: "get",
+    escapeAuth: true,
+    handler: [userController.verifyOtp]
+  },
   // {
   //   path: "/user/generateOTP",
   //   escapeAuth:true,

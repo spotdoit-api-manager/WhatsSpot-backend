@@ -6,59 +6,61 @@ import { io } from "socket.io-client";
 import whatsappService from "./whatsapp/whatsapp.service";
 
 let webClient: Socket;
-interface QRData{
-  error:boolean,
-  qr:string,
-  reason?:string
+interface QRData {
+  error: boolean,
+  qr: string,
+  reason?: string
 }
 
-export class SocketManager{
+export class SocketManager {
 
-  public  socketServer = async (server: any) => {
+  public socketServer = async (server: any) => {
     const io = require("socket.io")(server, {
       cors: true,
       origin: configCors.allowOrigin,
     });
-    
-    
+
+
     io.on("connection", (socket: Socket) => {
       console.log("socket connected ");
       console.log(socket.id);
       webClient = socket;
       let task: any;
     });
-    
+
   };
-  
-  public sendClientError = (phone:string,error:any)=>{
-    if(!webClient) return console.log("webClient not connected..");
-    webClient.emit(`${phone}_clientError`, { reason:error });
+
+  public sendClientError = (phone: string, error: any) => {
+    if (!webClient) return console.log("webClient not connected..");
+    webClient.emit(`${phone}_clientError`, { reason: error });
   }
   public sendQrCode = (phone: string, qrData: QRData) => {
-    if(!webClient) return console.log("webClient not connected..");
+    console.log("emittinq qr to ", `${phone}_qr`);
+
+    if (!webClient) return console.log("webClient not connected..");
     webClient.emit(`${phone}_qr`, qrData);
   };
-  
-  public sendAuthenticated = (phone:string)=>{
-    if(!webClient) return console.log("webClient not connected..");
+
+  public sendAuthenticated = (phone: string) => {
+    if (!webClient) return console.log("webClient not connected..");
     webClient.emit(`${phone}_authenticated`);
   }
-  
-  public sendQrRetryExceed = (data:any) => {
-    if(!webClient) return console.log("webClient not connected..");
+
+  public sendQrRetryExceed = (data: any) => {
+    if (!webClient) return console.log("webClient not connected..");
     console.log("sending qr excedded");
-    
+
     webClient.emit(`${data.phone}_qr_exceeded`);
   };
-  
-  public  sendConnectionClosed = (data:any) => {
-    if(!webClient) return console.log("webClient not connected..");
-    webClient.emit(`${data.phone}_connection_closed`,{reason:data.reason});
+
+  public sendConnectionClosed = (data: any) => {
+    if (!webClient) return console.log("webClient not connected..");
+    webClient.emit(`${data.phone}_connection_closed`, { reason: data.reason });
   };
-  
-   public sendError = (data:any) => {
-    if(!webClient) return console.log("webClient not connected..");
-    webClient.emit(`${data.phone}_error`,{reason:data.reason});
+
+  public sendError = (data: any) => {
+    if (!webClient) return console.log("webClient not connected..");
+    webClient.emit(`${data.phone}_error`, { reason: data.reason });
   };
 }
 

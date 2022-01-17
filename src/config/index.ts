@@ -19,11 +19,12 @@ export const configCors = {
   allowOrigin: [
     'http://localhost:3000',
     'http://127.0.0.1:5500',
+    'http://localhost:4200'
 
     //add your origin
   ],
   // Expose additional which are restricted.
-  exposedHeaders: ["X-Auth"]
+  exposedHeaders: ["X-Auth", "Set-Cookie"]
 };
 
 export const rateLimitConfig = {
@@ -64,8 +65,8 @@ export const paginationConfig = {
 
 
 
-export const googleOAuth ={
-  CLIENT_ID:'737333346336-s4mkj3ud2l79rug8tgg7u1u1231g6u94.apps.googleusercontent.com',
-  CLIENT_SECRET:'xOE1E9P46fTZo2Kwq6UsE7Rs',
-  REDIRECT:'http://ec2-13-235-90-125.ap-south-1.compute.amazonaws.com:2112/api/v1/user/login/socialAuth/google/callBack'
+export const googleOAuth = {
+  CLIENT_ID: '737333346336-s4mkj3ud2l79rug8tgg7u1u1231g6u94.apps.googleusercontent.com',
+  CLIENT_SECRET: 'xOE1E9P46fTZo2Kwq6UsE7Rs',
+  REDIRECT: 'http://ec2-13-235-90-125.ap-south-1.compute.amazonaws.com:2112/api/v1/user/login/socialAuth/google/callBack'
 }

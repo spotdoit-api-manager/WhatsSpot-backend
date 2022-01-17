@@ -15,7 +15,7 @@ export class DeviceController {
 
       responseHandler
         .reqRes(req, res)
-        .onFetch("new device", await deviceModel.newDevice(req.body))
+        .onFetch("new device", await deviceModel.newDevice(req.body, req.userId))
         .send();
     } catch (e) {
       // send error with next function.
@@ -26,21 +26,44 @@ export class DeviceController {
   public getQr = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-        console.log("qr request");
-        
-        responseHandler.reqRes(req, res).onFetch("qr requestd", await deviceModel.getQr(req.params)).send();
+      console.log("qr request");
+
+      responseHandler.reqRes(req, res).onFetch("qr requestd", await deviceModel.getQr(req.params)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
     }
   };
 
+  public fetchAllDevices = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      console.log("fetch all device request");
+
+      responseHandler.reqRes(req, res).onFetch("Devices fetched", await deviceModel.fetchAllDevices(req.userId)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
+  public fetchDevice = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      console.log("qr request");
+
+      responseHandler.reqRes(req, res).onFetch("Devices fetched", await deviceModel.fetchDevice(req.params.deviceId, req.userId)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
   public deleteAuth = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-        console.log("qr request");
-        
-        responseHandler.reqRes(req, res).onFetch("auth deleted", await deviceModel.deleteAuth(req.params)).send();
+      console.log("qr request");
+
+      responseHandler.reqRes(req, res).onFetch("auth deleted", await deviceModel.deleteAuth(req.params)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -50,9 +73,9 @@ export class DeviceController {
   public logoutDevice = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-        console.log("qr request");
-        
-        responseHandler.reqRes(req, res).onFetch("auth deleted", await deviceModel.logoutDevice(req.params)).send();
+      console.log("qr request");
+
+      responseHandler.reqRes(req, res).onFetch("auth deleted", await deviceModel.logoutDevice(req.params)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -61,9 +84,9 @@ export class DeviceController {
   public addMessageToQueue = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-        console.log("qr request");
-        
-        responseHandler.reqRes(req, res).onFetch("added to queue", await deviceModel.addMessageToQueue(req.body,req.params.deviceId)).send();
+      console.log("qr request");
+
+      responseHandler.reqRes(req, res).onFetch("added to queue", await deviceModel.addMessageToQueue(req.body, req.params.deviceId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -73,23 +96,23 @@ export class DeviceController {
   public sendTextMessage = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-        console.log("qr request");
-        
-        responseHandler.reqRes(req, res).onFetch("sent", await deviceModel.sendTextMessage(req.body,req.params.deviceId)).send();
+      console.log("qr request");
+
+      responseHandler.reqRes(req, res).onFetch("sent", await deviceModel.sendTextMessage(req.body, req.params.deviceId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
     }
   };
 
-  
+
   public sendImageMessage = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-        console.log("qr request");
-        req.body.locationUrl = req.file.location;
+      console.log("qr request");
+      req.body.locationUrl = req.file.location;
 
-        responseHandler.reqRes(req, res).onFetch("sent", await deviceModel.sendImageMessage(req.body,req.params.deviceId)).send();
+      responseHandler.reqRes(req, res).onFetch("sent", await deviceModel.sendImageMessage(req.body, req.params.deviceId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));

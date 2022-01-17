@@ -17,15 +17,26 @@ const httpErrors_1 = require("./../../lib/utils/httpErrors");
 const device_shema_1 = require("./device.shema");
 const whatsapp_client_service_1 = __importDefault(require("../../lib/services/whatsapp/whatsapp-client.service"));
 const file_management_1 = __importDefault(require("../../lib/helpers/file.management"));
-const baileys_md_1 = require("@adiwajshing/baileys-md");
 const message_model_1 = __importDefault(require("../messages/message.model"));
 class DeviceModel {
-    newDevice(body) {
+    constructor() {
+        this.fetchAllDevices = (userId) => __awaiter(this, void 0, void 0, function* () {
+            console.log("fetch all device request", userId);
+            const devices = yield this.findDeviceByUseId(userId);
+            if (!devices || !devices.length)
+                throw new httpErrors_1.HTTP400Error("NO_DEVICE_ADDED");
+            return devices;
+        });
+        this.fetchDevice = (deviceId, userId) => __awaiter(this, void 0, void 0, function* () {
+        });
+    }
+    newDevice(body, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(body);
+            body.userId = userId;
             const device = yield this.findDeviceByPhone(body.phone);
             if (device)
-                throw new httpErrors_1.HTTP400Error("DEVICE_ALREADY_PRESENT");
+                return device;
             const newDevice = new device_shema_1.Device(body);
             const data = yield newDevice.saveDevice();
             return data;
@@ -39,9 +50,9 @@ class DeviceModel {
             console.log("qr request for phone ", device.phone);
             if (device.authState)
                 return { message: "ALREADY_AUTHENTICATED" };
-            if (!device.authState && device.reason && device.reason.statusCode === baileys_md_1.DisconnectReason.loggedOut) {
-                return { message: "DEVICE_LOGGED_OUT" };
-            }
+            // if (!device.authState && device.reason && device.reason.statusCode === DisconnectReason.loggedOut) {
+            //     return { message: "DEVICE_LOGGED_OUT" };
+            // }
             const data = whatsapp_client_service_1.default.getClientQr(device.phone);
             return { message: "QR_REQUESTED" };
         });
@@ -128,6 +139,12 @@ class DeviceModel {
         return __awaiter(this, void 0, void 0, function* () {
             const device = yield device_shema_1.Device.findById(id);
             return device;
+        });
+    }
+    findDeviceByUseId(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const devices = yield device_shema_1.Device.find({ userId: userId }).lean();
+            return devices;
         });
     }
     findDeviceByCondition(condition) {

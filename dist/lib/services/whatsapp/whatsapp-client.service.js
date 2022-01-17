@@ -22,12 +22,13 @@ const message_queue_service_1 = __importDefault(require("./message-queue.service
 exports.eventEmitter = new events_1.EventEmitter();
 class WhatsappClient {
     constructor() {
+        this.clients = clients_data_1.default;
         this.getClientQr = (phone) => __awaiter(this, void 0, void 0, function* () {
+            this.removeQrListner(phone);
             const client = this.addClient(phone);
             client.on("qr", (qrData) => {
                 console.log("got qr ", qrData.qr);
-                if (qrData.error)
-                    return;
+                // if (qrData.error) return;
                 socket_1.default.sendQrCode(phone, qrData);
             });
             client.on("authenticated", (client) => {
@@ -77,10 +78,21 @@ class WhatsappClient {
             }
         });
     }
+    removeQrListner(phone) {
+        try {
+            if (clients_data_1.default[phone]) {
+                clients_data_1.default[phone].endClient();
+                clients_data_1.default[phone] = null;
+            }
+        }
+        catch (err) {
+            console.log("error in client end ", err);
+        }
+    }
     logoutClient(phone) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                clients_data_1.default[phone].client.logout();
+                clients_data_1.default[phone].logoutClient();
                 return { error: false };
             }
             catch (e) {

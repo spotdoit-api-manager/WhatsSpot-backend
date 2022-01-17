@@ -63,8 +63,8 @@ class Whatsapp extends events_1.EventEmitter {
                 else if (lastDisconnect &&
                     ((_b = (_a = lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.payload.message) ==
                         "QR refs attempts ended") {
-                    this.client.ev.removeAllListeners();
                     this.emit("qr", { error: true, message: "QR_RETRY_EXCEEDED" });
+                    this.client.ev.removeAllListeners();
                     return;
                 }
             }));
@@ -193,6 +193,12 @@ class Whatsapp extends events_1.EventEmitter {
             this.client = this.startSock();
             this.startBasicEventListners();
         });
+    }
+    endClient() {
+        this.client.end();
+    }
+    logoutClient() {
+        this.client.logout();
     }
 }
 exports.default = Whatsapp;

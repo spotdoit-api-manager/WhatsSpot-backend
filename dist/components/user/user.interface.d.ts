@@ -1,18 +1,22 @@
 /// <reference types="node" />
 export interface IUser {
-    firstName: string;
-    lastName: string;
-    username: string;
-    password: string;
-    email: string;
+    firstName?: string;
+    lastName?: string;
+    username?: string;
+    password?: string;
+    email?: string;
     role: string;
     phone: string;
-    facebookId: string;
-    otp: number;
+    facebookId?: string;
+    otp?: number;
     isVerified: boolean;
-    dateOfBirth: Date;
-    followers: Array<string>;
-    following: Array<string>;
-    avatar: Buffer;
+    dateOfBirth?: Date;
+    followers?: Array<string>;
+    following?: Array<string>;
+    avatar?: Buffer;
     deactivation: boolean;
+}
+export interface ITokenData {
+    token: string;
+    expiresIn: string;
 }

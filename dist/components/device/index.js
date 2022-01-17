@@ -9,8 +9,16 @@ exports.default = [
     {
         path: "/device/newDevice",
         method: "post",
-        escapeAuth: true,
         handler: [device_controller_1.default.newDevice]
+    },
+    {
+        path: "/device/:deviceId/fetch",
+        method: "get",
+        handler: [device_controller_1.default.fetchDevice]
+    }, {
+        path: "/device/fetchAll",
+        method: "get",
+        handler: [device_controller_1.default.fetchAllDevices]
     },
     {
         path: "/device/getQr/:deviceId",

@@ -29,5 +29,6 @@ export default class Whatsapp extends EventEmitter {
         error: boolean;
         message: any;
     }>;
-    send: any;
+    endClient(): void;
+    logoutClient(): void;
 }

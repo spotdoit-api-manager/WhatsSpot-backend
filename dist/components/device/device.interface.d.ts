@@ -4,6 +4,7 @@ export interface IDevice {
     phone: string;
     authState: boolean;
     reason: IReason;
+    userId: string;
 }
 export interface TextMessage {
     message: String;

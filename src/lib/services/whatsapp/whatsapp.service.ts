@@ -53,8 +53,8 @@ export default class Whatsapp extends EventEmitter {
         (lastDisconnect.error as Boom)?.output?.payload.message ==
         "QR refs attempts ended"
       ) {
-        this.client.ev.removeAllListeners();
         this.emit("qr", { error: true, message: "QR_RETRY_EXCEEDED" });
+        this.client.ev.removeAllListeners();
         return;
       }
     });
@@ -115,7 +115,7 @@ export default class Whatsapp extends EventEmitter {
       if (!msg.key.fromMe) {
         console.log(`received msg :${msg.message.conversation}`);
         console.log(`From: ${msg.key.remoteJid}`);
-      }else{
+      } else {
         console.log(`sent msg :${JSON.stringify(msg.message)}`);
         console.log(`to: ${msg.key.remoteJid}`);
       }
@@ -205,8 +205,13 @@ export default class Whatsapp extends EventEmitter {
     }
   };
 
-  public send
+  public endClient() {
+    this.client.end()
+  }
 
+  public logoutClient() {
+    this.client.logout();
+  }
 
   // startSock()
 }

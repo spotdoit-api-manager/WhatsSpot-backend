@@ -23,7 +23,7 @@ class DeviceController {
                 console.log("new device request");
                 responseHandler
                     .reqRes(req, res)
-                    .onFetch("new device", yield device_model_1.default.newDevice(req.body))
+                    .onFetch("new device", yield device_model_1.default.newDevice(req.body, req.userId))
                     .send();
             }
             catch (e) {
@@ -36,6 +36,28 @@ class DeviceController {
             try {
                 console.log("qr request");
                 responseHandler.reqRes(req, res).onFetch("qr requestd", yield device_model_1.default.getQr(req.params)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.fetchAllDevices = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("fetch all device request");
+                responseHandler.reqRes(req, res).onFetch("Devices fetched", yield device_model_1.default.fetchAllDevices(req.userId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.fetchDevice = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("qr request");
+                responseHandler.reqRes(req, res).onFetch("Devices fetched", yield device_model_1.default.fetchDevice(req.params.deviceId, req.userId)).send();
             }
             catch (e) {
                 // send error with next function.

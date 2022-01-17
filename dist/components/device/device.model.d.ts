@@ -1,9 +1,11 @@
 import { IDevice } from "./device.interface";
 export declare class DeviceModel {
-    newDevice(body: IDevice): Promise<any>;
+    newDevice(body: IDevice, userId: string): Promise<any>;
     getQr(body: any): Promise<{
         message: string;
     }>;
+    fetchAllDevices: (userId: string) => Promise<any>;
+    fetchDevice: (deviceId: string, userId: string) => Promise<void>;
     addMessageToQueue(body: any, deviceId: string): Promise<{
         message: string;
     }>;
@@ -24,6 +26,7 @@ export declare class DeviceModel {
     }>;
     findDeviceByPhone(phone: string): Promise<import("./device.shema").IDeviceModel>;
     findDeviceById(id: string): Promise<import("./device.shema").IDeviceModel>;
+    findDeviceByUseId(userId: string): Promise<any>;
     findDeviceByCondition(condition: any): Promise<any[]>;
 }
 declare const _default: DeviceModel;

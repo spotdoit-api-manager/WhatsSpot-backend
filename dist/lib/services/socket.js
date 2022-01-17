@@ -32,6 +32,7 @@ class SocketManager {
             webClient.emit(`${phone}_clientError`, { reason: error });
         };
         this.sendQrCode = (phone, qrData) => {
+            console.log("emittinq qr to ", `${phone}_qr`);
             if (!webClient)
                 return console.log("webClient not connected..");
             webClient.emit(`${phone}_qr`, qrData);

@@ -14,18 +14,15 @@ export const UserSchema: Schema = new Schema(
     firstName: {
       type: String,
       minlength: 2,
-      required: true
     },
     lastName: {
       type: String,
       minlength: 2,
-      required: true
     },
     username: {
       type: String,
       unique: true,
       sparse:true
-      //required: true,
     },
     password: {
       type: String,
@@ -36,6 +33,7 @@ export const UserSchema: Schema = new Schema(
     email: {
       type: String,
       minlength: 3,
+      unique:true
     },
     dateOfBirth: Date,
     role: {
@@ -49,6 +47,8 @@ export const UserSchema: Schema = new Schema(
     phone: {
       type: String,
       minlength: 3,
+      unique: true,
+      required:true
     },
     gender: {
       type: String,
@@ -69,7 +69,7 @@ export const UserSchema: Schema = new Schema(
       default:0
     },
     avatar:{
-      type:Buffer
+      type:String
     }
   },
   {

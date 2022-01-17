@@ -1,6 +1,6 @@
-import {generateToken, imageUrl, isValidMongoId, otpGenerator} from "../../lib/helpers";
+import { generateToken, imageUrl, isValidMongoId, otpGenerator } from "../../lib/helpers";
 import { User, UserSchema } from "./user.schema";
-import { IUser } from './user.interface';
+import { IUser, ITokenData } from './user.interface';
 import { IUserModel } from "./user.schema";
 import socialAuth from "./../../lib/middleware/socialAuth";
 import bcrypt from 'bcrypt';
@@ -12,26 +12,26 @@ import { commonConfig } from "../../config";
 import { HTTP400Error, HTTP401Error } from "../../lib/utils/httpErrors";
 
 export class UserModel {
-    public async fetchAll() {
-        
-        const data = User.find();
+  public async fetchAll() {
 
-        return data;
-    }
+    const data = User.find();
 
-    public async  fetch(id:string) {
-      const data = User.findById(id);
-      return data;
-    }
+    return data;
+  }
 
-    public async update(id:string, body:IUserModel) {
-        const data = await User.findByIdAndUpdate(id, body, {
-            runValidators:true,
-            new:true
-        })
+  public async fetch(id: string) {
+    const data = User.findById(id);
+    return data;
+  }
 
-        return data;
-    }
+  public async update(id: string, body: IUserModel) {
+    const data = await User.findByIdAndUpdate(id, body, {
+      runValidators: true,
+      new: true
+    })
+
+    return data;
+  }
 
   public async delete(id: string) {
     await User.deleteOne({ _id: id });
@@ -47,35 +47,61 @@ export class UserModel {
     return { _id: data._id };
   }
 
-  
+  async registerWithPhone(body: IUser) {
+    body.role = "user";
+    console.log("register with phone ", body);
+    try {
+      const existingUser = await this.isUserExistByPhone(body.phone);
+      let data: IUserModel;
+      if (!existingUser) {
+
+        const newUser: IUserModel = new User(body);
+        data = await newUser.addNewUser();
+        if (!data) throw new HTTP400Error("SOME_ERROR_OCCURED");
+      }
+      const otp = this.updateOtp(data?._id || existingUser._id);
+      const otpData = await this.sendOtpToMobile(otp, body.phone);
+      if (otpData.proceed) {
+        return { phone: body.phone, _id: data?._id || existingUser._id };
+      }
+      throw new HTTP400Error("OTP_NOT_SENT");
+    } catch (e) {
+      console.log(e);
+      if (e.code == 11000) {
+        throw new HTTP400Error(e.keyPattern.email ? "EMAIL_ALREADY_REGISTERED" : "PHONE_ALREADY_REGISTERED");
+      }
+      throw new HTTP400Error(e.message);
+    }
+  }
+
 
   public async signUp(body: IUserModel) {
     try {
       await this.isUserExist(body);
       // const user = await User.findOne({ phone: body.phone });
-        body.role = 'user';
-        let data = await this.add(body);
-        // const otp = this.updateOtp(data._id);
-        // console.log(otp);
-        // let otpData;
-        // otpData = await this.sendOtpToMobile(otp, body.phone);
-        // console.log(otpData);
-        // if (otpData.proceed) {
-        //   return { _id: data._id, isExisted: false };
-        // } else {
-        //   throw new HTTP400Error("Unable to Send OTP");
-        // }
-      
+      body.role = 'user';
+      let data = await this.add(body);
+      // const otp = this.updateOtp(data._id);
+      // console.log(otp);
+      // let otpData;
+      // otpData = await this.sendOtpToMobile(otp, body.phone);
+      // console.log(otpData);
+      // if (otpData.proceed) {
+      //   return { _id: data._id, isExisted: false };
+      // } else {
+      //   throw new HTTP400Error("Unable to Send OTP");
+      // }
+
       const userData = await this.addNewToken(data._id);
 
       return userData;
 
-      }catch(e){
+    } catch (e) {
       throw new HTTP400Error(e.message);
-      }
-            
+    }
+
   };
-  
+
   public async isUserExist(body: any) {
     try {
       const { username, password } = body;
@@ -111,35 +137,45 @@ export class UserModel {
       }
       // 3> if eveything is ohkay send the token back
       const userData = await this.addNewToken(user._id);
-  
+
       return userData;
     } catch (e) {
       throw new HTTP400Error(e.message);
     }
-};
+  };
 
-    public async authenticateWithAccesToken(data: any) {
-      try {
-          //, { appleSub: data.id }
-        console.log(data);
-          let userInfo = await User.findOne({ $or: [{$and:[{email:{$ne:null}},{email:{$eq:data.email}}]},{ $and:[{facebookId:{$ne:null}},{facebookId:{$eq:data.id}}] }] });
-            console.log('User At Social Auth :', userInfo);
-            if (userInfo) {
-            console.log(userInfo);
-              console.log(userInfo,"User info here");
-                // let token = await this.addNewToken(userInfo._id, userInfo);
-                return { userInfo, isExisted: true };
-            }
-            else {
-                return { data, isExisted: false };
-            }
-        } catch (e) {
-            throw new HTTP400Error(e);
-        }
+  public async verifyUser(otp: string, userId: string) {
+    console.log("verify user ", userId, otp);
+    return { proceed: true }
+
+  }
+  public async isUserExistByPhone(phone: string) {
+    const user: IUserModel = await User.findOne({ phone: phone }).lean();
+    return user;
+  }
+
+  public async authenticateWithAccesToken(data: any) {
+    try {
+      //, { appleSub: data.id }
+      console.log(data);
+      let userInfo = await User.findOne({ $or: [{ $and: [{ email: { $ne: null } }, { email: { $eq: data.email } }] }, { $and: [{ facebookId: { $ne: null } }, { facebookId: { $eq: data.id } }] }] });
+      console.log('User At Social Auth :', userInfo);
+      if (userInfo) {
+        console.log(userInfo);
+        console.log(userInfo, "User info here");
+        // let token = await this.addNewToken(userInfo._id, userInfo);
+        return { userInfo, isExisted: true };
+      }
+      else {
+        return { data, isExisted: false };
+      }
+    } catch (e) {
+      throw new HTTP400Error(e);
     }
+  }
 
 
-    public async loginViaSocialAccessToken(body: any) {
+  public async loginViaSocialAccessToken(body: any) {
     try {
       let user;
       if (body.authProvider === 'google') {
@@ -189,30 +225,30 @@ export class UserModel {
   }
 
   public async addFollower(id: string, userId: string) {
-    
+
     const data = User.findOneAndUpdate({ id: userId }, {
-        $push:{ "followers":id }
+      $push: { "followers": id }
     })
 
     return data;
   };
 
- 
 
-  
+
+
 
   public async addFollowing(id: string, userId: string) {
     const data = User.findOneAndUpdate({ _id: userId }, {
-      $push:{"following":id}
+      $push: { "following": id }
     })
 
     return data;
   };
 
 
-  public async addFollowRequest(id: string,userId:string) {
+  public async addFollowRequest(id: string, userId: string) {
     const data = User.findOneAndUpdate({ id: userId }, {
-      $push:{"followRequest":id}
+      $push: { "followRequest": id }
     })
 
     return data;
@@ -225,7 +261,7 @@ export class UserModel {
 
     if (data) {
       await User.findOneAndUpdate({ id: userId }, {
-        $push:{"followRequest":id}
+        $push: { "followRequest": id }
       })
 
       await User.findOneAndUpdate({ id }, {
@@ -235,7 +271,7 @@ export class UserModel {
 
     return data;
   };
-  
+
   updateOtp(id: string): number {
     console.log("New OTP");
     const otp = otpGenerator();
@@ -245,12 +281,12 @@ export class UserModel {
 
   async sendOtpToMobile(otp: number, phone: string) {
     console.log(`send this ${otp} to ${phone}`);
-    const message = `Your Polbol login OTP is ${otp}.`;
+    const message = `Your SpotDoit Services login OTP is ${otp}.`;
     return sendMessage(phone, message);
   }
 
 
-  
+
   // private async generateValidUsername(firstName: string, id: string | null = null) {
   //   let s = this.randomString(6);
   //   let userName = `${firstName}_${s}`
@@ -274,18 +310,16 @@ export class UserModel {
     });
   };
 
-  
-  public async addNewToken(id:string) {
-    // const responseHandler = new ResponseHandler();
-    const user = await User.findById(id);
+
+  public async addNewToken(id: string) {
+    // const user = await User.findById(id);
     const token = this.signToken(id);
     // console.log(ikcbalance);
-    // user.ikcbalance = ikcbalance;
-    console.log(user);
+    // console.log(user);
     const data = {
       token,
-      user
-        };
+      expiresIn: process.env.JWT_EXPIRES_IN
+    };
 
     return data;
   }
@@ -304,20 +338,25 @@ export class UserModel {
       let data;
       data = await this.fetchOnOtp(id, otp);
       if (!data) {
-        throw new HTTP400Error("The otp you have provided is not correct");
+        throw new HTTP400Error("WRONG_OTP");
       }
-      if (data.phone !== '9876543219') {
+      if (data.phone !== '917984545163') {
         this.updateOtp(id);
       }
       data = await User.findOneAndUpdate({ _id: new ObjectID(id) }, { $set: { isVerified: true } }, { new: true });
-      const token = await this.addNewToken(id);
-      return { data, token };
+      const tokenData = await this.addNewToken(id);
+      const cookie = this.createCookie(tokenData);
+
+      return { tokenData, data, cookie };
     } catch (e) {
       console.log(e.message);
       throw new HTTP400Error(e.message);
     }
   }
 
+  public createCookie(tokenData: ITokenData): string {
+    return `Authorization=${tokenData.token}; HttpOnly; Max-Age=${tokenData.expiresIn};`;
+  }
   private async generateValidUsername(firstName: string, id: string | null = null) {
     let s = this.randomString(6);
     let userName = `${firstName}_${s}`
@@ -346,7 +385,7 @@ export class UserModel {
         user = await socialAuth.getGoogleUserInfo(body.access_token);
       } else if (body.authProvider === 'facebook') {
         user = await socialAuth.getFacebookUserInfo(body.access_token);
-      } 
+      }
       console.log('User At Addding Phone In Social Auth:', user);
       if (user) {
         let temp = await User.findOne({ $or: [{ $and: [{ email: { $ne: null } }, { email: { $eq: user.email } }] }, { $and: [{ facebookId: { $ne: null } }, { facebookId: { $eq: user.id } }] }] }); //If User exist but starting facebook auth
@@ -367,7 +406,7 @@ export class UserModel {
           // TODO: Uncomment
           const token = this.addNewToken(temp._id);
           if (temp) {
-            return { _id: temp._id, isExisted: true,token };
+            return { _id: temp._id, isExisted: true, token };
           } else {
             throw new HTTP400Error("Unable to Send OTP");
           }
@@ -436,7 +475,7 @@ export class UserModel {
     const otp = otpGenerator();
 
     const res = await this.sendOtpToMobile(otp, phone,);
-    
+
 
     if (res.proceed) {
       return { res, proceed: true };
@@ -471,17 +510,17 @@ export class UserModel {
       } else {
         throw new HTTP400Error("Unable to Send OTP");
       }
-    }catch(e){
+    } catch (e) {
       throw new HTTP400Error(e.message);
     }
-    
+
   }
 
   public async isUserVerified(id: string) {
     const user = await User.findById(id);
 
     if (user.isVerified) {
-      return { proceed: true,phone:user.phone };
+      return { proceed: true, phone: user.phone };
     }
 
     return { proceed: false };
