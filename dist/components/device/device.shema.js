@@ -26,6 +26,10 @@ const deviceSchema = new mongoose_1.Schema({
         required: true,
         validate: [utils_1.validateMobile, "invalid phone number"],
     },
+    apiKeys: {
+        token: String,
+        expiresOn: String
+    },
     authState: Boolean,
     reason: {
         statusCode: Number,

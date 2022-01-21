@@ -16,7 +16,17 @@ export declare class DeviceModel {
     }>;
     logoutDevice(body: any): Promise<{
         message: string;
+        device: import("./device.shema").IDeviceModel;
     }>;
+    generateNewKey(deviceId: string, body: any): Promise<{
+        token: string;
+        expiresOn: any;
+    }>;
+    getKeys(deviceId: string): Promise<any>;
+    private addNewTokenDataToDevice;
+    private generateDeviceKey;
+    signDeviceToken: (deviceId: string, expiresIn: string) => string;
+    private getTotalAvailableApiKeys;
     updateDevice(phone: string, clientData: any): Promise<void | {
         error: boolean;
         message: string;
@@ -28,6 +38,7 @@ export declare class DeviceModel {
     findDeviceById(id: string): Promise<import("./device.shema").IDeviceModel>;
     findDeviceByUseId(userId: string): Promise<any>;
     findDeviceByCondition(condition: any): Promise<any[]>;
+    findDeviceByIdAndUserId(deviceId: string, userId: string): Promise<any>;
 }
 declare const _default: DeviceModel;
 export default _default;

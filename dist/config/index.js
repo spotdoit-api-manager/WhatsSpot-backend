@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.googleOAuth = exports.paginationConfig = exports.s3Config = exports.textLocalConfig = exports.commonConfig = exports.rateLimitConfig = exports.configCors = exports.mongoUrl = void 0;
+exports.googleOAuth = exports.paginationConfig = exports.s3Config = exports.textLocalConfig = exports.deviceKeyConfig = exports.commonConfig = exports.rateLimitConfig = exports.configCors = exports.mongoUrl = void 0;
 exports.mongoUrl = () => {
     const configs = {
         dbAccess: process.env.DB_ACCESS || "local",
@@ -32,6 +32,10 @@ exports.rateLimitConfig = {
 exports.commonConfig = {
     jwtSecretKey: process.env.SECRET_KEY || "some-secret-key",
     pageSizeLimit: 15,
+};
+exports.deviceKeyConfig = {
+    jwtSecretKey: process.env.SECRET_KEY || "some-secret-key",
+    expiresIn: process.env.JWT_EXPIRES_IN,
 };
 exports.textLocalConfig = {
     apiKey: process.env.TEXTLOCAL_KEY

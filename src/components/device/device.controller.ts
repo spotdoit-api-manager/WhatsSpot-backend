@@ -81,6 +81,28 @@ export class DeviceController {
       next(responseHandler.sendError(e));
     }
   };
+  public generateNewKey = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      console.log("qr request");
+
+      responseHandler.reqRes(req, res).onFetch("Key Generated", await deviceModel.generateNewKey(req.params.deviceId, req.body)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+  public getKeys = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      console.log("qr request");
+
+      responseHandler.reqRes(req, res).onFetch("Keys Fetched", await deviceModel.getKeys(req.params.deviceId)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
   public addMessageToQueue = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
@@ -98,7 +120,7 @@ export class DeviceController {
     try {
       console.log("qr request");
 
-      responseHandler.reqRes(req, res).onFetch("sent", await deviceModel.sendTextMessage(req.body, req.params.deviceId)).send();
+      responseHandler.reqRes(req, res).onFetch("sent", await deviceModel.sendTextMessage(req.body, req.deviceId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));

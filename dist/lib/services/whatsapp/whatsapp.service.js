@@ -53,19 +53,24 @@ class Whatsapp extends events_1.EventEmitter {
         this.getQr = () => __awaiter(this, void 0, void 0, function* () {
             this.client.ev.on("connection.update", (update) => __awaiter(this, void 0, void 0, function* () {
                 var _a, _b;
-                const { connection, lastDisconnect } = update;
-                if (connection === "connecting")
-                    return;
-                if (update.qr) {
-                    this.emit("qr", { qr: update.qr, error: false });
-                    return;
+                try {
+                    const { connection, lastDisconnect } = update;
+                    if (connection === "connecting")
+                        return;
+                    if (update.qr) {
+                        this.emit("qr", { qr: update.qr, error: false });
+                        return;
+                    }
+                    else if (lastDisconnect &&
+                        ((_b = (_a = lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.payload.message) ==
+                            "QR refs attempts ended") {
+                        this.emit("qr", { error: true, message: "QR_RETRY_EXCEEDED" });
+                        this.client.ev.removeAllListeners();
+                        return;
+                    }
                 }
-                else if (lastDisconnect &&
-                    ((_b = (_a = lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.payload.message) ==
-                        "QR refs attempts ended") {
-                    this.emit("qr", { error: true, message: "QR_RETRY_EXCEEDED" });
-                    this.client.ev.removeAllListeners();
-                    return;
+                catch (err) {
+                    console.log(err);
                 }
             }));
         });
@@ -131,59 +136,68 @@ class Whatsapp extends events_1.EventEmitter {
         //connection update
         this.client.ev.on("connection.update", (update) => __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d;
-            const { connection, lastDisconnect } = update;
-            let reason;
-            if (lastDisconnect && ((_a = lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output.payload)) {
-                reason = (_b = lastDisconnect.error) === null || _b === void 0 ? void 0 : _b.output.payload;
-            }
-            console.log(update);
-            console.log("connection update (listner)", reason);
-            if (connection === "open") {
-                const data = device_model_1.default.updateDevice(this.phone, {
-                    authState: true, reason: null
-                });
-                this.emit("authenticated", { phone: this.phone });
-                return this.authState = true;
-            }
-            else if (connection === "close") {
-                if (((_d = (_c = lastDisconnect.error) === null || _c === void 0 ? void 0 : _c.output) === null || _d === void 0 ? void 0 : _d.statusCode) !==
-                    baileys_md_1.DisconnectReason.loggedOut) {
-                    console.log("connection closed (not logged out)");
-                    const data = device_model_1.default.updateDevice(this.phone, {
-                        authState: false, reason
-                    });
-                    yield this.reconnectClient();
+            try {
+                const { connection, lastDisconnect } = update;
+                let reason;
+                if (lastDisconnect && ((_a = lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output.payload)) {
+                    reason = (_b = lastDisconnect.error) === null || _b === void 0 ? void 0 : _b.output.payload;
                 }
-                else {
+                console.log(update);
+                console.log("connection update (listner)", reason);
+                if (connection === "open") {
                     const data = device_model_1.default.updateDevice(this.phone, {
-                        authState: false, reason
+                        authState: true, reason: null
                     });
-                    console.log("connection update (logged out)", reason);
+                    this.emit("authenticated", { phone: this.phone });
+                    return this.authState = true;
+                }
+                else if (connection === "close") {
+                    if (((_d = (_c = lastDisconnect.error) === null || _c === void 0 ? void 0 : _c.output) === null || _d === void 0 ? void 0 : _d.statusCode) !==
+                        baileys_md_1.DisconnectReason.loggedOut) {
+                        console.log("connection closed (not logged out)");
+                        const data = device_model_1.default.updateDevice(this.phone, {
+                            authState: false, reason
+                        });
+                        yield this.reconnectClient();
+                    }
+                    else {
+                        const data = device_model_1.default.updateDevice(this.phone, {
+                            authState: false, reason
+                        });
+                        console.log("connection update (logged out)", reason);
+                    }
+                }
+                else if (!update.qr) {
+                    // const data = deviceModel.updateDevice(this.phone, {
+                    //   authState: false,reason
+                    // });
+                    console.log("connection update (not open| not close)", update, reason);
                 }
             }
-            else if (!update.qr) {
-                // const data = deviceModel.updateDevice(this.phone, {
-                //   authState: false,reason
-                // });
-                console.log("connection update (not open| not close)", update, reason);
+            catch (err) {
             }
         }));
         // message upsert
         this.client.ev.on("messages.upsert", (m) => __awaiter(this, void 0, void 0, function* () {
-            // console.log(JSON.stringify(m, undefined, 2))
-            const msg = m.messages[0];
-            if (!msg.key.fromMe) {
-                console.log(`received msg :${msg.message.conversation}`);
-                console.log(`From: ${msg.key.remoteJid}`);
+            try {
+                // console.log(JSON.stringify(m, undefined, 2))
+                const msg = m.messages[0];
+                if (!msg.key.fromMe) {
+                    console.log(`received msg :${msg.message.conversation}`);
+                    console.log(`From: ${msg.key.remoteJid}`);
+                }
+                else {
+                    console.log(`sent msg :${JSON.stringify(msg.message)}`);
+                    console.log(`to: ${msg.key.remoteJid}`);
+                }
+                if (!msg.key.fromMe && m.type === "notify") {
+                    // console.log("replying to", m.messages[0].key.remoteJid);
+                    yield this.client.sendReadReceipt(msg.key.remoteJid, msg.key.participant, [msg.key.id]);
+                    // await this.sendMessageWTyping(this.phone, { text: 'Hello there!' }, msg.key.remoteJid)
+                }
             }
-            else {
-                console.log(`sent msg :${JSON.stringify(msg.message)}`);
-                console.log(`to: ${msg.key.remoteJid}`);
-            }
-            if (!msg.key.fromMe && m.type === "notify") {
-                // console.log("replying to", m.messages[0].key.remoteJid);
-                yield this.client.sendReadReceipt(msg.key.remoteJid, msg.key.participant, [msg.key.id]);
-                // await this.sendMessageWTyping(this.phone, { text: 'Hello there!' }, msg.key.remoteJid)
+            catch (err) {
+                console.log(err);
             }
         }));
     }

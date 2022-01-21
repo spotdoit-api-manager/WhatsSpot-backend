@@ -11,6 +11,10 @@ export declare const commonConfig: {
     jwtSecretKey: string;
     pageSizeLimit: number;
 };
+export declare const deviceKeyConfig: {
+    jwtSecretKey: string;
+    expiresIn: string;
+};
 export declare const textLocalConfig: {
     apiKey: string;
 };

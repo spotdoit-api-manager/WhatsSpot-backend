@@ -7,10 +7,11 @@
 declare namespace Express {
     export interface Request {
         flash(event: string, message: any): any;
-        userId?:string
-        role?:string,
+        userId?: string
+        role?: string,
         token?: string,
-        isAuth?:boolean,
+        isAuth?: boolean,
+        deviceId: string
     }
 }
 

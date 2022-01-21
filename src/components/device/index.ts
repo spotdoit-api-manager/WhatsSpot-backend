@@ -1,3 +1,4 @@
+import { DeviceKeyValidator } from './../../lib/middleware/whatsapp.middleware';
 import { s3UploadMulter } from "../../lib/services/s3";
 import deviceController from "./device.controller";
 
@@ -36,17 +37,30 @@ export default [
         handler: [deviceController.logoutDevice]
     },
     {
+        path: "/device/:deviceId/keys/generate",
+        method: "post",
+        escapeAuth: true,
+        handler: [deviceController.generateNewKey]
+    },
+    {
+        path: "/device/:deviceId/keys",
+        method: "get",
+        escapeAuth: false,
+        handler: [deviceController.getKeys]
+    },
+    {
         path: "/device/message/addMessageToQueue/:deviceId",
         method: "post",
         escapeAuth: true,
         handler: [deviceController.addMessageToQueue]
     },
     {
-        path: "/device/send/textMessage/:deviceId",
+        path: "/device/send/textMessage",
         method: "post",
-        escapeAuth: true,
-        handler: [deviceController.sendTextMessage]
+        escapeAuth: false,
+        handler: [DeviceKeyValidator, deviceController.sendTextMessage]
     },
+
     {
         path: "/device/send/imageMessage/:deviceId",
         method: "post",

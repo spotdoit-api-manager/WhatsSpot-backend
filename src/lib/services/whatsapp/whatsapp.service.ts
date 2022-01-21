@@ -41,21 +41,28 @@ export default class Whatsapp extends EventEmitter {
 
   public getQr = async () => {
     this.client.ev.on("connection.update", async (update: any) => {
-      const { connection, lastDisconnect } = update;
+      try {
 
-      if (connection === "connecting") return;
 
-      if (update.qr) {
-        this.emit("qr", { qr: update.qr, error: false });
-        return;
-      } else if (
-        lastDisconnect &&
-        (lastDisconnect.error as Boom)?.output?.payload.message ==
-        "QR refs attempts ended"
-      ) {
-        this.emit("qr", { error: true, message: "QR_RETRY_EXCEEDED" });
-        this.client.ev.removeAllListeners();
-        return;
+        const { connection, lastDisconnect } = update;
+
+        if (connection === "connecting") return;
+
+        if (update.qr) {
+          this.emit("qr", { qr: update.qr, error: false });
+          return;
+        } else if (
+          lastDisconnect &&
+          (lastDisconnect.error as Boom)?.output?.payload.message ==
+          "QR refs attempts ended"
+        ) {
+          this.emit("qr", { error: true, message: "QR_RETRY_EXCEEDED" });
+          this.client.ev.removeAllListeners();
+          return;
+        }
+      } catch (err) {
+        console.log(err);
+
       }
     });
   };
@@ -66,67 +73,78 @@ export default class Whatsapp extends EventEmitter {
 
     //connection update
     this.client.ev.on("connection.update", async (update: any) => {
-      const { connection, lastDisconnect } = update;
-      let reason: IReason;
-      if (lastDisconnect && (lastDisconnect.error as Boom)?.output.payload) {
-        reason = (lastDisconnect.error as Boom)?.output.payload;
-      }
-      console.log(update);
-
-      console.log("connection update (listner)", reason);
+      try {
 
 
-      if (connection === "open") {
-        const data = deviceModel.updateDevice(this.phone, {
-          authState: true, reason: null
-        });
-        this.emit("authenticated", { phone: this.phone });
-        return this.authState = true;
-      } else if (connection === "close") {
-
-        if (
-          (lastDisconnect.error as Boom)?.output?.statusCode !==
-          DisconnectReason.loggedOut
-        ) {
-          console.log("connection closed (not logged out)");
-          const data = deviceModel.updateDevice(this.phone, {
-            authState: false, reason
-          });
-          await this.reconnectClient();
-        } else {
-          const data = deviceModel.updateDevice(this.phone, {
-            authState: false, reason
-          });
-          console.log("connection update (logged out)", reason);
+        const { connection, lastDisconnect } = update;
+        let reason: IReason;
+        if (lastDisconnect && (lastDisconnect.error as Boom)?.output.payload) {
+          reason = (lastDisconnect.error as Boom)?.output.payload;
         }
-      } else if (!update.qr) {
-        // const data = deviceModel.updateDevice(this.phone, {
-        //   authState: false,reason
-        // });
-        console.log("connection update (not open| not close)", update, reason);
+        console.log(update);
+
+        console.log("connection update (listner)", reason);
+
+
+        if (connection === "open") {
+          const data = deviceModel.updateDevice(this.phone, {
+            authState: true, reason: null
+          });
+          this.emit("authenticated", { phone: this.phone });
+          return this.authState = true;
+        } else if (connection === "close") {
+
+          if (
+            (lastDisconnect.error as Boom)?.output?.statusCode !==
+            DisconnectReason.loggedOut
+          ) {
+            console.log("connection closed (not logged out)");
+            const data = deviceModel.updateDevice(this.phone, {
+              authState: false, reason
+            });
+            await this.reconnectClient();
+          } else {
+            const data = deviceModel.updateDevice(this.phone, {
+              authState: false, reason
+            });
+            console.log("connection update (logged out)", reason);
+          }
+        } else if (!update.qr) {
+          // const data = deviceModel.updateDevice(this.phone, {
+          //   authState: false,reason
+          // });
+          console.log("connection update (not open| not close)", update, reason);
+        }
+      } catch (err) {
+
       }
     });
 
     // message upsert
     this.client.ev.on("messages.upsert", async (m: any) => {
-      // console.log(JSON.stringify(m, undefined, 2))
-      const msg = m.messages[0];
+      try {
+        // console.log(JSON.stringify(m, undefined, 2))
+        const msg = m.messages[0];
 
-      if (!msg.key.fromMe) {
-        console.log(`received msg :${msg.message.conversation}`);
-        console.log(`From: ${msg.key.remoteJid}`);
-      } else {
-        console.log(`sent msg :${JSON.stringify(msg.message)}`);
-        console.log(`to: ${msg.key.remoteJid}`);
-      }
-      if (!msg.key.fromMe && m.type === "notify") {
-        // console.log("replying to", m.messages[0].key.remoteJid);
-        await this.client!.sendReadReceipt(
-          msg.key.remoteJid,
-          msg.key.participant,
-          [msg.key.id]
-        );
-        // await this.sendMessageWTyping(this.phone, { text: 'Hello there!' }, msg.key.remoteJid)
+        if (!msg.key.fromMe) {
+          console.log(`received msg :${msg.message.conversation}`);
+          console.log(`From: ${msg.key.remoteJid}`);
+        } else {
+          console.log(`sent msg :${JSON.stringify(msg.message)}`);
+          console.log(`to: ${msg.key.remoteJid}`);
+        }
+        if (!msg.key.fromMe && m.type === "notify") {
+          // console.log("replying to", m.messages[0].key.remoteJid);
+          await this.client!.sendReadReceipt(
+            msg.key.remoteJid,
+            msg.key.participant,
+            [msg.key.id]
+          );
+          // await this.sendMessageWTyping(this.phone, { text: 'Hello there!' }, msg.key.remoteJid)
+        }
+      } catch (err) {
+        console.log(err);
+
       }
     });
   }

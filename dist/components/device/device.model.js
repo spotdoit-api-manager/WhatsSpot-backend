@@ -13,11 +13,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DeviceModel = void 0;
+const index_1 = require("./../../config/index");
 const httpErrors_1 = require("./../../lib/utils/httpErrors");
 const device_shema_1 = require("./device.shema");
 const whatsapp_client_service_1 = __importDefault(require("../../lib/services/whatsapp/whatsapp-client.service"));
 const file_management_1 = __importDefault(require("../../lib/helpers/file.management"));
 const message_model_1 = __importDefault(require("../messages/message.model"));
+const bson_1 = require("bson");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const dayjs_1 = __importDefault(require("dayjs"));
 class DeviceModel {
     constructor() {
         this.fetchAllDevices = (userId) => __awaiter(this, void 0, void 0, function* () {
@@ -29,6 +33,14 @@ class DeviceModel {
         });
         this.fetchDevice = (deviceId, userId) => __awaiter(this, void 0, void 0, function* () {
         });
+        this.signDeviceToken = (deviceId, expiresIn) => {
+            if (!expiresIn) {
+                return jsonwebtoken_1.default.sign({ deviceId }, index_1.deviceKeyConfig.jwtSecretKey, {});
+            }
+            return jsonwebtoken_1.default.sign({ deviceId }, index_1.deviceKeyConfig.jwtSecretKey, {
+                expiresIn: expiresIn,
+            });
+        };
     }
     newDevice(body, userId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -80,6 +92,9 @@ class DeviceModel {
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const result = yield whatsapp_client_service_1.default.sendTextMessage(device.phone, body.to, body.message);
             console.log(result);
+            if (result.error) {
+                throw new httpErrors_1.HTTP401Error(result.message);
+            }
         });
     }
     sendImageMessage(body, deviceId) {
@@ -111,10 +126,85 @@ class DeviceModel {
             const device = yield this.findDeviceById(body.deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
+            yield file_management_1.default.deleteFile(`${device.phone}_cred.json`);
             const data = yield whatsapp_client_service_1.default.logoutClient(device.phone);
             if (data.error)
                 throw new httpErrors_1.HTTP400Error(data.message);
-            return { message: "DEVICE_LOGGED_OUT" };
+            // const updateDeviceData ={
+            //     authState: false,
+            //     reason: {
+            //       statusCode: 401,
+            //       error: 'Unauthorized',
+            //       message: 'Connection Failure'
+            //     }
+            //   }
+            // await this.updateDevice(device.phone,updateDeviceData);
+            return { message: "DEVICE_LOGGED_OUT", device: device };
+        });
+    }
+    generateNewKey(deviceId, body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let expiresIn = null;
+                if (body.expiresOn && body.expiresOn != "NEVER") {
+                    const expiresOn = dayjs_1.default(new Date(body.expiresOn));
+                    const diff = expiresOn.diff(dayjs_1.default(), 'day', true);
+                    expiresIn = `${Math.floor(diff)}d`;
+                }
+                const totalAvailableKeys = yield this.getTotalAvailableApiKeys(deviceId);
+                console.log(totalAvailableKeys, process.env.MAX_APIKEY_PER_DEVICE);
+                if (totalAvailableKeys < parseInt(process.env.MAX_APIKEY_PER_DEVICE)) {
+                    console.log("generating new key");
+                    const token = this.generateDeviceKey(deviceId, expiresIn);
+                    const tokenData = { token: token, expiresOn: body.expiresOn };
+                    yield this.addNewTokenDataToDevice(deviceId, tokenData);
+                    console.log(tokenData);
+                    return tokenData;
+                }
+                throw new httpErrors_1.HTTP400Error("MAX_API_KEY_REACHED");
+            }
+            catch (err) {
+                throw new httpErrors_1.HTTP400Error(err.message);
+            }
+        });
+    }
+    getKeys(deviceId) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            const keys = yield device_shema_1.Device.aggregate([
+                { $match: { _id: new bson_1.ObjectID(deviceId) } },
+                {
+                    $project: {
+                        apiKeys: 1
+                    }
+                }
+            ]);
+            console.log(keys);
+            return ((_a = keys[0]) === null || _a === void 0 ? void 0 : _a.apiKeys) || null;
+        });
+    }
+    addNewTokenDataToDevice(deviceId, tokenData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield device_shema_1.Device.findByIdAndUpdate(deviceId, { $push: { apiKeys: tokenData } }, { "upsert": true, new: true });
+            console.log(result);
+        });
+    }
+    generateDeviceKey(deviceId, expiresIn) {
+        const token = this.signDeviceToken(deviceId, expiresIn);
+        return token;
+    }
+    getTotalAvailableApiKeys(deviceId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield device_shema_1.Device.aggregate([
+                { $match: { _id: new bson_1.ObjectID(deviceId) } },
+                {
+                    $project: {
+                        count: { $cond: { if: { $isArray: "$apiKeys" }, then: { $size: "$apiKeys" }, else: 0 } }
+                    }
+                }
+            ]);
+            console.log(result);
+            return result[0].count;
         });
     }
     updateDevice(phone, clientData) {
@@ -153,6 +243,20 @@ class DeviceModel {
                     $match: condition
                 }]);
             return data;
+        });
+    }
+    findDeviceByIdAndUserId(deviceId, userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield device_shema_1.Device.aggregate([
+                {
+                    $match: { _id: new bson_1.ObjectID(deviceId), userId: new bson_1.ObjectID(userId) }
+                }, {
+                    $project: {
+                        _id: 1
+                    }
+                }
+            ]);
+            return result[0] || null;
         });
     }
 }

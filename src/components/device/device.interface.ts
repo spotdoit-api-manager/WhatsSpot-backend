@@ -4,7 +4,17 @@ export interface IDevice {
     phone: string,
     authState: boolean,
     reason: IReason,
-    userId: string
+    userId: string,
+    apiKeys: IApiKey[]
+}
+
+interface IApiKey {
+    token: string,
+    expiresOn: string
+}
+
+export interface IDeviceTokenData {
+    deviceId: string
 }
 
 export interface TextMessage {

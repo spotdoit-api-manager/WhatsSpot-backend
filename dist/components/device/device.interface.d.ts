@@ -5,8 +5,17 @@ export interface IDevice {
     authState: boolean;
     reason: IReason;
     userId: string;
+    apiKeys: IApiKey[];
+}
+interface IApiKey {
+    token: string;
+    expiresOn: string;
+}
+export interface IDeviceTokenData {
+    deviceId: string;
 }
 export interface TextMessage {
     message: String;
     numbers: string;
 }
+export {};

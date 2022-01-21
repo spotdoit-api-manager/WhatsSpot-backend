@@ -37,6 +37,12 @@ export const commonConfig = {
   pageSizeLimit: 15,
 };
 
+export const deviceKeyConfig = {
+  jwtSecretKey: process.env.SECRET_KEY || "some-secret-key",
+  expiresIn: process.env.JWT_EXPIRES_IN,
+};
+
+
 export const textLocalConfig = {
   apiKey: process.env.TEXTLOCAL_KEY
 };

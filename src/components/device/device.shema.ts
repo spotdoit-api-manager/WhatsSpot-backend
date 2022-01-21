@@ -22,6 +22,10 @@ const deviceSchema = new Schema(
       required: true,
       validate: [validateMobile, "invalid phone number"],
     },
+    apiKeys: {
+      token: String,
+      expiresOn: String
+    },
     authState: Boolean,
     reason: {
       statusCode: Number,

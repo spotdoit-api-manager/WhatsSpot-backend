@@ -86,6 +86,28 @@ class DeviceController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.generateNewKey = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("qr request");
+                responseHandler.reqRes(req, res).onFetch("Key Generated", yield device_model_1.default.generateNewKey(req.params.deviceId, req.body)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.getKeys = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("qr request");
+                responseHandler.reqRes(req, res).onFetch("Keys Fetched", yield device_model_1.default.getKeys(req.params.deviceId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
         this.addMessageToQueue = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
@@ -101,7 +123,7 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("qr request");
-                responseHandler.reqRes(req, res).onFetch("sent", yield device_model_1.default.sendTextMessage(req.body, req.params.deviceId)).send();
+                responseHandler.reqRes(req, res).onFetch("sent", yield device_model_1.default.sendTextMessage(req.body, req.deviceId)).send();
             }
             catch (e) {
                 // send error with next function.

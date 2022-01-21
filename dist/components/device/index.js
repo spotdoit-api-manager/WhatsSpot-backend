@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const whatsapp_middleware_1 = require("./../../lib/middleware/whatsapp.middleware");
 const s3_1 = require("../../lib/services/s3");
 const device_controller_1 = __importDefault(require("./device.controller"));
 exports.default = [
@@ -39,16 +40,28 @@ exports.default = [
         handler: [device_controller_1.default.logoutDevice]
     },
     {
+        path: "/device/:deviceId/keys/generate",
+        method: "post",
+        escapeAuth: true,
+        handler: [device_controller_1.default.generateNewKey]
+    },
+    {
+        path: "/device/:deviceId/keys",
+        method: "get",
+        escapeAuth: false,
+        handler: [device_controller_1.default.getKeys]
+    },
+    {
         path: "/device/message/addMessageToQueue/:deviceId",
         method: "post",
         escapeAuth: true,
         handler: [device_controller_1.default.addMessageToQueue]
     },
     {
-        path: "/device/send/textMessage/:deviceId",
+        path: "/device/send/textMessage",
         method: "post",
-        escapeAuth: true,
-        handler: [device_controller_1.default.sendTextMessage]
+        escapeAuth: false,
+        handler: [whatsapp_middleware_1.DeviceKeyValidator, device_controller_1.default.sendTextMessage]
     },
     {
         path: "/device/send/imageMessage/:deviceId",
