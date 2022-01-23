@@ -10,7 +10,7 @@ export const DeviceKeyValidator = async (req: Request, res: Response, next: Next
     try {
         if (req.query) {
             const token: string = req.query.key;
-            const data: IDeviceModel = await handleToken(token, req.userId);
+            const data: IDeviceModel = await handleToken(token);
             if (data) {
                 req.deviceId = data._id;
                 next();
@@ -24,10 +24,10 @@ export const DeviceKeyValidator = async (req: Request, res: Response, next: Next
     }
 };
 
-const handleToken = async (token: string, userId: string) => {
+const handleToken = async (token: string) => {
     if (token) {
         const tokenData: IDeviceTokenData = await jwt.verify(token, deviceKeyConfig.jwtSecretKey) as IDeviceTokenData;
-        const data: any = await deviceModel.findDeviceByIdAndUserId(tokenData.deviceId, userId);
+        const data: any = await deviceModel.findDeviceById(tokenData.deviceId);
         if (data && data._id) {
             return data;
         } else {

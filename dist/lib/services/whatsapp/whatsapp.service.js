@@ -57,6 +57,8 @@ class Whatsapp extends events_1.EventEmitter {
                     const { connection, lastDisconnect } = update;
                     if (connection === "connecting")
                         return;
+                    if (connection == "close")
+                        this.emit('qr', { error: true, message: "CONNECTION_CLOSED" });
                     if (update.qr) {
                         this.emit("qr", { qr: update.qr, error: false });
                         return;

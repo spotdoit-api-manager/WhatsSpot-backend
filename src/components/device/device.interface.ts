@@ -5,12 +5,18 @@ export interface IDevice {
     authState: boolean,
     reason: IReason,
     userId: string,
-    apiKeys: IApiKey[]
+    apiKeys: IApiKey[],
 }
 
 interface IApiKey {
     token: string,
-    expiresOn: string
+    expiresOn: string,
+    name: string,
+    createdOn: string,
+    status: {
+        status: EApiKeyStatus,
+        reason: string | null
+    }
 }
 
 export interface IDeviceTokenData {
@@ -20,4 +26,9 @@ export interface IDeviceTokenData {
 export interface TextMessage {
     message: String,
     numbers: string
+}
+
+export enum EApiKeyStatus {
+    ACTIVE = "ACTIVE",
+    INACTIVE = "INACTIVE"
 }

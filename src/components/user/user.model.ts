@@ -312,10 +312,8 @@ export class UserModel {
 
 
   public async addNewToken(id: string) {
-    // const user = await User.findById(id);
     const token = this.signToken(id);
-    // console.log(ikcbalance);
-    // console.log(user);
+
     const data = {
       token,
       expiresIn: process.env.JWT_EXPIRES_IN

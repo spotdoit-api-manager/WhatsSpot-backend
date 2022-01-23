@@ -47,7 +47,7 @@ export default class Whatsapp extends EventEmitter {
         const { connection, lastDisconnect } = update;
 
         if (connection === "connecting") return;
-
+        if (connection == "close") this.emit('qr', { error: true, message: "CONNECTION_CLOSED" });
         if (update.qr) {
           this.emit("qr", { qr: update.qr, error: false });
           return;
@@ -224,7 +224,8 @@ export default class Whatsapp extends EventEmitter {
   };
 
   public endClient() {
-    this.client.end()
+    this.client.end();
+
   }
 
   public logoutClient() {

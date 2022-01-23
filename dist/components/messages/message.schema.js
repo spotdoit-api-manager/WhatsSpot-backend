@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Message = void 0;
+exports.FastMessage = exports.MessageQueue = void 0;
 const mongoose_1 = require("mongoose");
 const messageSchema = new mongoose_1.Schema({
     to: {
@@ -17,8 +17,21 @@ const messageSchema = new mongoose_1.Schema({
         required: true,
     },
     message: String,
+    sendType: {
+        type: String,
+        enum: ["FAST", "QUEUE"]
+    },
     phone: String,
-    status: String
+    status: String,
+    reason: {
+        type: String,
+        required: false
+    },
+    deviceId: String,
+    expand: {
+        type: Boolean,
+        default: false
+    }
 }, {
     timestamps: true,
 });
@@ -27,5 +40,6 @@ messageSchema.methods.addMessage = function () {
         return this.save();
     });
 };
-exports.Message = mongoose_1.model("MessageQueue", messageSchema);
+exports.MessageQueue = mongoose_1.model("MessageQueue", messageSchema);
+exports.FastMessage = mongoose_1.model("FastMessage", messageSchema);
 //# sourceMappingURL=message.schema.js.map

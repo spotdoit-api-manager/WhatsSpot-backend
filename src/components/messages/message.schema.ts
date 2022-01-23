@@ -1,11 +1,11 @@
 import { IMessage } from './message.interface';
-import { Document,Model, model, Schema } from "mongoose";
+import { Document, Model, model, Schema } from "mongoose";
 import { validateMobile } from "../../lib/utils";
 
-export interface IMessageModel extends IMessage,Document{
-    addMessage(): any;
-  }
-  
+export interface IMessageModel extends IMessage, Document {
+  addMessage(): any;
+}
+
 
 const messageSchema = new Schema(
   {
@@ -13,9 +13,22 @@ const messageSchema = new Schema(
       type: "string",
       required: true,
     },
-    message:String,
-    phone:String,
-   status:String
+    message: String,
+    sendType: {
+      type: String,
+      enum: ["FAST", "QUEUE"]
+    },
+    phone: String,
+    status: String,
+    reason: {
+      type: String,
+      required: false
+    },
+    deviceId: String,
+    expand: {
+      type: Boolean,
+      default: false
+    }
   },
   {
     timestamps: true,
@@ -23,7 +36,8 @@ const messageSchema = new Schema(
 );
 
 messageSchema.methods.addMessage = async function () {
-    return this.save();
+  return this.save();
 }
 
-export const Message: Model<IMessageModel> = model<IMessageModel>("MessageQueue", messageSchema);
+export const MessageQueue: Model<IMessageModel> = model<IMessageModel>("MessageQueue", messageSchema);
+export const FastMessage: Model<IMessageModel> = model<IMessageModel>("FastMessage", messageSchema);

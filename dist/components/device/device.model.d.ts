@@ -1,16 +1,25 @@
-import { IDevice } from "./device.interface";
+import { EApiKeyStatus, IDevice } from "./device.interface";
 export declare class DeviceModel {
     newDevice(body: IDevice, userId: string): Promise<any>;
     getQr(body: any): Promise<{
+        error: boolean;
         message: string;
+    } | {
+        message: string;
+        error?: undefined;
     }>;
     fetchAllDevices: (userId: string) => Promise<any>;
-    fetchDevice: (deviceId: string, userId: string) => Promise<void>;
+    fetchDevice: (deviceId: string, userId: string) => Promise<any>;
+    private fetchDeviceByCondition;
     addMessageToQueue(body: any, deviceId: string): Promise<{
+        error: boolean;
         message: string;
     }>;
     sendTextMessage(body: any, deviceId: string): Promise<void>;
+    private: any;
     sendImageMessage(body: any, deviceId: string): Promise<void>;
+    fetchPrevMessages(deviceId: string): Promise<any>;
+    private fetchMessagesByStatus;
     deleteAuth(body: any): Promise<{
         message: string;
     }>;
@@ -19,9 +28,16 @@ export declare class DeviceModel {
         device: import("./device.shema").IDeviceModel;
     }>;
     generateNewKey(deviceId: string, body: any): Promise<{
+        name: any;
+        createdOn: Date;
         token: string;
         expiresOn: any;
+        status: {
+            status: EApiKeyStatus;
+            reason: any;
+        };
     }>;
+    deleteKey(deviceId: string, keyId: string): Promise<void>;
     getKeys(deviceId: string): Promise<any>;
     private addNewTokenDataToDevice;
     private generateDeviceKey;

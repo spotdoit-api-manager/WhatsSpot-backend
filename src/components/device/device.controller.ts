@@ -103,12 +103,23 @@ export class DeviceController {
       next(responseHandler.sendError(e));
     }
   };
+  public deleteKey = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      console.log("delete key request", req.params);
+
+      responseHandler.reqRes(req, res).onFetch("Keys Fetched", await deviceModel.deleteKey(req.params.deviceId, req.params.keyId)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
   public addMessageToQueue = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
       console.log("qr request");
 
-      responseHandler.reqRes(req, res).onFetch("added to queue", await deviceModel.addMessageToQueue(req.body, req.params.deviceId)).send();
+      responseHandler.reqRes(req, res).onFetch("added to queue", await deviceModel.addMessageToQueue(req.body, req.deviceId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -120,7 +131,7 @@ export class DeviceController {
     try {
       console.log("qr request");
 
-      responseHandler.reqRes(req, res).onFetch("sent", await deviceModel.sendTextMessage(req.body, req.deviceId)).send();
+      responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await deviceModel.sendTextMessage(req.body, req.deviceId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -135,6 +146,19 @@ export class DeviceController {
       req.body.locationUrl = req.file.location;
 
       responseHandler.reqRes(req, res).onFetch("sent", await deviceModel.sendImageMessage(req.body, req.params.deviceId)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
+
+  public fetchPrevMessages = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      console.log("fetch prev message");
+
+      responseHandler.reqRes(req, res).onFetch("Fetched", await deviceModel.fetchPrevMessages(req.params.deviceId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));

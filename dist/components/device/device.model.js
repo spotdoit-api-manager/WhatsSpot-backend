@@ -14,7 +14,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DeviceModel = void 0;
 const index_1 = require("./../../config/index");
+const message_interface_1 = require("./../messages/message.interface");
 const httpErrors_1 = require("./../../lib/utils/httpErrors");
+const device_interface_1 = require("./device.interface");
 const device_shema_1 = require("./device.shema");
 const whatsapp_client_service_1 = __importDefault(require("../../lib/services/whatsapp/whatsapp-client.service"));
 const file_management_1 = __importDefault(require("../../lib/helpers/file.management"));
@@ -32,6 +34,9 @@ class DeviceModel {
             return devices;
         });
         this.fetchDevice = (deviceId, userId) => __awaiter(this, void 0, void 0, function* () {
+            console.log("fetch device request", deviceId, userId);
+            const device = yield this.fetchDeviceByCondition(deviceId, userId);
+            return device;
         });
         this.signDeviceToken = (deviceId, expiresIn) => {
             if (!expiresIn) {
@@ -61,7 +66,7 @@ class DeviceModel {
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             console.log("qr request for phone ", device.phone);
             if (device.authState)
-                return { message: "ALREADY_AUTHENTICATED" };
+                return { error: true, message: "ALREADY_AUTHENTICATED" };
             // if (!device.authState && device.reason && device.reason.statusCode === DisconnectReason.loggedOut) {
             //     return { message: "DEVICE_LOGGED_OUT" };
             // }
@@ -70,6 +75,20 @@ class DeviceModel {
         });
     }
     ;
+    fetchDeviceByCondition(deviceId, userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield device_shema_1.Device.aggregate([
+                { $match: { _id: new bson_1.ObjectID(deviceId), userId: new bson_1.ObjectID(userId) } },
+                {
+                    $project: {
+                        apiKeys: 0
+                    }
+                }
+            ]);
+            console.log("got result ", result);
+            return result[0] || null;
+        });
+    }
     addMessageToQueue(body, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("send text message request");
@@ -79,21 +98,28 @@ class DeviceModel {
             const numbers = body.numbers.split(",");
             for (let i = 0; i < numbers.length; i++) {
                 const to = "91" + numbers[i];
-                const newBody = { phone: device.phone, to, message: body.message, status: "pending" };
+                const newBody = { phone: device.phone, deviceId: deviceId, sendType: message_interface_1.ESendType.QUEUE, to, message: body.message, status: message_interface_1.EMessageStatus.PENDING };
                 const result = yield message_model_1.default.addMessageToQueue(newBody);
             }
-            return { message: "Message Added To Queue" };
+            return { error: false, message: "Message Added To Queue" };
         });
     }
     sendTextMessage(body, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const device = yield this.findDeviceById(deviceId);
-            if (!device)
-                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
-            const result = yield whatsapp_client_service_1.default.sendTextMessage(device.phone, body.to, body.message);
-            console.log(result);
-            if (result.error) {
-                throw new httpErrors_1.HTTP401Error(result.message);
+            try {
+                const device = yield this.findDeviceById(deviceId);
+                if (!device)
+                    throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
+                const result = yield whatsapp_client_service_1.default.sendTextMessage(device.phone, body.to, body.message);
+                const newBody = { phone: device.phone, to: body.to, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, message: body.message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
+                yield message_model_1.default.addFastMessage(newBody);
+                console.log(result);
+                if (result.error) {
+                    throw new httpErrors_1.HTTP401Error(result.message);
+                }
+            }
+            catch (err) {
+                throw new httpErrors_1.HTTP400Error(err.message);
             }
         });
     }
@@ -106,6 +132,65 @@ class DeviceModel {
             const msg = { image: body.locationUrl, caption: body.caption || '' };
             const result = yield whatsapp_client_service_1.default.sendImageMessage(device.phone, to, msg);
             console.log(result);
+        });
+    }
+    fetchPrevMessages(deviceId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                console.log("fetch prev messages", deviceId);
+                const messages = yield this.fetchMessagesByStatus(deviceId);
+                if (!messages || !messages.length)
+                    throw new httpErrors_1.HTTP400Error("NO_MESSAGES");
+                return messages;
+            }
+            catch (err) {
+                throw new httpErrors_1.HTTP400Error(err.message);
+            }
+        });
+    }
+    fetchMessagesByStatus(deviceId, status = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let condition = { _id: new bson_1.ObjectID(deviceId) };
+            // if (status) condition.status = status;
+            const result = yield device_shema_1.Device.aggregate([
+                { $match: condition },
+                { $set: { _id: { $toString: "$_id" } } },
+                {
+                    $project: {
+                        _id: 1
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "fastmessages",
+                        localField: "_id",
+                        foreignField: "deviceId",
+                        as: "fastMessages"
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "messagequeues",
+                        localField: "_id",
+                        foreignField: "deviceId",
+                        as: "queueMessages"
+                    },
+                },
+                {
+                    $project: {
+                        messages: { $setUnion: ["$fastMessages", "$queueMessages"] }
+                    }
+                },
+                { $unwind: '$messages' },
+                {
+                    $sort: {
+                        "messages.createdAt": -1
+                    }
+                },
+                { $group: { _id: '$_id', messages: { $push: '$messages' } } }
+            ]);
+            console.log(result);
+            return result[0].messages || null;
         });
     }
     deleteAuth(body) {
@@ -144,9 +229,11 @@ class DeviceModel {
     }
     generateNewKey(deviceId, body) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!body.name || !body.expiresOn)
+                throw new httpErrors_1.HTTP400Error("Fields missing");
             try {
                 let expiresIn = null;
-                if (body.expiresOn && body.expiresOn != "NEVER") {
+                if (body.expiresOn != "NEVER") {
                     const expiresOn = dayjs_1.default(new Date(body.expiresOn));
                     const diff = expiresOn.diff(dayjs_1.default(), 'day', true);
                     expiresIn = `${Math.floor(diff)}d`;
@@ -156,12 +243,24 @@ class DeviceModel {
                 if (totalAvailableKeys < parseInt(process.env.MAX_APIKEY_PER_DEVICE)) {
                     console.log("generating new key");
                     const token = this.generateDeviceKey(deviceId, expiresIn);
-                    const tokenData = { token: token, expiresOn: body.expiresOn };
+                    const tokenData = { name: body.name, createdOn: new Date(), token: token, expiresOn: body.expiresOn, status: { status: device_interface_1.EApiKeyStatus.ACTIVE, reason: null } };
                     yield this.addNewTokenDataToDevice(deviceId, tokenData);
                     console.log(tokenData);
                     return tokenData;
                 }
                 throw new httpErrors_1.HTTP400Error("MAX_API_KEY_REACHED");
+            }
+            catch (err) {
+                throw new httpErrors_1.HTTP400Error(err.message);
+            }
+        });
+    }
+    deleteKey(deviceId, keyId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log(deviceId, keyId);
+            try {
+                const result = yield device_shema_1.Device.updateOne({ _id: deviceId }, { $pull: { apiKeys: { _id: keyId } } });
+                console.log(result);
             }
             catch (err) {
                 throw new httpErrors_1.HTTP400Error(err.message);

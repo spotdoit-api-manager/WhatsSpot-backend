@@ -49,15 +49,21 @@ export default [
         handler: [deviceController.getKeys]
     },
     {
-        path: "/device/message/addMessageToQueue/:deviceId",
+        path: "/device/:deviceId/keys/delete/:keyId",
+        method: "delete",
+        escapeAuth: false,
+        handler: [deviceController.deleteKey]
+    },
+    {
+        path: "/device/message/addMessageToQueue",
         method: "post",
         escapeAuth: true,
-        handler: [deviceController.addMessageToQueue]
+        handler: [DeviceKeyValidator, deviceController.addMessageToQueue]
     },
     {
         path: "/device/send/textMessage",
         method: "post",
-        escapeAuth: false,
+        escapeAuth: true,
         handler: [DeviceKeyValidator, deviceController.sendTextMessage]
     },
 
@@ -66,5 +72,11 @@ export default [
         method: "post",
         escapeAuth: true,
         handler: [s3UploadMulter.single('file'), deviceController.sendImageMessage]
+    },
+    {
+        path: "/device/:deviceId/prevMessages",
+        method: "get",
+        escapeAuth: false,
+        handler: [deviceController.fetchPrevMessages]
     }
 ];

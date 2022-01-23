@@ -1,4 +1,4 @@
-import { IDevice } from './device.interface';
+import { IDevice, EApiKeyStatus } from './device.interface';
 import { Document, Model, model, Schema, Types } from "mongoose";
 import { validateMobile } from "../../lib/utils";
 
@@ -22,10 +22,19 @@ const deviceSchema = new Schema(
       required: true,
       validate: [validateMobile, "invalid phone number"],
     },
-    apiKeys: {
+    apiKeys: [{
       token: String,
-      expiresOn: String
-    },
+      expiresOn: String,
+      createdOn: String,
+      name: String,
+      status: {
+        status: {
+          type: String,
+          enum: ['ACTIVE', 'INACTIVE']
+        },
+        reason: String
+      }
+    }],
     authState: Boolean,
     reason: {
       statusCode: Number,

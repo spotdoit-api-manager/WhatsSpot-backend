@@ -14,8 +14,18 @@ const message_schema_1 = require("./message.schema");
 class MessageModel {
     addMessageToQueue(messageBody) {
         return __awaiter(this, void 0, void 0, function* () {
-            const newMessage = new message_schema_1.Message(messageBody);
+            const newMessage = new message_schema_1.MessageQueue(messageBody);
             let data = newMessage.addMessage();
+            if (data) {
+                return { error: false };
+            }
+            return { error: true, message: "NOT_ADDED" };
+        });
+    }
+    addFastMessage(messageBody) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const newMessage = new message_schema_1.FastMessage(messageBody);
+            let data = yield newMessage.addMessage();
             if (data) {
                 return { error: false };
             }

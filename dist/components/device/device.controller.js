@@ -108,11 +108,22 @@ class DeviceController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.deleteKey = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("delete key request", req.params);
+                responseHandler.reqRes(req, res).onFetch("Keys Fetched", yield device_model_1.default.deleteKey(req.params.deviceId, req.params.keyId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
         this.addMessageToQueue = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("qr request");
-                responseHandler.reqRes(req, res).onFetch("added to queue", yield device_model_1.default.addMessageToQueue(req.body, req.params.deviceId)).send();
+                responseHandler.reqRes(req, res).onFetch("added to queue", yield device_model_1.default.addMessageToQueue(req.body, req.deviceId)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -123,7 +134,7 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("qr request");
-                responseHandler.reqRes(req, res).onFetch("sent", yield device_model_1.default.sendTextMessage(req.body, req.deviceId)).send();
+                responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield device_model_1.default.sendTextMessage(req.body, req.deviceId)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -136,6 +147,17 @@ class DeviceController {
                 console.log("qr request");
                 req.body.locationUrl = req.file.location;
                 responseHandler.reqRes(req, res).onFetch("sent", yield device_model_1.default.sendImageMessage(req.body, req.params.deviceId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.fetchPrevMessages = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("fetch prev message");
+                responseHandler.reqRes(req, res).onFetch("Fetched", yield device_model_1.default.fetchPrevMessages(req.params.deviceId)).send();
             }
             catch (e) {
                 // send error with next function.

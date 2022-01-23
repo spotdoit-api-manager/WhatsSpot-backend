@@ -326,10 +326,7 @@ class UserModel {
     }
     addNewToken(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            // const user = await User.findById(id);
             const token = this.signToken(id);
-            // console.log(ikcbalance);
-            // console.log(user);
             const data = {
                 token,
                 expiresIn: process.env.JWT_EXPIRES_IN

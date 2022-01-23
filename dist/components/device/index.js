@@ -52,15 +52,21 @@ exports.default = [
         handler: [device_controller_1.default.getKeys]
     },
     {
-        path: "/device/message/addMessageToQueue/:deviceId",
+        path: "/device/:deviceId/keys/delete/:keyId",
+        method: "delete",
+        escapeAuth: false,
+        handler: [device_controller_1.default.deleteKey]
+    },
+    {
+        path: "/device/message/addMessageToQueue",
         method: "post",
         escapeAuth: true,
-        handler: [device_controller_1.default.addMessageToQueue]
+        handler: [whatsapp_middleware_1.DeviceKeyValidator, device_controller_1.default.addMessageToQueue]
     },
     {
         path: "/device/send/textMessage",
         method: "post",
-        escapeAuth: false,
+        escapeAuth: true,
         handler: [whatsapp_middleware_1.DeviceKeyValidator, device_controller_1.default.sendTextMessage]
     },
     {
@@ -68,6 +74,12 @@ exports.default = [
         method: "post",
         escapeAuth: true,
         handler: [s3_1.s3UploadMulter.single('file'), device_controller_1.default.sendImageMessage]
+    },
+    {
+        path: "/device/:deviceId/prevMessages",
+        method: "get",
+        escapeAuth: false,
+        handler: [device_controller_1.default.fetchPrevMessages]
     }
 ];
 //# sourceMappingURL=index.js.map

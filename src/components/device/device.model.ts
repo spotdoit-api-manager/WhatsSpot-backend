@@ -1,8 +1,9 @@
+import { MessageQueue } from './../messages/message.schema';
 import { deviceKeyConfig } from './../../config/index';
 import { IImageMessage } from './../../lib/services/whatsapp/whatsapp.interface';
-import { IMessage } from './../messages/message.interface';
+import { EMessageStatus, ESendType, IMessage } from './../messages/message.interface';
 import { HTTP400Error, HTTP401Error } from './../../lib/utils/httpErrors';
-import { IDevice, TextMessage } from "./device.interface";
+import { EApiKeyStatus, IDevice, TextMessage } from "./device.interface";
 import { Device } from "./device.shema";
 import whatsappClientService from '../../lib/services/whatsapp/whatsapp-client.service';
 import fileManagement from '../../lib/helpers/file.management';
@@ -25,7 +26,7 @@ export class DeviceModel {
         const device = await this.findDeviceById(body.deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         console.log("qr request for phone ", device.phone);
-        if (device.authState) return { message: "ALREADY_AUTHENTICATED" };
+        if (device.authState) return { error: true, message: "ALREADY_AUTHENTICATED" };
         // if (!device.authState && device.reason && device.reason.statusCode === DisconnectReason.loggedOut) {
         //     return { message: "DEVICE_LOGGED_OUT" };
         // }
@@ -41,7 +42,22 @@ export class DeviceModel {
         return devices;
     }
     public fetchDevice = async (deviceId: string, userId: string) => {
+        console.log("fetch device request", deviceId, userId);
+        const device = await this.fetchDeviceByCondition(deviceId, userId);
+        return device;
+    }
 
+    private async fetchDeviceByCondition(deviceId: string, userId: string) {
+        const result = await Device.aggregate([
+            { $match: { _id: new ObjectID(deviceId), userId: new ObjectID(userId) } },
+            {
+                $project: {
+                    apiKeys: 0
+                }
+            }
+        ]);
+        console.log("got result ", result);
+        return result[0] || null;
     }
 
     public async addMessageToQueue(body: any, deviceId: string) {
@@ -51,22 +67,31 @@ export class DeviceModel {
         const numbers = body.numbers.split(",");
         for (let i = 0; i < numbers.length; i++) {
             const to = "91" + numbers[i];
-            const newBody: IMessage = { phone: device.phone, to, message: body.message, status: "pending" }
+            const newBody: IMessage = { phone: device.phone, deviceId: deviceId, sendType: ESendType.QUEUE, to, message: body.message, status: EMessageStatus.PENDING }
             const result = await messageModel.addMessageToQueue(newBody);
         }
 
-        return { message: "Message Added To Queue" }
+        return { error: false, message: "Message Added To Queue" }
     }
 
     public async sendTextMessage(body: any, deviceId: string) {
-        const device = await this.findDeviceById(deviceId);
-        if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-        const result = await whatsappClientService.sendTextMessage(device.phone, body.to, body.message);
-        console.log(result);
-        if (result.error) {
-            throw new HTTP401Error(result.message);
+        try {
+
+            const device = await this.findDeviceById(deviceId);
+            if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
+            const result = await whatsappClientService.sendTextMessage(device.phone, body.to, body.message);
+            const newBody: IMessage = { phone: device.phone, to: body.to, reason: result?.message, sendType: ESendType.FAST, message: body.message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT }
+            await messageModel.addFastMessage(newBody);
+            console.log(result);
+            if (result.error) {
+                throw new HTTP401Error(result.message);
+            }
+        } catch (err) {
+            throw new HTTP400Error(err.message);
         }
     }
+
+    private
 
     public async sendImageMessage(body: any, deviceId: string) {
         const device = await this.findDeviceById(deviceId);
@@ -75,6 +100,65 @@ export class DeviceModel {
         const msg: IImageMessage = { image: body.locationUrl, caption: body.caption || '' };
         const result = await whatsappClientService.sendImageMessage(device.phone, to, msg);
         console.log(result);
+    }
+
+    public async fetchPrevMessages(deviceId: string) {
+        try {
+
+            console.log("fetch prev messages", deviceId);
+            const messages = await this.fetchMessagesByStatus(deviceId);
+            if (!messages || !messages.length) throw new HTTP400Error("NO_MESSAGES");
+            return messages;
+        } catch (err) {
+            throw new HTTP400Error(err.message);
+        }
+    }
+
+    private async fetchMessagesByStatus(deviceId: string, status: EMessageStatus = null) {
+        let condition: any = { _id: new ObjectID(deviceId) };
+        // if (status) condition.status = status;
+        const result = await Device.aggregate([
+            { $match: condition },
+            { $set: { _id: { $toString: "$_id" } } },
+            {
+                $project: {
+                    _id: 1
+                }
+            },
+            {
+                $lookup: {
+                    from: "fastmessages",
+                    localField: "_id",
+                    foreignField: "deviceId",
+                    as: "fastMessages"
+                },
+
+            },
+            {
+                $lookup: {
+                    from: "messagequeues",
+                    localField: "_id",
+                    foreignField: "deviceId",
+                    as: "queueMessages"
+                },
+
+            },
+            {
+                $project: {
+                    messages: { $setUnion: ["$fastMessages", "$queueMessages"] }
+                }
+            },
+            { $unwind: '$messages' },
+
+            {
+                $sort: {
+                    "messages.createdAt": -1
+                }
+            },
+            { $group: { _id: '$_id', messages: { $push: '$messages' } } }
+        ]);
+        console.log(result);
+        return result[0].messages || null;
     }
 
 
@@ -107,9 +191,10 @@ export class DeviceModel {
     }
 
     public async generateNewKey(deviceId: string, body: any) {
+        if (!body.name || !body.expiresOn) throw new HTTP400Error("Fields missing");
         try {
             let expiresIn = null;
-            if (body.expiresOn && body.expiresOn != "NEVER") {
+            if (body.expiresOn != "NEVER") {
                 const expiresOn = dayjs(new Date(body.expiresOn));
                 const diff = expiresOn.diff(dayjs(), 'day', true);
                 expiresIn = `${Math.floor(diff)}d`;
@@ -120,12 +205,23 @@ export class DeviceModel {
             if (totalAvailableKeys < parseInt(process.env.MAX_APIKEY_PER_DEVICE)) {
                 console.log("generating new key");
                 const token = this.generateDeviceKey(deviceId, expiresIn);
-                const tokenData = { token: token, expiresOn: body.expiresOn };
+                const tokenData = { name: body.name, createdOn: new Date(), token: token, expiresOn: body.expiresOn, status: { status: EApiKeyStatus.ACTIVE, reason: null } };
                 await this.addNewTokenDataToDevice(deviceId, tokenData);
                 console.log(tokenData);
                 return tokenData;
             }
             throw new HTTP400Error("MAX_API_KEY_REACHED");
+        } catch (err) {
+            throw new HTTP400Error(err.message);
+        }
+    }
+
+    public async deleteKey(deviceId: string, keyId: string) {
+        console.log(deviceId, keyId);
+        try {
+            const result = await Device.updateOne({ _id: deviceId }, { $pull: { apiKeys: { _id: keyId } } });
+            console.log(result);
+
         } catch (err) {
             throw new HTTP400Error(err.message);
         }

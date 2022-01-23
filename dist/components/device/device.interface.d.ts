@@ -10,6 +10,12 @@ export interface IDevice {
 interface IApiKey {
     token: string;
     expiresOn: string;
+    name: string;
+    createdOn: string;
+    status: {
+        status: EApiKeyStatus;
+        reason: string | null;
+    };
 }
 export interface IDeviceTokenData {
     deviceId: string;
@@ -17,5 +23,9 @@ export interface IDeviceTokenData {
 export interface TextMessage {
     message: String;
     numbers: string;
+}
+export declare enum EApiKeyStatus {
+    ACTIVE = "ACTIVE",
+    INACTIVE = "INACTIVE"
 }
 export {};

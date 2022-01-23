@@ -12,19 +12,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MessageQueue = void 0;
+exports.MessageQueueService = void 0;
 const message_schema_1 = require("./../../../components/messages/message.schema");
 const whatsapp_client_service_1 = __importDefault(require("./whatsapp-client.service"));
 const FETCH_PENDING_INTERVAL = 10;
-class MessageQueue {
+class MessageQueueService {
     constructor() {
         this.updateMessage = (id) => __awaiter(this, void 0, void 0, function* () {
-            yield message_schema_1.Message.updateOne({ _id: id }, { status: 'sent' });
+            yield message_schema_1.MessageQueue.updateOne({ _id: id }, { status: 'sent' });
         });
     }
     getPendingsMessages(limit = 10) {
         return __awaiter(this, void 0, void 0, function* () {
-            const pendingMessages = yield message_schema_1.Message.find({ status: "pending" }).sort({ _id: 1 }).limit(limit);
+            const pendingMessages = yield message_schema_1.MessageQueue.find({ status: "pending" }).sort({ _id: 1 }).limit(limit);
             const data = yield this.sendPendingMessage(pendingMessages);
             setTimeout(() => {
                 this.getPendingsMessages();
@@ -50,6 +50,6 @@ class MessageQueue {
         });
     }
 }
-exports.MessageQueue = MessageQueue;
-exports.default = new MessageQueue();
+exports.MessageQueueService = MessageQueueService;
+exports.default = new MessageQueueService();
 //# sourceMappingURL=message-queue.service.js.map

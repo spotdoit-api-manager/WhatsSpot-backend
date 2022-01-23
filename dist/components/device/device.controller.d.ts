@@ -8,9 +8,11 @@ export declare class DeviceController {
     logoutDevice: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     generateNewKey: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     getKeys: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    deleteKey: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     addMessageToQueue: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     sendTextMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     sendImageMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    fetchPrevMessages: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 }
 declare const _default: DeviceController;
 export default _default;
