@@ -28,6 +28,17 @@ class WalletController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.fetchTransactions = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            console.log("fetch wallet balance");
+            try {
+                const result = yield wallet_model_1.default.fetchTransactions(req.userId, req.walletId);
+                responseHandler.reqRes(req, res).onCreate("TRANSACTION_FETCHED", result).send();
+            }
+            catch (e) {
+                next(responseHandler.sendError(e));
+            }
+        });
     }
 }
 exports.WalletController = WalletController;

@@ -28,5 +28,33 @@ WalletSchema.methods.addNewAllet = function () {
         return this.save();
     });
 };
+const TransactionSchema = new mongoose_1.Schema({
+    userId: {
+        type: mongoose_1.SchemaTypes.ObjectId,
+        ref: "user",
+        required: true
+    },
+    walletId: {
+        type: mongoose_1.SchemaTypes.ObjectId,
+        ref: "wallet",
+        required: true
+    },
+    amount: {
+        type: Number,
+        required: true
+    },
+    status: {
+        type: String,
+        enum: ["ERROR", "PENDING", "SUCCESS"],
+        required: true
+    },
+    type: {
+        type: String,
+        enum: ["CREDIT", "DEBIT"],
+        required: true
+    }
+}, {
+    timestamps: true
+});
 exports.Wallet = mongoose_1.model("wallet", WalletSchema);
 //# sourceMappingURL=wallet.schema.js.map

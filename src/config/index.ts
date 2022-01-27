@@ -76,3 +76,8 @@ export const googleOAuth = {
   CLIENT_SECRET: 'xOE1E9P46fTZo2Kwq6UsE7Rs',
   REDIRECT: 'http://ec2-13-235-90-125.ap-south-1.compute.amazonaws.com:2112/api/v1/user/login/socialAuth/google/callBack'
 }
+
+export const razorPaySecrets={
+  key: process.env.RazorPay_KEY,
+  secret:process.env.RazorPay_SECRET
+}

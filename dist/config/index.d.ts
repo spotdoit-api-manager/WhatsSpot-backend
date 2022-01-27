@@ -43,3 +43,7 @@ export declare const googleOAuth: {
     CLIENT_SECRET: string;
     REDIRECT: string;
 };
+export declare const razorPaySecrets: {
+    key: string;
+    secret: string;
+};

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.googleOAuth = exports.paginationConfig = exports.s3Config = exports.textLocalConfig = exports.deviceKeyConfig = exports.commonConfig = exports.rateLimitConfig = exports.configCors = exports.mongoUrl = void 0;
+exports.razorPaySecrets = exports.googleOAuth = exports.paginationConfig = exports.s3Config = exports.textLocalConfig = exports.deviceKeyConfig = exports.commonConfig = exports.rateLimitConfig = exports.configCors = exports.mongoUrl = void 0;
 exports.mongoUrl = () => {
     const configs = {
         dbAccess: process.env.DB_ACCESS || "local",
@@ -64,5 +64,9 @@ exports.googleOAuth = {
     CLIENT_ID: '737333346336-s4mkj3ud2l79rug8tgg7u1u1231g6u94.apps.googleusercontent.com',
     CLIENT_SECRET: 'xOE1E9P46fTZo2Kwq6UsE7Rs',
     REDIRECT: 'http://ec2-13-235-90-125.ap-south-1.compute.amazonaws.com:2112/api/v1/user/login/socialAuth/google/callBack'
+};
+exports.razorPaySecrets = {
+    key: process.env.RazorPay_KEY,
+    secret: process.env.RazorPay_SECRET
 };
 //# sourceMappingURL=index.js.map

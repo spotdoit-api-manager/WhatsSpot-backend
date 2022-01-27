@@ -1,0 +1,32 @@
+import { NextFunction, Request, Response } from "express";
+import ResponseHandler from "../../lib/helpers/responseHandler";
+import razorpayModel from "./razorpay.model";
+
+
+export class RazorPayController{
+    public createNewOrder = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        console.log("create new order");
+        
+        try {    
+          responseHandler.reqRes(req, res).onFetch("ORDER_CREATED", await razorpayModel.createOrder(req.userId,req.walletId,req.body)).send();
+        } catch (e) {
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
+
+      public verifyPayment = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        console.log("create new order");
+        
+        try {    
+          responseHandler.reqRes(req, res).onFetch("ORDER_CREATED", await razorpayModel.verifyPayment(req.userId,req.walletId,req.body)).send();
+        } catch (e) {
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
+}
+
+export default new RazorPayController()

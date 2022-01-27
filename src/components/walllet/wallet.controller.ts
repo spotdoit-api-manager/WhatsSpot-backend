@@ -14,6 +14,19 @@ export class WalletController{
           next(responseHandler.sendError(e));
         }
       }
+
+      public fetchTransactions = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        console.log("fetch wallet balance");
+        
+        try {
+         const result =  await walletModel.fetchTransactions(req.userId,req.walletId);
+          responseHandler.reqRes(req, res).onCreate("TRANSACTION_FETCHED",result).send();
+        } catch (e) {
+          next(responseHandler.sendError(e));
+        }
+      }
+
 }
 
 export default new WalletController();

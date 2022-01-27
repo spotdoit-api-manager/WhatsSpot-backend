@@ -10,6 +10,12 @@ exports.default = [
         method: "get",
         escapeAuth: false,
         handler: [wallet_controller_1.default.fetchBalance]
+    },
+    {
+        path: "/wallet/fetchTransactions",
+        method: "get",
+        escapeAuth: false,
+        handler: [wallet_controller_1.default.fetchTransactions]
     }
 ];
 //# sourceMappingURL=index.js.map
