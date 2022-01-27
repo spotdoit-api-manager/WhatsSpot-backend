@@ -117,9 +117,9 @@ export class DeviceController {
   public addMessageToQueue = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-      console.log("qr request");
+      console.log("add to queue request ", req.params);
 
-      responseHandler.reqRes(req, res).onFetch("added to queue", await deviceModel.addMessageToQueue(req.body, req.deviceId)).send();
+      responseHandler.reqRes(req, res).onFetch("added to queue", await deviceModel.addMessageToQueue(req.body, req.params.deviceId || req.deviceId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -165,6 +165,17 @@ export class DeviceController {
     }
   };
 
+  public fetchDeviceMetrics = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      console.log("fetch prev message");
+
+      responseHandler.reqRes(req, res).onFetch("Fetched", await deviceModel.fetchDeviceMetrics(req.params.deviceId)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
 }
 
 

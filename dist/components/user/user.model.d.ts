@@ -1,4 +1,4 @@
-import { IUser, ITokenData } from './user.interface';
+import { IUser, ITokenData, IDataStoredInToken } from './user.interface';
 import { IUserModel } from "./user.schema";
 export declare class UserModel {
     fetchAll(): Promise<IUserModel[]>;
@@ -8,6 +8,7 @@ export declare class UserModel {
     add(body: any): Promise<{
         _id: any;
     }>;
+    createNewUser(body: IUser): Promise<IUserModel>;
     registerWithPhone(body: IUser): Promise<{
         phone: string;
         _id: any;
@@ -50,8 +51,8 @@ export declare class UserModel {
     } | {
         proceed: boolean;
     }>;
-    signToken: (id: string) => string;
-    addNewToken(id: string): Promise<{
+    signToken: (dataToStore: IDataStoredInToken) => string;
+    addNewToken(dataToStore: IDataStoredInToken): Promise<{
         token: string;
         expiresIn: string;
     }>;
@@ -61,7 +62,7 @@ export declare class UserModel {
             token: string;
             expiresIn: string;
         };
-        data: any;
+        data: IUserModel;
         cookie: string;
     }>;
     createCookie(tokenData: ITokenData): string;
@@ -103,6 +104,7 @@ export declare class UserModel {
         proceed: boolean;
         phone?: undefined;
     }>;
+    getAccountMetrics(userId: string): Promise<any>;
 }
 declare const _default: UserModel;
 export default _default;

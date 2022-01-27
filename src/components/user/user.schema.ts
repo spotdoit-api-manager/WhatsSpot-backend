@@ -1,4 +1,4 @@
-import { Document,Model, model, Schema } from "mongoose";
+import { Document,Model, model, Schema, SchemaTypes } from "mongoose";
 import { NextFunction } from "express";
 import { IUser } from "./user.interface";
 import bcrypt from 'bcrypt'
@@ -33,7 +33,12 @@ export const UserSchema: Schema = new Schema(
     email: {
       type: String,
       minlength: 3,
-      unique:true
+      required:false
+    },
+    walletId:{
+      type:SchemaTypes.ObjectId,
+      ref:"wallet",
+      immutable: true 
     },
     dateOfBirth: Date,
     role: {

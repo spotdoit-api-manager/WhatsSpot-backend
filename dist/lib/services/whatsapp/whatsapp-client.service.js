@@ -40,6 +40,7 @@ class WhatsappClient {
         this.addClient = (phone) => {
             const client = new whatsapp_service_1.default(phone);
             clients_data_1.default[phone] = client;
+            // client.auth
             return client;
         };
         this.getClient = (phone) => {
@@ -54,7 +55,6 @@ class WhatsappClient {
                 if (!client.authState)
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
                 const data = yield client.sendTextMessage(to, message);
-                console.log("sent data is ", data);
                 return data;
             }
             catch (e) {
@@ -93,6 +93,10 @@ class WhatsappClient {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 clients_data_1.default[phone].logoutClient();
+                clients_data_1.default[phone].on('LOGGEDOUT', (data) => {
+                    console.log("logout listner ", data);
+                    socket_1.default.sendLoggedout(data);
+                });
                 return { error: false };
             }
             catch (e) {
@@ -111,8 +115,10 @@ class WhatsappClient {
                 console.log(`client${i}:${device.phone}`);
                 this.addClient(device.phone);
             }
-            message_queue_service_1.default.getPendingsMessages();
-            console.log("STARTED_MESSAGE_QUEUE_SERVICE...");
+            setTimeout(() => {
+                console.log("STARTED_MESSAGE_QUEUE_SERVICE...");
+                message_queue_service_1.default.getPendingsMessages();
+            }, 10000);
         });
     }
 }

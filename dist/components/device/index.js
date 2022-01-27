@@ -22,6 +22,11 @@ exports.default = [
         handler: [device_controller_1.default.fetchAllDevices]
     },
     {
+        path: "/device/:deviceId/metrics",
+        method: "get",
+        handler: [device_controller_1.default.fetchDeviceMetrics]
+    },
+    {
         path: "/device/getQr/:deviceId",
         method: "get",
         escapeAuth: true,
@@ -56,6 +61,12 @@ exports.default = [
         method: "delete",
         escapeAuth: false,
         handler: [device_controller_1.default.deleteKey]
+    },
+    {
+        path: "/device/:deviceId/message/addMessageToQueue",
+        method: "post",
+        escapeAuth: false,
+        handler: [device_controller_1.default.addMessageToQueue]
     },
     {
         path: "/device/message/addMessageToQueue",

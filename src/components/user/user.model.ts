@@ -1,6 +1,9 @@
+import { IWallet } from './../walllet/wallet.interface';
+import { IWalletModel } from './../walllet/wallet.schema';
+import { EMessageStatus } from './../messages/message.interface';
 import { generateToken, imageUrl, isValidMongoId, otpGenerator } from "../../lib/helpers";
 import { User, UserSchema } from "./user.schema";
-import { IUser, ITokenData } from './user.interface';
+import { IUser, ITokenData, IDataStoredInToken } from './user.interface';
 import { IUserModel } from "./user.schema";
 import socialAuth from "./../../lib/middleware/socialAuth";
 import bcrypt from 'bcrypt';
@@ -10,6 +13,7 @@ import jwt from 'jsonwebtoken';
 import { ObjectID } from "bson";
 import { commonConfig } from "../../config";
 import { HTTP400Error, HTTP401Error } from "../../lib/utils/httpErrors";
+import walletModel, { WalletModel } from '../walllet/wallet.model';
 
 export class UserModel {
   public async fetchAll() {
@@ -47,22 +51,34 @@ export class UserModel {
     return { _id: data._id };
   }
 
+  async createNewUser(body:IUser){
+try{
+  body.role="user";
+  const existingUser = await this.isUserExistByPhone(body.phone);
+  let data: IUserModel;
+  if (!existingUser) {
+    const wallet:IWalletModel = await walletModel.createWallet();
+    body.walletId = wallet._id;
+    const newUser: IUserModel = new User(body);
+    data = await newUser.addNewUser();
+    if (!data) throw new HTTP400Error("SOME_ERROR_OCCURED");
+    await walletModel.addUserToWallet(data.walletId,data._id);
+    return data;
+  }
+  return existingUser;
+}catch(err){
+  throw new HTTP400Error(err.message)
+}
+  }
+
   async registerWithPhone(body: IUser) {
-    body.role = "user";
     console.log("register with phone ", body);
     try {
-      const existingUser = await this.isUserExistByPhone(body.phone);
-      let data: IUserModel;
-      if (!existingUser) {
-
-        const newUser: IUserModel = new User(body);
-        data = await newUser.addNewUser();
-        if (!data) throw new HTTP400Error("SOME_ERROR_OCCURED");
-      }
-      const otp = this.updateOtp(data?._id || existingUser._id);
+     const user:IUserModel = await this.createNewUser(body);
+      const otp = this.updateOtp(user._id);
       const otpData = await this.sendOtpToMobile(otp, body.phone);
       if (otpData.proceed) {
-        return { phone: body.phone, _id: data?._id || existingUser._id };
+        return { phone: body.phone, _id: user.id};
       }
       throw new HTTP400Error("OTP_NOT_SENT");
     } catch (e) {
@@ -78,20 +94,9 @@ export class UserModel {
   public async signUp(body: IUserModel) {
     try {
       await this.isUserExist(body);
-      // const user = await User.findOne({ phone: body.phone });
       body.role = 'user';
       let data = await this.add(body);
-      // const otp = this.updateOtp(data._id);
-      // console.log(otp);
-      // let otpData;
-      // otpData = await this.sendOtpToMobile(otp, body.phone);
-      // console.log(otpData);
-      // if (otpData.proceed) {
-      //   return { _id: data._id, isExisted: false };
-      // } else {
-      //   throw new HTTP400Error("Unable to Send OTP");
-      // }
-
+    
       const userData = await this.addNewToken(data._id);
 
       return userData;
@@ -304,15 +309,15 @@ export class UserModel {
   //   return userName;
   // }
 
-  public signToken = (id: string) => {
-    return jwt.sign({ id }, commonConfig.jwtSecretKey, {
+  public signToken = (dataToStore:IDataStoredInToken) => {
+    return jwt.sign(dataToStore, commonConfig.jwtSecretKey, {
       expiresIn: process.env.JWT_EXPIRES_IN,
     });
   };
 
 
-  public async addNewToken(id: string) {
-    const token = this.signToken(id);
+  public async addNewToken(dataToStore:IDataStoredInToken) {
+    const token = this.signToken(dataToStore);
 
     const data = {
       token,
@@ -332,17 +337,17 @@ export class UserModel {
       if (!otp) {
         throw new HTTP400Error("OTP not entered");
       }
-
-      let data;
-      data = await this.fetchOnOtp(id, otp);
-      if (!data) {
+      const otpData = await this.fetchOnOtp(id, otp);
+      if (!otpData) {
         throw new HTTP400Error("WRONG_OTP");
       }
-      if (data.phone !== '917984545163') {
+      if (otpData.phone !== '917984545163') {
         this.updateOtp(id);
       }
-      data = await User.findOneAndUpdate({ _id: new ObjectID(id) }, { $set: { isVerified: true } }, { new: true });
-      const tokenData = await this.addNewToken(id);
+      const wallet = await walletModel.fetchWalletByUserId(id);
+      const data = await User.findOneAndUpdate({ _id: new ObjectID(id) }, { $set: { isVerified: true,walletId:wallet._id, } }, { new: true });
+      const dataToStore:IDataStoredInToken = {id,walletId:wallet._id};
+      const tokenData = await this.addNewToken(dataToStore);
       const cookie = this.createCookie(tokenData);
 
       return { tokenData, data, cookie };
@@ -523,6 +528,144 @@ export class UserModel {
 
     return { proceed: false };
   };
+  public async getAccountMetrics(userId:string){
+    console.log("user id is ",userId);
+    
+    let result = await User.aggregate([
+      { $match: {_id:new ObjectID(userId)} },
+      { $set: { _id: { $toObjectId: "$_id" } } },
+      {
+          $project: {
+              _id: 1
+          }
+      },
+      {
+        $lookup: {
+            from: "devices",
+            localField: "_id",
+            foreignField: "userId",
+            as: "devices"
+        },
+
+    },
+    {
+      $unwind: {
+          path: '$devices'
+              }
+  },
+  {$project:{
+    deviceId:"$devices._id",
+    authState:"$devices.authState"
+  }},
+  { $set: { deviceId: { $toString: "$deviceId" } } },
+  {
+          $lookup: {
+              from: "fastmessages",
+              localField: "deviceId",
+              foreignField: "deviceId",
+              as: "fastMessages"
+          },
+      },
+      {
+          $lookup: {
+              from: "messagequeues",
+              localField: "deviceId",
+              foreignField: "deviceId",
+              as: "queueMessages"
+          },
+
+      },
+      {
+          $project: {
+
+            deviceId:"$deviceId",
+            authState:"$authState",
+              metrics: {
+                  totalFastError: {
+                      $size: {
+                          $filter: {
+                              input: "$fastMessages",
+                              as: "fastMessage",
+                              cond: { "$eq": ["$$fastMessage.status", EMessageStatus.ERROR] }
+                          }
+                      }
+                  },
+                  totalFastSuccess: {
+                      $size: {
+                          $filter: {
+                              input: "$fastMessages",
+                              as: "fastMessage",
+                              cond: { "$eq": ["$$fastMessage.status", EMessageStatus.SENT] }
+                          }
+                      }
+                  },
+                  totalQueueSuccess: {
+                      $size: {
+                          $filter: {
+                              input: "$queueMessages",
+                              as: "queueMessage",
+                              cond: { "$eq": ["$$queueMessage.status", EMessageStatus.SENT] }
+                          }
+                      }
+                  },
+                  totalQueueError: {
+                      $size: {
+                          $filter: {
+                              input: "$queueMessages",
+                              as: "queueMessage",
+                              cond: { "$eq": ["$$queueMessage.status", EMessageStatus.ERROR] }
+                          }
+                      }
+                  },
+                  totalQueuePending: {
+                      $size: {
+                          $filter: {
+                              input: "$queueMessages",
+                              as: "queueMessage",
+                              cond: { "$eq": ["$$queueMessage.status", EMessageStatus.PENDING] }
+                          }
+                      }
+                  }
+              }
+          }
+      },
+     
+      {
+        $group: {
+          _id:"$_id",
+             totalDevices : {$sum: 1},
+             activeDevices:  {'$sum': {
+              '$cond': [
+                  { '$eq': ['$authState', true]},
+                  1, 
+                  0
+              ]
+          }},
+            totalFastSuccess:{$sum :"$metrics.totalFastSuccess"},
+            totalFastError:{$sum :"$metrics.totalFastError"},
+            totalQueueSuccess:{$sum :"$metrics.totalQueueSuccess"},
+            totalQueueError:{$sum :"$metrics.totalQueueError"}
+          
+    }},
+    {
+      $project:{ 
+        _id:0,
+        userId:"$_id",  
+        metrics:{
+          activeDevices:"$activeDevices",   
+          totalDevices:"$totalDevices",
+          totalFastSuccess:"$totalFastSuccess",
+          totalFastError:"$totalFastError",
+          totalQueueSuccess:"$totalQueueSuccess",
+          totalQueueError:"$totalQueueError"
+        } 
+      }
+    }
+  ]);
+
+  console.log("metrics result ",result);
+  return result[0]||null;
+  }
 }
 
 export default new UserModel();

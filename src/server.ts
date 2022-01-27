@@ -12,7 +12,7 @@ import whatsappClientService from "./lib/services/whatsapp/whatsapp-client.servi
 import socketManager from "./lib/services/socket";
 
 // Set PORT in .env or use 3000 by default  
-const Port:number = process.env.PORT ? + process.env.PORT : 8000;
+const Port: number = process.env.PORT ? + process.env.PORT : 8000;
 
 // // Create http server [non ssl]
 const server = createServer(app);
@@ -23,3 +23,14 @@ server.listen(Port, () => {
     console.log(`Listening to port ${Port}`);
     whatsappClientService.initializeAllClients();
 });
+
+
+function printMemoryUsage() {
+    setInterval(() => {
+        for (const [key, value] of Object.entries(process.memoryUsage())) {
+            console.log(`Memory usage by ${key}, ${value / 1000000}MB `)
+        }
+        console.log("");
+
+    }, 5000)
+}

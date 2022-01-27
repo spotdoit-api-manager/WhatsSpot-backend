@@ -20,6 +20,7 @@ export default class Whatsapp extends EventEmitter {
   public authState: boolean = false;
   qr: any = new EventEmitter();
 
+
   constructor(phone: string) {
     super();
     this.state = useSingleFileAuthState(`${phone}_cred.json`).state;
@@ -47,7 +48,7 @@ export default class Whatsapp extends EventEmitter {
         const { connection, lastDisconnect } = update;
 
         if (connection === "connecting") return;
-        if (connection == "close") this.emit('qr', { error: true, message: "CONNECTION_CLOSED" });
+        // if (connection == "close") this.emit('qr', { error: true, message: "CONNECTION_CLOSED" });
         if (update.qr) {
           this.emit("qr", { qr: update.qr, error: false });
           return;
@@ -74,8 +75,6 @@ export default class Whatsapp extends EventEmitter {
     //connection update
     this.client.ev.on("connection.update", async (update: any) => {
       try {
-
-
         const { connection, lastDisconnect } = update;
         let reason: IReason;
         if (lastDisconnect && (lastDisconnect.error as Boom)?.output.payload) {
@@ -104,15 +103,17 @@ export default class Whatsapp extends EventEmitter {
             });
             await this.reconnectClient();
           } else {
-            const data = deviceModel.updateDevice(this.phone, {
+            const data = await deviceModel.updateDevice(this.phone, {
               authState: false, reason
             });
-            console.log("connection update (logged out)", reason);
+            console.log("connection update (logged out)", reason, this.phone);
+            this.emit('LOGGEDOUT', { phone: this.phone, reason: reason.message });
           }
         } else if (!update.qr) {
           // const data = deviceModel.updateDevice(this.phone, {
           //   authState: false,reason
           // });
+
           console.log("connection update (not open| not close)", update, reason);
         }
       } catch (err) {
@@ -127,7 +128,7 @@ export default class Whatsapp extends EventEmitter {
         const msg = m.messages[0];
 
         if (!msg.key.fromMe) {
-          console.log(`received msg :${msg.message.conversation}`);
+          console.log(`received msg :${msg.message?.conversation}`);
           console.log(`From: ${msg.key.remoteJid}`);
         } else {
           console.log(`sent msg :${JSON.stringify(msg.message)}`);
@@ -151,7 +152,6 @@ export default class Whatsapp extends EventEmitter {
 
   private async reconnectClient() {
     console.log("RETRYING CONNECTION..", this.phone);
-
     this.client = this.startSock();
     this.startBasicEventListners();
   }
@@ -180,9 +180,6 @@ export default class Whatsapp extends EventEmitter {
       const jid = getSerializedPhone(to);
       await this.client.presenceSubscribe(jid);
       await delay(500);
-      console.log("serialized phone ", jid);
-      console.log("message is ", msg);
-
       const result = await this.client.sendMessage(jid, {
         text: msg, detectLinks: true,
       });
@@ -192,7 +189,6 @@ export default class Whatsapp extends EventEmitter {
       return { error: false };
     } catch (e) {
       console.log(e);
-
       return { error: true, message: e.message }
     }
   };

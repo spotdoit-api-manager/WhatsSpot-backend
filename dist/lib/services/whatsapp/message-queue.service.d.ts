@@ -1,6 +1,6 @@
 export declare class MessageQueueService {
     getPendingsMessages(limit?: number): Promise<void>;
-    private updateMessage;
+    private updateMessageStatus;
     private sendPendingMessage;
 }
 declare const _default: MessageQueueService;

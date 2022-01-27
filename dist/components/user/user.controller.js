@@ -82,6 +82,16 @@ class UserController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.fetchAccountMetrics = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                const result = yield user_model_1.default.getAccountMetrics(req.userId);
+                responseHandler.reqRes(req, res).onCreate(customMessage_1.user.UPDATED, result).send();
+            }
+            catch (e) {
+                next(responseHandler.sendError(e));
+            }
+        });
         //   public adminLogin = async (req: Request, res: Response, next: NextFunction) => {
         //     try {
         //       responseHandler

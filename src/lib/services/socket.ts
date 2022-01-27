@@ -62,6 +62,13 @@ export class SocketManager {
     if (!webClient) return console.log("webClient not connected..");
     webClient.emit(`${data.phone}_error`, { reason: data.reason });
   };
+
+  public sendLoggedout(data: any) {
+    if (!webClient) return console.log("webClient not connected..");
+    console.log("sendign logout to ", data);
+
+    webClient.emit(`${data.phone}_LOGGEDOUT`, data);
+  }
 }
 
 

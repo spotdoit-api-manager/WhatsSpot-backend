@@ -1,6 +1,7 @@
 import { EApiKeyStatus, IDevice } from "./device.interface";
+import { IDeviceModel } from "./device.shema";
 export declare class DeviceModel {
-    newDevice(body: IDevice, userId: string): Promise<any>;
+    newDevice(body: IDevice, userId: string): Promise<IDeviceModel>;
     getQr(body: any): Promise<{
         error: boolean;
         message: string;
@@ -25,7 +26,7 @@ export declare class DeviceModel {
     }>;
     logoutDevice(body: any): Promise<{
         message: string;
-        device: import("./device.shema").IDeviceModel;
+        device: IDeviceModel;
     }>;
     generateNewKey(deviceId: string, body: any): Promise<{
         name: any;
@@ -50,11 +51,12 @@ export declare class DeviceModel {
         error: boolean;
         message?: undefined;
     }>;
-    findDeviceByPhone(phone: string): Promise<import("./device.shema").IDeviceModel>;
-    findDeviceById(id: string): Promise<import("./device.shema").IDeviceModel>;
+    findDeviceByPhone(phone: string): Promise<IDeviceModel>;
+    findDeviceById(id: string): Promise<IDeviceModel>;
     findDeviceByUseId(userId: string): Promise<any>;
     findDeviceByCondition(condition: any): Promise<any[]>;
     findDeviceByIdAndUserId(deviceId: string, userId: string): Promise<any>;
+    fetchDeviceMetrics(deviceId: string): Promise<any>;
 }
 declare const _default: DeviceModel;
 export default _default;

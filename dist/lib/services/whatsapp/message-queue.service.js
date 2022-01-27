@@ -13,18 +13,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageQueueService = void 0;
+const message_interface_1 = require("./../../../components/messages/message.interface");
 const message_schema_1 = require("./../../../components/messages/message.schema");
 const whatsapp_client_service_1 = __importDefault(require("./whatsapp-client.service"));
 const FETCH_PENDING_INTERVAL = 10;
 class MessageQueueService {
     constructor() {
-        this.updateMessage = (id) => __awaiter(this, void 0, void 0, function* () {
-            yield message_schema_1.MessageQueue.updateOne({ _id: id }, { status: 'sent' });
+        this.updateMessageStatus = (id, status, reason = null) => __awaiter(this, void 0, void 0, function* () {
+            yield message_schema_1.MessageQueue.updateOne({ _id: id }, { status: status, reason: reason });
         });
     }
     getPendingsMessages(limit = 10) {
         return __awaiter(this, void 0, void 0, function* () {
-            const pendingMessages = yield message_schema_1.MessageQueue.find({ status: "pending" }).sort({ _id: 1 }).limit(limit);
+            const pendingMessages = yield message_schema_1.MessageQueue.find({ status: message_interface_1.EMessageStatus.PENDING }).sort({ _id: 1 }).limit(limit);
+            console.log(`FOUND ${pendingMessages.length} PENDING MESSAGES`);
             const data = yield this.sendPendingMessage(pendingMessages);
             setTimeout(() => {
                 this.getPendingsMessages();
@@ -37,8 +39,13 @@ class MessageQueueService {
                 for (let i = 0; i < pendingMessages.length; i++) {
                     const message = pendingMessages[i];
                     try {
-                        whatsapp_client_service_1.default.sendTextMessage(message.phone, message.to, message.message);
-                        yield this.updateMessage(message._id);
+                        const result = yield whatsapp_client_service_1.default.sendTextMessage(message.phone, message.to, message.message);
+                        if (!result.error) {
+                            yield this.updateMessageStatus(message._id, message_interface_1.EMessageStatus.SENT);
+                        }
+                        else {
+                            yield this.updateMessageStatus(message._id, message_interface_1.EMessageStatus.ERROR, result.message);
+                        }
                     }
                     catch (e) {
                         console.log(e);

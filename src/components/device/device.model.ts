@@ -4,7 +4,7 @@ import { IImageMessage } from './../../lib/services/whatsapp/whatsapp.interface'
 import { EMessageStatus, ESendType, IMessage } from './../messages/message.interface';
 import { HTTP400Error, HTTP401Error } from './../../lib/utils/httpErrors';
 import { EApiKeyStatus, IDevice, TextMessage } from "./device.interface";
-import { Device } from "./device.shema";
+import { Device, IDeviceModel } from "./device.shema";
 import whatsappClientService from '../../lib/services/whatsapp/whatsapp-client.service';
 import fileManagement from '../../lib/helpers/file.management';
 import messageModel from '../messages/message.model';
@@ -18,8 +18,11 @@ export class DeviceModel {
         const device = await this.findDeviceByPhone(body.phone);
         if (device) return device;
         const newDevice = new Device(body);
-        const data = await newDevice.saveDevice();
-        return data;
+        const newDeviceData:IDeviceModel = await newDevice.saveDevice();
+        if(!newDeviceData) throw new HTTP400Error("UNKNOWN_ERROR");
+        let expiresOn = dayjs().add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN|| '3d').replace("d", "")), 'day').toDate().toUTCString();;
+        const keys = await this.generateNewKey(newDeviceData._id,{name:process.env.DEFAULT_APIKEY_NAME,expiresOn});
+        return newDeviceData;
     }
 
     public async getQr(body: any) {
@@ -61,10 +64,10 @@ export class DeviceModel {
     }
 
     public async addMessageToQueue(body: any, deviceId: string) {
-        console.log("send text message request");
+        console.log("send text message request", body, deviceId);
         const device = await this.findDeviceById(deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-        const numbers = body.numbers.split(",");
+        const numbers = body.numbers;
         for (let i = 0; i < numbers.length; i++) {
             const to = "91" + numbers[i];
             const newBody: IMessage = { phone: device.phone, deviceId: deviceId, sendType: ESendType.QUEUE, to, message: body.message, status: EMessageStatus.PENDING }
@@ -104,7 +107,6 @@ export class DeviceModel {
 
     public async fetchPrevMessages(deviceId: string) {
         try {
-
             console.log("fetch prev messages", deviceId);
             const messages = await this.fetchMessagesByStatus(deviceId);
             if (!messages || !messages.length) throw new HTTP400Error("NO_MESSAGES");
@@ -158,7 +160,7 @@ export class DeviceModel {
             { $group: { _id: '$_id', messages: { $push: '$messages' } } }
         ]);
         console.log(result);
-        return result[0].messages || null;
+        return result[0]?.messages || null;
     }
 
 
@@ -315,6 +317,111 @@ export class DeviceModel {
             }
         ]);
         return result[0] || null;
+    }
+
+    public async fetchDeviceMetrics(deviceId: string) {
+        try {
+            const condition = { _id: new ObjectID(deviceId) };
+            console.log("condition is ", condition);
+
+            let result = await Device.aggregate([
+                { $match: condition },
+                { $set: { _id: { $toString: "$_id" } } },
+                {
+                    $project: {
+                        _id: 1
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "fastmessages",
+                        localField: "_id",
+                        foreignField: "deviceId",
+                        as: "fastMessages"
+                    },
+
+                },
+                {
+                    $lookup: {
+                        from: "messagequeues",
+                        localField: "_id",
+                        foreignField: "deviceId",
+                        as: "queueMessages"
+                    },
+
+                },
+                {
+                    $project: {
+                        messageMetrics: {
+                            totalFastError: {
+                                $size: {
+                                    $filter: {
+                                        input: "$fastMessages",
+                                        as: "fastMessage",
+                                        cond: { "$eq": ["$$fastMessage.status", EMessageStatus.ERROR] }
+                                    }
+                                }
+                            },
+                            totalFastSuccess: {
+                                $size: {
+                                    $filter: {
+                                        input: "$fastMessages",
+                                        as: "fastMessage",
+                                        cond: { "$eq": ["$$fastMessage.status", EMessageStatus.SENT] }
+                                    }
+                                }
+                            },
+                            totalQueueSuccess: {
+                                $size: {
+                                    $filter: {
+                                        input: "$queueMessages",
+                                        as: "queueMessage",
+                                        cond: { "$eq": ["$$queueMessage.status", EMessageStatus.SENT] }
+                                    }
+                                }
+                            },
+                            totalQueueError: {
+                                $size: {
+                                    $filter: {
+                                        input: "$queueMessages",
+                                        as: "queueMessage",
+                                        cond: { "$eq": ["$$queueMessage.status", EMessageStatus.ERROR] }
+                                    }
+                                }
+                            },
+                            totalQueuePending: {
+                                $size: {
+                                    $filter: {
+                                        input: "$queueMessages",
+                                        as: "queueMessage",
+                                        cond: { "$eq": ["$$queueMessage.status", EMessageStatus.PENDING] }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+            ]);
+            console.log("metrics is ", result);
+            if (!result || !result[0]) {
+                result = [
+                    {
+                        messageMetrics: {
+                            totalFastError: 1,
+                            totalFastSuccess: 3,
+                            totalQueueError: 0,
+                            totalQueuePending: 2,
+                            totalQueueSuccess: 0
+                        }
+                    }
+                ]
+            };
+            return result[0];
+        } catch (err) {
+            console.log(err);
+            throw new HTTP400Error(err.messages);
+        }
+
     }
 
 

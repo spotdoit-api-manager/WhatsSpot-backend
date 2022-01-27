@@ -17,6 +17,11 @@ export default [
     escapeAuth:true,
     handler:[userController.registerWithPhone]
   },
+  {
+    path: "/user/metrics",
+    method: "get",
+    handler: [userController.fetchAccountMetrics]
+},
 
   {
     path: "/user/loggeduser",

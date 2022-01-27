@@ -57,8 +57,7 @@ class Whatsapp extends events_1.EventEmitter {
                     const { connection, lastDisconnect } = update;
                     if (connection === "connecting")
                         return;
-                    if (connection == "close")
-                        this.emit('qr', { error: true, message: "CONNECTION_CLOSED" });
+                    // if (connection == "close") this.emit('qr', { error: true, message: "CONNECTION_CLOSED" });
                     if (update.qr) {
                         this.emit("qr", { qr: update.qr, error: false });
                         return;
@@ -89,8 +88,6 @@ class Whatsapp extends events_1.EventEmitter {
                 const jid = whatsapp_utils_1.getSerializedPhone(to);
                 yield this.client.presenceSubscribe(jid);
                 yield baileys_md_1.delay(500);
-                console.log("serialized phone ", jid);
-                console.log("message is ", msg);
                 const result = yield this.client.sendMessage(jid, {
                     text: msg, detectLinks: true,
                 });
@@ -163,10 +160,11 @@ class Whatsapp extends events_1.EventEmitter {
                         yield this.reconnectClient();
                     }
                     else {
-                        const data = device_model_1.default.updateDevice(this.phone, {
+                        const data = yield device_model_1.default.updateDevice(this.phone, {
                             authState: false, reason
                         });
-                        console.log("connection update (logged out)", reason);
+                        console.log("connection update (logged out)", reason, this.phone);
+                        this.emit('LOGGEDOUT', { phone: this.phone, reason: reason.message });
                     }
                 }
                 else if (!update.qr) {
@@ -181,11 +179,12 @@ class Whatsapp extends events_1.EventEmitter {
         }));
         // message upsert
         this.client.ev.on("messages.upsert", (m) => __awaiter(this, void 0, void 0, function* () {
+            var _e;
             try {
                 // console.log(JSON.stringify(m, undefined, 2))
                 const msg = m.messages[0];
                 if (!msg.key.fromMe) {
-                    console.log(`received msg :${msg.message.conversation}`);
+                    console.log(`received msg :${(_e = msg.message) === null || _e === void 0 ? void 0 : _e.conversation}`);
                     console.log(`From: ${msg.key.remoteJid}`);
                 }
                 else {

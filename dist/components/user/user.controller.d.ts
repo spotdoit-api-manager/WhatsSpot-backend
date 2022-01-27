@@ -6,6 +6,7 @@ declare class UserController {
     fetch: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     update: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     delete: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    fetchAccountMetrics: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     loginViaSocialAccessToken: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     socialAuthAddPhone: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     verifyOtp: (req: Request, res: Response, next: NextFunction) => Promise<void>;

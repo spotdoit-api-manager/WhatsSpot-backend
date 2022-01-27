@@ -22,6 +22,11 @@ exports.default = [
         handler: [user_controller_1.default.registerWithPhone]
     },
     {
+        path: "/user/metrics",
+        method: "get",
+        handler: [user_controller_1.default.fetchAccountMetrics]
+    },
+    {
         path: "/user/loggeduser",
         method: "get",
         handler: [user_controller_1.default.getLoggedUser]

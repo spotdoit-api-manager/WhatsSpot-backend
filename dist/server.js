@@ -20,4 +20,12 @@ server.listen(Port, () => {
     console.log(`Listening to port ${Port}`);
     whatsapp_client_service_1.default.initializeAllClients();
 });
+function printMemoryUsage() {
+    setInterval(() => {
+        for (const [key, value] of Object.entries(process.memoryUsage())) {
+            console.log(`Memory usage by ${key}, ${value / 1000000}MB `);
+        }
+        console.log("");
+    }, 5000);
+}
 //# sourceMappingURL=server.js.map

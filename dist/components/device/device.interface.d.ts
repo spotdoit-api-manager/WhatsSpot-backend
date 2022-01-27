@@ -28,4 +28,11 @@ export declare enum EApiKeyStatus {
     ACTIVE = "ACTIVE",
     INACTIVE = "INACTIVE"
 }
+export interface IMessageMetrics {
+    totalFastError: number;
+    totalFastSuccess: number;
+    totalQueueError: number;
+    totalQueuePending: number;
+    totalQueueSuccess: number;
+}
 export {};

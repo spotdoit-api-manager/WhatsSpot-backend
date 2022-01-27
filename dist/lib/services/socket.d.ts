@@ -11,6 +11,7 @@ export declare class SocketManager {
     sendQrRetryExceed: (data: any) => void;
     sendConnectionClosed: (data: any) => void;
     sendError: (data: any) => void;
+    sendLoggedout(data: any): void;
 }
 declare const _default: SocketManager;
 export default _default;

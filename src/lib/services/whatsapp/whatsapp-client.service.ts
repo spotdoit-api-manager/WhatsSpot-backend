@@ -46,6 +46,11 @@ export class WhatsappClient {
     public async logoutClient(phone: string) {
         try {
             clients[phone].logoutClient();
+            clients[phone].on('LOGGEDOUT', (data: any) => {
+                console.log("logout listner ", data);
+
+                socketManager.sendLoggedout(data);
+            })
             return { error: false }
         } catch (e) {
             return { error: true, message: e.message }
@@ -55,6 +60,7 @@ export class WhatsappClient {
     public addClient = (phone: string) => {
         const client = new Whatsapp(phone);
         clients[phone] = client;
+        // client.auth
         return client;
     }
 
@@ -64,13 +70,10 @@ export class WhatsappClient {
     public sendTextMessage = async (phone: string, to: string, message: string) => {
         try {
             console.log("sending message to ", to);
-
             const client = this.getClient(phone);
             if (!client) return { error: true, message: "CLIENT_NOT_FOUND" };
             if (!client.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             const data = await client.sendTextMessage(to, message);
-            console.log("sent data is ", data);
-
             return data;
         } catch (e) {
             return { error: true, message: e.message };
@@ -94,7 +97,6 @@ export class WhatsappClient {
     }
 
 
-
     public async initializeAllClients() {
         console.info("INITIALIZING ALL CLIENTS...");
 
@@ -107,9 +109,13 @@ export class WhatsappClient {
             this.addClient(device.phone);
         }
 
-        messageQueueService.getPendingsMessages();
-        console.log("STARTED_MESSAGE_QUEUE_SERVICE...");
+        setTimeout(()=>{//to do
+            console.log("STARTED_MESSAGE_QUEUE_SERVICE...");
+            messageQueueService.getPendingsMessages();
+        },10000)
     }
+
+
 
 
 }

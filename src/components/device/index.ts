@@ -17,6 +17,11 @@ export default [
         method: "get",
         handler: [deviceController.fetchAllDevices]
     },
+    {
+        path: "/device/:deviceId/metrics",
+        method: "get",
+        handler: [deviceController.fetchDeviceMetrics]
+    },
 
     {
         path: "/device/getQr/:deviceId",
@@ -53,6 +58,12 @@ export default [
         method: "delete",
         escapeAuth: false,
         handler: [deviceController.deleteKey]
+    },
+    {
+        path: "/device/:deviceId/message/addMessageToQueue", //send by device id
+        method: "post",
+        escapeAuth: false,
+        handler: [deviceController.addMessageToQueue]
     },
     {
         path: "/device/message/addMessageToQueue",

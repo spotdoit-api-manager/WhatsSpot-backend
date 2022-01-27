@@ -22,7 +22,10 @@ export const Authorization = async (req: Request, res: Response, next: NextFunct
       const token: string = req.header('Authorization') || "";
       const data: IUserModel = await handleToken(token);
       if (data) {
+        console.log(data);
+        
         req.userId = data._id;
+        req.walletId = data.walletId;
         req.role = data.role;
         req.token = token.split(" ")[1];
         next();

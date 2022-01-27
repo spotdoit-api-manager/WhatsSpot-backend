@@ -55,8 +55,13 @@ class DeviceModel {
             if (device)
                 return device;
             const newDevice = new device_shema_1.Device(body);
-            const data = yield newDevice.saveDevice();
-            return data;
+            const newDeviceData = yield newDevice.saveDevice();
+            if (!newDeviceData)
+                throw new httpErrors_1.HTTP400Error("UNKNOWN_ERROR");
+            let expiresOn = dayjs_1.default().add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN || '3d').replace("d", "")), 'day').toDate().toUTCString();
+            ;
+            const keys = yield this.generateNewKey(newDeviceData._id, { name: process.env.DEFAULT_APIKEY_NAME, expiresOn });
+            return newDeviceData;
         });
     }
     getQr(body) {
@@ -91,11 +96,11 @@ class DeviceModel {
     }
     addMessageToQueue(body, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("send text message request");
+            console.log("send text message request", body, deviceId);
             const device = yield this.findDeviceById(deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
-            const numbers = body.numbers.split(",");
+            const numbers = body.numbers;
             for (let i = 0; i < numbers.length; i++) {
                 const to = "91" + numbers[i];
                 const newBody = { phone: device.phone, deviceId: deviceId, sendType: message_interface_1.ESendType.QUEUE, to, message: body.message, status: message_interface_1.EMessageStatus.PENDING };
@@ -149,6 +154,7 @@ class DeviceModel {
         });
     }
     fetchMessagesByStatus(deviceId, status = null) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             let condition = { _id: new bson_1.ObjectID(deviceId) };
             // if (status) condition.status = status;
@@ -190,7 +196,7 @@ class DeviceModel {
                 { $group: { _id: '$_id', messages: { $push: '$messages' } } }
             ]);
             console.log(result);
-            return result[0].messages || null;
+            return ((_a = result[0]) === null || _a === void 0 ? void 0 : _a.messages) || null;
         });
     }
     deleteAuth(body) {
@@ -356,6 +362,110 @@ class DeviceModel {
                 }
             ]);
             return result[0] || null;
+        });
+    }
+    fetchDeviceMetrics(deviceId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const condition = { _id: new bson_1.ObjectID(deviceId) };
+                console.log("condition is ", condition);
+                let result = yield device_shema_1.Device.aggregate([
+                    { $match: condition },
+                    { $set: { _id: { $toString: "$_id" } } },
+                    {
+                        $project: {
+                            _id: 1
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "fastmessages",
+                            localField: "_id",
+                            foreignField: "deviceId",
+                            as: "fastMessages"
+                        },
+                    },
+                    {
+                        $lookup: {
+                            from: "messagequeues",
+                            localField: "_id",
+                            foreignField: "deviceId",
+                            as: "queueMessages"
+                        },
+                    },
+                    {
+                        $project: {
+                            messageMetrics: {
+                                totalFastError: {
+                                    $size: {
+                                        $filter: {
+                                            input: "$fastMessages",
+                                            as: "fastMessage",
+                                            cond: { "$eq": ["$$fastMessage.status", message_interface_1.EMessageStatus.ERROR] }
+                                        }
+                                    }
+                                },
+                                totalFastSuccess: {
+                                    $size: {
+                                        $filter: {
+                                            input: "$fastMessages",
+                                            as: "fastMessage",
+                                            cond: { "$eq": ["$$fastMessage.status", message_interface_1.EMessageStatus.SENT] }
+                                        }
+                                    }
+                                },
+                                totalQueueSuccess: {
+                                    $size: {
+                                        $filter: {
+                                            input: "$queueMessages",
+                                            as: "queueMessage",
+                                            cond: { "$eq": ["$$queueMessage.status", message_interface_1.EMessageStatus.SENT] }
+                                        }
+                                    }
+                                },
+                                totalQueueError: {
+                                    $size: {
+                                        $filter: {
+                                            input: "$queueMessages",
+                                            as: "queueMessage",
+                                            cond: { "$eq": ["$$queueMessage.status", message_interface_1.EMessageStatus.ERROR] }
+                                        }
+                                    }
+                                },
+                                totalQueuePending: {
+                                    $size: {
+                                        $filter: {
+                                            input: "$queueMessages",
+                                            as: "queueMessage",
+                                            cond: { "$eq": ["$$queueMessage.status", message_interface_1.EMessageStatus.PENDING] }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                ]);
+                console.log("metrics is ", result);
+                if (!result || !result[0]) {
+                    result = [
+                        {
+                            messageMetrics: {
+                                totalFastError: 1,
+                                totalFastSuccess: 3,
+                                totalQueueError: 0,
+                                totalQueuePending: 2,
+                                totalQueueSuccess: 0
+                            }
+                        }
+                    ];
+                }
+                ;
+                return result[0];
+            }
+            catch (err) {
+                console.log(err);
+                throw new httpErrors_1.HTTP400Error(err.messages);
+            }
         });
     }
 }

@@ -16,9 +16,15 @@ export interface IUser {
     following?: Array<string>;
     avatar?: Buffer,
     deactivation: boolean;
+    walletId?:string
 }
 
 export interface ITokenData {
     token: string;
     expiresIn: string;
+}
+
+export interface IDataStoredInToken{
+    id:string,
+    walletId:string
 }

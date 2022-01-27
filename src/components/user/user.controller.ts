@@ -77,6 +77,18 @@ class UserController {
   }
 
 
+  public fetchAccountMetrics = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+
+    try {
+     const result = await userModel.getAccountMetrics(req.userId);
+      responseHandler.reqRes(req, res).onCreate(msg.UPDATED,result).send();
+    } catch (e) {
+      next(responseHandler.sendError(e));
+    }
+  }
+
+
 
 
 

@@ -11,7 +11,8 @@ declare namespace Express {
         role?: string,
         token?: string,
         isAuth?: boolean,
-        deviceId: string
+        deviceId?: string,
+        walletId?:string
     }
 }
 

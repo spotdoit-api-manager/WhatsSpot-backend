@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserModel = void 0;
+const message_interface_1 = require("./../messages/message.interface");
 const helpers_1 = require("../../lib/helpers");
 const user_schema_1 = require("./user.schema");
 const socialAuth_1 = __importDefault(require("./../../lib/middleware/socialAuth"));
@@ -22,6 +23,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bson_1 = require("bson");
 const config_1 = require("../../config");
 const httpErrors_1 = require("../../lib/utils/httpErrors");
+const wallet_model_1 = __importDefault(require("../walllet/wallet.model"));
 class UserModel {
     constructor() {
         // private async generateValidUsername(firstName: string, id: string | null = null) {
@@ -40,8 +42,8 @@ class UserModel {
         //   }
         //   return userName;
         // }
-        this.signToken = (id) => {
-            return jsonwebtoken_1.default.sign({ id }, config_1.commonConfig.jwtSecretKey, {
+        this.signToken = (dataToStore) => {
+            return jsonwebtoken_1.default.sign(dataToStore, config_1.commonConfig.jwtSecretKey, {
                 expiresIn: process.env.JWT_EXPIRES_IN,
             });
         };
@@ -83,23 +85,38 @@ class UserModel {
             return { _id: data._id };
         });
     }
-    registerWithPhone(body) {
+    createNewUser(body) {
         return __awaiter(this, void 0, void 0, function* () {
-            body.role = "user";
-            console.log("register with phone ", body);
             try {
+                body.role = "user";
                 const existingUser = yield this.isUserExistByPhone(body.phone);
                 let data;
                 if (!existingUser) {
+                    const wallet = yield wallet_model_1.default.createWallet();
+                    body.walletId = wallet._id;
                     const newUser = new user_schema_1.User(body);
                     data = yield newUser.addNewUser();
                     if (!data)
                         throw new httpErrors_1.HTTP400Error("SOME_ERROR_OCCURED");
+                    yield wallet_model_1.default.addUserToWallet(data.walletId, data._id);
+                    return data;
                 }
-                const otp = this.updateOtp((data === null || data === void 0 ? void 0 : data._id) || existingUser._id);
+                return existingUser;
+            }
+            catch (err) {
+                throw new httpErrors_1.HTTP400Error(err.message);
+            }
+        });
+    }
+    registerWithPhone(body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("register with phone ", body);
+            try {
+                const user = yield this.createNewUser(body);
+                const otp = this.updateOtp(user._id);
                 const otpData = yield this.sendOtpToMobile(otp, body.phone);
                 if (otpData.proceed) {
-                    return { phone: body.phone, _id: (data === null || data === void 0 ? void 0 : data._id) || existingUser._id };
+                    return { phone: body.phone, _id: user.id };
                 }
                 throw new httpErrors_1.HTTP400Error("OTP_NOT_SENT");
             }
@@ -116,19 +133,8 @@ class UserModel {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield this.isUserExist(body);
-                // const user = await User.findOne({ phone: body.phone });
                 body.role = 'user';
                 let data = yield this.add(body);
-                // const otp = this.updateOtp(data._id);
-                // console.log(otp);
-                // let otpData;
-                // otpData = await this.sendOtpToMobile(otp, body.phone);
-                // console.log(otpData);
-                // if (otpData.proceed) {
-                //   return { _id: data._id, isExisted: false };
-                // } else {
-                //   throw new HTTP400Error("Unable to Send OTP");
-                // }
                 const userData = yield this.addNewToken(data._id);
                 return userData;
             }
@@ -324,9 +330,9 @@ class UserModel {
             return textlocal_1.sendMessage(phone, message);
         });
     }
-    addNewToken(id) {
+    addNewToken(dataToStore) {
         return __awaiter(this, void 0, void 0, function* () {
-            const token = this.signToken(id);
+            const token = this.signToken(dataToStore);
             const data = {
                 token,
                 expiresIn: process.env.JWT_EXPIRES_IN
@@ -345,16 +351,17 @@ class UserModel {
                 if (!otp) {
                     throw new httpErrors_1.HTTP400Error("OTP not entered");
                 }
-                let data;
-                data = yield this.fetchOnOtp(id, otp);
-                if (!data) {
+                const otpData = yield this.fetchOnOtp(id, otp);
+                if (!otpData) {
                     throw new httpErrors_1.HTTP400Error("WRONG_OTP");
                 }
-                if (data.phone !== '917984545163') {
+                if (otpData.phone !== '917984545163') {
                     this.updateOtp(id);
                 }
-                data = yield user_schema_1.User.findOneAndUpdate({ _id: new bson_1.ObjectID(id) }, { $set: { isVerified: true } }, { new: true });
-                const tokenData = yield this.addNewToken(id);
+                const wallet = yield wallet_model_1.default.fetchWalletByUserId(id);
+                const data = yield user_schema_1.User.findOneAndUpdate({ _id: new bson_1.ObjectID(id) }, { $set: { isVerified: true, walletId: wallet._id, } }, { new: true });
+                const dataToStore = { id, walletId: wallet._id };
+                const tokenData = yield this.addNewToken(dataToStore);
                 const cookie = this.createCookie(tokenData);
                 return { tokenData, data, cookie };
             }
@@ -543,6 +550,140 @@ class UserModel {
         });
     }
     ;
+    getAccountMetrics(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("user id is ", userId);
+            let result = yield user_schema_1.User.aggregate([
+                { $match: { _id: new bson_1.ObjectID(userId) } },
+                { $set: { _id: { $toObjectId: "$_id" } } },
+                {
+                    $project: {
+                        _id: 1
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "devices",
+                        localField: "_id",
+                        foreignField: "userId",
+                        as: "devices"
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$devices'
+                    }
+                },
+                { $project: {
+                        deviceId: "$devices._id",
+                        authState: "$devices.authState"
+                    } },
+                { $set: { deviceId: { $toString: "$deviceId" } } },
+                {
+                    $lookup: {
+                        from: "fastmessages",
+                        localField: "deviceId",
+                        foreignField: "deviceId",
+                        as: "fastMessages"
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "messagequeues",
+                        localField: "deviceId",
+                        foreignField: "deviceId",
+                        as: "queueMessages"
+                    },
+                },
+                {
+                    $project: {
+                        deviceId: "$deviceId",
+                        authState: "$authState",
+                        metrics: {
+                            totalFastError: {
+                                $size: {
+                                    $filter: {
+                                        input: "$fastMessages",
+                                        as: "fastMessage",
+                                        cond: { "$eq": ["$$fastMessage.status", message_interface_1.EMessageStatus.ERROR] }
+                                    }
+                                }
+                            },
+                            totalFastSuccess: {
+                                $size: {
+                                    $filter: {
+                                        input: "$fastMessages",
+                                        as: "fastMessage",
+                                        cond: { "$eq": ["$$fastMessage.status", message_interface_1.EMessageStatus.SENT] }
+                                    }
+                                }
+                            },
+                            totalQueueSuccess: {
+                                $size: {
+                                    $filter: {
+                                        input: "$queueMessages",
+                                        as: "queueMessage",
+                                        cond: { "$eq": ["$$queueMessage.status", message_interface_1.EMessageStatus.SENT] }
+                                    }
+                                }
+                            },
+                            totalQueueError: {
+                                $size: {
+                                    $filter: {
+                                        input: "$queueMessages",
+                                        as: "queueMessage",
+                                        cond: { "$eq": ["$$queueMessage.status", message_interface_1.EMessageStatus.ERROR] }
+                                    }
+                                }
+                            },
+                            totalQueuePending: {
+                                $size: {
+                                    $filter: {
+                                        input: "$queueMessages",
+                                        as: "queueMessage",
+                                        cond: { "$eq": ["$$queueMessage.status", message_interface_1.EMessageStatus.PENDING] }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$_id",
+                        totalDevices: { $sum: 1 },
+                        activeDevices: { '$sum': {
+                                '$cond': [
+                                    { '$eq': ['$authState', true] },
+                                    1,
+                                    0
+                                ]
+                            } },
+                        totalFastSuccess: { $sum: "$metrics.totalFastSuccess" },
+                        totalFastError: { $sum: "$metrics.totalFastError" },
+                        totalQueueSuccess: { $sum: "$metrics.totalQueueSuccess" },
+                        totalQueueError: { $sum: "$metrics.totalQueueError" }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        userId: "$_id",
+                        metrics: {
+                            activeDevices: "$activeDevices",
+                            totalDevices: "$totalDevices",
+                            totalFastSuccess: "$totalFastSuccess",
+                            totalFastError: "$totalFastError",
+                            totalQueueSuccess: "$totalQueueSuccess",
+                            totalQueueError: "$totalQueueError"
+                        }
+                    }
+                }
+            ]);
+            console.log("metrics result ", result);
+            return result[0] || null;
+        });
+    }
 }
 exports.UserModel = UserModel;
 exports.default = new UserModel();
