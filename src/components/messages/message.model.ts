@@ -11,6 +11,14 @@ export class MessageModel {
         }
         return { error: true, message: "NOT_ADDED" };
     }
+
+    public async addMultipleMessageToQueue(messages:IMessage[]){
+        const result = await MessageQueue.insertMany(messages);
+        if (result) {
+            return { error: false }
+        }
+        return { error: true, message: "NOT_ADDED" };
+    }
     public async addFastMessage(messageBody: IMessage) {
         const newMessage = new FastMessage(messageBody);
         let data = await newMessage.addMessage()

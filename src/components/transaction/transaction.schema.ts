@@ -35,6 +35,9 @@ const TransactionSchema = new Schema({
         type:String,
         enum:["CREDIT","DEBIT"],
         required:true
+    },
+    description:{
+        type:String
     }
 
 }, {

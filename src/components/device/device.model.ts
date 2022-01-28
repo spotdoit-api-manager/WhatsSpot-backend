@@ -68,14 +68,21 @@ export class DeviceModel {
         const device = await this.findDeviceById(deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const numbers = body.numbers;
+        const messagesBody:IMessage[]=[];
         for (let i = 0; i < numbers.length; i++) {
             const to = "91" + numbers[i];
             const newBody: IMessage = { phone: device.phone, deviceId: deviceId, sendType: ESendType.QUEUE, to, message: body.message, status: EMessageStatus.PENDING }
-            const result = await messageModel.addMessageToQueue(newBody);
+            messagesBody.push(newBody);
         }
-
+        
+        const result = await messageModel.addMultipleMessageToQueue(messagesBody);
+        if(result && result.error){
+            throw new HTTP401Error(result.message);
+        }
         return { error: false, message: "Message Added To Queue" }
     }
+
+  
 
     public async sendTextMessage(body: any, deviceId: string) {
         try {

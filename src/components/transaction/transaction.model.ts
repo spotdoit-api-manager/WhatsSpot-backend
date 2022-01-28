@@ -13,9 +13,13 @@ export class TransactionModel {
                 $project: {
                     amount: 1,
                     status: 1,
-                    type: 1
+                    type: 1,
+                    dateTime:"$createdAt",
+                    description:1,
+                    
                 }
             }
+           
         ]);
         console.log("got transaciton", result);
         return result;

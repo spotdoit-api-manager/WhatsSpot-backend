@@ -22,6 +22,15 @@ class MessageModel {
             return { error: true, message: "NOT_ADDED" };
         });
     }
+    addMultipleMessageToQueue(messages) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield message_schema_1.MessageQueue.insertMany(messages);
+            if (result) {
+                return { error: false };
+            }
+            return { error: true, message: "NOT_ADDED" };
+        });
+    }
     addFastMessage(messageBody) {
         return __awaiter(this, void 0, void 0, function* () {
             const newMessage = new message_schema_1.FastMessage(messageBody);

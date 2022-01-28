@@ -3,6 +3,7 @@ export interface ITransaction {
     type: ETransactionTypes;
     userId: string;
     walletId: string;
+    description?: string;
     status: ETransactionStatus;
 }
 export declare enum ETransactionTypes {

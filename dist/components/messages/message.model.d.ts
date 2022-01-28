@@ -7,6 +7,13 @@ export declare class MessageModel {
         error: boolean;
         message: string;
     }>;
+    addMultipleMessageToQueue(messages: IMessage[]): Promise<{
+        error: boolean;
+        message?: undefined;
+    } | {
+        error: boolean;
+        message: string;
+    }>;
     addFastMessage(messageBody: IMessage): Promise<{
         error: boolean;
         message?: undefined;

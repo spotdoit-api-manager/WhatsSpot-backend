@@ -101,10 +101,15 @@ class DeviceModel {
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const numbers = body.numbers;
+            const messagesBody = [];
             for (let i = 0; i < numbers.length; i++) {
                 const to = "91" + numbers[i];
                 const newBody = { phone: device.phone, deviceId: deviceId, sendType: message_interface_1.ESendType.QUEUE, to, message: body.message, status: message_interface_1.EMessageStatus.PENDING };
-                const result = yield message_model_1.default.addMessageToQueue(newBody);
+                messagesBody.push(newBody);
+            }
+            const result = yield message_model_1.default.addMultipleMessageToQueue(messagesBody);
+            if (result && result.error) {
+                throw new httpErrors_1.HTTP401Error(result.message);
             }
             return { error: false, message: "Message Added To Queue" };
         });

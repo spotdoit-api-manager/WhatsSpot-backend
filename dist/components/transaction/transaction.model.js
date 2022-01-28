@@ -24,7 +24,9 @@ class TransactionModel {
                     $project: {
                         amount: 1,
                         status: 1,
-                        type: 1
+                        type: 1,
+                        dateTime: "$createdAt",
+                        description: 1,
                     }
                 }
             ]);
