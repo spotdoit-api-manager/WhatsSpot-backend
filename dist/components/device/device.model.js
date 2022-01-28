@@ -20,7 +20,6 @@ const device_interface_1 = require("./device.interface");
 const device_shema_1 = require("./device.shema");
 const whatsapp_client_service_1 = __importDefault(require("../../lib/services/whatsapp/whatsapp-client.service"));
 const file_management_1 = __importDefault(require("../../lib/helpers/file.management"));
-const message_model_1 = __importDefault(require("../messages/message.model"));
 const bson_1 = require("bson");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dayjs_1 = __importDefault(require("dayjs"));
@@ -38,16 +37,17 @@ class DeviceModel {
             const device = yield this.fetchDeviceByCondition(deviceId, userId);
             return device;
         });
-        this.signDeviceToken = (deviceId, expiresIn) => {
+        this.signDeviceToken = (apiKeyData, expiresIn) => {
+            console.log("signing key", apiKeyData);
             if (!expiresIn) {
-                return jsonwebtoken_1.default.sign({ deviceId }, index_1.deviceKeyConfig.jwtSecretKey, {});
+                return jsonwebtoken_1.default.sign(apiKeyData, index_1.deviceKeyConfig.jwtSecretKey, {});
             }
-            return jsonwebtoken_1.default.sign({ deviceId }, index_1.deviceKeyConfig.jwtSecretKey, {
+            return jsonwebtoken_1.default.sign(apiKeyData, index_1.deviceKeyConfig.jwtSecretKey, {
                 expiresIn: expiresIn,
             });
         };
     }
-    newDevice(body, userId) {
+    newDevice(userId, walletId, body) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(body);
             body.userId = userId;
@@ -60,7 +60,7 @@ class DeviceModel {
                 throw new httpErrors_1.HTTP400Error("UNKNOWN_ERROR");
             let expiresOn = dayjs_1.default().add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN || '3d').replace("d", "")), 'day').toDate().toUTCString();
             ;
-            const keys = yield this.generateNewKey(newDeviceData._id, { name: process.env.DEFAULT_APIKEY_NAME, expiresOn });
+            const keys = yield this.generateNewKey(userId, walletId, newDeviceData._id, { name: process.env.DEFAULT_APIKEY_NAME, expiresOn });
             return newDeviceData;
         });
     }
@@ -92,56 +92,6 @@ class DeviceModel {
             ]);
             console.log("got result ", result);
             return result[0] || null;
-        });
-    }
-    addMessageToQueue(body, deviceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log("send text message request", body, deviceId);
-            const device = yield this.findDeviceById(deviceId);
-            if (!device)
-                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
-            const numbers = body.numbers;
-            const messagesBody = [];
-            for (let i = 0; i < numbers.length; i++) {
-                const to = "91" + numbers[i];
-                const newBody = { phone: device.phone, deviceId: deviceId, sendType: message_interface_1.ESendType.QUEUE, to, message: body.message, status: message_interface_1.EMessageStatus.PENDING };
-                messagesBody.push(newBody);
-            }
-            const result = yield message_model_1.default.addMultipleMessageToQueue(messagesBody);
-            if (result && result.error) {
-                throw new httpErrors_1.HTTP401Error(result.message);
-            }
-            return { error: false, message: "Message Added To Queue" };
-        });
-    }
-    sendTextMessage(body, deviceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const device = yield this.findDeviceById(deviceId);
-                if (!device)
-                    throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
-                const result = yield whatsapp_client_service_1.default.sendTextMessage(device.phone, body.to, body.message);
-                const newBody = { phone: device.phone, to: body.to, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, message: body.message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
-                yield message_model_1.default.addFastMessage(newBody);
-                console.log(result);
-                if (result.error) {
-                    throw new httpErrors_1.HTTP401Error(result.message);
-                }
-            }
-            catch (err) {
-                throw new httpErrors_1.HTTP400Error(err.message);
-            }
-        });
-    }
-    sendImageMessage(body, deviceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const device = yield this.findDeviceById(deviceId);
-            if (!device)
-                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
-            const to = body.to;
-            const msg = { image: body.locationUrl, caption: body.caption || '' };
-            const result = yield whatsapp_client_service_1.default.sendImageMessage(device.phone, to, msg);
-            console.log(result);
         });
     }
     fetchPrevMessages(deviceId) {
@@ -238,7 +188,7 @@ class DeviceModel {
             return { message: "DEVICE_LOGGED_OUT", device: device };
         });
     }
-    generateNewKey(deviceId, body) {
+    generateNewKey(userId, walletId, deviceId, body) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!body.name || !body.expiresOn)
                 throw new httpErrors_1.HTTP400Error("Fields missing");
@@ -253,7 +203,8 @@ class DeviceModel {
                 console.log(totalAvailableKeys, process.env.MAX_APIKEY_PER_DEVICE);
                 if (totalAvailableKeys < parseInt(process.env.MAX_APIKEY_PER_DEVICE)) {
                     console.log("generating new key");
-                    const token = this.generateDeviceKey(deviceId, expiresIn);
+                    const apiKeyData = { walletId, userId, deviceId };
+                    const token = this.generateDeviceKey(apiKeyData, expiresIn);
                     const tokenData = { name: body.name, createdOn: new Date(), token: token, expiresOn: body.expiresOn, status: { status: device_interface_1.EApiKeyStatus.ACTIVE, reason: null } };
                     yield this.addNewTokenDataToDevice(deviceId, tokenData);
                     console.log(tokenData);
@@ -299,8 +250,8 @@ class DeviceModel {
             console.log(result);
         });
     }
-    generateDeviceKey(deviceId, expiresIn) {
-        const token = this.signDeviceToken(deviceId, expiresIn);
+    generateDeviceKey(apiKeyData, expiresIn) {
+        const token = this.signDeviceToken(apiKeyData, expiresIn);
         return token;
     }
     getTotalAvailableApiKeys(deviceId) {

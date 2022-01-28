@@ -16,5 +16,6 @@ export declare const getPaginationInfo: (pageNo?: number) => {
     limit: number;
     skip: number;
 };
-export declare const validateMobile: (phone: any) => boolean;
+export declare const validateMobile: (phone: string) => boolean;
+export declare const sanatizeMobile: (phone: string) => string;
 export {};

@@ -26,6 +26,10 @@ const TransactionSchema = new mongoose_1.Schema({
         type: String,
         required: true
     },
+    metaData: {
+        type: Map,
+        of: String
+    },
     amount: {
         type: Number,
         required: true

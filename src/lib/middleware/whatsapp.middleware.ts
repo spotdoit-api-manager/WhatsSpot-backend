@@ -10,13 +10,17 @@ export const DeviceKeyValidator = async (req: Request, res: Response, next: Next
     try {
         if (req.query) {
             const token: string = req.query.key;
-            const data: IDeviceModel = await handleToken(token);
-            if (data) {
-                req.deviceId = data._id;
+            const tokenData: IDeviceTokenData = await handleToken(token);
+            console.log("token data is",tokenData);
+            
+            if (tokenData) {
+                req.deviceId = tokenData.deviceId;
+                req.userId =tokenData.userId
+                req.walletId = tokenData.walletId
                 next();
             }
         } else {
-            throw new HTTP401Error("Invalid Key", "You may have not passed the api key in parameters");
+            throw new HTTP401Error("INVALID_KEY", "You may have not passed the api key in parameters");
         }
     } catch (e) {
         e = new HTTP401Error(e.message, "You may have not passed the authorization key in header");
@@ -27,12 +31,8 @@ export const DeviceKeyValidator = async (req: Request, res: Response, next: Next
 const handleToken = async (token: string) => {
     if (token) {
         const tokenData: IDeviceTokenData = await jwt.verify(token, deviceKeyConfig.jwtSecretKey) as IDeviceTokenData;
-        const data: any = await deviceModel.findDeviceById(tokenData.deviceId);
-        if (data && data._id) {
-            return data;
-        } else {
-            throw new HTTP401Error("Invalid api key...")
-        }
+        // const data: any = await deviceModel.findDeviceById(tokenData.deviceId);
+       return tokenData;
     } else {
         // tslint:disable-next-line: no-string-throw
         throw new HTTP401Error("Api key not provided");

@@ -1,7 +1,8 @@
-import { EApiKeyStatus, IDevice } from "./device.interface";
+import { IDeviceTokenData } from '../device/device.interface';
+import { IApiKey, IDevice } from "./device.interface";
 import { IDeviceModel } from "./device.shema";
 export declare class DeviceModel {
-    newDevice(body: IDevice, userId: string): Promise<IDeviceModel>;
+    newDevice(userId: string, walletId: any, body: IDevice): Promise<IDeviceModel>;
     getQr(body: any): Promise<{
         error: boolean;
         message: string;
@@ -12,13 +13,6 @@ export declare class DeviceModel {
     fetchAllDevices: (userId: string) => Promise<any>;
     fetchDevice: (deviceId: string, userId: string) => Promise<any>;
     private fetchDeviceByCondition;
-    addMessageToQueue(body: any, deviceId: string): Promise<{
-        error: boolean;
-        message: string;
-    }>;
-    sendTextMessage(body: any, deviceId: string): Promise<void>;
-    private: any;
-    sendImageMessage(body: any, deviceId: string): Promise<void>;
     fetchPrevMessages(deviceId: string): Promise<any>;
     private fetchMessagesByStatus;
     deleteAuth(body: any): Promise<{
@@ -28,21 +22,12 @@ export declare class DeviceModel {
         message: string;
         device: IDeviceModel;
     }>;
-    generateNewKey(deviceId: string, body: any): Promise<{
-        name: any;
-        createdOn: Date;
-        token: string;
-        expiresOn: any;
-        status: {
-            status: EApiKeyStatus;
-            reason: any;
-        };
-    }>;
+    generateNewKey(userId: string, walletId: string, deviceId: string, body: any): Promise<IApiKey>;
     deleteKey(deviceId: string, keyId: string): Promise<void>;
     getKeys(deviceId: string): Promise<any>;
     private addNewTokenDataToDevice;
     private generateDeviceKey;
-    signDeviceToken: (deviceId: string, expiresIn: string) => string;
+    signDeviceToken: (apiKeyData: IDeviceTokenData, expiresIn: string) => string;
     private getTotalAvailableApiKeys;
     updateDevice(phone: string, clientData: any): Promise<void | {
         error: boolean;

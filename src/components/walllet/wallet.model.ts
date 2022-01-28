@@ -5,6 +5,7 @@ import ResponseHandler from "../../lib/helpers/responseHandler";
 import { IWallet } from './wallet.interface';
 import { IWalletModel, Wallet } from "./wallet.schema";
 import transactionModel from '../transaction/transaction.model';
+import { ETransactionTypes } from '../transaction/transaction.interface';
 
 export class WalletModel {
 
@@ -33,15 +34,17 @@ export class WalletModel {
         return transactions;
     }
 
-    private async fetchWallet(walletId) {
+    private async fetchWallet(walletId:string) {
         const result = await Wallet.aggregate([
-            { $match: { _id: walletId } },
+            { $match: { _id: new ObjectID(walletId) } },
             {
                 $project: {
                     balance: 1
                 }
             }
         ]);
+        console.log("wallet result ",result);
+        
         return result[0] || null;
     }
 
@@ -49,10 +52,32 @@ export class WalletModel {
         return await Wallet.findByIdAndUpdate(walletId,{userId});
     }
 
-        public async addCreditToWallet(walletId:string,addBalance:number=0){
-        const result = await Wallet.findByIdAndUpdate(walletId, { $inc: { balance:addBalance } });
+        public async addCreditToWallet(walletId:string,addCredit:number){
+        const result = await Wallet.findByIdAndUpdate(walletId, { $inc: { balance:addCredit } });
         if(!result) throw new HTTP401Error("ERROR_UPDATING_WALLET_BALANCE");
         return result;
+        }
+
+        public async validateTransactionAmount(walletId:string,amountToDebit:number){
+            const wallet = await this.fetchWallet(walletId);
+            console.log("found wallet for",walletId,wallet);
+            
+            if(!wallet) throw new Error("WALLET_NOT_FOUND");
+            if(wallet.balance>=amountToDebit) return true;
+            throw new Error("NOT_ENOUGH_CREDITS");
+        }
+
+        public async removeCreditFromWallet(walletId:string,removeCredit:number){
+           await this.validateTransactionAmount(walletId,removeCredit);
+            const result = await Wallet.findByIdAndUpdate(walletId, { $inc: { balance:-removeCredit } },{new:true});
+            if(!result) throw new HTTP401Error("ERROR_UPDATING_WALLET_BALANCE");
+            return result;
+            }
+
+        public async makePaymentFromWallet(walletId:string,userId:string,amount:number,description:string,metaData:Object={}){            
+            const transaction = transactionModel.createTransactionForWallet(walletId,userId,ETransactionTypes.DEBIT,amount,description,metaData);
+            const wallet = await this.removeCreditFromWallet(walletId,amount);
+            return {error:false,transaction,wallet}
         }
    
 

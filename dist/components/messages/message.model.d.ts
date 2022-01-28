@@ -1,6 +1,11 @@
 import { IMessage } from './message.interface';
 export declare class MessageModel {
-    addMessageToQueue(messageBody: IMessage): Promise<{
+    addMessageToQueue(body: any, deviceId: string): Promise<{
+        error: boolean;
+        message: IMessage;
+        numbers: any[];
+    }>;
+    addSingleMessageToQueue(messageBody: IMessage): Promise<{
         error: boolean;
         message?: undefined;
     } | {
@@ -14,7 +19,14 @@ export declare class MessageModel {
         error: boolean;
         message: string;
     }>;
-    addFastMessage(messageBody: IMessage): Promise<{
+    sendTextMessage(body: any, userId: string, deviceId: string, walletId: string): Promise<{
+        error: boolean;
+        message: IMessage;
+        creditUsed: string;
+        walletBalance: number;
+    }>;
+    sendImageMessage(body: any, deviceId: string): Promise<void>;
+    saveFastMessage(messageBody: IMessage): Promise<{
         error: boolean;
         message?: undefined;
     } | {

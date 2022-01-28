@@ -67,12 +67,18 @@ export const getPaginationInfo = (pageNo:number=1)=>{
 }
 
 
-export  const validateMobile=(phone:any)=>{
-    var regmm='^([0|+[0-9]{1,5})?([7-9][0-9]{9})$';
-    var regmob = new RegExp(regmm);
-    if(regmob.test(phone)){
+export  const validateMobile=(phone:string)=>{
+  phone = sanatizeMobile(phone);
+    const regmm='^([0|+[0-9]{1,5})?([7-9][0-9]{9})$';
+    const regmob = new RegExp(regmm);
+    if(regmob.test(phone) && phone.length==12){
         return true;
     }
-        return false;
-       
+        return false;    
+}
+
+export const sanatizeMobile=(phone:string)=>{
+  phone.replace("+","");
+  if(phone.length==10) return `91${phone}`;
+  return phone;
 }

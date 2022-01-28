@@ -159,6 +159,12 @@ class Whatsapp extends events_1.EventEmitter {
                         });
                         yield this.reconnectClient();
                     }
+                    else if ((reason === null || reason === void 0 ? void 0 : reason.statusCode) === 428) {
+                        const data = yield device_model_1.default.updateDevice(this.phone, {
+                            authState: false, reason
+                        });
+                        console.log("connection teminated", reason, this.phone);
+                    }
                     else {
                         const data = yield device_model_1.default.updateDevice(this.phone, {
                             authState: false, reason

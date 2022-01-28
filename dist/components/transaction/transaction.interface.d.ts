@@ -3,8 +3,10 @@ export interface ITransaction {
     type: ETransactionTypes;
     userId: string;
     walletId: string;
+    orderId: string;
     description?: string;
     status: ETransactionStatus;
+    metaData: any;
 }
 export declare enum ETransactionTypes {
     CREDIT = "CREDIT",

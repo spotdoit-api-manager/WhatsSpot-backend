@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DeviceController = void 0;
 const responseHandler_1 = __importDefault(require("../../lib/helpers/responseHandler"));
 const device_model_1 = __importDefault(require("./device.model"));
+const message_model_1 = __importDefault(require("../messages/message.model"));
 class DeviceController {
     constructor() {
         this.newDevice = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -23,7 +24,7 @@ class DeviceController {
                 console.log("new device request");
                 responseHandler
                     .reqRes(req, res)
-                    .onFetch("new device", yield device_model_1.default.newDevice(req.body, req.userId))
+                    .onFetch("DEVICE_ADDED", yield device_model_1.default.newDevice(req.userId, req.walletId, req.body))
                     .send();
             }
             catch (e) {
@@ -35,7 +36,7 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("qr request");
-                responseHandler.reqRes(req, res).onFetch("qr requestd", yield device_model_1.default.getQr(req.params)).send();
+                responseHandler.reqRes(req, res).onFetch("QR_REQUESTED", yield device_model_1.default.getQr(req.params)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -46,7 +47,7 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("fetch all device request");
-                responseHandler.reqRes(req, res).onFetch("Devices fetched", yield device_model_1.default.fetchAllDevices(req.userId)).send();
+                responseHandler.reqRes(req, res).onFetch("DEVICES_FETCHED", yield device_model_1.default.fetchAllDevices(req.userId)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -57,7 +58,7 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("qr request");
-                responseHandler.reqRes(req, res).onFetch("Devices fetched", yield device_model_1.default.fetchDevice(req.params.deviceId, req.userId)).send();
+                responseHandler.reqRes(req, res).onFetch("DEVICE_FETCHED", yield device_model_1.default.fetchDevice(req.params.deviceId, req.userId)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -68,7 +69,7 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("qr request");
-                responseHandler.reqRes(req, res).onFetch("auth deleted", yield device_model_1.default.deleteAuth(req.params)).send();
+                responseHandler.reqRes(req, res).onFetch("AUTH_DELETED", yield device_model_1.default.deleteAuth(req.params)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -79,7 +80,7 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("qr request");
-                responseHandler.reqRes(req, res).onFetch("auth deleted", yield device_model_1.default.logoutDevice(req.params)).send();
+                responseHandler.reqRes(req, res).onFetch("DEVICE_LOGGEDOUT", yield device_model_1.default.logoutDevice(req.params)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -90,7 +91,7 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("qr request");
-                responseHandler.reqRes(req, res).onFetch("Key Generated", yield device_model_1.default.generateNewKey(req.params.deviceId, req.body)).send();
+                responseHandler.reqRes(req, res).onFetch("KEY_GENERATED", yield device_model_1.default.generateNewKey(req.userId, req.walletId, req.params.deviceId, req.body)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -101,7 +102,7 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("qr request");
-                responseHandler.reqRes(req, res).onFetch("Keys Fetched", yield device_model_1.default.getKeys(req.params.deviceId)).send();
+                responseHandler.reqRes(req, res).onFetch("KEYS_FETCHED", yield device_model_1.default.getKeys(req.params.deviceId)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -112,7 +113,7 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("delete key request", req.params);
-                responseHandler.reqRes(req, res).onFetch("Keys Fetched", yield device_model_1.default.deleteKey(req.params.deviceId, req.params.keyId)).send();
+                responseHandler.reqRes(req, res).onFetch("KEY_DELETED", yield device_model_1.default.deleteKey(req.params.deviceId, req.params.keyId)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -123,7 +124,7 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("add to queue request ", req.params);
-                responseHandler.reqRes(req, res).onFetch("added to queue", yield device_model_1.default.addMessageToQueue(req.body, req.params.deviceId || req.deviceId)).send();
+                responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE", yield message_model_1.default.addMessageToQueue(req.body, req.params.deviceId || req.deviceId)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -133,8 +134,8 @@ class DeviceController {
         this.sendTextMessage = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
-                console.log("qr request");
-                responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield device_model_1.default.sendTextMessage(req.body, req.deviceId)).send();
+                console.log("Send text message request");
+                responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield message_model_1.default.sendTextMessage(req.body, req.userId, req.params.deviceId, req.walletId)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -146,7 +147,7 @@ class DeviceController {
             try {
                 console.log("qr request");
                 req.body.locationUrl = req.file.location;
-                responseHandler.reqRes(req, res).onFetch("sent", yield device_model_1.default.sendImageMessage(req.body, req.params.deviceId)).send();
+                responseHandler.reqRes(req, res).onFetch("SENT_MESSAGE", yield message_model_1.default.sendImageMessage(req.body, req.params.deviceId)).send();
             }
             catch (e) {
                 // send error with next function.

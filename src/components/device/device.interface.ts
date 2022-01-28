@@ -8,11 +8,11 @@ export interface IDevice {
     apiKeys: IApiKey[],
 }
 
-interface IApiKey {
+export interface IApiKey {
     token: string,
     expiresOn: string,
     name: string,
-    createdOn: string,
+    createdOn: Date,
     status: {
         status: EApiKeyStatus,
         reason: string | null
@@ -20,7 +20,9 @@ interface IApiKey {
 }
 
 export interface IDeviceTokenData {
-    deviceId: string
+    deviceId: string,
+    walletId:string,
+    userId:string
 }
 
 export interface TextMessage {

@@ -7,11 +7,11 @@ export interface IDevice {
     userId: string;
     apiKeys: IApiKey[];
 }
-interface IApiKey {
+export interface IApiKey {
     token: string;
     expiresOn: string;
     name: string;
-    createdOn: string;
+    createdOn: Date;
     status: {
         status: EApiKeyStatus;
         reason: string | null;
@@ -19,6 +19,8 @@ interface IApiKey {
 }
 export interface IDeviceTokenData {
     deviceId: string;
+    walletId: string;
+    userId: string;
 }
 export interface TextMessage {
     message: String;
@@ -35,4 +37,3 @@ export interface IMessageMetrics {
     totalQueuePending: number;
     totalQueueSuccess: number;
 }
-export {};

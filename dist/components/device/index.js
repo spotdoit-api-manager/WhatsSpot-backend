@@ -3,7 +3,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const whatsapp_middleware_1 = require("./../../lib/middleware/whatsapp.middleware");
 const s3_1 = require("../../lib/services/s3");
 const device_controller_1 = __importDefault(require("./device.controller"));
 exports.default = [
@@ -29,25 +28,25 @@ exports.default = [
     {
         path: "/device/getQr/:deviceId",
         method: "get",
-        escapeAuth: true,
+        escapeAuth: false,
         handler: [device_controller_1.default.getQr]
     },
     {
         path: "/device/auth/delete/:deviceId",
         method: "delete",
-        escapeAuth: true,
+        escapeAuth: false,
         handler: [device_controller_1.default.deleteAuth]
     },
     {
         path: "/device/auth/logout/:deviceId",
         method: "get",
-        escapeAuth: true,
+        escapeAuth: false,
         handler: [device_controller_1.default.logoutDevice]
     },
     {
         path: "/device/:deviceId/keys/generate",
         method: "post",
-        escapeAuth: true,
+        escapeAuth: false,
         handler: [device_controller_1.default.generateNewKey]
     },
     {
@@ -69,16 +68,10 @@ exports.default = [
         handler: [device_controller_1.default.addMessageToQueue]
     },
     {
-        path: "/device/message/addMessageToQueue",
+        path: "/device/:deviceId/send/textMessage",
         method: "post",
-        escapeAuth: true,
-        handler: [whatsapp_middleware_1.DeviceKeyValidator, device_controller_1.default.addMessageToQueue]
-    },
-    {
-        path: "/device/send/textMessage",
-        method: "post",
-        escapeAuth: true,
-        handler: [whatsapp_middleware_1.DeviceKeyValidator, device_controller_1.default.sendTextMessage]
+        escapeAuth: false,
+        handler: [device_controller_1.default.sendTextMessage]
     },
     {
         path: "/device/send/imageMessage/:deviceId",

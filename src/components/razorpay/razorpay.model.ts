@@ -16,7 +16,7 @@ export class RazorPayModel {
             if (!order) throw new HTTP401Error("UNKNOWN_ERROR");
             console.log(order);
             if (order.error) throw new HTTP401Error(order.message);
-            const transaction:ITransactionModel = await transactionModel.createTransaction(order.order.id,userId,walletId,ETransactionTypes.CREDIT,body.amount,"amount adding to wallet");
+            const transaction:ITransactionModel = await transactionModel.createTransactionForRazorPay(order.order.id,userId,walletId,ETransactionTypes.CREDIT,body.amount,"amount adding to wallet");
             if(!transaction) throw new HTTP401Error("UNKNOWN_ERROR");
             order.order.transactionId = transaction._id;
             return {order};

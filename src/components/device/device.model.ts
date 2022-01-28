@@ -1,9 +1,10 @@
+import { IDeviceTokenData } from '../device/device.interface';
 import { MessageQueue } from './../messages/message.schema';
 import { deviceKeyConfig } from './../../config/index';
 import { IImageMessage } from './../../lib/services/whatsapp/whatsapp.interface';
 import { EMessageStatus, ESendType, IMessage } from './../messages/message.interface';
 import { HTTP400Error, HTTP401Error } from './../../lib/utils/httpErrors';
-import { EApiKeyStatus, IDevice, TextMessage } from "./device.interface";
+import { EApiKeyStatus, IApiKey, IDevice, TextMessage } from "./device.interface";
 import { Device, IDeviceModel } from "./device.shema";
 import whatsappClientService from '../../lib/services/whatsapp/whatsapp-client.service';
 import fileManagement from '../../lib/helpers/file.management';
@@ -11,8 +12,10 @@ import messageModel from '../messages/message.model';
 import { ObjectID } from 'bson';
 import jwt from 'jsonwebtoken';
 import dayjs from 'dayjs'
+import { sanatizeMobile, validateMobile } from '../../lib/utils';
+
 export class DeviceModel {
-    public async newDevice(body: IDevice, userId: string) {
+    public async newDevice(userId:string,walletId,body: IDevice) {
         console.log(body);
         body.userId = userId;
         const device = await this.findDeviceByPhone(body.phone);
@@ -21,7 +24,7 @@ export class DeviceModel {
         const newDeviceData:IDeviceModel = await newDevice.saveDevice();
         if(!newDeviceData) throw new HTTP400Error("UNKNOWN_ERROR");
         let expiresOn = dayjs().add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN|| '3d').replace("d", "")), 'day').toDate().toUTCString();;
-        const keys = await this.generateNewKey(newDeviceData._id,{name:process.env.DEFAULT_APIKEY_NAME,expiresOn});
+        const keys = await this.generateNewKey(userId,walletId,newDeviceData._id,{name:process.env.DEFAULT_APIKEY_NAME,expiresOn});
         return newDeviceData;
     }
 
@@ -63,54 +66,9 @@ export class DeviceModel {
         return result[0] || null;
     }
 
-    public async addMessageToQueue(body: any, deviceId: string) {
-        console.log("send text message request", body, deviceId);
-        const device = await this.findDeviceById(deviceId);
-        if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-        const numbers = body.numbers;
-        const messagesBody:IMessage[]=[];
-        for (let i = 0; i < numbers.length; i++) {
-            const to = "91" + numbers[i];
-            const newBody: IMessage = { phone: device.phone, deviceId: deviceId, sendType: ESendType.QUEUE, to, message: body.message, status: EMessageStatus.PENDING }
-            messagesBody.push(newBody);
-        }
-        
-        const result = await messageModel.addMultipleMessageToQueue(messagesBody);
-        if(result && result.error){
-            throw new HTTP401Error(result.message);
-        }
-        return { error: false, message: "Message Added To Queue" }
-    }
+   
 
   
-
-    public async sendTextMessage(body: any, deviceId: string) {
-        try {
-
-            const device = await this.findDeviceById(deviceId);
-            if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-            const result = await whatsappClientService.sendTextMessage(device.phone, body.to, body.message);
-            const newBody: IMessage = { phone: device.phone, to: body.to, reason: result?.message, sendType: ESendType.FAST, message: body.message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT }
-            await messageModel.addFastMessage(newBody);
-            console.log(result);
-            if (result.error) {
-                throw new HTTP401Error(result.message);
-            }
-        } catch (err) {
-            throw new HTTP400Error(err.message);
-        }
-    }
-
-    private
-
-    public async sendImageMessage(body: any, deviceId: string) {
-        const device = await this.findDeviceById(deviceId);
-        if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-        const to = body.to;
-        const msg: IImageMessage = { image: body.locationUrl, caption: body.caption || '' };
-        const result = await whatsappClientService.sendImageMessage(device.phone, to, msg);
-        console.log(result);
-    }
 
     public async fetchPrevMessages(deviceId: string) {
         try {
@@ -199,7 +157,7 @@ export class DeviceModel {
         return { message: "DEVICE_LOGGED_OUT", device: device };
     }
 
-    public async generateNewKey(deviceId: string, body: any) {
+    public async generateNewKey(userId:string,walletId:string,deviceId: string, body: any) {
         if (!body.name || !body.expiresOn) throw new HTTP400Error("Fields missing");
         try {
             let expiresIn = null;
@@ -213,8 +171,9 @@ export class DeviceModel {
 
             if (totalAvailableKeys < parseInt(process.env.MAX_APIKEY_PER_DEVICE)) {
                 console.log("generating new key");
-                const token = this.generateDeviceKey(deviceId, expiresIn);
-                const tokenData = { name: body.name, createdOn: new Date(), token: token, expiresOn: body.expiresOn, status: { status: EApiKeyStatus.ACTIVE, reason: null } };
+                const apiKeyData:IDeviceTokenData = {walletId,userId,deviceId}
+                const token = this.generateDeviceKey(apiKeyData, expiresIn);
+                const tokenData:IApiKey = { name: body.name, createdOn: new Date(), token: token, expiresOn: body.expiresOn, status: { status: EApiKeyStatus.ACTIVE, reason: null } };
                 await this.addNewTokenDataToDevice(deviceId, tokenData);
                 console.log(tokenData);
                 return tokenData;
@@ -253,16 +212,18 @@ export class DeviceModel {
         console.log(result);
     }
 
-    private generateDeviceKey(deviceId: string, expiresIn: string) {
-        const token = this.signDeviceToken(deviceId, expiresIn);
+    private generateDeviceKey(apiKeyData: IDeviceTokenData, expiresIn: string) {
+        const token = this.signDeviceToken(apiKeyData, expiresIn);
         return token;
     }
 
-    public signDeviceToken = (deviceId: string, expiresIn: string) => {
+    public signDeviceToken = (apiKeyData: IDeviceTokenData, expiresIn: string) => {
+        console.log("signing key",apiKeyData);
+        
         if (!expiresIn) {
-            return jwt.sign({ deviceId }, deviceKeyConfig.jwtSecretKey, {});
+            return jwt.sign(apiKeyData, deviceKeyConfig.jwtSecretKey, {});
         }
-        return jwt.sign({ deviceId }, deviceKeyConfig.jwtSecretKey, {
+        return jwt.sign(apiKeyData, deviceKeyConfig.jwtSecretKey, {
             expiresIn: expiresIn,
         });
     };

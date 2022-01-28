@@ -22,6 +22,10 @@ const TransactionSchema = new Schema({
         type:String,
         required:true
     },
+  metaData:{
+      type:Map,
+      of:String
+  },
     amount:{
         type:Number,
         required:true
@@ -36,6 +40,7 @@ const TransactionSchema = new Schema({
         enum:["CREDIT","DEBIT"],
         required:true
     },
+  
     description:{
         type:String
     }

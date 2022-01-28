@@ -34,7 +34,7 @@ class TransactionModel {
             return result;
         });
     }
-    createTransaction(orderId, userId, walletId, type, amount, description) {
+    createTransactionForRazorPay(orderId, userId, walletId, type, amount, description) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const transactionBody = {
@@ -47,6 +47,33 @@ class TransactionModel {
                     status: transaction_interface_1.ETransactionStatus.PENDING
                 };
                 const newTransaction = new transaction_schema_1.Transaction(transactionBody);
+                const transaction = yield newTransaction.addTransaction();
+                if (!transaction)
+                    throw new httpErrors_1.HTTP401Error("UNKNOW_ERROR");
+                return transaction;
+            }
+            catch (err) {
+                throw new httpErrors_1.HTTP401Error(err.message);
+            }
+        });
+    }
+    createTransactionForWallet(walletId, userId, type, amount, description, metaData = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const orderId = new bson_1.ObjectID();
+                const transactionBody = {
+                    orderId: String(orderId),
+                    userId,
+                    walletId,
+                    type,
+                    amount,
+                    metaData,
+                    description,
+                    status: transaction_interface_1.ETransactionStatus.SUCCESS
+                };
+                console.log("transaction body is ", transactionBody);
+                const newTransaction = new transaction_schema_1.Transaction(transactionBody);
+                console.log("transaction is ", newTransaction);
                 const transaction = yield newTransaction.addTransaction();
                 if (!transaction)
                     throw new httpErrors_1.HTTP401Error("UNKNOW_ERROR");

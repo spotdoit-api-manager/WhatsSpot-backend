@@ -30,7 +30,7 @@ class RazorPayModel {
                 console.log(order);
                 if (order.error)
                     throw new httpErrors_1.HTTP401Error(order.message);
-                const transaction = yield transaction_model_1.default.createTransaction(order.order.id, userId, walletId, transaction_interface_1.ETransactionTypes.CREDIT, body.amount, "amount adding to wallet");
+                const transaction = yield transaction_model_1.default.createTransactionForRazorPay(order.order.id, userId, walletId, transaction_interface_1.ETransactionTypes.CREDIT, body.amount, "amount adding to wallet");
                 if (!transaction)
                     throw new httpErrors_1.HTTP401Error("UNKNOWN_ERROR");
                 order.order.transactionId = transaction._id;

@@ -26,25 +26,25 @@ export default [
     {
         path: "/device/getQr/:deviceId",
         method: "get",
-        escapeAuth: true,
+        escapeAuth: false,
         handler: [deviceController.getQr]
     },
     {
         path: "/device/auth/delete/:deviceId",
         method: "delete",
-        escapeAuth: true,
+        escapeAuth: false,
         handler: [deviceController.deleteAuth]
     },
     {
         path: "/device/auth/logout/:deviceId",
         method: "get",
-        escapeAuth: true,
+        escapeAuth: false,
         handler: [deviceController.logoutDevice]
     },
     {
         path: "/device/:deviceId/keys/generate",
         method: "post",
-        escapeAuth: true,
+        escapeAuth: false,
         handler: [deviceController.generateNewKey]
     },
     {
@@ -65,17 +65,12 @@ export default [
         escapeAuth: false,
         handler: [deviceController.addMessageToQueue]
     },
+ 
     {
-        path: "/device/message/addMessageToQueue",
+        path: "/device/:deviceId/send/textMessage",
         method: "post",
-        escapeAuth: true,
-        handler: [DeviceKeyValidator, deviceController.addMessageToQueue]
-    },
-    {
-        path: "/device/send/textMessage",
-        method: "post",
-        escapeAuth: true,
-        handler: [DeviceKeyValidator, deviceController.sendTextMessage]
+        escapeAuth: false,
+        handler: [deviceController.sendTextMessage]
     },
 
     {

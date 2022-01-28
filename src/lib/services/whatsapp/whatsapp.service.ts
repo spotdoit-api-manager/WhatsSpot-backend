@@ -102,7 +102,13 @@ export default class Whatsapp extends EventEmitter {
               authState: false, reason
             });
             await this.reconnectClient();
-          } else {
+          }else if(reason?.statusCode===428){
+            const data = await deviceModel.updateDevice(this.phone, {
+              authState: false, reason
+            });
+            console.log("connection teminated", reason, this.phone);
+          } 
+          else {
             const data = await deviceModel.updateDevice(this.phone, {
               authState: false, reason
             });

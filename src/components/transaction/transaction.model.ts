@@ -1,7 +1,7 @@
 import { ObjectID } from 'bson';
 import { HTTP401Error } from './../../lib/utils/httpErrors';
 import { Transaction, ITransactionModel } from './transaction.schema';
-import { ETransactionStatus, ETransactionTypes } from "./transaction.interface";
+import { ETransactionStatus, ETransactionTypes, ITransaction } from "./transaction.interface";
 
 export class TransactionModel {
 
@@ -25,7 +25,9 @@ export class TransactionModel {
         return result;
     }
 
-    public async createTransaction(orderId: string, userId: string, walletId: string, type: ETransactionTypes, amount: number, description: string) {
+    
+
+    public async createTransactionForRazorPay(orderId: string, userId: string, walletId: string, type: ETransactionTypes, amount: number, description: string) {
         try {
 
             const transactionBody = {
@@ -45,6 +47,34 @@ export class TransactionModel {
             throw new HTTP401Error(err.message)
         }
     }
+
+
+    public async createTransactionForWallet(walletId: string, userId: string, type: ETransactionTypes, amount: number, description: string,metaData:Object={}) {
+        try {            
+            const orderId = new ObjectID();
+            const transactionBody:ITransaction = {
+                orderId:String(orderId),
+                userId,
+                walletId,
+                type,
+                amount,
+                metaData,
+                description,
+                status: ETransactionStatus.SUCCESS
+            }
+            console.log("transaction body is ",transactionBody);
+            
+            const newTransaction: ITransactionModel = new Transaction(transactionBody);
+            console.log("transaction is ",newTransaction);
+            
+            const transaction: ITransactionModel = await newTransaction.addTransaction();
+            if (!transaction) throw new HTTP401Error("UNKNOW_ERROR");
+            return transaction;
+        } catch (err) {
+            throw new HTTP401Error(err.message)
+        }
+    }
+
 
     public async updateTransactionStatus(transactionId: string, status: ETransactionStatus) {
         const updatedTransaction = await Transaction.findByIdAndUpdate(transactionId, { $set: { status: status } });
