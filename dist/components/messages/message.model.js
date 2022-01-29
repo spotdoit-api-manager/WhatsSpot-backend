@@ -22,7 +22,7 @@ const message_schema_1 = require("./message.schema");
 const whatsapp_client_service_1 = __importDefault(require("../../lib/services/whatsapp/whatsapp-client.service"));
 const wallet_model_1 = __importDefault(require("../walllet/wallet.model"));
 class MessageModel {
-    addMessageToQueue(body, deviceId) {
+    addMessageToQueue(userId, body, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("send text message request", body, deviceId);
             const device = yield device_model_1.default.findDeviceById(deviceId);
@@ -40,7 +40,7 @@ class MessageModel {
                 const to = index_1.sanatizeMobile(numbers[i]);
                 if (!utils_1.validateMobile(to))
                     throw new httpErrors_1.HTTP400Error(`${numbers[i]} is not valid Number at index ${i}`);
-                const newBody = { phone: device.phone, deviceId: deviceId, sendType: message_interface_1.ESendType.QUEUE, to, message: body.message, status: message_interface_1.EMessageStatus.PENDING };
+                const newBody = { phone: device.phone, userId, deviceId: deviceId, sendType: message_interface_1.ESendType.QUEUE, to, message: body.message, status: message_interface_1.EMessageStatus.PENDING };
                 messagesBody.push(newBody);
             }
             const result = yield this.addMultipleMessageToQueue(messagesBody);
@@ -70,7 +70,7 @@ class MessageModel {
             return { error: true, message: "NOT_ADDED" };
         });
     }
-    sendTextMessage(body, userId, deviceId, walletId) {
+    sendTextMessage(userId, body, deviceId, walletId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 body.to = index_1.sanatizeMobile(body.to);
@@ -81,7 +81,7 @@ class MessageModel {
                     throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
                 yield wallet_model_1.default.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
                 const result = yield whatsapp_client_service_1.default.sendTextMessage(device.phone, body.to, body.message);
-                const newBody = { phone: device.phone, to: body.to, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, message: body.message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
+                const newBody = { phone: device.phone, userId, to: body.to, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, message: body.message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
                 yield this.saveFastMessage(newBody);
                 console.log(result);
                 if (result.error) {

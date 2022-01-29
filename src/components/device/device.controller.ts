@@ -120,7 +120,7 @@ export class DeviceController {
     try {
       console.log("add to queue request ", req.params);
 
-      responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE", await messageModel.addMessageToQueue(req.body, req.params.deviceId || req.deviceId)).send();
+      responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE", await messageModel.addMessageToQueue(req.userId,req.body, req.params.deviceId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -132,7 +132,7 @@ export class DeviceController {
     try {
       console.log("Send text message request");
 
-      responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendTextMessage(req.body,req.userId, req.params.deviceId,req.walletId)).send();
+      responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendTextMessage(req.userId,req.body, req.params.deviceId,req.walletId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));

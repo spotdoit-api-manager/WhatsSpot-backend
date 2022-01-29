@@ -11,7 +11,7 @@ import walletModel from '../walllet/wallet.model';
 export class MessageModel {
 
 
-    public async addMessageToQueue(body: any, deviceId: string) {
+    public async addMessageToQueue(userId:string,body: any, deviceId: string) {
         console.log("send text message request", body, deviceId);
         const device = await deviceModel.findDeviceById(deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
@@ -26,7 +26,7 @@ export class MessageModel {
         for (let i = 0; i < numbers.length; i++) {
             const to = sanatizeMobile( numbers[i]);
             if(!validateMobile(to)) throw new HTTP400Error(`${numbers[i]} is not valid Number at index ${i}`);
-            const newBody: IMessage = { phone: device.phone, deviceId: deviceId, sendType: ESendType.QUEUE, to, message: body.message, status: EMessageStatus.PENDING }
+            const newBody: IMessage = { phone: device.phone,userId, deviceId: deviceId, sendType: ESendType.QUEUE, to, message: body.message, status: EMessageStatus.PENDING }
             messagesBody.push(newBody);
         }
         
@@ -37,6 +37,8 @@ export class MessageModel {
         delete messagesBody[0].to;
         return { error: false, message:messagesBody[0],numbers }
     }
+
+
     public async addSingleMessageToQueue(messageBody: IMessage) {
         const newMessage = new MessageQueue(messageBody);
         let data = newMessage.addMessage()
@@ -57,7 +59,7 @@ export class MessageModel {
 
     
 
-    public async sendTextMessage(body: any,userId:string, deviceId: string,walletId:string) {
+    public async sendTextMessage(userId:string,body: any, deviceId: string,walletId:string) {
         try {
             body.to = sanatizeMobile(body.to);
             if(!validateMobile(body.to)) throw new HTTP401Error(`INVALID_NUMBER`);
@@ -65,7 +67,7 @@ export class MessageModel {
             if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
             await walletModel.validateTransactionAmount(walletId,parseFloat(process.env.TEXT_MESSAGE_RATE));
             const result = await whatsappClientService.sendTextMessage(device.phone, body.to, body.message);
-            const newBody: IMessage = { phone: device.phone, to: body.to, reason: result?.message, sendType: ESendType.FAST, message: body.message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT }
+            const newBody: IMessage = { phone: device.phone,userId, to: body.to, reason: result?.message, sendType: ESendType.FAST, message: body.message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT }
             await this.saveFastMessage(newBody);
             console.log(result);
             if (result.error) {

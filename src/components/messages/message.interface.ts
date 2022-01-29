@@ -5,6 +5,7 @@ export interface IMessage {
     status: String,
     phone: string
     deviceId: string,
+    userId:string,
     reason?: string,
     sendType: ESendType
 }

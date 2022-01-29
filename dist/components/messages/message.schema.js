@@ -13,7 +13,7 @@ exports.FastMessage = exports.MessageQueue = void 0;
 const mongoose_1 = require("mongoose");
 const messageSchema = new mongoose_1.Schema({
     to: {
-        type: "string",
+        type: String,
         required: true,
     },
     message: String,
@@ -27,7 +27,14 @@ const messageSchema = new mongoose_1.Schema({
         type: String,
         required: false
     },
-    deviceId: String,
+    deviceId: {
+        type: mongoose_1.SchemaTypes.ObjectId,
+        ref: "device"
+    },
+    userId: {
+        type: mongoose_1.SchemaTypes.ObjectId,
+        ref: "user"
+    },
     expand: {
         type: Boolean,
         default: false

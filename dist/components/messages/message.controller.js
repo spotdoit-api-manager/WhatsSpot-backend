@@ -21,7 +21,7 @@ class MessageController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("add to queue request ", req.params);
-                responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE", yield message_model_1.default.addMessageToQueue(req.body, req.deviceId)).send();
+                responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE", yield message_model_1.default.addMessageToQueue(req.userId, req.body, req.deviceId)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -32,7 +32,7 @@ class MessageController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("Send text message request", req.userId, req.walletId, req.deviceId);
-                responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield message_model_1.default.sendTextMessage(req.body, req.userId, req.deviceId, req.walletId)).send();
+                responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield message_model_1.default.sendTextMessage(req.userId, req.body, req.deviceId, req.walletId)).send();
             }
             catch (e) {
                 // send error with next function.

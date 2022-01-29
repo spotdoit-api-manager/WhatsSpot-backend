@@ -86,7 +86,7 @@ export class DeviceModel {
         // if (status) condition.status = status;
         const result = await Device.aggregate([
             { $match: condition },
-            { $set: { _id: { $toString: "$_id" } } },
+            { $set: { _id: { $toObjectId: "$_id" } } },
             {
                 $project: {
                     _id: 1
@@ -123,8 +123,8 @@ export class DeviceModel {
                 }
             },
             { $group: { _id: '$_id', messages: { $push: '$messages' } } }
+           
         ]);
-        console.log(result);
         return result[0]?.messages || null;
     }
 
@@ -294,7 +294,7 @@ export class DeviceModel {
 
             let result = await Device.aggregate([
                 { $match: condition },
-                { $set: { _id: { $toString: "$_id" } } },
+                { $set: { _id: { $toObjectId: "$_id" } } },
                 {
                     $project: {
                         _id: 1

@@ -115,7 +115,7 @@ class DeviceModel {
             // if (status) condition.status = status;
             const result = yield device_shema_1.Device.aggregate([
                 { $match: condition },
-                { $set: { _id: { $toString: "$_id" } } },
+                { $set: { _id: { $toObjectId: "$_id" } } },
                 {
                     $project: {
                         _id: 1
@@ -150,7 +150,6 @@ class DeviceModel {
                 },
                 { $group: { _id: '$_id', messages: { $push: '$messages' } } }
             ]);
-            console.log(result);
             return ((_a = result[0]) === null || _a === void 0 ? void 0 : _a.messages) || null;
         });
     }
@@ -327,7 +326,7 @@ class DeviceModel {
                 console.log("condition is ", condition);
                 let result = yield device_shema_1.Device.aggregate([
                     { $match: condition },
-                    { $set: { _id: { $toString: "$_id" } } },
+                    { $set: { _id: { $toObjectId: "$_id" } } },
                     {
                         $project: {
                             _id: 1

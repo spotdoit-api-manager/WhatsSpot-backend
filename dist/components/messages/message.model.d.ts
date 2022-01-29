@@ -1,6 +1,6 @@
 import { IMessage } from './message.interface';
 export declare class MessageModel {
-    addMessageToQueue(body: any, deviceId: string): Promise<{
+    addMessageToQueue(userId: string, body: any, deviceId: string): Promise<{
         error: boolean;
         message: IMessage;
         numbers: any[];
@@ -19,7 +19,7 @@ export declare class MessageModel {
         error: boolean;
         message: string;
     }>;
-    sendTextMessage(body: any, userId: string, deviceId: string, walletId: string): Promise<{
+    sendTextMessage(userId: string, body: any, deviceId: string, walletId: string): Promise<{
         error: boolean;
         message: IMessage;
         creditUsed: string;

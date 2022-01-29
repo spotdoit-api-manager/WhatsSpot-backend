@@ -124,7 +124,7 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("add to queue request ", req.params);
-                responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE", yield message_model_1.default.addMessageToQueue(req.body, req.params.deviceId || req.deviceId)).send();
+                responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE", yield message_model_1.default.addMessageToQueue(req.userId, req.body, req.params.deviceId)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -135,7 +135,7 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("Send text message request");
-                responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield message_model_1.default.sendTextMessage(req.body, req.userId, req.params.deviceId, req.walletId)).send();
+                responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield message_model_1.default.sendTextMessage(req.userId, req.body, req.params.deviceId, req.walletId)).send();
             }
             catch (e) {
                 // send error with next function.

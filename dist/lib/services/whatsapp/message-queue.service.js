@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageQueueService = void 0;
+const wallet_model_1 = __importDefault(require("../../../components/walllet/wallet.model"));
 const message_interface_1 = require("./../../../components/messages/message.interface");
 const message_schema_1 = require("./../../../components/messages/message.schema");
 const whatsapp_client_service_1 = __importDefault(require("./whatsapp-client.service"));
@@ -39,9 +40,11 @@ class MessageQueueService {
                 for (let i = 0; i < pendingMessages.length; i++) {
                     const message = pendingMessages[i];
                     try {
+                        const walletId = yield wallet_model_1.default.getWalletIdAndValidateTransactionAmount(message.userId, parseFloat(process.env.TEXT_MESSAGE_RATE));
                         const result = yield whatsapp_client_service_1.default.sendTextMessage(message.phone, message.to, message.message);
                         if (!result.error) {
                             yield this.updateMessageStatus(message._id, message_interface_1.EMessageStatus.SENT);
+                            yield wallet_model_1.default.makePaymentFromWallet(walletId, message.userId, parseFloat(process.env.TEXT_MESSAGE_RATE), `sent queue message to ${message.to} from ${message.phone}`, { deviceId: message.deviceId, to: message.to });
                         }
                         else {
                             yield this.updateMessageStatus(message._id, message_interface_1.EMessageStatus.ERROR, result.message);
@@ -49,6 +52,7 @@ class MessageQueueService {
                     }
                     catch (e) {
                         console.log(e);
+                        yield this.updateMessageStatus(message._id, message_interface_1.EMessageStatus.ERROR, e.message);
                         continue;
                     }
                 }

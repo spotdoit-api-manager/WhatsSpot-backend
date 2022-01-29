@@ -27,11 +27,6 @@ class WalletModel {
             return newWalletData;
         });
     }
-    fetchWalletByUserId(userId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield wallet_schema_1.Wallet.findOne({ userId: new bson_1.ObjectID(userId) });
-        });
-    }
     fetchWalletBalance(userId, walletId) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("fetch wallet balance ", userId, walletId);
@@ -50,6 +45,20 @@ class WalletModel {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield wallet_schema_1.Wallet.aggregate([
                 { $match: { _id: new bson_1.ObjectID(walletId) } },
+                {
+                    $project: {
+                        balance: 1
+                    }
+                }
+            ]);
+            console.log("wallet result ", result);
+            return result[0] || null;
+        });
+    }
+    fetchWalletByUserId(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield wallet_schema_1.Wallet.aggregate([
+                { $match: { userId: new bson_1.ObjectID(userId) } },
                 {
                     $project: {
                         balance: 1
@@ -81,6 +90,16 @@ class WalletModel {
                 throw new Error("WALLET_NOT_FOUND");
             if (wallet.balance >= amountToDebit)
                 return true;
+            throw new Error("NOT_ENOUGH_CREDITS");
+        });
+    }
+    getWalletIdAndValidateTransactionAmount(userId, amountToDebit) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const wallet = yield this.fetchWalletByUserId(userId);
+            if (!wallet)
+                throw new Error("WALLET_NOT_FOUND");
+            if (wallet.balance >= amountToDebit)
+                return wallet._id;
             throw new Error("NOT_ENOUGH_CREDITS");
         });
     }

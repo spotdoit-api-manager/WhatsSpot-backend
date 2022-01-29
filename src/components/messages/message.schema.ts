@@ -1,5 +1,5 @@
 import { IMessage } from './message.interface';
-import { Document, Model, model, Schema } from "mongoose";
+import { Document, Model, model, Schema, SchemaType, SchemaTypes } from "mongoose";
 import { validateMobile } from "../../lib/utils";
 
 export interface IMessageModel extends IMessage, Document {
@@ -10,7 +10,7 @@ export interface IMessageModel extends IMessage, Document {
 const messageSchema = new Schema(
   {
     to: {
-      type: "string",
+      type: String,
       required: true,
     },
     message: String,
@@ -24,7 +24,14 @@ const messageSchema = new Schema(
       type: String,
       required: false
     },
-    deviceId: String,
+    deviceId:{
+      type:SchemaTypes.ObjectId,
+      ref:"device"
+    },
+    userId:{
+      type:SchemaTypes.ObjectId,
+      ref:"user"
+    },
     expand: {
       type: Boolean,
       default: false
