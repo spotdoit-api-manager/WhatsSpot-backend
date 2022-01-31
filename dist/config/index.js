@@ -20,8 +20,8 @@ exports.configCors = {
         'http://localhost:3000',
         'http://127.0.0.1:5500',
         'http://localhost:4200',
-        'https"//spotdoit.in',
-        'https"//services.spotdoit.in'
+        'https://spotdoit.in',
+        'https://services.spotdoit.in'
         //add your origin
     ],
     // Expose additional which are restricted.
