@@ -15,7 +15,7 @@ tmp
 
 # Build
 public/css/main.css
-/config.env
+# /config.env
 # Coverage reports
 coverage
 
