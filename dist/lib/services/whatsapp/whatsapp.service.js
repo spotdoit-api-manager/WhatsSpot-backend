@@ -123,8 +123,8 @@ class Whatsapp extends events_1.EventEmitter {
                 return { error: true, message: e.message };
             }
         });
-        this.state = baileys_md_1.useSingleFileAuthState(`${phone}_cred.json`).state;
-        this.saveState = baileys_md_1.useSingleFileAuthState(`${phone}_cred.json`).saveState;
+        this.state = baileys_md_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
+        this.saveState = baileys_md_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
         this.phone = phone;
         this.client = this.startSock();
         this.startBasicEventListners();

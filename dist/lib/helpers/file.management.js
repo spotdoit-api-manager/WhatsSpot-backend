@@ -17,14 +17,17 @@ const fs_1 = __importDefault(require("fs"));
 class FileManagement {
     deleteFile(filePath) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                fs_1.default.unlinkSync(filePath);
-                return { error: false };
-            }
-            catch (e) {
-                console.log("error in deleting file ", e);
-                return { error: true, message: e.message };
-            }
+            return new Promise((resolve) => {
+                try {
+                    fs_1.default.unlink(`./src/sessions/${filePath}`, () => {
+                        resolve({ error: false });
+                    });
+                }
+                catch (e) {
+                    console.log("error in deleting file ", e);
+                    resolve({ error: true, message: e.message });
+                }
+            });
         });
     }
 }

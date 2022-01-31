@@ -2,13 +2,17 @@ import fs from 'fs';
 
 export class FileManagement{
     public async deleteFile(filePath:string){
-            try{
-              fs.unlinkSync(filePath);
-              return {error:false}
-            }catch(e){
-                console.log("error in deleting file ",e);
-                return {error:true,message:e.message}
-            }
+      return new Promise((resolve)=>{
+
+        try{
+          fs.unlink(`./src/sessions/${filePath}`,()=>{
+            resolve({error:false})
+          });
+        }catch(e){
+          console.log("error in deleting file ",e);
+         resolve({error:true,message:e.message})
+        }
+      })
     }
 }
 

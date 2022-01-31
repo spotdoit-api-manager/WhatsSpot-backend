@@ -11,7 +11,6 @@ import makeWASocket, {
   AuthenticationState,
 } from "@adiwajshing/baileys-md";
 import deviceModel from './../../../components/device/device.model';
-
 export default class Whatsapp extends EventEmitter {
   client: any;
   phone: string;
@@ -19,12 +18,12 @@ export default class Whatsapp extends EventEmitter {
   saveState: any;
   public authState: boolean = false;
   qr: any = new EventEmitter();
-
-
+  
+  
   constructor(phone: string) {
     super();
-    this.state = useSingleFileAuthState(`${phone}_cred.json`).state;
-    this.saveState = useSingleFileAuthState(`${phone}_cred.json`).saveState;
+    this.state = useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
+    this.saveState = useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
     this.phone = phone;
     this.client = this.startSock();
     this.startBasicEventListners();

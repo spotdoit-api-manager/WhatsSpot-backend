@@ -134,7 +134,8 @@ export class DeviceModel {
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         console.log("delete auth request for phone ", device.phone);
         const authFilePath = `${device.phone}_cred.json`;
-        fileManagement.deleteFile(authFilePath);
+        const res:any = await fileManagement.deleteFile(authFilePath);
+        if(res.error) throw new HTTP401Error(res.message);
         await this.updateDevice(device.phone, { reason: null });
         return { message: "AUTH_DELETED" };
     };
