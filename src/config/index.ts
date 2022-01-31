@@ -20,7 +20,9 @@ export const configCors = {
   allowOrigin: [
     'http://localhost:3000',
     'http://127.0.0.1:5500',
-    'http://localhost:4200'
+    'http://localhost:4200',
+    'https"//spotdoit.in',
+    'https"//services.spotdoit.in'
 
     //add your origin
   ],
