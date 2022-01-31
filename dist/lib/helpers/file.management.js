@@ -19,7 +19,7 @@ class FileManagement {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve) => {
                 try {
-                    fs_1.default.unlink(`./src/sessions/${filePath}`, () => {
+                    fs_1.default.unlink(`${filePath}`, () => {
                         resolve({ error: false });
                     });
                 }

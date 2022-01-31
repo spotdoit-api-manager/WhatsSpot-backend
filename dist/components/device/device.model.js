@@ -159,7 +159,7 @@ class DeviceModel {
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             console.log("delete auth request for phone ", device.phone);
-            const authFilePath = `${device.phone}_cred.json`;
+            const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
             const res = yield file_management_1.default.deleteFile(authFilePath);
             if (res.error)
                 throw new httpErrors_1.HTTP401Error(res.message);

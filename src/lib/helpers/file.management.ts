@@ -5,7 +5,7 @@ export class FileManagement{
       return new Promise((resolve)=>{
 
         try{
-          fs.unlink(`./src/sessions/${filePath}`,()=>{
+          fs.unlink(`${filePath}`,()=>{
             resolve({error:false})
           });
         }catch(e){
