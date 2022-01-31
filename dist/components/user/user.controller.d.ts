@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from "express";
 declare class UserController {
     fetchAll: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     registerWithPhone: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    loginWithPhone: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    resendOTP: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     create: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     fetch: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     update: (req: Request, res: Response, next: NextFunction) => Promise<void>;

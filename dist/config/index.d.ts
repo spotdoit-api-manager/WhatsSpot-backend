@@ -1,3 +1,4 @@
+import { PlivoCredentials, Fast2SmsCredentials } from './../lib/interfaces/providers.interface';
 export declare const mongoUrl: () => string;
 export declare const configCors: {
     allowOrigin: string[];
@@ -47,3 +48,5 @@ export declare const razorPaySecrets: {
     key: string;
     secret: string;
 };
+export declare const pilvoConfig: PlivoCredentials;
+export declare const fast2SmsConfig: Fast2SmsCredentials;

@@ -18,6 +18,18 @@ export default [
     handler:[userController.registerWithPhone]
   },
   {
+    path:"/user/loginWithPhone",
+    method:"post",
+    escapeAuth:true,
+    handler:[userController.loginWithPhone]
+  },
+  {
+    path:"/user/resendOTP/:id",
+    method:"post",
+    escapeAuth:true,
+    handler:[userController.resendOTP]
+  },
+  {
     path: "/user/metrics",
     method: "get",
     handler: [userController.fetchAccountMetrics]

@@ -37,8 +37,8 @@ exports.UserSchema = new mongoose_1.Schema({
     },
     email: {
         type: String,
-        minlength: 3,
-        required: false
+        unique: false,
+        required: true
     },
     walletId: {
         type: mongoose_1.SchemaTypes.ObjectId,

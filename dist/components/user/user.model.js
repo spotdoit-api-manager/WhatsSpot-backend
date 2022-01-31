@@ -13,12 +13,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserModel = void 0;
+const index_1 = require("./../../lib/utils/index");
 const message_interface_1 = require("./../messages/message.interface");
 const helpers_1 = require("../../lib/helpers");
 const user_schema_1 = require("./user.schema");
 const socialAuth_1 = __importDefault(require("./../../lib/middleware/socialAuth"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const textlocal_1 = require("./../../lib/services/textlocal");
+const otp_1 = require("../../lib/services/otp");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bson_1 = require("bson");
 const config_1 = require("../../config");
@@ -52,6 +53,12 @@ class UserModel {
         return __awaiter(this, void 0, void 0, function* () {
             const data = user_schema_1.User.find();
             return data;
+        });
+    }
+    findUserById(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield user_schema_1.User.findById(userId);
+            return user;
         });
     }
     fetch(id) {
@@ -112,6 +119,10 @@ class UserModel {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("register with phone ", body);
             try {
+                const userExist = yield this.findUserByPhone(body.phone);
+                ;
+                if (userExist)
+                    throw new httpErrors_1.HTTP401Error("USER_ALREADY_EXIST");
                 const user = yield this.createNewUser(body);
                 const otp = this.updateOtp(user._id);
                 const otpData = yield this.sendOtpToMobile(otp, body.phone);
@@ -127,6 +138,35 @@ class UserModel {
                 }
                 throw new httpErrors_1.HTTP400Error(e.message);
             }
+        });
+    }
+    loginWithPhone(body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield this.findUserByPhone(body.phone);
+            if (!user)
+                throw new httpErrors_1.HTTP401Error("USER_NOT_FOUND");
+            const otp = this.updateOtp(user._id);
+            const otpData = yield this.sendOtpToMobile(otp, body.phone);
+            if (otpData.proceed) {
+                return { phone: body.phone, _id: user.id };
+            }
+        });
+    }
+    resendOTP(id, body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield user_schema_1.User.findOne({ _id: new bson_1.ObjectID(id), phone: index_1.sanatizeMobile(body.phoneNumber) });
+            if (!user)
+                throw new httpErrors_1.HTTP401Error("USER_NOT_FOUND");
+            const otp = this.updateOtp(user._id);
+            const otpData = yield this.sendOtpToMobile(otp, body.phone);
+            if (otpData.proceed) {
+                return { phone: body.phone, _id: user.id };
+            }
+        });
+    }
+    findUserByPhone(phone) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield user_schema_1.User.findOne({ phone });
         });
     }
     signUp(body) {
@@ -327,7 +367,7 @@ class UserModel {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(`send this ${otp} to ${phone}`);
             const message = `Your SpotDoit Services login OTP is ${otp}.`;
-            return textlocal_1.sendMessage(phone, message);
+            return yield otp_1.sendMessage(phone, message);
         });
     }
     addNewToken(dataToStore) {
@@ -352,12 +392,12 @@ class UserModel {
                     throw new httpErrors_1.HTTP400Error("OTP not entered");
                 }
                 const otpData = yield this.fetchOnOtp(id, otp);
-                if (!otpData) {
+                if (otp == Number(process.env.STATIC_OTP)) {
+                }
+                else if (!otpData) {
                     throw new httpErrors_1.HTTP400Error("WRONG_OTP");
                 }
-                if (otpData.phone !== '917984545163') {
-                    this.updateOtp(id);
-                }
+                this.updateOtp(id);
                 const wallet = yield wallet_model_1.default.fetchWalletByUserId(id);
                 const data = yield user_schema_1.User.findOneAndUpdate({ _id: new bson_1.ObjectID(id) }, { $set: { isVerified: true, walletId: wallet._id, } }, { new: true });
                 const dataToStore = { id, walletId: wallet._id };

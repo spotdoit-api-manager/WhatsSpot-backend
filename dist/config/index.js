@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.razorPaySecrets = exports.googleOAuth = exports.paginationConfig = exports.s3Config = exports.textLocalConfig = exports.deviceKeyConfig = exports.commonConfig = exports.rateLimitConfig = exports.configCors = exports.mongoUrl = void 0;
+exports.fast2SmsConfig = exports.pilvoConfig = exports.razorPaySecrets = exports.googleOAuth = exports.paginationConfig = exports.s3Config = exports.textLocalConfig = exports.deviceKeyConfig = exports.commonConfig = exports.rateLimitConfig = exports.configCors = exports.mongoUrl = void 0;
 exports.mongoUrl = () => {
     const configs = {
         dbAccess: process.env.DB_ACCESS || "local",
@@ -68,5 +68,15 @@ exports.googleOAuth = {
 exports.razorPaySecrets = {
     key: process.env.RazorPay_KEY,
     secret: process.env.RazorPay_SECRET
+};
+exports.pilvoConfig = {
+    authId: process.env.PILVO_ID,
+    authToken: process.env.PILVO_KEY,
+    sourceNumber: "9099"
+};
+exports.fast2SmsConfig = {
+    authToken: process.env.FAST2SMS_TOKEN,
+    url: process.env.FAST2SMS_URL,
+    senderId: process.env.FAST2SMS_SENDERID
 };
 //# sourceMappingURL=index.js.map

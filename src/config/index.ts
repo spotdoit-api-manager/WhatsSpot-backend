@@ -1,3 +1,4 @@
+import { PlivoCredentials, Fast2SmsCredentials } from './../lib/interfaces/providers.interface';
 export const mongoUrl = (): string => {
   const configs = {
     dbAccess: process.env.DB_ACCESS || "local",
@@ -80,4 +81,16 @@ export const googleOAuth = {
 export const razorPaySecrets={
   key: process.env.RazorPay_KEY,
   secret:process.env.RazorPay_SECRET
+}
+
+export const pilvoConfig:PlivoCredentials = {
+  authId:process.env.PILVO_ID,
+  authToken:process.env.PILVO_KEY,
+  sourceNumber:"9099"
+}
+
+export const fast2SmsConfig:Fast2SmsCredentials = {
+  authToken: process.env.FAST2SMS_TOKEN,
+  url: process.env.FAST2SMS_URL,
+  senderId: process.env.FAST2SMS_SENDERID
 }

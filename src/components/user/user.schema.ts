@@ -30,11 +30,12 @@ export const UserSchema: Schema = new Schema(
       unique: true,
       sparse:true
     },
-    email: {
-      type: String,
-      minlength: 3,
-      required:false
+    email : {
+      type:String,
+      unique:false,
+      required:true
     },
+
     walletId:{
       type:SchemaTypes.ObjectId,
       ref:"wallet",

@@ -2,6 +2,7 @@ import { IUser, ITokenData, IDataStoredInToken } from './user.interface';
 import { IUserModel } from "./user.schema";
 export declare class UserModel {
     fetchAll(): Promise<IUserModel[]>;
+    private findUserById;
     fetch(id: string): Promise<IUserModel>;
     update(id: string, body: IUserModel): Promise<IUserModel>;
     delete(id: string): Promise<void>;
@@ -13,6 +14,15 @@ export declare class UserModel {
         phone: string;
         _id: any;
     }>;
+    loginWithPhone(body: IUser): Promise<{
+        phone: string;
+        _id: any;
+    }>;
+    resendOTP(id: string, body: any): Promise<{
+        phone: any;
+        _id: any;
+    }>;
+    private findUserByPhone;
     signUp(body: IUserModel): Promise<{
         token: string;
         expiresIn: string;
@@ -46,8 +56,7 @@ export declare class UserModel {
     updateOtp(id: string): number;
     sendOtpToMobile(otp: number, phone: string): Promise<{
         proceed: boolean;
-    } | {
-        proceed: boolean;
+        message: any;
     } | {
         proceed: boolean;
     }>;
@@ -83,8 +92,7 @@ export declare class UserModel {
     genrateOTP(phone: string): Promise<{
         res: {
             proceed: boolean;
-        } | {
-            proceed: boolean;
+            message: any;
         } | {
             proceed: boolean;
         };

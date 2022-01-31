@@ -22,6 +22,18 @@ exports.default = [
         handler: [user_controller_1.default.registerWithPhone]
     },
     {
+        path: "/user/loginWithPhone",
+        method: "post",
+        escapeAuth: true,
+        handler: [user_controller_1.default.loginWithPhone]
+    },
+    {
+        path: "/user/resendOTP/:id",
+        method: "post",
+        escapeAuth: true,
+        handler: [user_controller_1.default.resendOTP]
+    },
+    {
         path: "/user/metrics",
         method: "get",
         handler: [user_controller_1.default.fetchAccountMetrics]

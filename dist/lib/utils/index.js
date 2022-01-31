@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sanatizeMobile = exports.validateMobile = exports.getPaginationInfo = exports.mongoDBProjectFields = exports.applyRoutes = exports.applyMiddleware = void 0;
+exports.deSanatizeMobile = exports.sanatizeMobile = exports.validateMobile = exports.getPaginationInfo = exports.mongoDBProjectFields = exports.applyRoutes = exports.applyMiddleware = void 0;
 const auth_middleware_1 = require("../middleware/auth.middleware");
 // load all middleware with this function call
 exports.applyMiddleware = (middlewareWrappers, router) => {
@@ -57,6 +57,12 @@ exports.sanatizeMobile = (phone) => {
     phone.replace("+", "");
     if (phone.length == 10)
         return `91${phone}`;
+    return phone;
+};
+exports.deSanatizeMobile = (phone) => {
+    phone.replace("+", "");
+    if (phone.length == 12)
+        return phone.slice(2);
     return phone;
 };
 //# sourceMappingURL=index.js.map

@@ -82,3 +82,9 @@ export const sanatizeMobile=(phone:string)=>{
   if(phone.length==10) return `91${phone}`;
   return phone;
 }
+
+export const deSanatizeMobile=(phone:string)=>{
+  phone.replace("+","");
+  if(phone.length==12) return phone.slice(2);
+  return phone;
+}

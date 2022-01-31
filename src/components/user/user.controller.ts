@@ -29,6 +29,28 @@ class UserController {
     }
   };
 
+  public loginWithPhone = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      responseHandler.reqRes(req, res).onFetch('OTP_SENT', await userModel.loginWithPhone(req.body)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
+
+  
+  public resendOTP = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      responseHandler.reqRes(req, res).onFetch('OTP_SENT_AGAIN', await userModel.resendOTP(req.params.id,req.body)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
 
 
   public create = async (req: Request, res: Response, next: NextFunction) => {
