@@ -4,6 +4,7 @@ import { schedule } from "node-cron";
 import { configCors, rateLimitConfig } from "../../config";
 import { io } from "socket.io-client";
 import whatsappService from "./whatsapp/whatsapp.service";
+import { IMessageProgress } from '../interfaces/socket.interface';
 
 let webClient: Socket;
 interface QRData {
@@ -66,8 +67,19 @@ export class SocketManager {
   public sendLoggedout(data: any) {
     if (!webClient) return console.log("webClient not connected..");
     console.log("sendign logout to ", data);
-
     webClient.emit(`${data.phone}_LOGGEDOUT`, data);
+  }
+
+  public sendFailedMessageSendProgress(deviceId:string,progressData: IMessageProgress) {
+    if (!webClient) return console.log("webClient not connected..");
+    console.log("sendign failed message over to ", progressData);
+    webClient.emit(`${deviceId}_FAILED_PROGRESS`, progressData);
+  }
+
+  public sendFailedMessageSendComplete(data: any) {
+    if (!webClient) return console.log("webClient not connected..");
+    console.log("sendign failed message over to ", data);
+    webClient.emit(`${data.deviceId}_FAILED_COMPLETED`, data);
   }
 }
 

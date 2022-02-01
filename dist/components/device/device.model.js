@@ -20,6 +20,7 @@ const device_interface_1 = require("./device.interface");
 const device_shema_1 = require("./device.shema");
 const whatsapp_client_service_1 = __importDefault(require("../../lib/services/whatsapp/whatsapp-client.service"));
 const file_management_1 = __importDefault(require("../../lib/helpers/file.management"));
+const message_model_1 = __importDefault(require("../messages/message.model"));
 const bson_1 = require("bson");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dayjs_1 = __importDefault(require("dayjs"));
@@ -325,7 +326,6 @@ class DeviceModel {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const condition = { _id: new bson_1.ObjectID(deviceId) };
-                console.log("condition is ", condition);
                 let result = yield device_shema_1.Device.aggregate([
                     { $match: condition },
                     { $set: { _id: { $toObjectId: "$_id" } } },
@@ -402,7 +402,6 @@ class DeviceModel {
                         }
                     },
                 ]);
-                console.log("metrics is ", result);
                 if (!result || !result[0]) {
                     result = [
                         {
@@ -423,6 +422,20 @@ class DeviceModel {
                 console.log(err);
                 throw new httpErrors_1.HTTP400Error(err.messages);
             }
+        });
+    }
+    retryFailedMessage(userId, deviceId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield message_model_1.default.retryFailedMessage(userId, deviceId);
+            if (result.error)
+                throw new httpErrors_1.HTTP401Error(result.message);
+            return { error: false, message: "RETRY_REQUESTED", messageCount: result.messageCount };
+        });
+    }
+    updateDeviceStatus(deviceId, status) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield device_shema_1.Device.findByIdAndUpdate(deviceId, { deviceStatus: status });
+            return result;
         });
     }
 }

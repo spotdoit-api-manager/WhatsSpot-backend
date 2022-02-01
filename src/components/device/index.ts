@@ -65,6 +65,12 @@ export default [
         escapeAuth: false,
         handler: [deviceController.addMessageToQueue]
     },
+    {
+        path: "/device/:deviceId/retryFailed", //send failed message
+        method: "post",
+        escapeAuth: false,
+        handler: [deviceController.retryFailedMessage]
+    },
  
     {
         path: "/device/:deviceId/send/textMessage",

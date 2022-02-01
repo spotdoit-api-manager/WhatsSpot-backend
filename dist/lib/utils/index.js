@@ -44,11 +44,10 @@ exports.getPaginationInfo = (pageNo = 1) => {
     const skip = (pageNo - 1) * limit;
     return { limit, skip };
 };
-exports.validateMobile = (phone) => {
-    phone = exports.sanatizeMobile(phone);
-    const regmm = '^([0|+[0-9]{1,5})?([7-9][0-9]{9})$';
-    const regmob = new RegExp(regmm);
-    if (regmob.test(phone) && phone.length == 12) {
+exports.validateMobile = (phone = '') => {
+    // const regmm='^([0|+[0-9]{1,5})?([7-9][0-9]{9})$';
+    // const regmob = new RegExp(regmm);
+    if (phone.length == 12) {
         return true;
     }
     return false;

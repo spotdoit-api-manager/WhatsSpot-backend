@@ -1,5 +1,10 @@
-import { IMessage } from './message.interface';
+import { IMessage, EMessageStatus } from './message.interface';
 export declare class MessageModel {
+    retryFailedMessage(userId: string, deviceId: string): Promise<{
+        error: boolean;
+        messageCount: number;
+    }>;
+    updateMessageStatus: (id: string, status: EMessageStatus, reason?: string) => Promise<void>;
     addMessageToQueue(userId: string, body: any, deviceId: string): Promise<{
         error: boolean;
         message: IMessage;

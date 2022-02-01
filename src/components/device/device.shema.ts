@@ -35,6 +35,10 @@ const deviceSchema = new Schema(
         reason: String
       }
     }],
+    deviceStatus:{
+      type:String,
+      enum:['SENDING','IDLE']
+    },
     authState: Boolean,
     reason: {
       statusCode: Number,

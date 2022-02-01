@@ -11,6 +11,7 @@ import makeWASocket, {
   AuthenticationState,
 } from "@adiwajshing/baileys-md";
 import deviceModel from './../../../components/device/device.model';
+import path from 'path';
 export default class Whatsapp extends EventEmitter {
   client: any;
   phone: string;

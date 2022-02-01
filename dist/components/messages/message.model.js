@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageModel = void 0;
+const bson_1 = require("bson");
 const index_1 = require("./../../lib/utils/index");
 const utils_1 = require("../../lib/utils");
 const httpErrors_1 = require("../../lib/utils/httpErrors");
@@ -21,7 +22,23 @@ const message_interface_1 = require("./message.interface");
 const message_schema_1 = require("./message.schema");
 const whatsapp_client_service_1 = __importDefault(require("../../lib/services/whatsapp/whatsapp-client.service"));
 const wallet_model_1 = __importDefault(require("../walllet/wallet.model"));
+const message_queue_service_1 = __importDefault(require("../../lib/services/whatsapp/message-queue.service"));
 class MessageModel {
+    constructor() {
+        this.updateMessageStatus = (id, status, reason = null) => __awaiter(this, void 0, void 0, function* () {
+            yield message_schema_1.MessageQueue.updateOne({ _id: id }, { status: status, reason: reason });
+        });
+    }
+    retryFailedMessage(userId, deviceId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const messages = yield message_schema_1.MessageQueue.find({ userId: new bson_1.ObjectID(userId), deviceId: new bson_1.ObjectID(deviceId), status: message_interface_1.EMessageStatus.ERROR });
+            console.log("messsages are ", messages.length);
+            message_queue_service_1.default.sendErrorMessageForDevice(messages, deviceId);
+            if (messages)
+                return { error: false, messageCount: messages.length };
+            throw new httpErrors_1.HTTP401Error("NO_MESSAGES_FOUND");
+        });
+    }
     addMessageToQueue(userId, body, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("send text message request", body, deviceId);

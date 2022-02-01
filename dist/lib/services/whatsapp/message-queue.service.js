@@ -13,17 +13,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageQueueService = void 0;
+const device_interface_1 = require("./../../../components/device/device.interface");
+const device_model_1 = __importDefault(require("../../../components/device/device.model"));
+const message_model_1 = __importDefault(require("../../../components/messages/message.model"));
 const wallet_model_1 = __importDefault(require("../../../components/walllet/wallet.model"));
 const message_interface_1 = require("./../../../components/messages/message.interface");
 const message_schema_1 = require("./../../../components/messages/message.schema");
 const whatsapp_client_service_1 = __importDefault(require("./whatsapp-client.service"));
+const socket_1 = __importDefault(require("../socket"));
 const FETCH_PENDING_INTERVAL = 10;
 class MessageQueueService {
-    constructor() {
-        this.updateMessageStatus = (id, status, reason = null) => __awaiter(this, void 0, void 0, function* () {
-            yield message_schema_1.MessageQueue.updateOne({ _id: id }, { status: status, reason: reason });
-        });
-    }
     getPendingsMessages(limit = 10) {
         return __awaiter(this, void 0, void 0, function* () {
             const pendingMessages = yield message_schema_1.MessageQueue.find({ status: message_interface_1.EMessageStatus.PENDING }).sort({ _id: 1 }).limit(limit);
@@ -43,19 +42,50 @@ class MessageQueueService {
                         const walletId = yield wallet_model_1.default.getWalletIdAndValidateTransactionAmount(message.userId, parseFloat(process.env.TEXT_MESSAGE_RATE));
                         const result = yield whatsapp_client_service_1.default.sendTextMessage(message.phone, message.to, message.message);
                         if (!result.error) {
-                            yield this.updateMessageStatus(message._id, message_interface_1.EMessageStatus.SENT);
-                            yield wallet_model_1.default.makePaymentFromWallet(walletId, message.userId, parseFloat(process.env.TEXT_MESSAGE_RATE), `sent queue message to ${message.to} from ${message.phone}`, { deviceId: message.deviceId, to: message.to });
+                            yield message_model_1.default.updateMessageStatus(message._id, message_interface_1.EMessageStatus.SENT);
+                            yield wallet_model_1.default.makePaymentFromWallet(walletId, message.userId, parseFloat(process.env.TEXT_MESSAGE_RATE), `sent queue message to ${message.to} from ${message.phone}`, { deviceId: message.deviceId, to: message.to, type: message_interface_1.EMessageStatus.PENDING });
                         }
                         else {
-                            yield this.updateMessageStatus(message._id, message_interface_1.EMessageStatus.ERROR, result.message);
+                            yield message_model_1.default.updateMessageStatus(message._id, message_interface_1.EMessageStatus.ERROR, result.message);
                         }
                     }
                     catch (e) {
                         console.log(e);
-                        yield this.updateMessageStatus(message._id, message_interface_1.EMessageStatus.ERROR, e.message);
+                        yield message_model_1.default.updateMessageStatus(message._id, message_interface_1.EMessageStatus.ERROR, e.message);
                         continue;
                     }
                 }
+                resolve({ error: false });
+            }));
+        });
+    }
+    sendErrorMessageForDevice(errorMessages, deviceId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+                device_model_1.default.updateDeviceStatus(deviceId, device_interface_1.EDeviceStatus.SENDING);
+                for (let i = 0; i < errorMessages.length; i++) {
+                    const message = errorMessages[i];
+                    try {
+                        const walletId = yield wallet_model_1.default.getWalletIdAndValidateTransactionAmount(message.userId, parseFloat(process.env.TEXT_MESSAGE_RATE));
+                        const result = yield whatsapp_client_service_1.default.sendTextMessage(message.phone, message.to, message.message);
+                        if (!result.error) {
+                            yield message_model_1.default.updateMessageStatus(message._id, message_interface_1.EMessageStatus.SENT);
+                            console.log(i, "th message sent");
+                            socket_1.default.sendFailedMessageSendProgress(deviceId, { total: errorMessages.length, current: i + 1 });
+                            yield wallet_model_1.default.makePaymentFromWallet(walletId, message.userId, parseFloat(process.env.TEXT_MESSAGE_RATE), `sent queue message to ${message.to} from ${message.phone}`, { deviceId: message.deviceId, to: message.to, type: message_interface_1.EMessageStatus.ERROR });
+                        }
+                        else {
+                            socket_1.default.sendFailedMessageSendProgress(deviceId, { total: errorMessages.length, current: i + 1 });
+                            yield message_model_1.default.updateMessageStatus(message._id, message_interface_1.EMessageStatus.ERROR, result.message);
+                        }
+                    }
+                    catch (e) {
+                        console.log(e);
+                        yield message_model_1.default.updateMessageStatus(message._id, message_interface_1.EMessageStatus.ERROR, e.message);
+                        continue;
+                    }
+                }
+                device_model_1.default.updateDeviceStatus(deviceId, device_interface_1.EDeviceStatus.IDLE);
                 resolve({ error: false });
             }));
         });

@@ -1,3 +1,4 @@
+import { IMessageProgress } from '../interfaces/socket.interface';
 interface QRData {
     error: boolean;
     qr: string;
@@ -12,6 +13,8 @@ export declare class SocketManager {
     sendConnectionClosed: (data: any) => void;
     sendError: (data: any) => void;
     sendLoggedout(data: any): void;
+    sendFailedMessageSendProgress(deviceId: string, progressData: IMessageProgress): void;
+    sendFailedMessageSendComplete(data: any): void;
 }
 declare const _default: SocketManager;
 export default _default;

@@ -1,4 +1,4 @@
-import { IDeviceTokenData } from '../device/device.interface';
+import { EDeviceStatus, IDeviceTokenData } from '../device/device.interface';
 import { MessageQueue } from './../messages/message.schema';
 import { deviceKeyConfig } from './../../config/index';
 import { IImageMessage } from './../../lib/services/whatsapp/whatsapp.interface';
@@ -291,7 +291,6 @@ export class DeviceModel {
     public async fetchDeviceMetrics(deviceId: string) {
         try {
             const condition = { _id: new ObjectID(deviceId) };
-            console.log("condition is ", condition);
 
             let result = await Device.aggregate([
                 { $match: condition },
@@ -371,7 +370,6 @@ export class DeviceModel {
                     }
                 },
             ]);
-            console.log("metrics is ", result);
             if (!result || !result[0]) {
                 result = [
                     {
@@ -391,6 +389,18 @@ export class DeviceModel {
             throw new HTTP400Error(err.messages);
         }
 
+    }
+
+
+    public async retryFailedMessage(userId:string,deviceId:string){
+        const result:any = await  messageModel.retryFailedMessage(userId,deviceId);
+        if(result.error) throw new HTTP401Error(result.message);
+        return {error:false,message:"RETRY_REQUESTED",messageCount:result.messageCount};
+    }
+
+    public async updateDeviceStatus(deviceId:string,status:EDeviceStatus){
+        const result = await Device.findByIdAndUpdate(deviceId,{deviceStatus:status})
+        return result;
     }
 
 

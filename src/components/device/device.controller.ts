@@ -127,6 +127,20 @@ export class DeviceController {
     }
   };
 
+  public retryFailedMessage = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      console.log("add to queue request ", req.params);
+      const result = await deviceModel.retryFailedMessage(req.userId,req.params.deviceId);
+      console.log("retry result ",result);
+      
+      responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE",result ).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
   public sendTextMessage = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {

@@ -1,9 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EApiKeyStatus = void 0;
+exports.EDeviceStatus = exports.EApiKeyStatus = void 0;
 var EApiKeyStatus;
 (function (EApiKeyStatus) {
     EApiKeyStatus["ACTIVE"] = "ACTIVE";
     EApiKeyStatus["INACTIVE"] = "INACTIVE";
 })(EApiKeyStatus = exports.EApiKeyStatus || (exports.EApiKeyStatus = {}));
+var EDeviceStatus;
+(function (EDeviceStatus) {
+    EDeviceStatus["SENDING"] = "SENDING";
+    EDeviceStatus["IDLE"] = "IDLE";
+})(EDeviceStatus = exports.EDeviceStatus || (exports.EDeviceStatus = {}));
 //# sourceMappingURL=device.interface.js.map

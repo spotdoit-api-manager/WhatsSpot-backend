@@ -1,14 +1,28 @@
+import { ObjectID } from 'bson';
 import { IImageMessage } from './../../lib/services/whatsapp/whatsapp.interface';
 import { sanatizeMobile } from './../../lib/utils/index';
 import { validateMobile } from '../../lib/utils';
 import { HTTP400Error, HTTP401Error } from '../../lib/utils/httpErrors';
 import deviceModel from '../device/device.model';
 import { ESendType, IMessage, EMessageStatus } from './message.interface';
-import { MessageQueue, FastMessage } from './message.schema';
+import { MessageQueue, FastMessage, IMessageModel } from './message.schema';
 import whatsappClientService from '../../lib/services/whatsapp/whatsapp-client.service';
 import walletModel from '../walllet/wallet.model';
+import messageQueueService from '../../lib/services/whatsapp/message-queue.service';
 
 export class MessageModel {
+
+    public async retryFailedMessage(userId:string,deviceId:string){
+            const messages = await MessageQueue.find({userId:new ObjectID(userId),deviceId:new ObjectID(deviceId),status:EMessageStatus.ERROR});
+            console.log("messsages are ",messages.length);
+             messageQueueService.sendErrorMessageForDevice(messages,deviceId);
+            if(messages) return {error:false,messageCount:messages.length};
+            throw new HTTP401Error("NO_MESSAGES_FOUND")
+    }
+
+    public updateMessageStatus = async (id: string, status: EMessageStatus, reason: string = null) => {
+        await MessageQueue.updateOne({ _id: id }, { status: status, reason: reason });
+    }
 
 
     public async addMessageToQueue(userId:string,body: any, deviceId: string) {

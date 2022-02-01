@@ -43,3 +43,8 @@ export interface IMessageMetrics {
     totalQueuePending: number
     totalQueueSuccess: number
 }
+
+export enum EDeviceStatus{
+    SENDING="SENDING",
+    IDLE="IDLE"
+}

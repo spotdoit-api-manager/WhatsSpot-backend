@@ -65,6 +65,18 @@ class SocketManager {
         console.log("sendign logout to ", data);
         webClient.emit(`${data.phone}_LOGGEDOUT`, data);
     }
+    sendFailedMessageSendProgress(deviceId, progressData) {
+        if (!webClient)
+            return console.log("webClient not connected..");
+        console.log("sendign failed message over to ", progressData);
+        webClient.emit(`${deviceId}_FAILED_PROGRESS`, progressData);
+    }
+    sendFailedMessageSendComplete(data) {
+        if (!webClient)
+            return console.log("webClient not connected..");
+        console.log("sendign failed message over to ", data);
+        webClient.emit(`${data.deviceId}_FAILED_COMPLETED`, data);
+    }
 }
 exports.SocketManager = SocketManager;
 exports.default = new SocketManager();

@@ -131,6 +131,19 @@ class DeviceController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.retryFailedMessage = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("add to queue request ", req.params);
+                const result = yield device_model_1.default.retryFailedMessage(req.userId, req.params.deviceId);
+                console.log("retry result ", result);
+                responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE", result).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
         this.sendTextMessage = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {

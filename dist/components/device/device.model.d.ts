@@ -1,4 +1,4 @@
-import { IDeviceTokenData } from '../device/device.interface';
+import { EDeviceStatus, IDeviceTokenData } from '../device/device.interface';
 import { IApiKey, IDevice } from "./device.interface";
 import { IDeviceModel } from "./device.shema";
 export declare class DeviceModel {
@@ -42,6 +42,12 @@ export declare class DeviceModel {
     findDeviceByCondition(condition: any): Promise<any[]>;
     findDeviceByIdAndUserId(deviceId: string, userId: string): Promise<any>;
     fetchDeviceMetrics(deviceId: string): Promise<any>;
+    retryFailedMessage(userId: string, deviceId: string): Promise<{
+        error: boolean;
+        message: string;
+        messageCount: any;
+    }>;
+    updateDeviceStatus(deviceId: string, status: EDeviceStatus): Promise<IDeviceModel>;
 }
 declare const _default: DeviceModel;
 export default _default;
