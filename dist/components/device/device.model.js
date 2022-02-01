@@ -165,7 +165,7 @@ class DeviceModel {
             if (res.error)
                 throw new httpErrors_1.HTTP401Error(res.message);
             yield this.updateDevice(device.phone, { reason: null });
-            return { message: "AUTH_DELETED" };
+            return { message: "DEVICE_LOGGEDOUT" };
         });
     }
     ;

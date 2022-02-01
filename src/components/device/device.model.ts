@@ -137,7 +137,7 @@ export class DeviceModel {
         const res:any = await fileManagement.deleteFile(authFilePath);
         if(res.error) throw new HTTP401Error(res.message);
         await this.updateDevice(device.phone, { reason: null });
-        return { message: "AUTH_DELETED" };
+        return { message: "DEVICE_LOGGEDOUT" };
     };
 
     public async logoutDevice(body: any) {
