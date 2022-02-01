@@ -21,7 +21,7 @@ class FileManagement {
             return new Promise((resolve) => {
                 console.log("delete path ", path_1.default.join(__dirname, filePath));
                 try {
-                    fs_1.default.unlink(path_1.default.join(__dirname, filePath), () => {
+                    fs_1.default.unlink(filePath, () => {
                         resolve({ error: false });
                     });
                 }

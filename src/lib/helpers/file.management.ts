@@ -7,7 +7,7 @@ export class FileManagement{
         console.log("delete path ",path.join(__dirname, filePath));
         
         try{
-          fs.unlink(path.join(__dirname, filePath),()=>{
+          fs.unlink(filePath,()=>{
             resolve({error:false})
           });
         }catch(e){
