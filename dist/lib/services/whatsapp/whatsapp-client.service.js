@@ -19,6 +19,7 @@ const clients_data_1 = __importDefault(require("../../../data/clients.data"));
 const whatsapp_service_1 = __importDefault(require("./whatsapp.service"));
 const device_model_1 = __importDefault(require("../../../components/device/device.model"));
 const message_queue_service_1 = __importDefault(require("./message-queue.service"));
+const utils_1 = require("../../../lib/utils");
 exports.eventEmitter = new events_1.EventEmitter();
 class WhatsappClient {
     constructor() {
@@ -54,7 +55,7 @@ class WhatsappClient {
                     return { error: true, message: "CLIENT_NOT_FOUND" };
                 if (!client.authState)
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-                const data = yield client.sendTextMessage(to, message);
+                const data = yield client.sendTextMessage(utils_1.sanatizeMobile(to), message);
                 return data;
             }
             catch (e) {

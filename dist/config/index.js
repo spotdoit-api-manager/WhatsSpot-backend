@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fast2SmsConfig = exports.pilvoConfig = exports.razorPaySecrets = exports.googleOAuth = exports.paginationConfig = exports.s3Config = exports.textLocalConfig = exports.deviceKeyConfig = exports.commonConfig = exports.rateLimitConfig = exports.configCors = exports.mongoUrl = void 0;
+exports.testMessageConfig = exports.fast2SmsConfig = exports.pilvoConfig = exports.razorPaySecrets = exports.googleOAuth = exports.paginationConfig = exports.s3Config = exports.textLocalConfig = exports.deviceKeyConfig = exports.commonConfig = exports.rateLimitConfig = exports.configCors = exports.mongoUrl = void 0;
 exports.mongoUrl = () => {
     const configs = {
         dbAccess: process.env.DB_ACCESS || "local",
@@ -81,5 +81,10 @@ exports.fast2SmsConfig = {
     authToken: process.env.FAST2SMS_TOKEN,
     url: process.env.FAST2SMS_URL,
     senderId: process.env.FAST2SMS_SENDERID
+};
+exports.testMessageConfig = {
+    maxMessage: Number(process.env.MAX_TEST_MESSAGE),
+    message: process.env.TEST_MESSAGE,
+    devicePhone: process.env.TEST_MESSAGE_DEVICE_NUMBER
 };
 //# sourceMappingURL=index.js.map

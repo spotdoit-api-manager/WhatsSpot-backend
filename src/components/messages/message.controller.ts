@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import ResponseHandler from "../../lib/helpers/responseHandler";
+import testMessageModel from "../testMessage/testMessage.model";
 import messageModel from "./message.model";
 
 export class MessageController{
@@ -21,6 +22,18 @@ export class MessageController{
           console.log("Send text message request",req.userId,req.walletId,req.deviceId);
     
           responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendTextMessage(req.userId,req.body,req.deviceId,req.walletId)).send();
+        } catch (e) {
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
+
+      public sendTestMessage = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          console.log("Send test message request",req.userId,req.walletId,req.deviceId);
+    
+          responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await testMessageModel.sendTestMessage(req.body,req.testMessageId)).send();
         } catch (e) {
           // send error with next function.
           next(responseHandler.sendError(e));

@@ -1,4 +1,5 @@
 import { PlivoCredentials, Fast2SmsCredentials } from './../lib/interfaces/providers.interface';
+import { ITestMessageConfig } from './config.interface';
 export const mongoUrl = (): string => {
   const configs = {
     dbAccess: process.env.DB_ACCESS || "local",
@@ -96,4 +97,11 @@ export const fast2SmsConfig:Fast2SmsCredentials = {
   authToken: process.env.FAST2SMS_TOKEN,
   url: process.env.FAST2SMS_URL,
   senderId: process.env.FAST2SMS_SENDERID
+}
+
+
+export const testMessageConfig:ITestMessageConfig = {
+  maxMessage:Number(process.env.MAX_TEST_MESSAGE),
+  message:process.env.TEST_MESSAGE,
+  devicePhone:process.env.TEST_MESSAGE_DEVICE_NUMBER
 }

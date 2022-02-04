@@ -7,6 +7,7 @@ import Whatsapp from './whatsapp.service';
 import deviceModel from '../../../components/device/device.model';
 import messageQueueService from './message-queue.service';
 import { IImageMessage } from './whatsapp.interface';
+import { sanatizeMobile } from '../../../lib/utils';
 
 interface IWhatsappClient {
     [phone: string]: WhatsappClient
@@ -73,7 +74,7 @@ export class WhatsappClient {
             const client = this.getClient(phone);
             if (!client) return { error: true, message: "CLIENT_NOT_FOUND" };
             if (!client.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-            const data = await client.sendTextMessage(to, message);
+            const data = await client.sendTextMessage(sanatizeMobile(to), message);
             return data;
         } catch (e) {
             return { error: true, message: e.message };

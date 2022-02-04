@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageController = void 0;
 const responseHandler_1 = __importDefault(require("../../lib/helpers/responseHandler"));
+const testMessage_model_1 = __importDefault(require("../testMessage/testMessage.model"));
 const message_model_1 = __importDefault(require("./message.model"));
 class MessageController {
     constructor() {
@@ -33,6 +34,17 @@ class MessageController {
             try {
                 console.log("Send text message request", req.userId, req.walletId, req.deviceId);
                 responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield message_model_1.default.sendTextMessage(req.userId, req.body, req.deviceId, req.walletId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.sendTestMessage = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("Send test message request", req.userId, req.walletId, req.deviceId);
+                responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield testMessage_model_1.default.sendTestMessage(req.body, req.testMessageId)).send();
             }
             catch (e) {
                 // send error with next function.
