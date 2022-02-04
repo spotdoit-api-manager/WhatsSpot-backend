@@ -20,15 +20,18 @@ const utils_1 = require("../../lib/utils");
 exports.validateTestMessageRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const to = (_a = req.body) === null || _a === void 0 ? void 0 : _a.to;
-    if (!utils_1.validateMobile(to))
-        throw new httpErrors_1.HTTP401Error("INVALID_PHONE");
+    if (!utils_1.validateMobile(to)) {
+        const error = new httpErrors_1.HTTP401Error("INVLAID_PHONE", "phone number is invalid");
+        next(error);
+    }
     const testMessage = yield testMessage_model_1.default.fetchTestMessageByPhoneNumber(to);
     if (testMessage) {
         req.testMessageId = testMessage._id;
         if (testMessage.messageCount < config_1.testMessageConfig.maxMessage) {
             return next();
         }
-        throw new httpErrors_1.HTTP401Error("LIMIT_REACHED");
+        const error = new httpErrors_1.HTTP401Error("LIMIT_REACHED", "You have sent maximum message to a number allowed");
+        next(error);
     }
     req.testMessageId = null;
     return next();
