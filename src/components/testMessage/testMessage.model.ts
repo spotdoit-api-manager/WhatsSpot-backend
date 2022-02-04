@@ -17,7 +17,7 @@ export class TestMessageModel{
 
     private async updateOrCreateTestMessage(phoneNumber:string,testMessageId:string|null){
         if(testMessageId){
-            return await TestMessage.findByIdAndUpdate(testMessageId,{messageCount:{$inc:1}});
+            return await TestMessage.findByIdAndUpdate(testMessageId,{$inc:{messageCount:1}});
         }
         const newTestMessageBody:ITestMessage = {phoneNumber,messageCount:0}
         const newTestMessage:ITestMessageModel = new TestMessage(newTestMessageBody);

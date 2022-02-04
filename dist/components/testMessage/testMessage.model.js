@@ -34,7 +34,7 @@ class TestMessageModel {
     updateOrCreateTestMessage(phoneNumber, testMessageId) {
         return __awaiter(this, void 0, void 0, function* () {
             if (testMessageId) {
-                return yield testMessage_schema_1.TestMessage.findByIdAndUpdate(testMessageId, { messageCount: { $inc: 1 } });
+                return yield testMessage_schema_1.TestMessage.findByIdAndUpdate(testMessageId, { $inc: { messageCount: 1 } });
             }
             const newTestMessageBody = { phoneNumber, messageCount: 0 };
             const newTestMessage = new testMessage_schema_1.TestMessage(newTestMessageBody);
