@@ -9,36 +9,45 @@ import makeWASocket, {
   delay,
   useSingleFileAuthState,
   AuthenticationState,
+  SocketConfig,
 } from "@adiwajshing/baileys-md";
 import deviceModel from './../../../components/device/device.model';
 import path from 'path';
+import instanceProvider from './instance.provider';
 export default class Whatsapp extends EventEmitter {
-  client: any;
+  client:any ;
   phone: string;
   state: AuthenticationState;
   saveState: any;
   public authState: boolean = false;
   qr: any = new EventEmitter();
-  
+  public _instanceId:number;
   
   constructor(phone: string) {
     super();
+    this._instanceId = instanceProvider.addInstance(this);
+
     this.state = useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
     this.saveState = useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
     this.phone = phone;
-    this.client = this.startSock();
-    this.startBasicEventListners();
+    // this.client = this.startSock();
   }
   // start a connection
-  private startSock = () => {
-    const sock = makeWASocket({
-      logger: P({ level: "info" }),
-      printQRInTerminal: false,
-      auth: this.state,
-    });
-
-    return sock;
-  };
+  public  initiClient = async() => {
+    try{
+      const sock= makeWASocket({
+        logger: P({ level: "info" }),
+        printQRInTerminal: false,
+        auth: this.state,
+      });
+      this.client = sock;
+      this.startBasicEventListners();
+      await this.client.waitForSocketOpen();
+      return {error:false}
+    }catch(err){
+      return {error:true,message:err.message}
+    }
+    };
 
   public getQr = async () => {
     this.client.ev.on("connection.update", async (update: any) => {
@@ -69,6 +78,7 @@ export default class Whatsapp extends EventEmitter {
   };
 
   private startBasicEventListners() {
+    // this.client.ev.removeAllListeners();
     //cred update listner
     this.client.ev.on("creds.update", this.saveState);
 
@@ -158,7 +168,7 @@ export default class Whatsapp extends EventEmitter {
 
   private async reconnectClient() {
     console.log("RETRYING CONNECTION..", this.phone);
-    this.client = this.startSock();
+    await this.initiClient();
     this.startBasicEventListners();
   }
 
@@ -226,6 +236,7 @@ export default class Whatsapp extends EventEmitter {
   };
 
   public endClient() {
+    // this.client.
     this.client.end();
 
   }
@@ -236,5 +247,7 @@ export default class Whatsapp extends EventEmitter {
 
   // startSock()
 }
+
+instanceProvider.addClass(Whatsapp);
 
 // export default new Whatsapp();

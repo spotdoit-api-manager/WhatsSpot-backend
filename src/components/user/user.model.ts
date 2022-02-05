@@ -30,7 +30,7 @@ export class UserModel {
   }
 
  public async fetch(id: string) {
-    const data = User.findById(id);
+    const data = await User.findById(id);
     return data;
   }
 

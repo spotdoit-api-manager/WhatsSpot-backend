@@ -14,17 +14,17 @@ const errorHandlers_middleware_1 = __importDefault(require("./lib/middleware/err
 const dbConnection_1 = __importDefault(require("./lib/helpers/dbConnection"));
 process.on("uncaughtException", e => {
     console.log(e);
-    console.log(e.message, "uncaught");
+    console.log(e.message, "uncaught Exception");
     process.exit(1);
 });
 process.on("unhandledRejection", e => {
-    console.log(e, "unhandled");
+    console.log(e, "unhandled Rejection");
     process.exit(1);
 });
 // Initialize express app
 const app = express_1.default();
 exports.app = app;
-// Initialize middleware
+// Initialize middlewares
 utils_1.applyMiddleware(index_1.default, app);
 // open  mongoose connection
 dbConnection_1.default.mongoConnection();
@@ -35,7 +35,6 @@ dbConnection_1.default.mongoConnection();
 const r1 = express_1.default.Router();
 app.use("/", utils_1.applyRoutes(routes_1.default, r1)); // default api
 app.all("*", (req, res, next) => {
-    // res.send("hii");
     next(new httpErrors_1.HTTP400Error(`Can't found ${req.originalUrl} on services server`));
 });
 console.log("current env is ", process.env.NODE_ENV);

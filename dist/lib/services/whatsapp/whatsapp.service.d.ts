@@ -9,8 +9,15 @@ export default class Whatsapp extends EventEmitter {
     saveState: any;
     authState: boolean;
     qr: any;
+    _instanceId: number;
     constructor(phone: string);
-    private startSock;
+    initiClient: () => Promise<{
+        error: boolean;
+        message?: undefined;
+    } | {
+        error: boolean;
+        message: any;
+    }>;
     getQr: () => Promise<void>;
     private startBasicEventListners;
     private reconnectClient;

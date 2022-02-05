@@ -19,7 +19,7 @@ export class DeviceModel {
         console.log(body);
         body.userId = userId;
         const device = await this.findDeviceByPhone(body.phone);
-        if (device) return device;
+        this.validateDeviceAdd(userId,device);
         const newDevice = new Device(body);
         const newDeviceData:IDeviceModel = await newDevice.saveDevice();
         if(!newDeviceData) throw new HTTP400Error("UNKNOWN_ERROR");
@@ -28,6 +28,10 @@ export class DeviceModel {
         return newDeviceData;
     }
 
+    private validateDeviceAdd(userId:string,device:IDevice){
+        if (device && device.userId == userId) return device;
+        else if(device && device.userId != userId) throw new HTTP401Error("DEVICE_ALREADY_REGISTERD","This device is already added by some user");
+    }
     public async getQr(body: any) {
         const device = await this.findDeviceById(body.deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
@@ -39,6 +43,13 @@ export class DeviceModel {
         const data = whatsappClientService.getClientQr(device.phone);
         return { message: "QR_REQUESTED" };
     };
+
+    public async removeClient(body:any){
+        const device = await this.findDeviceById(body.deviceId);
+        if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
+        const data = whatsappClientService.removeClientInstanceByPhone(device.phone);
+        return { message: "CLIENT_REMOVED" };
+    }
 
     public fetchAllDevices = async (userId: string) => {
         console.log("fetch all device request", userId);

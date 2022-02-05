@@ -53,8 +53,7 @@ class DeviceModel {
             console.log(body);
             body.userId = userId;
             const device = yield this.findDeviceByPhone(body.phone);
-            if (device)
-                return device;
+            this.validateDeviceAdd(userId, device);
             const newDevice = new device_shema_1.Device(body);
             const newDeviceData = yield newDevice.saveDevice();
             if (!newDeviceData)
@@ -64,6 +63,12 @@ class DeviceModel {
             const keys = yield this.generateNewKey(userId, walletId, newDeviceData._id, { name: process.env.DEFAULT_APIKEY_NAME, expiresOn });
             return newDeviceData;
         });
+    }
+    validateDeviceAdd(userId, device) {
+        if (device && device.userId == userId)
+            return device;
+        else if (device && device.userId != userId)
+            throw new httpErrors_1.HTTP401Error("DEVICE_ALREADY_REGISTERD", "This device is already added by some user");
     }
     getQr(body) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -81,6 +86,15 @@ class DeviceModel {
         });
     }
     ;
+    removeClient(body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const device = yield this.findDeviceById(body.deviceId);
+            if (!device)
+                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
+            const data = whatsapp_client_service_1.default.removeClientInstanceByPhone(device.phone);
+            return { message: "CLIENT_REMOVED" };
+        });
+    }
     fetchDeviceByCondition(deviceId, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield device_shema_1.Device.aggregate([

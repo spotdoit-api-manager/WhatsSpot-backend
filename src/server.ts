@@ -1,6 +1,7 @@
 import { config } from "dotenv";
 import { Server } from "socket.io";
 import { createServer } from "http";
+import dash from 'appmetrics-dash';
 
 
 // Initializing the dot env file very early of this project to use every where
@@ -22,15 +23,7 @@ socketManager.socketServer(server);
 server.listen(Port, () => {
     console.log(`Listening to port ${Port}`);
     whatsappClientService.initializeAllClients();
+    dash.monitor({server: server});
 });
 
 
-function printMemoryUsage() {
-    setInterval(() => {
-        for (const [key, value] of Object.entries(process.memoryUsage())) {
-            console.log(`Memory usage by ${key}, ${value / 1000000}MB `)
-        }
-        console.log("");
-
-    }, 5000)
-}

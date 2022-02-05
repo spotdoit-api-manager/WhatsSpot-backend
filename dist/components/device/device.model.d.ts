@@ -3,12 +3,16 @@ import { IApiKey, IDevice } from "./device.interface";
 import { IDeviceModel } from "./device.shema";
 export declare class DeviceModel {
     newDevice(userId: string, walletId: any, body: IDevice): Promise<IDeviceModel>;
+    private validateDeviceAdd;
     getQr(body: any): Promise<{
         error: boolean;
         message: string;
     } | {
         message: string;
         error?: undefined;
+    }>;
+    removeClient(body: any): Promise<{
+        message: string;
     }>;
     fetchAllDevices: (userId: string) => Promise<any>;
     fetchDevice: (deviceId: string, userId: string) => Promise<any>;

@@ -36,20 +36,29 @@ const events_1 = require("events");
 const pino_1 = __importDefault(require("pino"));
 const baileys_md_1 = __importStar(require("@adiwajshing/baileys-md"));
 const device_model_1 = __importDefault(require("./../../../components/device/device.model"));
+const instance_provider_1 = __importDefault(require("./instance.provider"));
 class Whatsapp extends events_1.EventEmitter {
     constructor(phone) {
         super();
         this.authState = false;
         this.qr = new events_1.EventEmitter();
         // start a connection
-        this.startSock = () => {
-            const sock = baileys_md_1.default({
-                logger: pino_1.default({ level: "info" }),
-                printQRInTerminal: false,
-                auth: this.state,
-            });
-            return sock;
-        };
+        this.initiClient = () => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const sock = baileys_md_1.default({
+                    logger: pino_1.default({ level: "info" }),
+                    printQRInTerminal: false,
+                    auth: this.state,
+                });
+                this.client = sock;
+                this.startBasicEventListners();
+                yield this.client.waitForSocketOpen();
+                return { error: false };
+            }
+            catch (err) {
+                return { error: true, message: err.message };
+            }
+        });
         this.getQr = () => __awaiter(this, void 0, void 0, function* () {
             this.client.ev.on("connection.update", (update) => __awaiter(this, void 0, void 0, function* () {
                 var _a, _b;
@@ -123,13 +132,14 @@ class Whatsapp extends events_1.EventEmitter {
                 return { error: true, message: e.message };
             }
         });
+        this._instanceId = instance_provider_1.default.addInstance(this);
         this.state = baileys_md_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
         this.saveState = baileys_md_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
         this.phone = phone;
-        this.client = this.startSock();
-        this.startBasicEventListners();
+        // this.client = this.startSock();
     }
     startBasicEventListners() {
+        // this.client.ev.removeAllListeners();
         //cred update listner
         this.client.ev.on("creds.update", this.saveState);
         //connection update
@@ -211,11 +221,12 @@ class Whatsapp extends events_1.EventEmitter {
     reconnectClient() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("RETRYING CONNECTION..", this.phone);
-            this.client = this.startSock();
+            yield this.initiClient();
             this.startBasicEventListners();
         });
     }
     endClient() {
+        // this.client.
         this.client.end();
     }
     logoutClient() {
@@ -223,5 +234,6 @@ class Whatsapp extends events_1.EventEmitter {
     }
 }
 exports.default = Whatsapp;
+instance_provider_1.default.addClass(Whatsapp);
 // export default new Whatsapp();
 //# sourceMappingURL=whatsapp.service.js.map
