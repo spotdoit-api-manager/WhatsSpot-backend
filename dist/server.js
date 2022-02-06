@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = require("dotenv");
 const http_1 = require("http");
-const appmetrics_dash_1 = __importDefault(require("appmetrics-dash"));
+// import dash from 'appmetrics-dash';
 // Initializing the dot env file very early of this project to use every where
 dotenv_1.config({ path: './config.env' });
 // calling app to create server :: Our logics will belong to this app.
@@ -20,6 +20,6 @@ socket_1.default.socketServer(server);
 server.listen(Port, () => {
     console.log(`Listening to port ${Port}`);
     whatsapp_client_service_1.default.initializeAllClients();
-    appmetrics_dash_1.default.monitor({ server: server });
+    // dash.monitor({server: server});
 });
 //# sourceMappingURL=server.js.map
