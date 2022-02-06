@@ -11,12 +11,12 @@ import { schedule } from 'node-cron';
 
 process.on("uncaughtException", e => {
     console.log(e)
-  console.log(e.message, "uncaught");
+  console.log(e.message, "uncaught Exception");
   process.exit(1);
 });
 
 process.on("unhandledRejection", e => {
-  console.log(e, "unhandled");
+  console.log(e, "unhandled Rejection");
   process.exit(1);
 });
 
@@ -24,7 +24,7 @@ process.on("unhandledRejection", e => {
 // Initialize express app
 const app: express.Application = express();
 
-// Initialize middleware
+// Initialize middlewares
 applyMiddleware(middleware, app);
 
 // open  mongoose connection
@@ -39,7 +39,6 @@ const r1 = express.Router();
 
 app.use("/", applyRoutes(routes, r1)); // default api
 app.all("*", (req, res, next) => {
-  // res.send("hii");
   next(new HTTP400Error(`Can't found ${req.originalUrl} on services server`));
 });
 console.log("current env is ",process.env.NODE_ENV );

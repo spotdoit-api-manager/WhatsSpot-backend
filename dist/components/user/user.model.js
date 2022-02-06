@@ -63,7 +63,7 @@ class UserModel {
     }
     fetch(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = user_schema_1.User.findById(id);
+            const data = yield user_schema_1.User.findById(id);
             return data;
         });
     }

@@ -20,42 +20,46 @@ const whatsapp_service_1 = __importDefault(require("./whatsapp.service"));
 const device_model_1 = __importDefault(require("../../../components/device/device.model"));
 const message_queue_service_1 = __importDefault(require("./message-queue.service"));
 const utils_1 = require("../../../lib/utils");
+const instance_provider_1 = __importDefault(require("./instance.provider"));
 exports.eventEmitter = new events_1.EventEmitter();
 class WhatsappClient {
     constructor() {
         this.clients = clients_data_1.default;
+        this.addClient = (phone) => {
+            const clientInstance = new whatsapp_service_1.default(phone);
+            const instaceId = instance_provider_1.default.getInstanceId(clientInstance);
+            clients_data_1.default[phone] = instaceId;
+            console.log(`Number of instance present = ${Object.keys(this.clients).length}`);
+            return clientInstance;
+        };
+        this.getClientInstanceByInstanceId = (instanceId) => {
+            return instance_provider_1.default.getClassInstance(whatsapp_service_1.default, instanceId);
+        };
         this.getClientQr = (phone) => __awaiter(this, void 0, void 0, function* () {
-            this.removeQrListner(phone);
+            this.removeClientInstanceByPhone(phone);
             const client = this.addClient(phone);
             client.on("qr", (qrData) => {
                 console.log("got qr ", qrData.qr);
-                // if (qrData.error) return;
                 socket_1.default.sendQrCode(phone, qrData);
             });
             client.on("authenticated", (client) => {
                 console.log("got authenticated ", client.phone);
                 socket_1.default.sendAuthenticated(client.phone);
             });
+            const result = yield client.initiClient();
+            if (result.error)
+                return result;
             client.getQr();
         });
-        this.addClient = (phone) => {
-            const client = new whatsapp_service_1.default(phone);
-            clients_data_1.default[phone] = client;
-            // client.auth
-            return client;
-        };
-        this.getClient = (phone) => {
-            return clients_data_1.default[phone];
-        };
         this.sendTextMessage = (phone, to, message) => __awaiter(this, void 0, void 0, function* () {
             try {
                 console.log("sending message to ", to);
-                const client = this.getClient(phone);
-                if (!client)
+                const clientInstance = this.getClientInstanceByPhone(phone);
+                if (!clientInstance)
                     return { error: true, message: "CLIENT_NOT_FOUND" };
-                if (!client.authState)
+                if (!clientInstance.authState)
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-                const data = yield client.sendTextMessage(utils_1.sanatizeMobile(to), message);
+                const data = yield clientInstance.sendTextMessage(utils_1.sanatizeMobile(to), message);
                 return data;
             }
             catch (e) {
@@ -65,7 +69,7 @@ class WhatsappClient {
         this.sendImageMessage = (phone, to, msg) => __awaiter(this, void 0, void 0, function* () {
             try {
                 console.log("sending image message to ", to);
-                const client = this.getClient(phone);
+                const client = this.getClientInstanceByPhone(phone);
                 if (!client)
                     return { error: true, message: "CLIENT_NOT_FOUND" };
                 if (!client.authState)
@@ -79,22 +83,15 @@ class WhatsappClient {
             }
         });
     }
-    removeQrListner(phone) {
-        try {
-            if (clients_data_1.default[phone]) {
-                clients_data_1.default[phone].endClient();
-                clients_data_1.default[phone] = null;
-            }
-        }
-        catch (err) {
-            console.log("error in client end ", err);
-        }
+    getClientInstanceByPhone(phone) {
+        return this.getClientInstanceByInstanceId(this.clients[phone]);
     }
     logoutClient(phone) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                clients_data_1.default[phone].logoutClient();
-                clients_data_1.default[phone].on('LOGGEDOUT', (data) => {
+                const client = this.getClientInstanceByPhone(phone);
+                client.logoutClient();
+                client.on('LOGGEDOUT', (data) => {
                     console.log("logout listner ", data);
                     socket_1.default.sendLoggedout(data);
                 });
@@ -105,6 +102,28 @@ class WhatsappClient {
             }
         });
     }
+    removeClientInstanceByPhone(phone) {
+        console.log(`Removing client ${phone}`);
+        const instanceId = this.clients[phone];
+        if (!instanceId)
+            return { error: true, message: "INSTANCE_NOT_FOUND" };
+        delete this.clients[phone];
+        return this.removeClientByInstanceId(instanceId);
+    }
+    removeClientByInstanceId(instanceId) {
+        try {
+            console.log(`Removing client instance ${instanceId}`);
+            let instance = instance_provider_1.default.getClassInstance(whatsapp_service_1.default, instanceId);
+            instance.endClient();
+            instance_provider_1.default.removeClassInstance(whatsapp_service_1.default, instanceId);
+            instance = null;
+            return { error: false, message: "client removed" };
+        }
+        catch (err) {
+            console.log("error in client end ", err);
+            return { error: true, message: err.message };
+        }
+    }
     initializeAllClients() {
         return __awaiter(this, void 0, void 0, function* () {
             console.info("INITIALIZING ALL CLIENTS...");
@@ -114,7 +133,8 @@ class WhatsappClient {
             for (let i = 0; i < devices.length; i++) {
                 const device = devices[i];
                 console.log(`client${i}:${device.phone}`);
-                this.addClient(device.phone);
+                const client = this.addClient(device.phone);
+                yield client.initiClient();
             }
             setTimeout(() => {
                 console.log("STARTED_MESSAGE_QUEUE_SERVICE...");

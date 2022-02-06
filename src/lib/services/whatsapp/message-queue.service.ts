@@ -60,7 +60,6 @@ export class MessageQueueService {
                     const result: any = await whatsappClientService.sendTextMessage(message.phone, message.to as string, message.message);
                     if (!result.error) {
                      await messageModel.updateMessageStatus(message._id, EMessageStatus.SENT);
-                     console.log(i,"th message sent");
                      
                      socketManager.sendFailedMessageSendProgress(deviceId,{total:errorMessages.length,current:i+1});
                      await walletModel.makePaymentFromWallet(walletId,message.userId,parseFloat(process.env.TEXT_MESSAGE_RATE),`sent queue message to ${message.to} from ${message.phone}`,{deviceId:message.deviceId,to:message.to,type:EMessageStatus.ERROR});

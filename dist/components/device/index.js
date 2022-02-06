@@ -32,6 +32,12 @@ exports.default = [
         handler: [device_controller_1.default.getQr]
     },
     {
+        path: "/device/removeClient/:deviceId",
+        method: "get",
+        escapeAuth: false,
+        handler: [device_controller_1.default.removeClient]
+    },
+    {
         path: "/device/auth/delete/:deviceId",
         method: "delete",
         escapeAuth: false,

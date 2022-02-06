@@ -43,6 +43,17 @@ class DeviceController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.removeClient = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("qr request");
+                responseHandler.reqRes(req, res).onFetch("QR_REQUESTED", yield device_model_1.default.removeClient(req.params)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
         this.fetchAllDevices = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {

@@ -177,6 +177,8 @@ class UserController {
   public getLoggedUser = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
+      console.log("getting logged user");
+      
       const user = await userModel.fetch(req.userId);
 
       responseHandler.reqRes(req, res).onFetch("User Data", user).send();

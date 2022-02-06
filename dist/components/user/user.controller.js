@@ -167,6 +167,7 @@ class UserController {
         this.getLoggedUser = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
+                console.log("getting logged user");
                 const user = yield user_model_1.default.fetch(req.userId);
                 responseHandler.reqRes(req, res).onFetch("User Data", user).send();
             }

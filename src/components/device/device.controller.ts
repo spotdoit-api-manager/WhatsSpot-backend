@@ -36,6 +36,18 @@ export class DeviceController {
     }
   };
 
+  public removeClient = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      console.log("qr request");
+
+      responseHandler.reqRes(req, res).onFetch("QR_REQUESTED", await deviceModel.removeClient(req.params)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
   public fetchAllDevices = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {

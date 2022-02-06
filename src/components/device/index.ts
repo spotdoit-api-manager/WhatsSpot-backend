@@ -29,6 +29,13 @@ export default [
         escapeAuth: false,
         handler: [deviceController.getQr]
     },
+    
+    {
+        path: "/device/removeClient/:deviceId",
+        method: "get",
+        escapeAuth: false,
+        handler: [deviceController.removeClient]
+    },
     {
         path: "/device/auth/delete/:deviceId",
         method: "delete",

@@ -31,6 +31,7 @@ export class SocketManager {
 
   };
 
+
   public sendClientError = (phone: string, error: any) => {
     if (!webClient) return console.log("webClient not connected..");
     webClient.emit(`${phone}_clientError`, { reason: error });

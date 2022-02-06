@@ -46,7 +46,9 @@ export const AdminAuthorization = async (req: Request, res: Response, next: Next
     if (req.role === 'admin') {
       next();
     } else {
-      throw new HTTP401Error("Incorrect Role for Request. Your Role : " + req.role);
+      const e  = new HTTP401Error("Incorrect Role for Request. Your Role : " + req.role);
+      next(e);
+
     }
   } catch (e) {
     e = new HTTP401Error(e.message);

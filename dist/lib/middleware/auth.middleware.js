@@ -49,7 +49,8 @@ exports.AdminAuthorization = (req, res, next) => __awaiter(void 0, void 0, void 
             next();
         }
         else {
-            throw new httpErrors_1.HTTP401Error("Incorrect Role for Request. Your Role : " + req.role);
+            const e = new httpErrors_1.HTTP401Error("Incorrect Role for Request. Your Role : " + req.role);
+            next(e);
         }
     }
     catch (e) {
