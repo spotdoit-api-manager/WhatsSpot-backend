@@ -16,7 +16,14 @@ export interface IUser {
     following?: Array<string>;
     avatar?: Buffer,
     deactivation: boolean;
-    walletId?:string
+    walletId?:string,
+    activePlan:IPlanRef,
+    previousPlans:IPlanRef[]
+}
+
+export interface IPlanRef{
+    planName:string,
+    planRef:string
 }
 
 export interface ITokenData {

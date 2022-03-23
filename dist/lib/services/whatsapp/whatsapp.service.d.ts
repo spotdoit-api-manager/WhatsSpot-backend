@@ -8,8 +8,9 @@ export default class Whatsapp extends EventEmitter {
     state: AuthenticationState;
     saveState: any;
     authState: boolean;
-    qr: any;
+    qrInProcess: boolean;
     _instanceId: number;
+    private retryCount;
     constructor(phone: string);
     initiClient: () => Promise<{
         error: boolean;
@@ -19,8 +20,13 @@ export default class Whatsapp extends EventEmitter {
         message: any;
     }>;
     getQr: () => Promise<void>;
+    private checkIfQrRetryExceeded;
     private startBasicEventListners;
+    private isMaxRetryReached;
     private reconnectClient;
+    private getDisconnectReason;
+    private handleConnectionOpen;
+    private handleConectionClose;
     private sendMessageWTyping;
     sendTextMessage: (to: string, msg: AnyMessageContent) => Promise<{
         error: boolean;

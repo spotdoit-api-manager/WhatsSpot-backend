@@ -15,6 +15,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = exports.UserSchema = void 0;
 const mongoose_1 = require("mongoose");
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const planRef = new mongoose_1.Schema({
+    planName: {
+        type: String,
+        required: true
+    },
+    planRef: {
+        type: mongoose_1.SchemaTypes.ObjectId,
+        ref: "UserPlan",
+        required: true
+    }
+}, { timestamps: true });
 exports.UserSchema = new mongoose_1.Schema({
     firstName: {
         type: String,
@@ -40,6 +51,8 @@ exports.UserSchema = new mongoose_1.Schema({
         unique: false,
         required: true
     },
+    activePlan: planRef,
+    previousPlans: [planRef],
     walletId: {
         type: mongoose_1.SchemaTypes.ObjectId,
         ref: "wallet",

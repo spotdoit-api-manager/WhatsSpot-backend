@@ -4,7 +4,7 @@ import { IWalletModel } from './../walllet/wallet.schema';
 import { EMessageStatus } from './../messages/message.interface';
 import { generateToken, imageUrl, isValidMongoId, otpGenerator } from "../../lib/helpers";
 import { User, UserSchema } from "./user.schema";
-import { IUser, ITokenData, IDataStoredInToken } from './user.interface';
+import { IUser, ITokenData, IDataStoredInToken, IPlanRef } from './user.interface';
 import { IUserModel } from "./user.schema";
 import socialAuth from "./../../lib/middleware/socialAuth";
 import bcrypt from 'bcrypt';
@@ -15,6 +15,7 @@ import { ObjectID } from "bson";
 import { commonConfig } from "../../config";
 import { HTTP400Error, HTTP401Error } from "../../lib/utils/httpErrors";
 import walletModel, { WalletModel } from '../walllet/wallet.model';
+import plansModel from '../plans/plans.model';
 
 export class UserModel {
   public async fetchAll() {
@@ -42,13 +43,71 @@ export class UserModel {
 
     return data;
   }
+  public async fetchUserActivePlan(userId:string){
+    const userPlan = await User.aggregate([
+      {$match:{_id:new ObjectID(userId)}},
+      {
+        $lookup: {
+          from: "userplans",
+          localField: "activePlan.planRef",
+          foreignField: "_id",
+          as: "activePlan"
+      },
+     
+      },
+      {
+        $unwind: {
+          path: "$activePlan"
+        }
+      },
+      {
+        $lookup: {
+          from: "plans",
+          localField: "activePlan.planId",
+          foreignField: "planId",
+          as: "planInfo"
+      },
+      },
+      {
+        $unwind: {
+          path: "$planInfo"
+        }
+      },
+      {
+        $project:{
+          _id:0,
+          userId:"$_id",
+          activePlanInfo:"$activePlan",
+          planInfo:1
+        }
+      }
+    ]);
+    console.log("user active plan is ", userPlan);
+    if(!userPlan[0]?.activePlanInfo) throw new HTTP400Error("NO_ACTIVE_PLAN");
+    
+    return userPlan[0];
+  }
+
+  public async addPlanToUser(userId:string,activePlanName:string,activePlanId:string){
+    const planRef:IPlanRef = {planName:activePlanName,planRef:activePlanId}
+    const result = await User.findByIdAndUpdate(userId,{activePlan:planRef});
+  }
+  
+
+ 
+
+  public async expireUserPlan(userId:string){
+    const result = await User.findByIdAndUpdate(userId,{$unset:{activePlan:1}});
+  }
+
+  
 
   public async delete(id: string) {
     await User.deleteOne({ _id: id });
   }
 
   async add(body: any) {
-    console.log('User Info While Adding new User', body);
+    // console.log('User Info While Adding new User', body);
     if (body.password) {
       body.password = await bcrypt.hash(body.password, 12);
     }
@@ -78,7 +137,7 @@ try{
   }
 
   async registerWithPhone(body: IUser) {
-    console.log("register with phone ", body);
+    // console.log("register with phone ", body);
     try {
       const userExist = await this.findUserByPhone(body.phone);;
       if(userExist) throw new HTTP401Error("USER_ALREADY_EXIST");
@@ -181,7 +240,7 @@ try{
   };
 
   public async verifyUser(otp: string, userId: string) {
-    console.log("verify user ", userId, otp);
+    // console.log("verify user ", userId, otp);
     return { proceed: true }
 
   }

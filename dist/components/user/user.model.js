@@ -76,6 +76,63 @@ class UserModel {
             return data;
         });
     }
+    fetchUserActivePlan(userId) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            const userPlan = yield user_schema_1.User.aggregate([
+                { $match: { _id: new bson_1.ObjectID(userId) } },
+                {
+                    $lookup: {
+                        from: "userplans",
+                        localField: "activePlan.planRef",
+                        foreignField: "_id",
+                        as: "activePlan"
+                    },
+                },
+                {
+                    $unwind: {
+                        path: "$activePlan"
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "plans",
+                        localField: "activePlan.planId",
+                        foreignField: "planId",
+                        as: "planInfo"
+                    },
+                },
+                {
+                    $unwind: {
+                        path: "$planInfo"
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        userId: "$_id",
+                        activePlanInfo: "$activePlan",
+                        planInfo: 1
+                    }
+                }
+            ]);
+            console.log("user active plan is ", userPlan);
+            if (!((_a = userPlan[0]) === null || _a === void 0 ? void 0 : _a.activePlanInfo))
+                throw new httpErrors_1.HTTP400Error("NO_ACTIVE_PLAN");
+            return userPlan[0];
+        });
+    }
+    addPlanToUser(userId, activePlanName, activePlanId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const planRef = { planName: activePlanName, planRef: activePlanId };
+            const result = yield user_schema_1.User.findByIdAndUpdate(userId, { activePlan: planRef });
+        });
+    }
+    expireUserPlan(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield user_schema_1.User.findByIdAndUpdate(userId, { $unset: { activePlan: 1 } });
+        });
+    }
     delete(id) {
         return __awaiter(this, void 0, void 0, function* () {
             yield user_schema_1.User.deleteOne({ _id: id });
@@ -83,7 +140,7 @@ class UserModel {
     }
     add(body) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('User Info While Adding new User', body);
+            // console.log('User Info While Adding new User', body);
             if (body.password) {
                 body.password = yield bcrypt_1.default.hash(body.password, 12);
             }
@@ -117,7 +174,7 @@ class UserModel {
     }
     registerWithPhone(body) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("register with phone ", body);
+            // console.log("register with phone ", body);
             try {
                 const userExist = yield this.findUserByPhone(body.phone);
                 ;
@@ -228,7 +285,7 @@ class UserModel {
     ;
     verifyUser(otp, userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("verify user ", userId, otp);
+            // console.log("verify user ", userId, otp);
             return { proceed: true };
         });
     }

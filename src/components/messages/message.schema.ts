@@ -19,7 +19,10 @@ const messageSchema = new Schema(
       enum: ["FAST", "QUEUE"]
     },
     phone: String,
-    status: String,
+    status: {
+      type:String,
+      enum:["SENT","ERROR","PENDING"]
+    },
     reason: {
       type: String,
       required: false
@@ -35,7 +38,24 @@ const messageSchema = new Schema(
     expand: {
       type: Boolean,
       default: false
-    }
+    },
+    isGroup:{
+      type:Boolean,
+      default: false
+    },
+    contactsSent:[{
+      phoneNumber:{
+        type:String,
+        required:true
+      },
+      status:{
+        type:String,
+        enum:["SENT","ERROR","PENDING"]
+      },
+      reason:{
+        type:String,
+      }
+    }]
   },
   {
     timestamps: true,

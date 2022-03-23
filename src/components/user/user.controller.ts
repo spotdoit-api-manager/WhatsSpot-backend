@@ -187,6 +187,22 @@ class UserController {
     }
   };
 
+  public getActivePlan = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      console.log("getting user active plan");
+      
+      const activePlan = await userModel.fetchUserActivePlan(req.userId);
+
+      responseHandler.reqRes(req, res).onFetch("ACTIVE_PLAN", activePlan).send();
+    } catch (e) {
+      console.log(e);
+      
+      responseHandler.sendError(e);
+    }
+  };
+
+
   public addFollower = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {

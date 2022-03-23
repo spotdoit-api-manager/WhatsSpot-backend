@@ -16,7 +16,10 @@ class RazorPayService {
                     var options = {
                         amount: createOrder.amount * 100,
                         currency: "INR",
-                        receipt: `receipt_${userId}`
+                        receipt: `receipt_${userId}`,
+                        notes: {
+                            planId: createOrder.planId,
+                        }
                     };
                     this.razorPyaInstance.orders.create(options, function (err, order) {
                         var _a;

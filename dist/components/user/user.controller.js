@@ -175,6 +175,18 @@ class UserController {
                 responseHandler.sendError(e);
             }
         });
+        this.getActivePlan = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("getting user active plan");
+                const activePlan = yield user_model_1.default.fetchUserActivePlan(req.userId);
+                responseHandler.reqRes(req, res).onFetch("ACTIVE_PLAN", activePlan).send();
+            }
+            catch (e) {
+                console.log(e);
+                responseHandler.sendError(e);
+            }
+        });
         this.addFollower = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {

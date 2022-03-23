@@ -69,7 +69,6 @@ class OTPMessagesService {
                 const result = yield axios_1.default.post(index_2.fast2SmsConfig.url, body, {
                     headers: { authorization: index_2.fast2SmsConfig.authToken, 'content-type': 'application/json' },
                 });
-                console.log(result);
                 if (result.data && result.data.return) {
                     return { proceed: true };
                 }

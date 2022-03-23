@@ -16,7 +16,6 @@ import { sanatizeMobile, validateMobile } from '../../lib/utils';
 
 export class DeviceModel {
     public async newDevice(userId:string,walletId,body: IDevice) {
-        console.log(body);
         body.userId = userId;
         const device = await this.findDeviceByPhone(body.phone);
         this.validateDeviceAdd(userId,device);
@@ -35,7 +34,6 @@ export class DeviceModel {
     public async getQr(body: any) {
         const device = await this.findDeviceById(body.deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-        console.log("qr request for phone ", device.phone);
         if (device.authState) return { error: true, message: "ALREADY_AUTHENTICATED" };
         // if (!device.authState && device.reason && device.reason.statusCode === DisconnectReason.loggedOut) {
         //     return { message: "DEVICE_LOGGED_OUT" };
@@ -52,14 +50,11 @@ export class DeviceModel {
     }
 
     public fetchAllDevices = async (userId: string) => {
-        console.log("fetch all device request", userId);
-
         const devices = await this.findDeviceByUseId(userId);
         if (!devices || !devices.length) throw new HTTP400Error("NO_DEVICE_ADDED");
         return devices;
     }
     public fetchDevice = async (deviceId: string, userId: string) => {
-        console.log("fetch device request", deviceId, userId);
         const device = await this.fetchDeviceByCondition(deviceId, userId);
         return device;
     }
@@ -73,7 +68,6 @@ export class DeviceModel {
                 }
             }
         ]);
-        console.log("got result ", result);
         return result[0] || null;
     }
 
@@ -83,7 +77,6 @@ export class DeviceModel {
 
     public async fetchPrevMessages(deviceId: string) {
         try {
-            console.log("fetch prev messages", deviceId);
             const messages = await this.fetchMessagesByStatus(deviceId);
             if (!messages || !messages.length) throw new HTTP400Error("NO_MESSAGES");
             return messages;
@@ -143,7 +136,6 @@ export class DeviceModel {
     public async deleteAuth(body: any) {
         const device = await this.findDeviceById(body.deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-        console.log("delete auth request for phone ", device.phone);
         const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
         const res:any = await fileManagement.deleteFile(authFilePath);
         if(res.error) throw new HTTP401Error(res.message);
@@ -154,7 +146,9 @@ export class DeviceModel {
     public async logoutDevice(body: any) {
         const device = await this.findDeviceById(body.deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-        await fileManagement.deleteFile(`${device.phone}_cred.json`);
+        const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
+
+        await fileManagement.deleteFile(authFilePath);
         const data = await whatsappClientService.logoutClient(device.phone);
         if (data.error) throw new HTTP400Error(data.message);
         // const updateDeviceData ={
@@ -179,15 +173,12 @@ export class DeviceModel {
                 expiresIn = `${Math.floor(diff)}d`;
             }
             const totalAvailableKeys = await this.getTotalAvailableApiKeys(deviceId);
-            console.log(totalAvailableKeys, process.env.MAX_APIKEY_PER_DEVICE);
 
             if (totalAvailableKeys < parseInt(process.env.MAX_APIKEY_PER_DEVICE)) {
-                console.log("generating new key");
                 const apiKeyData:IDeviceTokenData = {walletId,userId,deviceId}
                 const token = this.generateDeviceKey(apiKeyData, expiresIn);
                 const tokenData:IApiKey = { name: body.name, createdOn: new Date(), token: token, expiresOn: body.expiresOn, status: { status: EApiKeyStatus.ACTIVE, reason: null } };
                 await this.addNewTokenDataToDevice(deviceId, tokenData);
-                console.log(tokenData);
                 return tokenData;
             }
             throw new HTTP400Error("MAX_API_KEY_REACHED");
@@ -197,10 +188,8 @@ export class DeviceModel {
     }
 
     public async deleteKey(deviceId: string, keyId: string) {
-        console.log(deviceId, keyId);
         try {
             const result = await Device.updateOne({ _id: deviceId }, { $pull: { apiKeys: { _id: keyId } } });
-            console.log(result);
 
         } catch (err) {
             throw new HTTP400Error(err.message);
@@ -216,12 +205,11 @@ export class DeviceModel {
                 }
             }
         ]);
-        console.log(keys);
+
         return keys[0]?.apiKeys || null;
     }
     private async addNewTokenDataToDevice(deviceId: string, tokenData: any) {
         const result = await Device.findByIdAndUpdate(deviceId, { $push: { apiKeys: tokenData } }, { "upsert": true, new: true });
-        console.log(result);
     }
 
     private generateDeviceKey(apiKeyData: IDeviceTokenData, expiresIn: string) {
@@ -229,9 +217,7 @@ export class DeviceModel {
         return token;
     }
 
-    public signDeviceToken = (apiKeyData: IDeviceTokenData, expiresIn: string) => {
-        console.log("signing key",apiKeyData);
-        
+    public signDeviceToken = (apiKeyData: IDeviceTokenData, expiresIn: string) => {        
         if (!expiresIn) {
             return jwt.sign(apiKeyData, deviceKeyConfig.jwtSecretKey, {});
         }
@@ -250,13 +236,10 @@ export class DeviceModel {
                 }
             }
         ]);
-        console.log(result);
-
         return result[0].count;
     }
     public async updateDevice(phone: string, clientData: any) {
-        console.log("updaing client ", phone, clientData);
-        if (!phone) return console.log("phone not provided in client update");
+        if (!phone) return  { error: true, message: "phone not provided in client update" };
         const options = { upsert: true, new: true, setDefaultsOnInsert: true };
         const client = await Device.findOneAndUpdate({ phone: phone }, { ...clientData }, options);
         if (!client) return { error: true, message: "some error occured" };

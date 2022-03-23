@@ -13,6 +13,7 @@ declare class UserController {
     socialAuthAddPhone: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     verifyOtp: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     getLoggedUser: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    getActivePlan: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     addFollower: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     addFollowing: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     signUp: (req: Request, res: Response, next: NextFunction) => Promise<void>;

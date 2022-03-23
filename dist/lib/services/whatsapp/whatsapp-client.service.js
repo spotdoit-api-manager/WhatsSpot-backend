@@ -18,7 +18,6 @@ const events_1 = require("events");
 const clients_data_1 = __importDefault(require("../../../data/clients.data"));
 const whatsapp_service_1 = __importDefault(require("./whatsapp.service"));
 const device_model_1 = __importDefault(require("../../../components/device/device.model"));
-const message_queue_service_1 = __importDefault(require("./message-queue.service"));
 const utils_1 = require("../../../lib/utils");
 const instance_provider_1 = __importDefault(require("./instance.provider"));
 exports.eventEmitter = new events_1.EventEmitter();
@@ -33,7 +32,13 @@ class WhatsappClient {
             return clientInstance;
         };
         this.getClientInstanceByInstanceId = (instanceId) => {
-            return instance_provider_1.default.getClassInstance(whatsapp_service_1.default, instanceId);
+            try {
+                const instance = instance_provider_1.default.getClassInstance(whatsapp_service_1.default, instanceId);
+                return instance;
+            }
+            catch (e) {
+                throw new Error("CLIENT_NOT_AUTHENTICATED");
+            }
         };
         this.getClientQr = (phone) => __awaiter(this, void 0, void 0, function* () {
             this.removeClientInstanceByPhone(phone);
@@ -138,7 +143,7 @@ class WhatsappClient {
             }
             setTimeout(() => {
                 console.log("STARTED_MESSAGE_QUEUE_SERVICE...");
-                message_queue_service_1.default.getPendingsMessages();
+                // messageQueueService();
             }, 10000);
         });
     }

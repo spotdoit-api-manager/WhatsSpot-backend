@@ -69,6 +69,14 @@ class WalletModel {
             return result[0] || null;
         });
     }
+    getWalletIdByUserId(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const wallet = yield wallet_schema_1.Wallet.findOne({ userId: new bson_1.ObjectID(userId) });
+            if (!wallet)
+                throw Error("WALLET_NOT_FOUND");
+            return wallet._id;
+        });
+    }
     addUserToWallet(walletId, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield wallet_schema_1.Wallet.findByIdAndUpdate(walletId, { userId });

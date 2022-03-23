@@ -1,5 +1,6 @@
 export interface ICreateOrder{
-    amount:number
+    amount:number,
+    planId:string
 }
 
 export interface IVerifyPayment{

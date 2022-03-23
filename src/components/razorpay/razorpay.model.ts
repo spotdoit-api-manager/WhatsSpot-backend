@@ -7,28 +7,40 @@ import { ICreateOrder, IVerifyPayment } from './razorpay.interface';
 import razorpayService from './razorpay.service';
 import walletModel from '../walllet/wallet.model';
 import crypto from 'crypto';
+import { EPLANS, IPLAN } from '../plans/plans.interface';
+import plansModel from '../plans/plans.model';
 
 
 export class RazorPayModel {
     public async createOrder(userId: string,walletId:string, body: ICreateOrder) {
         try {
+            const plan:IPLAN = await plansModel.fetchPlanByPlanId(body.planId);
+            console.log("fetch plan ",plan);
+            
+            if(!plan) throw new Error("INVALID_PLAN");
             const order: any = await razorpayService.createOrder(userId, body);
-            if (!order) throw new HTTP401Error("UNKNOWN_ERROR");
+            if (!order) throw new Error("UNKNOWN_ERROR");
             console.log(order);
-            if (order.error) throw new HTTP401Error(order.message);
-            const transaction:ITransactionModel = await transactionModel.createTransactionForRazorPay(order.order.id,userId,walletId,ETransactionTypes.CREDIT,body.amount,"amount adding to wallet");
-            if(!transaction) throw new HTTP401Error("UNKNOWN_ERROR");
+            if (order.error) throw new Error(order.message);
+            const transactionMessage = plan.planId == "PAYG" ?"Adding money to wallet":`Buying plan -> ${plan.planName}`;
+            const transaction:ITransactionModel = await transactionModel.createTransactionForRazorPay(plan.planId,order.order.id,userId,walletId,ETransactionTypes.CREDIT,body.amount,transactionMessage);
+            if(!transaction) throw new Error("UNKNOWN_ERROR");
             order.order.transactionId = transaction._id;
+            order.order.planId = plan.planId;
             return {order};
         } catch (err) {
-            throw new HTTP401Error(err.message);
+            console.log("error in create order ");
+            
+            console.log(err);
+            
+            throw new Error(err.message);
         }
     }
 
     public async verifyPayment(userId:string,walletId:string,body: IVerifyPayment) {
         console.log("got verification of ",userId,walletId,body);
         try{
-
+           
             let id = body.orderId + "|" + body.paymentId;
             
             const expectedSignature = crypto.createHmac('sha256', razorPaySecrets.secret)
@@ -38,9 +50,22 @@ export class RazorPayModel {
             console.log("sig generated ", expectedSignature);
             let response = { signatureIsValid: false };
         if (expectedSignature === body.razorpay_signature) {
-            const updatedTransaction  = await transactionModel.updateTransactionStatus(body.transactionId,ETransactionStatus.SUCCESS);
-            const updatedWallet = await walletModel.addCreditToWallet(walletId,updatedTransaction.amount);
-            console.log(updatedTransaction,updatedWallet);
+            const updatedTransaction:ITransactionModel  = await transactionModel.updateTransactionStatus(body.transactionId,ETransactionStatus.SUCCESS);
+            console.log(`Updated transaction is `,updatedTransaction);
+            console.log(`Updated transaction metadata is `,updatedTransaction.metaData,updatedTransaction.metaData.planId);
+
+            if(updatedTransaction?.metaData && updatedTransaction?.metaData.get('planId') != EPLANS.PAYG){
+                console.log(`Plan payment verified `);
+                const activatedPlan = await plansModel.activatePlan(userId,updatedTransaction.metaData.get('planId'),updatedTransaction._id);
+                console.log(activatedPlan);
+                
+            }
+            else
+            {
+                console.log(`Wallet payment verified`);
+                
+                const updatedWallet = await walletModel.addCreditToWallet(walletId,updatedTransaction.amount);
+            }
             
             response.signatureIsValid = true
             return response;

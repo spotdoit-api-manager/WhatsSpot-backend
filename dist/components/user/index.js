@@ -49,6 +49,12 @@ exports.default = [
         escapeAuth: true,
         handler: [user_controller_1.default.logIn]
     },
+    {
+        path: "/user/activePlan",
+        method: "get",
+        escapeAuth: false,
+        handler: [user_controller_1.default.getActivePlan]
+    },
     // // {
     // //   path: "/logout",
     // //   method: "post",

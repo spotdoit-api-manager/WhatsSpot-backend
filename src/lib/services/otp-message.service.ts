@@ -31,7 +31,6 @@ export class OTPMessagesService {
       const result = await axios.post(fast2SmsConfig.url, body, {
         headers: { authorization: fast2SmsConfig.authToken, 'content-type': 'application/json' },
       });
-      console.log(result);
       
       if(result.data && result.data.return){
         return {proceed: true};

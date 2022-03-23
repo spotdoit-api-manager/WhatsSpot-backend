@@ -20,24 +20,34 @@ const httpErrors_1 = require("./../../lib/utils/httpErrors");
 const razorpay_service_1 = __importDefault(require("./razorpay.service"));
 const wallet_model_1 = __importDefault(require("../walllet/wallet.model"));
 const crypto_1 = __importDefault(require("crypto"));
+const plans_interface_1 = require("../plans/plans.interface");
+const plans_model_1 = __importDefault(require("../plans/plans.model"));
 class RazorPayModel {
     createOrder(userId, walletId, body) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                const plan = yield plans_model_1.default.fetchPlanByPlanId(body.planId);
+                console.log("fetch plan ", plan);
+                if (!plan)
+                    throw new Error("INVALID_PLAN");
                 const order = yield razorpay_service_1.default.createOrder(userId, body);
                 if (!order)
-                    throw new httpErrors_1.HTTP401Error("UNKNOWN_ERROR");
+                    throw new Error("UNKNOWN_ERROR");
                 console.log(order);
                 if (order.error)
-                    throw new httpErrors_1.HTTP401Error(order.message);
-                const transaction = yield transaction_model_1.default.createTransactionForRazorPay(order.order.id, userId, walletId, transaction_interface_1.ETransactionTypes.CREDIT, body.amount, "amount adding to wallet");
+                    throw new Error(order.message);
+                const transactionMessage = plan.planId == "PAYG" ? "Adding money to wallet" : `Buying plan -> ${plan.planName}`;
+                const transaction = yield transaction_model_1.default.createTransactionForRazorPay(plan.planId, order.order.id, userId, walletId, transaction_interface_1.ETransactionTypes.CREDIT, body.amount, transactionMessage);
                 if (!transaction)
-                    throw new httpErrors_1.HTTP401Error("UNKNOWN_ERROR");
+                    throw new Error("UNKNOWN_ERROR");
                 order.order.transactionId = transaction._id;
+                order.order.planId = plan.planId;
                 return { order };
             }
             catch (err) {
-                throw new httpErrors_1.HTTP401Error(err.message);
+                console.log("error in create order ");
+                console.log(err);
+                throw new Error(err.message);
             }
         });
     }
@@ -54,8 +64,17 @@ class RazorPayModel {
                 let response = { signatureIsValid: false };
                 if (expectedSignature === body.razorpay_signature) {
                     const updatedTransaction = yield transaction_model_1.default.updateTransactionStatus(body.transactionId, transaction_interface_1.ETransactionStatus.SUCCESS);
-                    const updatedWallet = yield wallet_model_1.default.addCreditToWallet(walletId, updatedTransaction.amount);
-                    console.log(updatedTransaction, updatedWallet);
+                    console.log(`Updated transaction is `, updatedTransaction);
+                    console.log(`Updated transaction metadata is `, updatedTransaction.metaData, updatedTransaction.metaData.planId);
+                    if ((updatedTransaction === null || updatedTransaction === void 0 ? void 0 : updatedTransaction.metaData) && (updatedTransaction === null || updatedTransaction === void 0 ? void 0 : updatedTransaction.metaData.get('planId')) != plans_interface_1.EPLANS.PAYG) {
+                        console.log(`Plan payment verified `);
+                        const activatedPlan = yield plans_model_1.default.activatePlan(userId, updatedTransaction.metaData.get('planId'), updatedTransaction._id);
+                        console.log(activatedPlan);
+                    }
+                    else {
+                        console.log(`Wallet payment verified`);
+                        const updatedWallet = yield wallet_model_1.default.addCreditToWallet(walletId, updatedTransaction.amount);
+                    }
                     response.signatureIsValid = true;
                     return response;
                 }

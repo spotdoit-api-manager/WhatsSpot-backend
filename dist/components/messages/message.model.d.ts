@@ -1,11 +1,24 @@
 import { IMessage, EMessageStatus } from './message.interface';
+import { IContact, IGroupList } from '../contact/contact.interface';
 export declare class MessageModel {
     retryFailedMessage(userId: string, deviceId: string): Promise<{
         error: boolean;
         messageCount: number;
     }>;
     updateMessageStatus: (id: string, status: EMessageStatus, reason?: string) => Promise<void>;
-    addMessageToQueue(userId: string, body: any, deviceId: string): Promise<{
+    updateMessageToGroupStatus: (id: string, contact: IContact, status: EMessageStatus, reason?: string) => Promise<void>;
+    addMessageToQueue(userId: string, body: {
+        groups: IGroupList[];
+        numbers: string | IContact[];
+        message: string;
+        isGroup: boolean;
+    }, deviceId: string): Promise<{
+        error: boolean;
+        message?: undefined;
+    } | {
+        error: boolean;
+        message: string;
+    } | {
         error: boolean;
         message: IMessage;
         numbers: any[];
@@ -24,7 +37,15 @@ export declare class MessageModel {
         error: boolean;
         message: string;
     }>;
+    fetchGroupMessageSentContacts(messageId: string): Promise<any[]>;
+    private hasActivePlan;
+    private isPlanReachedMaxMessage;
     sendTextMessage(userId: string, body: any, deviceId: string, walletId: string): Promise<{
+        error: boolean;
+        message: IMessage;
+        creditUsed: number;
+        walletBalance?: undefined;
+    } | {
         error: boolean;
         message: IMessage;
         creditUsed: string;

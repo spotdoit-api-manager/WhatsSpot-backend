@@ -2,10 +2,15 @@ import { ObjectID } from 'bson';
 import { HTTP401Error } from './../../lib/utils/httpErrors';
 import { Transaction, ITransactionModel } from './transaction.schema';
 import { ETransactionStatus, ETransactionTypes, ITransaction } from "./transaction.interface";
+import { any } from 'async';
 
 export class TransactionModel {
 
-    public async fetchTransactions(walletId) {
+public fetchTransactionById(walletId,transactionId){
+        return Transaction.findOne({walletId:new ObjectID(walletId),_id:new ObjectID(transactionId)})
+}
+
+    public async fetchTransactions(walletId:string) {
         const result = await Transaction.aggregate([
             { $match: { walletId: new ObjectID(walletId) } },
             { $sort: { createdAt: -1 } },
@@ -21,22 +26,24 @@ export class TransactionModel {
             }
            
         ]);
-        console.log("got transaciton", result);
         return result;
     }
 
     
 
-    public async createTransactionForRazorPay(orderId: string, userId: string, walletId: string, type: ETransactionTypes, amount: number, description: string) {
+    public async createTransactionForRazorPay(planId:string,orderId: string, userId: string, walletId: string, type: ETransactionTypes, amount: number, description: string) {
         try {
 
-            const transactionBody = {
+            const transactionBody:ITransaction= {
                 orderId,
                 userId,
                 walletId,
                 type,
                 amount,
                 description,
+                metaData:{
+                    planId
+                },
                 status: ETransactionStatus.PENDING
             }
             const newTransaction: ITransactionModel = new Transaction(transactionBody);
@@ -77,7 +84,7 @@ export class TransactionModel {
 
 
     public async updateTransactionStatus(transactionId: string, status: ETransactionStatus) {
-        const updatedTransaction = await Transaction.findByIdAndUpdate(transactionId, { $set: { status: status } });
+        const updatedTransaction = await Transaction.findByIdAndUpdate(transactionId, { $set: { status: status } },{new:true});
         if (!updatedTransaction) throw new HTTP401Error("ERROR_UPDATING_TRANSACTION_STATUS");
         return updatedTransaction;
     }

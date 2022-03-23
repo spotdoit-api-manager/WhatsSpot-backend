@@ -36,7 +36,7 @@ class RazorPayController {
             }
             catch (e) {
                 // send error with next function.
-                next(responseHandler.sendError(e));
+                next(responseHandler.sendError(e.message));
             }
         });
     }

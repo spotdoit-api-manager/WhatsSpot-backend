@@ -33,7 +33,7 @@ export declare class DeviceModel {
     private generateDeviceKey;
     signDeviceToken: (apiKeyData: IDeviceTokenData, expiresIn: string) => string;
     private getTotalAvailableApiKeys;
-    updateDevice(phone: string, clientData: any): Promise<void | {
+    updateDevice(phone: string, clientData: any): Promise<{
         error: boolean;
         message: string;
     } | {

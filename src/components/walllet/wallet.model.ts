@@ -59,6 +59,11 @@ export class WalletModel {
         
         return result[0] || null;
     }
+    public async getWalletIdByUserId(userId:string){
+        const wallet:IWalletModel = await Wallet.findOne({userId:new ObjectID(userId)});
+        if(!wallet)throw Error("WALLET_NOT_FOUND");
+        return wallet._id;
+    }
 
     public async addUserToWallet(walletId:string,userId:string){
         return await Wallet.findByIdAndUpdate(walletId,{userId});

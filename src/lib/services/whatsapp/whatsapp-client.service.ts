@@ -33,7 +33,12 @@ export class WhatsappClient {
     }
 
     public getClientInstanceByInstanceId = (instanceId:number)=>{
-       return instanceProvider.getClassInstance(Whatsapp, instanceId);     
+        try{ 
+            const instance = instanceProvider.getClassInstance(Whatsapp, instanceId); 
+            return instance;
+        }catch(e){
+            throw new Error("CLIENT_NOT_AUTHENTICATED");
+        }
     }
 
     
@@ -137,7 +142,7 @@ export class WhatsappClient {
 
         setTimeout(()=>{//to do
             console.log("STARTED_MESSAGE_QUEUE_SERVICE...");
-            messageQueueService.getPendingsMessages();
+            // messageQueueService();
         },10000)
     }
 

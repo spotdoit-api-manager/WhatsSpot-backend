@@ -15,6 +15,9 @@ const httpErrors_1 = require("./../../lib/utils/httpErrors");
 const transaction_schema_1 = require("./transaction.schema");
 const transaction_interface_1 = require("./transaction.interface");
 class TransactionModel {
+    fetchTransactionById(walletId, transactionId) {
+        return transaction_schema_1.Transaction.findOne({ walletId: new bson_1.ObjectID(walletId), _id: new bson_1.ObjectID(transactionId) });
+    }
     fetchTransactions(walletId) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield transaction_schema_1.Transaction.aggregate([
@@ -30,11 +33,10 @@ class TransactionModel {
                     }
                 }
             ]);
-            console.log("got transaciton", result);
             return result;
         });
     }
-    createTransactionForRazorPay(orderId, userId, walletId, type, amount, description) {
+    createTransactionForRazorPay(planId, orderId, userId, walletId, type, amount, description) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const transactionBody = {
@@ -44,6 +46,9 @@ class TransactionModel {
                     type,
                     amount,
                     description,
+                    metaData: {
+                        planId
+                    },
                     status: transaction_interface_1.ETransactionStatus.PENDING
                 };
                 const newTransaction = new transaction_schema_1.Transaction(transactionBody);
@@ -86,7 +91,7 @@ class TransactionModel {
     }
     updateTransactionStatus(transactionId, status) {
         return __awaiter(this, void 0, void 0, function* () {
-            const updatedTransaction = yield transaction_schema_1.Transaction.findByIdAndUpdate(transactionId, { $set: { status: status } });
+            const updatedTransaction = yield transaction_schema_1.Transaction.findByIdAndUpdate(transactionId, { $set: { status: status } }, { new: true });
             if (!updatedTransaction)
                 throw new httpErrors_1.HTTP401Error("ERROR_UPDATING_TRANSACTION_STATUS");
             return updatedTransaction;

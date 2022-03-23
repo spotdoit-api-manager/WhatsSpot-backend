@@ -5,6 +5,9 @@ export declare class UserModel {
     private findUserById;
     fetch(id: string): Promise<IUserModel>;
     update(id: string, body: IUserModel): Promise<IUserModel>;
+    fetchUserActivePlan(userId: string): Promise<any>;
+    addPlanToUser(userId: string, activePlanName: string, activePlanId: string): Promise<void>;
+    expireUserPlan(userId: string): Promise<void>;
     delete(id: string): Promise<void>;
     add(body: any): Promise<{
         _id: any;

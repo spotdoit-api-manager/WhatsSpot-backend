@@ -24,7 +24,7 @@ export class RazorPayController{
           responseHandler.reqRes(req, res).onFetch("ORDER_CREATED", await razorpayModel.verifyPayment(req.userId,req.walletId,req.body)).send();
         } catch (e) {
           // send error with next function.
-          next(responseHandler.sendError(e));
+          next(responseHandler.sendError(e.message));
         }
       };
 }

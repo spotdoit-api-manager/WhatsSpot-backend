@@ -1,3 +1,4 @@
+import { EPLANS } from './../plans/plans.interface';
 import { Document,Model, model, Schema, SchemaTypes } from "mongoose";
 import { NextFunction } from "express";
 import { IUser } from "./user.interface";
@@ -8,6 +9,18 @@ export interface IUserModel extends IUser,Document{
   correctPassword(pass1: string, pass2: string): boolean;
   sendOtpToMobile(): any;
 }
+const planRef:Schema = new Schema({
+  planName:{
+    type:String,
+    required:true
+  },
+    planRef:{
+      type:SchemaTypes.ObjectId,
+      ref:"UserPlan",
+      required:true
+    }
+},{timestamps:true});
+
 
 export const UserSchema: Schema = new Schema(
   {
@@ -35,7 +48,8 @@ export const UserSchema: Schema = new Schema(
       unique:false,
       required:true
     },
-
+    activePlan:planRef,
+    previousPlans:[planRef],
     walletId:{
       type:SchemaTypes.ObjectId,
       ref:"wallet",

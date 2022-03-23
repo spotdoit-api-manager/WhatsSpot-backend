@@ -3,11 +3,15 @@ import Device from "../components/device";
 import  Wallet  from "../components/walllet";
 import Razorpay from "../components/razorpay";
 import Messages from "../components/messages";
+import Plans from "../components/plans";
+import contact  from "../components/contact";
 
 export default [
     ...user,
+    ...contact,
     ...Device,
     ...Messages,
     ...Wallet,
-    ...Razorpay
+    ...Razorpay,
+    ...Plans
 ];

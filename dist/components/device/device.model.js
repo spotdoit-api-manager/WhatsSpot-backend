@@ -27,19 +27,16 @@ const dayjs_1 = __importDefault(require("dayjs"));
 class DeviceModel {
     constructor() {
         this.fetchAllDevices = (userId) => __awaiter(this, void 0, void 0, function* () {
-            console.log("fetch all device request", userId);
             const devices = yield this.findDeviceByUseId(userId);
             if (!devices || !devices.length)
                 throw new httpErrors_1.HTTP400Error("NO_DEVICE_ADDED");
             return devices;
         });
         this.fetchDevice = (deviceId, userId) => __awaiter(this, void 0, void 0, function* () {
-            console.log("fetch device request", deviceId, userId);
             const device = yield this.fetchDeviceByCondition(deviceId, userId);
             return device;
         });
         this.signDeviceToken = (apiKeyData, expiresIn) => {
-            console.log("signing key", apiKeyData);
             if (!expiresIn) {
                 return jsonwebtoken_1.default.sign(apiKeyData, index_1.deviceKeyConfig.jwtSecretKey, {});
             }
@@ -50,7 +47,6 @@ class DeviceModel {
     }
     newDevice(userId, walletId, body) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(body);
             body.userId = userId;
             const device = yield this.findDeviceByPhone(body.phone);
             this.validateDeviceAdd(userId, device);
@@ -75,7 +71,6 @@ class DeviceModel {
             const device = yield this.findDeviceById(body.deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
-            console.log("qr request for phone ", device.phone);
             if (device.authState)
                 return { error: true, message: "ALREADY_AUTHENTICATED" };
             // if (!device.authState && device.reason && device.reason.statusCode === DisconnectReason.loggedOut) {
@@ -105,14 +100,12 @@ class DeviceModel {
                     }
                 }
             ]);
-            console.log("got result ", result);
             return result[0] || null;
         });
     }
     fetchPrevMessages(deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log("fetch prev messages", deviceId);
                 const messages = yield this.fetchMessagesByStatus(deviceId);
                 if (!messages || !messages.length)
                     throw new httpErrors_1.HTTP400Error("NO_MESSAGES");
@@ -173,7 +166,6 @@ class DeviceModel {
             const device = yield this.findDeviceById(body.deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
-            console.log("delete auth request for phone ", device.phone);
             const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
             const res = yield file_management_1.default.deleteFile(authFilePath);
             if (res.error)
@@ -188,7 +180,8 @@ class DeviceModel {
             const device = yield this.findDeviceById(body.deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
-            yield file_management_1.default.deleteFile(`${device.phone}_cred.json`);
+            const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
+            yield file_management_1.default.deleteFile(authFilePath);
             const data = yield whatsapp_client_service_1.default.logoutClient(device.phone);
             if (data.error)
                 throw new httpErrors_1.HTTP400Error(data.message);
@@ -216,14 +209,11 @@ class DeviceModel {
                     expiresIn = `${Math.floor(diff)}d`;
                 }
                 const totalAvailableKeys = yield this.getTotalAvailableApiKeys(deviceId);
-                console.log(totalAvailableKeys, process.env.MAX_APIKEY_PER_DEVICE);
                 if (totalAvailableKeys < parseInt(process.env.MAX_APIKEY_PER_DEVICE)) {
-                    console.log("generating new key");
                     const apiKeyData = { walletId, userId, deviceId };
                     const token = this.generateDeviceKey(apiKeyData, expiresIn);
                     const tokenData = { name: body.name, createdOn: new Date(), token: token, expiresOn: body.expiresOn, status: { status: device_interface_1.EApiKeyStatus.ACTIVE, reason: null } };
                     yield this.addNewTokenDataToDevice(deviceId, tokenData);
-                    console.log(tokenData);
                     return tokenData;
                 }
                 throw new httpErrors_1.HTTP400Error("MAX_API_KEY_REACHED");
@@ -235,10 +225,8 @@ class DeviceModel {
     }
     deleteKey(deviceId, keyId) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(deviceId, keyId);
             try {
                 const result = yield device_shema_1.Device.updateOne({ _id: deviceId }, { $pull: { apiKeys: { _id: keyId } } });
-                console.log(result);
             }
             catch (err) {
                 throw new httpErrors_1.HTTP400Error(err.message);
@@ -256,14 +244,12 @@ class DeviceModel {
                     }
                 }
             ]);
-            console.log(keys);
             return ((_a = keys[0]) === null || _a === void 0 ? void 0 : _a.apiKeys) || null;
         });
     }
     addNewTokenDataToDevice(deviceId, tokenData) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield device_shema_1.Device.findByIdAndUpdate(deviceId, { $push: { apiKeys: tokenData } }, { "upsert": true, new: true });
-            console.log(result);
         });
     }
     generateDeviceKey(apiKeyData, expiresIn) {
@@ -280,15 +266,13 @@ class DeviceModel {
                     }
                 }
             ]);
-            console.log(result);
             return result[0].count;
         });
     }
     updateDevice(phone, clientData) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("updaing client ", phone, clientData);
             if (!phone)
-                return console.log("phone not provided in client update");
+                return { error: true, message: "phone not provided in client update" };
             const options = { upsert: true, new: true, setDefaultsOnInsert: true };
             const client = yield device_shema_1.Device.findOneAndUpdate({ phone: phone }, Object.assign({}, clientData), options);
             if (!client)

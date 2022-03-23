@@ -23,10 +23,15 @@ const message_schema_1 = require("./message.schema");
 const whatsapp_client_service_1 = __importDefault(require("../../lib/services/whatsapp/whatsapp-client.service"));
 const wallet_model_1 = __importDefault(require("../walllet/wallet.model"));
 const message_queue_service_1 = __importDefault(require("../../lib/services/whatsapp/message-queue.service"));
+const user_model_1 = __importDefault(require("../user/user.model"));
+const plans_model_1 = __importDefault(require("../plans/plans.model"));
 class MessageModel {
     constructor() {
         this.updateMessageStatus = (id, status, reason = null) => __awaiter(this, void 0, void 0, function* () {
             yield message_schema_1.MessageQueue.updateOne({ _id: id }, { status: status, reason: reason });
+        });
+        this.updateMessageToGroupStatus = (id, contact, status, reason = null) => __awaiter(this, void 0, void 0, function* () {
+            yield message_schema_1.MessageQueue.updateOne({ _id: id }, { $push: { contactsSent: { phoneNumber: contact.phoneNumber, name: contact.name, status: status, reason: reason } } });
         });
     }
     retryFailedMessage(userId, deviceId) {
@@ -41,18 +46,27 @@ class MessageModel {
     }
     addMessageToQueue(userId, body, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("send text message request", body, deviceId);
+            console.log("add to queue request", body, deviceId);
             const device = yield device_model_1.default.findDeviceById(deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
+            const messagesBody = [];
+            if (body.isGroup) {
+                body.groups.forEach((group) => {
+                    const newBody = { phone: device.phone, userId, deviceId: deviceId, sendType: message_interface_1.ESendType.QUEUE, to: group._id, message: body.message, status: message_interface_1.EMessageStatus.PENDING, isGroup: true };
+                    messagesBody.push(newBody);
+                });
+                return yield this.addMultipleMessageToQueue(messagesBody);
+            }
             let numbers = [];
             if (typeof (body.numbers) === 'string') {
                 numbers.push(body.numbers);
             }
             else {
-                numbers = body.numbers;
+                body.numbers.forEach((contact) => {
+                    numbers.push(contact.phoneNumber);
+                });
             }
-            const messagesBody = [];
             for (let i = 0; i < numbers.length; i++) {
                 const to = index_1.sanatizeMobile(numbers[i]);
                 if (!utils_1.validateMobile(to))
@@ -87,6 +101,31 @@ class MessageModel {
             return { error: true, message: "NOT_ADDED" };
         });
     }
+    fetchGroupMessageSentContacts(messageId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield message_schema_1.MessageQueue.aggregate([
+                { $match: { _id: new bson_1.ObjectID(messageId) } },
+                { $project: {
+                        contactsSent: 1
+                    } }
+            ]);
+            console.log("sent contact ", result);
+            return result;
+        });
+    }
+    hasActivePlan(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const userCurrentPlan = yield user_model_1.default.fetchUserActivePlan(userId);
+            if (userCurrentPlan && userCurrentPlan.activePlanInfo) {
+                const isMessageOver = !Boolean(userCurrentPlan.planInfo.planMaxMessage - userCurrentPlan.activePlanInfo.sentMessageCount);
+                console.log(`isMessageOver is ${isMessageOver}`);
+                return { hasActivePlan: true, isMessageOver, activePlanInfo: userCurrentPlan.activePlanInfo, planInfo: userCurrentPlan.planInfo };
+            }
+            return { hasActivePlan: false };
+        });
+    }
+    isPlanReachedMaxMessage(userCurrentPlan) {
+    }
     sendTextMessage(userId, body, deviceId, walletId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -96,7 +135,12 @@ class MessageModel {
                 const device = yield device_model_1.default.findDeviceById(deviceId);
                 if (!device)
                     throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
-                yield wallet_model_1.default.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
+                const { hasActivePlan, isMessageOver, activePlanInfo, planInfo } = yield this.hasActivePlan(userId);
+                if (isMessageOver)
+                    throw new httpErrors_1.HTTP400Error("MESSAGES_EXHAUSTED", "message exhausted for your active plan");
+                if (!hasActivePlan) {
+                    yield wallet_model_1.default.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
+                }
                 const result = yield whatsapp_client_service_1.default.sendTextMessage(device.phone, body.to, body.message);
                 const newBody = { phone: device.phone, userId, to: body.to, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, message: body.message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
                 yield this.saveFastMessage(newBody);
@@ -104,9 +148,15 @@ class MessageModel {
                 if (result.error) {
                     throw new httpErrors_1.HTTP401Error(result.message);
                 }
-                const paymentMetaData = { deviceId: deviceId, to: newBody.to };
-                const paymentResult = yield wallet_model_1.default.makePaymentFromWallet(walletId, userId, parseFloat(process.env.TEXT_MESSAGE_RATE), `message to ${newBody.to} from device ${device.name}(${device.phone})`, paymentMetaData);
-                return { error: false, message: newBody, creditUsed: process.env.TEXT_MESSAGE_RATE, walletBalance: paymentResult.wallet.balance };
+                if (hasActivePlan) {
+                    yield plans_model_1.default.increamentMessageCount(activePlanInfo._id);
+                    return { error: false, message: newBody, creditUsed: 0 };
+                }
+                else {
+                    const paymentMetaData = { deviceId: deviceId, to: newBody.to };
+                    const paymentResult = yield wallet_model_1.default.makePaymentFromWallet(walletId, userId, parseFloat(process.env.TEXT_MESSAGE_RATE), `message to ${newBody.to} from device ${device.name}(${device.phone})`, paymentMetaData);
+                    return { error: false, message: newBody, creditUsed: process.env.TEXT_MESSAGE_RATE, walletBalance: paymentResult.wallet.balance };
+                }
             }
             catch (err) {
                 throw new httpErrors_1.HTTP400Error(err.message);

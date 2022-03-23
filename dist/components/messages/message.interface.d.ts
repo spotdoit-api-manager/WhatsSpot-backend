@@ -1,12 +1,20 @@
 export interface IMessage {
     message: string;
-    to: String;
+    to: string;
     status: String;
     phone: string;
     deviceId: string;
     userId: string;
     reason?: string;
     sendType: ESendType;
+    isGroup?: boolean;
+    contactsSent?: [
+        {
+            phoneNumber: string;
+            status: EMessageStatus;
+            reason?: string;
+        }
+    ];
 }
 export declare enum EMessageStatus {
     PENDING = "PENDING",

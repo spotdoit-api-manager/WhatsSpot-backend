@@ -5,6 +5,7 @@ export declare class WalletModel {
     fetchTransactions(userId: string, walletId: string): Promise<any[]>;
     private fetchWallet;
     fetchWalletByUserId(userId: string): Promise<any>;
+    getWalletIdByUserId(userId: string): Promise<any>;
     addUserToWallet(walletId: string, userId: string): Promise<IWalletModel>;
     addCreditToWallet(walletId: string, addCredit: number): Promise<IWalletModel>;
     validateTransactionAmount(walletId: string, amountToDebit: number): Promise<boolean>;

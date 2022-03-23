@@ -1,7 +1,10 @@
 import { IMessageModel } from './../../../components/messages/message.schema';
 export declare class MessageQueueService {
-    getPendingsMessages(limit?: number): Promise<void>;
-    sendPendingMessage(pendingMessages: any): Promise<unknown>;
+    constructor();
+    getPendingMessagesToContacts(limit?: number): Promise<void>;
+    getPendingMessagesToGroup(limit?: number): Promise<void>;
+    sendPendingMessageToGroup(pendingMessages: IMessageModel[]): Promise<void>;
+    sendPendingMessageToContacts(pendingMessages: any): Promise<unknown>;
     sendErrorMessageForDevice(errorMessages: IMessageModel[], deviceId: string): Promise<unknown>;
 }
 declare const _default: MessageQueueService;
