@@ -190,7 +190,7 @@ class UserController {
   public getActivePlan = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-      console.log("getting user active plan");
+      // console.log("getting user active plan");
       
       const activePlan = await userModel.fetchUserActivePlan(req.userId);
 

@@ -25,6 +25,7 @@ const contact_model_1 = __importDefault(require("../../../components/contact/con
 const FETCH_PENDING_INTERVAL = 10;
 class MessageQueueService {
     constructor() {
+        this.getPendingMessagesToContacts();
         this.getPendingMessagesToGroup();
     }
     getPendingMessagesToContacts(limit = 10) {
@@ -57,8 +58,6 @@ class MessageQueueService {
                 const groupContacts = yield contact_model_1.default.fetchGroupContacts(userId, groupId);
                 const walletId = (yield wallet_model_1.default.getWalletIdByUserId(message.userId));
                 const contactsSent = message.contactsSent || [];
-                console.log(groupContacts);
-                // return;
                 for (let c = 0; c < groupContacts.length; c++) {
                     const contact = groupContacts[c];
                     const idx = contactsSent.findIndex((c) => c.phoneNumber == contact.phoneNumber);
@@ -78,6 +77,7 @@ class MessageQueueService {
                     catch (e) {
                         if (e.message == 'CLIENT_NOT_AUTHENTICATED' || e.message == 'CLIENT_NOT_FOUND') {
                             console.log("Client not authenticated.Cancelling group message sending..");
+                            yield message_model_1.default.updateMessageToGroupStatus(message._id, contact, message_interface_1.EMessageStatus.ERROR, e.message);
                             break;
                         }
                         console.log(e.message);

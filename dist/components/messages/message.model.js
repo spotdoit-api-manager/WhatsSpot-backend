@@ -109,7 +109,7 @@ class MessageModel {
                         contactsSent: 1
                     } }
             ]);
-            console.log("sent contact ", result);
+            // console.log("sent contact ",result);
             return result;
         });
     }
@@ -144,7 +144,7 @@ class MessageModel {
                 const result = yield whatsapp_client_service_1.default.sendTextMessage(device.phone, body.to, body.message);
                 const newBody = { phone: device.phone, userId, to: body.to, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, message: body.message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
                 yield this.saveFastMessage(newBody);
-                console.log(result);
+                // console.log(result);
                 if (result.error) {
                     throw new httpErrors_1.HTTP401Error(result.message);
                 }
@@ -171,7 +171,7 @@ class MessageModel {
             const to = body.to;
             const msg = { image: body.locationUrl, caption: body.caption || '' };
             const result = yield whatsapp_client_service_1.default.sendImageMessage(device.phone, to, msg);
-            console.log(result);
+            // console.log(result);
         });
     }
     saveFastMessage(messageBody) {

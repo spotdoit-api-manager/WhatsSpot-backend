@@ -34,7 +34,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const whatsapp_utils_1 = require("./whatsapp-utils");
 const events_1 = require("events");
 const pino_1 = __importDefault(require("pino"));
-const baileys_md_1 = __importStar(require("@adiwajshing/baileys-md"));
+const baileys_1 = __importStar(require("@adiwajshing/baileys"));
 const device_model_1 = __importDefault(require("./../../../components/device/device.model"));
 const instance_provider_1 = __importDefault(require("./instance.provider"));
 class Whatsapp extends events_1.EventEmitter {
@@ -46,11 +46,10 @@ class Whatsapp extends events_1.EventEmitter {
         // start a connection
         this.initiClient = () => __awaiter(this, void 0, void 0, function* () {
             try {
-                const sock = baileys_md_1.default({
+                const sock = baileys_1.default({
                     logger: pino_1.default({ level: "info" }),
                     printQRInTerminal: false,
                     auth: this.state,
-                    version: [2, 2204, 13],
                 });
                 this.client = sock;
                 this.startBasicEventListners();
@@ -89,9 +88,9 @@ class Whatsapp extends events_1.EventEmitter {
         });
         this.sendMessageWTyping = (phone, msg, jid) => __awaiter(this, void 0, void 0, function* () {
             yield this.client.presenceSubscribe(jid);
-            yield baileys_md_1.delay(500);
+            yield baileys_1.delay(500);
             yield this.client.sendPresenceUpdate("composing", jid);
-            yield baileys_md_1.delay(2000);
+            yield baileys_1.delay(2000);
             yield this.client.sendPresenceUpdate("paused", jid);
             yield this.client.sendMessage(jid, msg);
         });
@@ -99,7 +98,7 @@ class Whatsapp extends events_1.EventEmitter {
             try {
                 const jid = whatsapp_utils_1.getSerializedPhone(to);
                 yield this.client.presenceSubscribe(jid);
-                yield baileys_md_1.delay(500);
+                yield baileys_1.delay(500);
                 const result = yield this.client.sendMessage(jid, {
                     text: msg, detectLinks: true,
                 });
@@ -117,7 +116,7 @@ class Whatsapp extends events_1.EventEmitter {
             try {
                 const jid = whatsapp_utils_1.getSerializedPhone(to);
                 yield this.client.presenceSubscribe(jid);
-                yield baileys_md_1.delay(500);
+                yield baileys_1.delay(500);
                 console.log("serialized phone ", jid);
                 console.log("message is ", msg);
                 let msgBody = {
@@ -136,8 +135,8 @@ class Whatsapp extends events_1.EventEmitter {
             }
         });
         this._instanceId = instance_provider_1.default.addInstance(this);
-        this.state = baileys_md_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
-        this.saveState = baileys_md_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
+        this.state = baileys_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
+        this.saveState = baileys_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
         this.phone = phone;
     }
     checkIfQrRetryExceeded(lastDisconnect) {
@@ -162,7 +161,7 @@ class Whatsapp extends events_1.EventEmitter {
                 if (connection === "open")
                     yield this.handleConnectionOpen();
                 else if (connection === "close")
-                    this.handleConectionClose(lastDisconnect);
+                    this.handleConnectionClose(lastDisconnect);
                 else {
                     const reason = this.getDisconnectReason(lastDisconnect);
                     console.log("connection update (not open| not close)", update, reason);
@@ -238,12 +237,12 @@ class Whatsapp extends events_1.EventEmitter {
             return this.authState = true;
         });
     }
-    handleConectionClose(lastDisconnect) {
+    handleConnectionClose(lastDisconnect) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             console.log(`Connection closed`);
             this.qrInProcess = false;
-            const shouldReconnect = ((_b = (_a = (lastDisconnect.error)) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.statusCode) !== baileys_md_1.DisconnectReason.loggedOut;
+            const shouldReconnect = ((_b = (_a = lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.statusCode) !== baileys_1.DisconnectReason.loggedOut;
             if (shouldReconnect) {
                 console.log(`Connection Close (Not Logged Out) Retrying..`);
                 return yield this.reconnectClient();

@@ -10,7 +10,8 @@ import makeWASocket, {
   useSingleFileAuthState,
   AuthenticationState,
   SocketConfig,
-} from "@adiwajshing/baileys-md";
+} from "@adiwajshing/baileys";
+
 import deviceModel from './../../../components/device/device.model';
 import path from 'path';
 import instanceProvider from './instance.provider';
@@ -37,7 +38,7 @@ export default class Whatsapp extends EventEmitter {
         logger: P({ level: "info" }),
         printQRInTerminal: false,
         auth: this.state,
-        version: [2,2204,13],
+        // version: [2,2204,13],
       });
       this.client = sock;
       this.startBasicEventListners();
@@ -90,7 +91,7 @@ export default class Whatsapp extends EventEmitter {
         const { connection, lastDisconnect } = update;
         if(connection=="connecting") return;
         if (connection === "open") await this.handleConnectionOpen();
-        else if (connection === "close") this.handleConectionClose(lastDisconnect);
+        else if (connection === "close") this.handleConnectionClose(lastDisconnect);
         else{
           const reason: IReason = this.getDisconnectReason(lastDisconnect);
           console.log("connection update (not open| not close)", update, reason);
@@ -166,11 +167,11 @@ export default class Whatsapp extends EventEmitter {
     return this.authState = true;
   }
 
-  private async handleConectionClose(lastDisconnect){
+  private async handleConnectionClose(lastDisconnect){
     console.log(`Connection closed`);
     this.qrInProcess = false;
 
-    const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut;
+    const shouldReconnect = (lastDisconnect.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
     if (shouldReconnect) {
       console.log(`Connection Close (Not Logged Out) Retrying..`);
       return await this.reconnectClient();

@@ -97,7 +97,6 @@ class WhatsappClient {
                 const client = this.getClientInstanceByPhone(phone);
                 client.logoutClient();
                 client.on('LOGGEDOUT', (data) => {
-                    console.log("logout listner ", data);
                     socket_1.default.sendLoggedout(data);
                 });
                 return { error: false };
@@ -143,7 +142,7 @@ class WhatsappClient {
             }
             setTimeout(() => {
                 console.log("STARTED_MESSAGE_QUEUE_SERVICE...");
-                // messageQueueService();
+                // messageQueueService.;
             }, 10000);
         });
     }

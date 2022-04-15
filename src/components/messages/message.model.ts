@@ -96,7 +96,7 @@ export class MessageModel {
                 contactsSent:1
             }}
         ]);
-        console.log("sent contact ",result);
+        // console.log("sent contact ",result);
         return result
     }
 
@@ -129,7 +129,7 @@ private isPlanReachedMaxMessage(userCurrentPlan){
             const result = await whatsappClientService.sendTextMessage(device.phone, body.to, body.message);
             const newBody: IMessage = { phone: device.phone, userId, to: body.to, reason: result?.message, sendType: ESendType.FAST, message: body.message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT }
             await this.saveFastMessage(newBody);
-            console.log(result);
+            // console.log(result);
             if (result.error) {
                 throw new HTTP401Error(result.message);
             }
@@ -155,7 +155,7 @@ private isPlanReachedMaxMessage(userCurrentPlan){
         const to = body.to;
         const msg: IImageMessage = { image: body.locationUrl, caption: body.caption || '' };
         const result = await whatsappClientService.sendImageMessage(device.phone, to, msg);
-        console.log(result);
+        // console.log(result);
     }
     public async saveFastMessage(messageBody: IMessage) {
         const newMessage = new FastMessage(messageBody);

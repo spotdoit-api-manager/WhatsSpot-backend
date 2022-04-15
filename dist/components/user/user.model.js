@@ -116,7 +116,7 @@ class UserModel {
                     }
                 }
             ]);
-            console.log("user active plan is ", userPlan);
+            // console.log("user active plan is ", userPlan);
             if (!((_a = userPlan[0]) === null || _a === void 0 ? void 0 : _a.activePlanInfo))
                 throw new httpErrors_1.HTTP400Error("NO_ACTIVE_PLAN");
             return userPlan[0];

@@ -16,6 +16,7 @@ const FETCH_PENDING_INTERVAL = 10;
 export class MessageQueueService {
 
     constructor(){
+        this.getPendingMessagesToContacts();
         this.getPendingMessagesToGroup();
     }
     public async getPendingMessagesToContacts(limit: number = 10) {
@@ -44,8 +45,6 @@ export class MessageQueueService {
             const groupContacts:IContact[] = await contactModel.fetchGroupContacts(userId,groupId);
             const walletId = (await walletModel.getWalletIdByUserId(message.userId));
             const contactsSent = message.contactsSent || [];
-            console.log(groupContacts);
-            // return;
             for(let c=0;c<groupContacts.length;c++){
                 const contact:IContact = groupContacts[c];
                 const idx = contactsSent.findIndex((c:IContact)=>c.phoneNumber==contact.phoneNumber);
@@ -62,6 +61,8 @@ export class MessageQueueService {
                 } catch (e) {
                     if(e.message == 'CLIENT_NOT_AUTHENTICATED' || e.message == 'CLIENT_NOT_FOUND'){
                         console.log("Client not authenticated.Cancelling group message sending..");
+                        await messageModel.updateMessageToGroupStatus(message._id,contact, EMessageStatus.ERROR, e.message);
+
                         break;
                     }
                     console.log(e.message);

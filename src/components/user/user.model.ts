@@ -82,7 +82,7 @@ export class UserModel {
         }
       }
     ]);
-    console.log("user active plan is ", userPlan);
+    // console.log("user active plan is ", userPlan);
     if(!userPlan[0]?.activePlanInfo) throw new HTTP400Error("NO_ACTIVE_PLAN");
     
     return userPlan[0];

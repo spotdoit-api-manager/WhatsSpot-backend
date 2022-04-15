@@ -78,7 +78,7 @@ class RazorPayModel {
                     response.signatureIsValid = true;
                     return response;
                 }
-                console.log("returning ", response);
+                // console.log("returning ",response);
                 return response;
             }
             catch (err) {

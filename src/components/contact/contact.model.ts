@@ -51,7 +51,7 @@ export class ContactModal{
                 // },
                 
             ]);
-            console.log("group Contacts result is ",result);
+            // console.log("group Contacts result is ",result);
             return result[0].contacts || [];
         }
 
@@ -76,7 +76,7 @@ export class ContactModal{
                 }
             }
             ]);
-            console.log("group result is ",result);
+            // console.log("group result is ",result);
             return result;
         }
 
