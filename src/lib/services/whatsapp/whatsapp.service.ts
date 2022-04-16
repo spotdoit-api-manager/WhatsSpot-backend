@@ -22,6 +22,7 @@ export default class Whatsapp extends EventEmitter {
   saveState: any;
   public authState: boolean = false;
   qrInProcess: boolean =false;
+  qrRequested:boolean = false;
   public _instanceId: number;
   private retryCount =0;
   constructor(phone: string) {
@@ -33,6 +34,7 @@ export default class Whatsapp extends EventEmitter {
   }
   // start a connection
   public initiClient = async () => {
+    // if(!this.qrRequested) return;
     try {
       const sock = makeWASocket({
         logger: P({ level: "info" }),
@@ -50,6 +52,7 @@ export default class Whatsapp extends EventEmitter {
   };
 
   public getQr = async () => {
+    this.qrRequested = true;
     if(this.qrInProcess) return;
     this.qrInProcess = true;
     this.client.ev.on("connection.update", async (update: any) => {
@@ -62,6 +65,7 @@ export default class Whatsapp extends EventEmitter {
         };
         if (this.checkIfQrRetryExceeded(lastDisconnect)) {
           this.emit("qr", { error: true, message: "QR_RETRY_EXCEEDED" });
+          this.qrRequested = true;
           this.qrInProcess = false;
           this.client.ev.removeAllListeners();
           return;
@@ -94,7 +98,8 @@ export default class Whatsapp extends EventEmitter {
         else if (connection === "close") this.handleConnectionClose(lastDisconnect);
         else{
           const reason: IReason = this.getDisconnectReason(lastDisconnect);
-          console.log("connection update (not open| not close)", update, reason);
+          console.debug("connection update (not open| not close)", update, reason);
+          this.qrInProcess = true;
         }
       } catch (err) {
         console.log(`Error in handling connection Update ${this.phone}`,err);
@@ -146,7 +151,6 @@ export default class Whatsapp extends EventEmitter {
     }
     this.client.ev.removeAllListeners();
     await this.initiClient();
-    this.startBasicEventListners();
   }
 
   private getDisconnectReason(lastDisconnect){
@@ -159,7 +163,8 @@ export default class Whatsapp extends EventEmitter {
 
   private async handleConnectionOpen(){
     console.log(`Connection open`);
-    
+    this.qrRequested = true;
+    this.qrInProcess = false;
     await deviceModel.updateDevice(this.phone, {
       authState: true, reason: null
     });
@@ -169,8 +174,6 @@ export default class Whatsapp extends EventEmitter {
 
   private async handleConnectionClose(lastDisconnect){
     console.log(`Connection closed`);
-    this.qrInProcess = false;
-
     const shouldReconnect = (lastDisconnect.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
     if (shouldReconnect) {
       console.log(`Connection Close (Not Logged Out) Retrying..`);
@@ -181,6 +184,8 @@ export default class Whatsapp extends EventEmitter {
       await deviceModel.updateDevice(this.phone, {
         authState: false, reason
       });
+      this.qrInProcess = false;
+      this.qrRequested = false;
       console.log("connection closed (logged out)", reason, this.phone);
       this.emit('LOGGEDOUT', { phone: this.phone, reason: reason?.message });
     }

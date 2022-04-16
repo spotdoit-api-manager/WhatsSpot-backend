@@ -9,6 +9,7 @@ export default class Whatsapp extends EventEmitter {
     saveState: any;
     authState: boolean;
     qrInProcess: boolean;
+    qrRequested: boolean;
     _instanceId: number;
     private retryCount;
     constructor(phone: string);

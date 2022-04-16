@@ -52,7 +52,7 @@ export class ContactModal{
                 
             ]);
             // console.log("group Contacts result is ",result);
-            return result[0].contacts || [];
+            return result[0]?.contacts || [];
         }
 
         public async addContactsToGroup(userId:string,groupId:string,contacts:IContact[]){
@@ -72,7 +72,8 @@ export class ContactModal{
                 {
                 $project:{
                     groupName:1,
-                    totalContacts:{$size:"$contacts"} 
+                    totalContacts:{$size:{ $cond: { if: { $isArray: "$contacts" }, then: "$contacts", else: [] } }
+                    } 
                 }
             }
             ]);

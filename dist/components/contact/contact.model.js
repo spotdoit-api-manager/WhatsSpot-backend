@@ -40,6 +40,7 @@ class ContactModal {
         });
     }
     fetchGroupContacts(userId, groupId) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield contact_schema_1.ContactGroup.aggregate([
                 {
@@ -52,7 +53,7 @@ class ContactModal {
                 },
             ]);
             // console.log("group Contacts result is ",result);
-            return result[0].contacts || [];
+            return ((_a = result[0]) === null || _a === void 0 ? void 0 : _a.contacts) || [];
         });
     }
     addContactsToGroup(userId, groupId, contacts) {
@@ -72,7 +73,8 @@ class ContactModal {
                 {
                     $project: {
                         groupName: 1,
-                        totalContacts: { $size: "$contacts" }
+                        totalContacts: { $size: { $cond: { if: { $isArray: "$contacts" }, then: "$contacts", else: [] } }
+                        }
                     }
                 }
             ]);

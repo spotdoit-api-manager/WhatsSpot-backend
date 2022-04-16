@@ -42,9 +42,11 @@ class Whatsapp extends events_1.EventEmitter {
         super();
         this.authState = false;
         this.qrInProcess = false;
+        this.qrRequested = false;
         this.retryCount = 0;
         // start a connection
         this.initiClient = () => __awaiter(this, void 0, void 0, function* () {
+            // if(!this.qrRequested) return;
             try {
                 const sock = baileys_1.default({
                     logger: pino_1.default({ level: "info" }),
@@ -61,6 +63,7 @@ class Whatsapp extends events_1.EventEmitter {
             }
         });
         this.getQr = () => __awaiter(this, void 0, void 0, function* () {
+            this.qrRequested = true;
             if (this.qrInProcess)
                 return;
             this.qrInProcess = true;
@@ -76,6 +79,7 @@ class Whatsapp extends events_1.EventEmitter {
                     ;
                     if (this.checkIfQrRetryExceeded(lastDisconnect)) {
                         this.emit("qr", { error: true, message: "QR_RETRY_EXCEEDED" });
+                        this.qrRequested = true;
                         this.qrInProcess = false;
                         this.client.ev.removeAllListeners();
                         return;
@@ -164,7 +168,8 @@ class Whatsapp extends events_1.EventEmitter {
                     this.handleConnectionClose(lastDisconnect);
                 else {
                     const reason = this.getDisconnectReason(lastDisconnect);
-                    console.log("connection update (not open| not close)", update, reason);
+                    console.debug("connection update (not open| not close)", update, reason);
+                    this.qrInProcess = true;
                 }
             }
             catch (err) {
@@ -216,7 +221,6 @@ class Whatsapp extends events_1.EventEmitter {
             }
             this.client.ev.removeAllListeners();
             yield this.initiClient();
-            this.startBasicEventListners();
         });
     }
     getDisconnectReason(lastDisconnect) {
@@ -230,6 +234,8 @@ class Whatsapp extends events_1.EventEmitter {
     handleConnectionOpen() {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(`Connection open`);
+            this.qrRequested = true;
+            this.qrInProcess = false;
             yield device_model_1.default.updateDevice(this.phone, {
                 authState: true, reason: null
             });
@@ -241,7 +247,6 @@ class Whatsapp extends events_1.EventEmitter {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             console.log(`Connection closed`);
-            this.qrInProcess = false;
             const shouldReconnect = ((_b = (_a = lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.statusCode) !== baileys_1.DisconnectReason.loggedOut;
             if (shouldReconnect) {
                 console.log(`Connection Close (Not Logged Out) Retrying..`);
@@ -252,6 +257,8 @@ class Whatsapp extends events_1.EventEmitter {
                 yield device_model_1.default.updateDevice(this.phone, {
                     authState: false, reason
                 });
+                this.qrInProcess = false;
+                this.qrRequested = false;
                 console.log("connection closed (logged out)", reason, this.phone);
                 this.emit('LOGGEDOUT', { phone: this.phone, reason: reason === null || reason === void 0 ? void 0 : reason.message });
             }
