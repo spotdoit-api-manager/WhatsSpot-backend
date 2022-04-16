@@ -18,12 +18,14 @@ const bson_1 = require("bson");
 const wallet_schema_1 = require("./wallet.schema");
 const transaction_model_1 = __importDefault(require("../transaction/transaction.model"));
 const transaction_interface_1 = require("../transaction/transaction.interface");
+const logger_1 = __importDefault(require("../../core/logger"));
+const logFileName = "[WalletModel] : ";
 class WalletModel {
     createWallet(balance = 0) {
         return __awaiter(this, void 0, void 0, function* () {
             const newWallet = new wallet_schema_1.Wallet({ balance: balance });
             const newWalletData = yield newWallet.save();
-            console.log(newWalletData);
+            logger_1.default.info(logFileName, `New Wallet Created ${newWalletData._id}`);
             return newWalletData;
         });
     }
@@ -93,12 +95,12 @@ class WalletModel {
     validateTransactionAmount(walletId, amountToDebit) {
         return __awaiter(this, void 0, void 0, function* () {
             const wallet = yield this.fetchWallet(walletId);
-            console.log("found wallet for", walletId, wallet);
+            logger_1.default.info(logFileName, `Validating transaction amount ${amountToDebit} for wallet ${walletId}`);
             if (!wallet)
                 throw new Error("WALLET_NOT_FOUND");
             if (wallet.balance >= amountToDebit)
-                return true;
-            throw new Error("NOT_ENOUGH_CREDITS");
+                return { isValidAmount: true, balance: wallet.balance };
+            return { isValidAmount: false, balance: wallet.balance };
         });
     }
     getWalletIdAndValidateTransactionAmount(userId, amountToDebit) {

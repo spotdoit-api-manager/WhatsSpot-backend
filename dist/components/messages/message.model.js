@@ -25,6 +25,8 @@ const wallet_model_1 = __importDefault(require("../walllet/wallet.model"));
 const message_queue_service_1 = __importDefault(require("../../lib/services/whatsapp/message-queue.service"));
 const user_model_1 = __importDefault(require("../user/user.model"));
 const plans_model_1 = __importDefault(require("../plans/plans.model"));
+const logger_1 = __importDefault(require("../../core/logger"));
+const logFileName = "[MessageModel] : ";
 class MessageModel {
     constructor() {
         this.updateMessageStatus = (id, status, reason = null) => __awaiter(this, void 0, void 0, function* () {
@@ -37,7 +39,7 @@ class MessageModel {
     retryFailedMessage(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
             const messages = yield message_schema_1.MessageQueue.find({ userId: new bson_1.ObjectID(userId), deviceId: new bson_1.ObjectID(deviceId), status: message_interface_1.EMessageStatus.ERROR });
-            console.log("messsages are ", messages.length);
+            logger_1.default.info(logFileName, `Found ${messages.length} Failed Messages for user ${userId}`);
             message_queue_service_1.default.sendErrorMessageForDevice(messages, deviceId);
             if (messages)
                 return { error: false, messageCount: messages.length };
@@ -126,11 +128,11 @@ class MessageModel {
     }
     isPlanReachedMaxMessage(userCurrentPlan) {
     }
-    sendTextMessage(userId, body, deviceId, walletId) {
+    sendTextMessage(userId, to, messageText, deviceId, walletId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                body.to = index_1.sanatizeMobile(body.to);
-                if (!utils_1.validateMobile(body.to))
+                to = index_1.sanatizeMobile(to);
+                if (!utils_1.validateMobile(to))
                     throw new httpErrors_1.HTTP401Error(`INVALID_NUMBER`);
                 const device = yield device_model_1.default.findDeviceById(deviceId);
                 if (!device)
@@ -138,15 +140,19 @@ class MessageModel {
                 const { hasActivePlan, isMessageOver, activePlanInfo, planInfo } = yield this.hasActivePlan(userId);
                 if (isMessageOver)
                     throw new httpErrors_1.HTTP400Error("MESSAGES_EXHAUSTED", "message exhausted for your active plan");
+                logger_1.default.info(logFileName, `User ${userId} hasPlanActive: ${hasActivePlan}`);
                 if (!hasActivePlan) {
-                    yield wallet_model_1.default.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
+                    const { isValidAmount, balance } = yield wallet_model_1.default.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
+                    logger_1.default.info(logFileName, `VlaidAmount ${isValidAmount}`);
+                    if (!isValidAmount)
+                        throw new Error(`NOT_ENOUGH_BALANCE`);
                 }
-                const result = yield whatsapp_client_service_1.default.sendTextMessage(device.phone, body.to, body.message);
-                const newBody = { phone: device.phone, userId, to: body.to, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, message: body.message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
+                const result = yield whatsapp_client_service_1.default.sendTextMessage(device.phone, to, messageText);
+                const newBody = { phone: device.phone, userId, to: to, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, message: messageText, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
                 yield this.saveFastMessage(newBody);
-                // console.log(result);
+                console.log(result);
                 if (result.error) {
-                    throw new httpErrors_1.HTTP401Error(result.message);
+                    throw new Error(result.message);
                 }
                 if (hasActivePlan) {
                     yield plans_model_1.default.increamentMessageCount(activePlanInfo._id);
@@ -159,6 +165,7 @@ class MessageModel {
                 }
             }
             catch (err) {
+                logger_1.default.error(logFileName, err);
                 throw new httpErrors_1.HTTP400Error(err.message);
             }
         });

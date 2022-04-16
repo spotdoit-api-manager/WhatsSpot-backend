@@ -3,7 +3,7 @@ import { IUserModel } from "./user.schema";
 export declare class UserModel {
     fetchAll(): Promise<IUserModel[]>;
     private findUserById;
-    fetch(id: string): Promise<IUserModel>;
+    fetch(id: string): Promise<any>;
     update(id: string, body: IUserModel): Promise<IUserModel>;
     fetchUserActivePlan(userId: string): Promise<any>;
     addPlanToUser(userId: string, activePlanName: string, activePlanId: string): Promise<void>;

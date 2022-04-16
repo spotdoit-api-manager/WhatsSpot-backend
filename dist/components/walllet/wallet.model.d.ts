@@ -8,7 +8,10 @@ export declare class WalletModel {
     getWalletIdByUserId(userId: string): Promise<any>;
     addUserToWallet(walletId: string, userId: string): Promise<IWalletModel>;
     addCreditToWallet(walletId: string, addCredit: number): Promise<IWalletModel>;
-    validateTransactionAmount(walletId: string, amountToDebit: number): Promise<boolean>;
+    validateTransactionAmount(walletId: string, amountToDebit: number): Promise<{
+        isValidAmount: boolean;
+        balance: any;
+    }>;
     getWalletIdAndValidateTransactionAmount(userId: string, amountToDebit: number): Promise<any>;
     removeCreditFromWallet(walletId: string, removeCredit: number): Promise<IWalletModel>;
     makePaymentFromWallet(walletId: string, userId: string, amount: number, description: string, metaData?: Object): Promise<{

@@ -24,7 +24,20 @@ class DeviceController {
                 console.log("new device request");
                 responseHandler
                     .reqRes(req, res)
-                    .onFetch("DEVICE_ADDED", yield device_model_1.default.newDevice(req.userId, req.walletId, req.body))
+                    .onFetch("DEVICE_ADDED", yield device_model_1.default.newDevice(req.userId, req.walletId, req.body, req.params.code))
+                    .send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.newDeviceCode = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler
+                    .reqRes(req, res)
+                    .onFetch("CODE_SENT", yield device_model_1.default.newDeviceCode(req.userId, req.walletId, req.body))
                     .send();
             }
             catch (e) {
@@ -145,10 +158,9 @@ class DeviceController {
         this.retryFailedMessage = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
-                console.log("add to queue request ", req.params);
                 const result = yield device_model_1.default.retryFailedMessage(req.userId, req.params.deviceId);
                 console.log("retry result ", result);
-                responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE", result).send();
+                responseHandler.reqRes(req, res).onFetch("RETRYING", result).send();
             }
             catch (e) {
                 // send error with next function.
@@ -159,7 +171,7 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("Send text message request");
-                responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield message_model_1.default.sendTextMessage(req.userId, req.body, req.params.deviceId, req.walletId)).send();
+                responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield message_model_1.default.sendTextMessage(req.userId, req.body.to, req.body.message, req.params.deviceId, req.walletId)).send();
             }
             catch (e) {
                 // send error with next function.

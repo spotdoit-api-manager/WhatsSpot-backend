@@ -20,6 +20,7 @@ const whatsapp_service_1 = __importDefault(require("./whatsapp.service"));
 const device_model_1 = __importDefault(require("../../../components/device/device.model"));
 const utils_1 = require("../../../lib/utils");
 const instance_provider_1 = __importDefault(require("./instance.provider"));
+const logger_1 = __importDefault(require("../../../core/logger"));
 const logFileName = '[WhatsappClientService] : ';
 exports.eventEmitter = new events_1.EventEmitter();
 class WhatsappClient {
@@ -59,7 +60,7 @@ class WhatsappClient {
         });
         this.sendTextMessage = (phone, to, message) => __awaiter(this, void 0, void 0, function* () {
             try {
-                console.debug(logFileName, "sending message to ", to);
+                logger_1.default.info(logFileName, `Sending Text Message to ${to}`);
                 const clientInstance = this.getClientInstanceByPhone(phone);
                 if (!clientInstance)
                     return { error: true, message: "CLIENT_NOT_FOUND" };
@@ -131,10 +132,10 @@ class WhatsappClient {
     }
     initializeAllClients() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.info(logFileName, "INITIALIZING ALL CLIENTS...");
+            logger_1.default.info(logFileName, "INITIALIZING ALL CLIENTS...");
             const condition = { authState: true };
             const devices = yield device_model_1.default.findDeviceByCondition(condition);
-            console.info(logFileName, "Total Clients to Initialize: ", devices.length);
+            logger_1.default.info(logFileName, "Total Clients to Initialize: ", devices.length);
             for (let i = 0; i < devices.length; i++) {
                 const device = devices[i];
                 console.debug(logFileName, `client${i}:${device.phone}`);

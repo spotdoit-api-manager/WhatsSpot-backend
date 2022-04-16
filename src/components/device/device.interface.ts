@@ -1,4 +1,10 @@
 import { IReason } from './../../lib/services/whatsapp/whatsapp.interface';
+
+
+export interface INewDevice{
+    name:string,
+    phone:string,
+}
 export interface IDevice {
     name: string,
     phone: string,

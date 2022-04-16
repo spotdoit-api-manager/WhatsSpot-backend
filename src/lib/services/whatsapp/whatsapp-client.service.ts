@@ -10,6 +10,7 @@ import { IImageMessage } from './whatsapp.interface';
 import { sanatizeMobile } from '../../../lib/utils';
 import instanceProvider from './instance.provider';
 import planManagerService from '../plan.manager.service';
+import logger from '../../../core/logger';
 interface IWhatsappClient {
     [phone: string]: number
 }
@@ -102,7 +103,7 @@ export class WhatsappClient {
 
     public sendTextMessage = async (phone: string, to: string, message: string) => {
         try {
-            console.debug(logFileName,"sending message to ", to);
+            logger.info(logFileName,`Sending Text Message to ${to}`);
             const clientInstance = this.getClientInstanceByPhone(phone);
             if (!clientInstance) return { error: true, message: "CLIENT_NOT_FOUND" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
@@ -131,10 +132,10 @@ export class WhatsappClient {
 
 
     public async initializeAllClients() {
-        console.info(logFileName,"INITIALIZING ALL CLIENTS...");
+        logger.info(logFileName,"INITIALIZING ALL CLIENTS...");
         const condition = { authState: true };
         const devices = await deviceModel.findDeviceByCondition(condition);
-        console.info(logFileName,"Total Clients to Initialize: ", devices.length);
+        logger.info(logFileName,"Total Clients to Initialize: ", devices.length);
         for (let i = 0; i < devices.length; i++) {
             const device = devices[i];
             console.debug(logFileName,`client${i}:${device.phone}`);

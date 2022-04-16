@@ -4,9 +4,14 @@ import deviceController from "./device.controller";
 
 export default [
     {
-        path: "/device/newDevice",
+        path: "/device/newDevice/:code/add",
         method: "post",
         handler: [deviceController.newDevice]
+    },
+    {
+        path: "/device/newDevice/code",
+        method: "post",
+        handler: [deviceController.newDeviceCode]
     },
     {
         path: "/device/:deviceId/fetch",

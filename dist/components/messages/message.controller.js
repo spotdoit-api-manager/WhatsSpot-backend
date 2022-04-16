@@ -33,7 +33,7 @@ class MessageController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("Send text message request", req.userId, req.walletId, req.deviceId);
-                responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield message_model_1.default.sendTextMessage(req.userId, req.body, req.deviceId, req.walletId)).send();
+                responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield message_model_1.default.sendTextMessage(req.userId, req.body.to, req.body.message, req.deviceId, req.walletId)).send();
             }
             catch (e) {
                 // send error with next function.

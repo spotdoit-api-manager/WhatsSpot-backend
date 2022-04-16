@@ -88,7 +88,7 @@ class Whatsapp extends events_1.EventEmitter {
                     }
                 }
                 catch (err) {
-                    console.error(logFileName, err);
+                    logger_1.default.error(logFileName, err);
                 }
             }));
         });
@@ -114,7 +114,7 @@ class Whatsapp extends events_1.EventEmitter {
                 return { error: false };
             }
             catch (e) {
-                console.log(e);
+                logger_1.default.log(e);
                 return { error: true, message: e.message };
             }
         });
@@ -123,8 +123,8 @@ class Whatsapp extends events_1.EventEmitter {
                 const jid = whatsapp_utils_1.getSerializedPhone(to);
                 yield this.client.presenceSubscribe(jid);
                 yield baileys_1.delay(500);
-                console.log("serialized phone ", jid);
-                console.log("message is ", msg);
+                logger_1.default.log("serialized phone ", jid);
+                logger_1.default.log("message is ", msg);
                 let msgBody = {
                     image: msg.image,
                     caption: msg.caption
@@ -136,7 +136,7 @@ class Whatsapp extends events_1.EventEmitter {
                 return { error: false };
             }
             catch (e) {
-                console.log(e);
+                logger_1.default.log(e);
                 return { error: true, message: e.message };
             }
         });
@@ -170,30 +170,30 @@ class Whatsapp extends events_1.EventEmitter {
                     this.handleConnectionClose(lastDisconnect);
                 else {
                     const reason = this.getDisconnectReason(lastDisconnect);
-                    console.debug(logFileName, "connection update (not open| not close)", update, reason);
+                    logger_1.default.debug(logFileName, "connection update (not open| not close)", update, reason);
                     this.qrInProcess = true;
                 }
             }
             catch (err) {
-                console.error(logFileName, `Error in handling connection Update ${this.phone}`, err);
+                logger_1.default.error(logFileName, `Error in handling connection Update ${this.phone}`, err);
             }
         }));
         // message upsert
         this.client.ev.on("messages.upsert", (m) => __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
-                // console.log(JSON.stringify(m, undefined, 2))
+                // logger.log(JSON.stringify(m, undefined, 2))
                 const msg = m.messages[0];
                 if (!msg.key.fromMe) {
-                    console.debug(logFileName, `received msg :${(_a = msg.message) === null || _a === void 0 ? void 0 : _a.conversation}`);
-                    console.debug(logFileName, `From: ${msg.key.remoteJid}`);
+                    logger_1.default.debug(logFileName, `received msg :${(_a = msg.message) === null || _a === void 0 ? void 0 : _a.conversation}`);
+                    logger_1.default.debug(logFileName, `From: ${msg.key.remoteJid}`);
                 }
                 else {
-                    console.log(logFileName, `sent msg :${JSON.stringify(msg.message)}`);
-                    console.log(logFileName, `to: ${msg.key.remoteJid}`);
+                    logger_1.default.log(logFileName, `sent msg :${JSON.stringify(msg.message)}`);
+                    logger_1.default.log(logFileName, `to: ${msg.key.remoteJid}`);
                 }
                 if (!msg.key.fromMe && m.type === "notify") {
-                    // console.log("replying to", m.messages[0].key.remoteJid);
+                    // logger.log("replying to", m.messages[0].key.remoteJid);
                     // await this.client!.sendReadReceipt(
                     //   msg.key.remoteJid,
                     //   msg.key.participant,
@@ -203,7 +203,7 @@ class Whatsapp extends events_1.EventEmitter {
                 }
             }
             catch (err) {
-                console.error(logFileName, err);
+                logger_1.default.error(logFileName, err);
             }
         }));
     }
@@ -216,10 +216,10 @@ class Whatsapp extends events_1.EventEmitter {
     }
     reconnectClient() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("RETRYING CONNECTION..", this.phone);
+            logger_1.default.warn("RETRYING CONNECTION..", this.phone);
             this.retryCount++;
             if (this.isMaxRetryReached()) {
-                console.warn(logFileName, `[${this.phone}] Max Connection Retry Reached....`);
+                logger_1.default.warn(logFileName, `[${this.phone}] Max Connection Retry Reached....`);
             }
             this.client.ev.removeAllListeners();
             yield this.initiClient();
@@ -235,7 +235,7 @@ class Whatsapp extends events_1.EventEmitter {
     }
     handleConnectionOpen() {
         return __awaiter(this, void 0, void 0, function* () {
-            logger_1.default.success(logFileName, `Connection open`);
+            logger_1.default.info(logFileName, `CONNECTION_OPENED`);
             this.qrRequested = true;
             this.qrInProcess = false;
             yield device_model_1.default.updateDevice(this.phone, {
@@ -250,7 +250,7 @@ class Whatsapp extends events_1.EventEmitter {
         return __awaiter(this, void 0, void 0, function* () {
             const shouldReconnect = ((_b = (_a = lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.statusCode) !== baileys_1.DisconnectReason.loggedOut;
             if (shouldReconnect) {
-                console.warn(logFileName, `CONNECTION_CLOSED (NOT_LOGGED_OUT) Retrying......`);
+                logger_1.default.warn(logFileName, `CONNECTION_CLOSED (NOT_LOGGED_OUT) Retrying......`);
                 return yield this.reconnectClient();
             }
             else {
@@ -260,7 +260,7 @@ class Whatsapp extends events_1.EventEmitter {
                 });
                 this.qrInProcess = false;
                 this.qrRequested = false;
-                console.warn(logFileName, "CONNECTION_CLOSED (LOGGEDOUT)", reason, this.phone);
+                logger_1.default.warn(logFileName, "CONNECTION_CLOSED (LOGGEDOUT)", reason, this.phone);
                 this.emit('LOGGEDOUT', { phone: this.phone, reason: reason === null || reason === void 0 ? void 0 : reason.message });
             }
         });

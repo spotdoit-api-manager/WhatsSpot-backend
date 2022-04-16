@@ -16,13 +16,32 @@ export class DeviceController {
 
       responseHandler
         .reqRes(req, res)
-        .onFetch("DEVICE_ADDED", await deviceModel.newDevice(req.userId,req.walletId,req.body))
+        .onFetch("DEVICE_ADDED", await deviceModel.newDevice(req.userId,req.walletId,req.body,req.params.code))
         .send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
     }
   };
+
+  public newDeviceCode = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const responseHandler = new ResponseHandler();
+    try {
+
+      responseHandler
+        .reqRes(req, res)
+        .onFetch("CODE_SENT", await deviceModel.newDeviceCode(req.userId,req.walletId,req.body))
+        .send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
 
   public getQr = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
@@ -142,11 +161,10 @@ export class DeviceController {
   public retryFailedMessage = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-      console.log("add to queue request ", req.params);
       const result = await deviceModel.retryFailedMessage(req.userId,req.params.deviceId);
       console.log("retry result ",result);
       
-      responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE",result ).send();
+      responseHandler.reqRes(req, res).onFetch("RETRYING",result ).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -158,7 +176,7 @@ export class DeviceController {
     try {
       console.log("Send text message request");
 
-      responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendTextMessage(req.userId,req.body, req.params.deviceId,req.walletId)).send();
+      responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendTextMessage(req.userId,req.body.to,req.body.message, req.params.deviceId,req.walletId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));

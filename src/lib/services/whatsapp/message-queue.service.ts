@@ -10,7 +10,7 @@ import contactModel from '../../../components/contact/contact.model';
 import { IContact } from '../../../components/contact/contact.interface';
 import { P } from 'pino';
 import { WhatsappServiceError } from '../../../core/errors/errors';
-
+import logger from '../../../core/logger';
 const FETCH_PENDING_INTERVAL = 10;
 const logFileName = '[MessageQueueService] : ';
 export class MessageQueueService {
@@ -21,7 +21,7 @@ export class MessageQueueService {
     }
     public async getPendingMessagesToContacts(limit: number = 10) {
         const pendingMessagesToContacts = await MessageQueue.find({ status: EMessageStatus.PENDING,isGroup: false}).sort({ _id: 1 }).limit(limit);
-        console.log(logFileName,`FOUND ${pendingMessagesToContacts.length} PENDING MESSAGES TO CONTACT`);
+        logger.info(logFileName,`FOUND ${pendingMessagesToContacts.length} PENDING MESSAGES TO CONTACT`);
         const result = await this.sendPendingMessageToContacts(pendingMessagesToContacts);
         setTimeout(() => {            
             this.getPendingMessagesToContacts();
@@ -30,7 +30,7 @@ export class MessageQueueService {
 
     public async getPendingMessagesToGroup(limit: number = 1) {
         const pendingMessagesToGroup = await MessageQueue.find({ status: EMessageStatus.PENDING,isGroup: true}).sort({ _id: 1 }).limit(limit);
-        console.info(logFileName,`FOUND ${pendingMessagesToGroup.length} PENDING MESSAGES TO GROUP`);
+        logger.info(logFileName,`FOUND ${pendingMessagesToGroup.length} PENDING MESSAGES TO GROUP`);
         const resultGroupContact = await this.sendPendingMessageToGroup(pendingMessagesToGroup);
         setTimeout(() => {            
             this.getPendingMessagesToGroup();
@@ -51,7 +51,7 @@ export class MessageQueueService {
                 if(idx>-1 && contactsSent[idx].status==EMessageStatus.SENT) continue;
                 try {
                     const body = {to:contact.phoneNumber,message:message.message};
-                    const result: any = await messageModel.sendTextMessage(message.userId,body,message.deviceId,walletId);
+                    const result: any = await messageModel.sendTextMessage(message.userId,body.to,body.message,message.deviceId,walletId);
                     if (!result.error) {
                      await messageModel.updateMessageToGroupStatus(message._id,contact, EMessageStatus.SENT);
                     //  await walletModel.makePaymentFromWallet(walletId,message.userId,parseFloat(process.env.TEXT_MESSAGE_RATE),`sent queue message to ${message.to} from ${message.phone}`,{deviceId:message.deviceId,to:message.to,type:EMessageStatus.PENDING});
@@ -78,7 +78,7 @@ export class MessageQueueService {
                 try {
                     const walletId = (await walletModel.getWalletIdByUserId(message.userId));
                     const body = {to:message.to,message:message.message};
-                    const result: any = await messageModel.sendTextMessage(message.userId,body,message.deviceId,walletId);
+                    const result: any = await messageModel.sendTextMessage(message.userId,body.to,body.message,message.deviceId,walletId);
                     if (!result.error) {
                      await messageModel.updateMessageStatus(message._id, EMessageStatus.SENT);
                     //  await walletModel.makePaymentFromWallet(walletId,message.userId,parseFloat(process.env.TEXT_MESSAGE_RATE),`sent queue message to ${message.to} from ${message.phone}`,{deviceId:message.deviceId,to:message.to,type:EMessageStatus.PENDING});
@@ -105,21 +105,24 @@ export class MessageQueueService {
 
             for (let i = 0; i < errorMessages.length; i++) {
                 const message:IMessageModel = errorMessages[i];
+                logger.info(logFileName,`Sending failed message ${message._id}`);
                 try {
-                    const walletId = await walletModel.getWalletIdAndValidateTransactionAmount(message.userId,parseFloat(process.env.TEXT_MESSAGE_RATE));
-                    // const result: any = await messageModel.sendTextMessage(message.userId,body,message.deviceId,walletId);
+                    // const walletId = await walletModel.getWalletIdAndValidateTransactionAmount(message.userId,parseFloat(process.env.TEXT_MESSAGE_RATE));
+                    const walletId = await walletModel.getWalletIdByUserId(message.userId);
+                    const result: any = await messageModel.sendTextMessage(message.userId,message.to,message.message,message.deviceId,walletId);
 
-                    const result: any = await whatsappClientService.sendTextMessage(message.phone, message.to as string, message.message);
+                    // const result: any = await whatsappClientService.sendTextMessage(message.phone, message.to as string, message.message);
                     if (!result.error) {
                      await messageModel.updateMessageStatus(message._id, EMessageStatus.SENT);
                      
                      socketManager.sendFailedMessageSendProgress(deviceId,{total:errorMessages.length,current:i+1});
-                     await walletModel.makePaymentFromWallet(walletId,message.userId,parseFloat(process.env.TEXT_MESSAGE_RATE),`sent queue message to ${message.to} from ${message.phone}`,{deviceId:message.deviceId,to:message.to,type:EMessageStatus.ERROR});
+                    //  await walletModel.makePaymentFromWallet(walletId,message.userId,parseFloat(process.env.TEXT_MESSAGE_RATE),`sent queue message to ${message.to} from ${message.phone}`,{deviceId:message.deviceId,to:message.to,type:EMessageStatus.ERROR});
                     }else{    
                         socketManager.sendFailedMessageSendProgress(deviceId,{total:errorMessages.length,current:i+1});                    
                         await messageModel.updateMessageStatus(message._id, EMessageStatus.ERROR, result.message);
                     }
                 } catch (e) {
+                    logger.error(logFileName,e);
                     await messageModel.updateMessageStatus(message._id, EMessageStatus.ERROR, e.message);
                     continue;
                 }

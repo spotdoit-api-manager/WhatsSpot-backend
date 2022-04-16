@@ -6,16 +6,15 @@ import { IWallet } from './wallet.interface';
 import { IWalletModel, Wallet } from "./wallet.schema";
 import transactionModel from '../transaction/transaction.model';
 import { ETransactionTypes } from '../transaction/transaction.interface';
-
+import logger from '../../core/logger';
+const logFileName = "[WalletModel] : ";
 export class WalletModel {
 
 
     public async createWallet(balance: number = 0) {
-
         const newWallet = new Wallet({ balance: balance });
         const newWalletData = await newWallet.save();
-        console.log(newWalletData);
-
+        logger.info(logFileName,`New Wallet Created ${newWalletData._id}`);
         return newWalletData;
     }
 
@@ -77,11 +76,11 @@ export class WalletModel {
 
         public async validateTransactionAmount(walletId:string,amountToDebit:number){
             const wallet = await this.fetchWallet(walletId);
-            console.log("found wallet for",walletId,wallet);
+            logger.info(logFileName,`Validating transaction amount ${amountToDebit} for wallet ${walletId}`);
             
             if(!wallet) throw new Error("WALLET_NOT_FOUND");
-            if(wallet.balance>=amountToDebit) return true;
-            throw new Error("NOT_ENOUGH_CREDITS");
+            if(wallet.balance>=amountToDebit) return {isValidAmount:true,balance:wallet.balance};
+            return {isValidAmount:false,balance:wallet.balance}
         }
 
 

@@ -36,7 +36,7 @@ export default [
 },
 
   {
-    path: "/user/loggeduser",
+    path: "/user/loggedUser",
     method: "get",
     handler:[userController.getLoggedUser]
   },

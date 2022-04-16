@@ -16,6 +16,5 @@ const logger = winston_1.default.createLogger(options);
 if (process.env.NODE_ENV !== "production") {
     logger.debug("Logging initialized at debug level");
 }
-logger.warn('fdsa--------------------------------------------------------------------------f');
 exports.default = logger;
 //# sourceMappingURL=logger.js.map

@@ -14,12 +14,14 @@ import plansModel from '../plans/plans.model';
 import { IPLAN, IUserPlan } from '../plans/plans.interface';
 import { IPlanModel, IUserPlanModel } from '../plans/plans.schema';
 import { IContact, IGroupList } from '../contact/contact.interface';
+import logger from '../../core/logger';
 
+const logFileName = "[MessageModel] : ";
 export class MessageModel {
 
     public async retryFailedMessage(userId: string, deviceId: string) {
         const messages = await MessageQueue.find({ userId: new ObjectID(userId), deviceId: new ObjectID(deviceId), status: EMessageStatus.ERROR });
-        console.log("messsages are ", messages.length);
+        logger.info(logFileName,`Found ${messages.length} Failed Messages for user ${userId}`);
         messageQueueService.sendErrorMessageForDevice(messages, deviceId);
         if (messages) return { error: false, messageCount: messages.length };
         throw new HTTP401Error("NO_MESSAGES_FOUND")
@@ -115,23 +117,26 @@ private isPlanReachedMaxMessage(userCurrentPlan){
     
 }
 
-    public async sendTextMessage(userId: string, body: any, deviceId: string, walletId: string) {
+    public async sendTextMessage(userId: string, to:string,messageText:string, deviceId: string, walletId: string) {
         try {
-            body.to = sanatizeMobile(body.to);
-            if (!validateMobile(body.to)) throw new HTTP401Error(`INVALID_NUMBER`);
+            to = sanatizeMobile(to);
+            if (!validateMobile(to)) throw new HTTP401Error(`INVALID_NUMBER`);
             const device = await deviceModel.findDeviceById(deviceId);
             if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
             const { hasActivePlan,isMessageOver, activePlanInfo,planInfo } = await this.hasActivePlan(userId);
-            if(isMessageOver) throw new HTTP400Error("MESSAGES_EXHAUSTED","message exhausted for your active plan")
+            if(isMessageOver) throw new HTTP400Error("MESSAGES_EXHAUSTED","message exhausted for your active plan");
+            logger.info(logFileName,`User ${userId} hasPlanActive: ${hasActivePlan}`);
             if (!hasActivePlan) {
-                await walletModel.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
+             const {isValidAmount,balance} =    await walletModel.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
+             logger.info(logFileName,`VlaidAmount ${isValidAmount}`)
+             if(!isValidAmount) throw new Error(`NOT_ENOUGH_BALANCE`);
             }
-            const result = await whatsappClientService.sendTextMessage(device.phone, body.to, body.message);
-            const newBody: IMessage = { phone: device.phone, userId, to: body.to, reason: result?.message, sendType: ESendType.FAST, message: body.message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT }
+            const result = await whatsappClientService.sendTextMessage(device.phone, to, messageText);
+            const newBody: IMessage = { phone: device.phone, userId, to: to, reason: result?.message, sendType: ESendType.FAST, message: messageText, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT }
             await this.saveFastMessage(newBody);
-            // console.log(result);
+            console.log(result);
             if (result.error) {
-                throw new HTTP401Error(result.message);
+                throw new Error(result.message);
             }
             if (hasActivePlan) {
                 await plansModel.increamentMessageCount(activePlanInfo._id);
@@ -142,6 +147,7 @@ private isPlanReachedMaxMessage(userCurrentPlan){
                 return { error: false, message: newBody, creditUsed: process.env.TEXT_MESSAGE_RATE, walletBalance: paymentResult.wallet.balance }
             }
         } catch (err) {
+            logger.error(logFileName,err);
             throw new HTTP400Error(err.message);
         }
     }

@@ -73,7 +73,7 @@ export default class Whatsapp extends EventEmitter {
           return;
         }
       } catch (err) {
-        console.error(logFileName,err);
+        logger.error(logFileName,err);
       }
     });
   };
@@ -100,29 +100,29 @@ export default class Whatsapp extends EventEmitter {
         else if (connection === "close") this.handleConnectionClose(lastDisconnect);
         else{
           const reason: IReason = this.getDisconnectReason(lastDisconnect);
-          console.debug(logFileName,"connection update (not open| not close)", update, reason);
+          logger.debug(logFileName,"connection update (not open| not close)", update, reason);
           this.qrInProcess = true;
         }
       } catch (err) {
-        console.error(logFileName,`Error in handling connection Update ${this.phone}`,err);
+        logger.error(logFileName,`Error in handling connection Update ${this.phone}`,err);
       }
     });
 
     // message upsert
     this.client.ev.on("messages.upsert", async (m: any) => {
       try {
-        // console.log(JSON.stringify(m, undefined, 2))
+        // logger.log(JSON.stringify(m, undefined, 2))
         const msg = m.messages[0];
 
         if (!msg.key.fromMe) {
-          console.debug(logFileName,`received msg :${msg.message?.conversation}`);
-          console.debug(logFileName,`From: ${msg.key.remoteJid}`);
+          logger.debug(logFileName,`received msg :${msg.message?.conversation}`);
+          logger.debug(logFileName,`From: ${msg.key.remoteJid}`);
         } else {
-          console.log(logFileName,`sent msg :${JSON.stringify(msg.message)}`);
-          console.log(logFileName,`to: ${msg.key.remoteJid}`);
+          logger.log(logFileName,`sent msg :${JSON.stringify(msg.message)}`);
+          logger.log(logFileName,`to: ${msg.key.remoteJid}`);
         }
         if (!msg.key.fromMe && m.type === "notify") {
-          // console.log("replying to", m.messages[0].key.remoteJid);
+          // logger.log("replying to", m.messages[0].key.remoteJid);
           // await this.client!.sendReadReceipt(
           //   msg.key.remoteJid,
           //   msg.key.participant,
@@ -131,7 +131,7 @@ export default class Whatsapp extends EventEmitter {
           // await this.sendMessageWTyping(this.phone, { text: 'Hello there!' }, msg.key.remoteJid)
         }
       } catch (err) {
-        console.error(logFileName,err);
+        logger.error(logFileName,err);
       }
     });
   }
@@ -145,10 +145,10 @@ export default class Whatsapp extends EventEmitter {
   }
 
   private async reconnectClient() {
-    console.log("RETRYING CONNECTION..", this.phone);
+    logger.warn("RETRYING CONNECTION..", this.phone);
     this.retryCount++;
     if(this.isMaxRetryReached()){
-      console.warn(logFileName,`[${this.phone}] Max Connection Retry Reached....`)
+      logger.warn(logFileName,`[${this.phone}] Max Connection Retry Reached....`)
     }
     this.client.ev.removeAllListeners();
     await this.initiClient();
@@ -163,7 +163,7 @@ export default class Whatsapp extends EventEmitter {
   }
 
   private async handleConnectionOpen(){
-     logger.success(logFileName,`Connection open`);
+     logger.info(logFileName,`CONNECTION_OPENED`);
     this.qrRequested = true;
     this.qrInProcess = false;
     await deviceModel.updateDevice(this.phone, {
@@ -176,7 +176,7 @@ export default class Whatsapp extends EventEmitter {
   private async handleConnectionClose(lastDisconnect){
     const shouldReconnect = (lastDisconnect.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
     if (shouldReconnect) {
-      console.warn(logFileName,`CONNECTION_CLOSED (NOT_LOGGED_OUT) Retrying......`);
+      logger.warn(logFileName,`CONNECTION_CLOSED (NOT_LOGGED_OUT) Retrying......`);
       return await this.reconnectClient();
     }
     else {
@@ -186,7 +186,7 @@ export default class Whatsapp extends EventEmitter {
       });
       this.qrInProcess = false;
       this.qrRequested = false;
-      console.warn(logFileName,"CONNECTION_CLOSED (LOGGEDOUT)", reason, this.phone);
+      logger.warn(logFileName,"CONNECTION_CLOSED (LOGGEDOUT)", reason, this.phone);
       this.emit('LOGGEDOUT', { phone: this.phone, reason: reason?.message });
     }
   }
@@ -222,7 +222,7 @@ export default class Whatsapp extends EventEmitter {
       }
       return { error: false };
     } catch (e) {
-      console.log(e);
+      logger.log(e);
       return { error: true, message: e.message }
     }
   };
@@ -235,8 +235,8 @@ export default class Whatsapp extends EventEmitter {
       const jid = getSerializedPhone(to);
       await this.client.presenceSubscribe(jid);
       await delay(500);
-      console.log("serialized phone ", jid);
-      console.log("message is ", msg);
+      logger.log("serialized phone ", jid);
+      logger.log("message is ",msg as any);
       let msgBody = {
         image: msg.image,
         caption: msg.caption
@@ -247,7 +247,7 @@ export default class Whatsapp extends EventEmitter {
       }
       return { error: false };
     } catch (e) {
-      console.log(e);
+      logger.log(e);
 
       return { error: true, message: e.message }
     }

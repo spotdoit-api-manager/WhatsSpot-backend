@@ -1,8 +1,16 @@
-import { EDeviceStatus, IDeviceTokenData } from '../device/device.interface';
+import { EDeviceStatus, IDeviceTokenData, INewDevice } from '../device/device.interface';
 import { IApiKey, IDevice } from "./device.interface";
 import { IDeviceModel } from "./device.shema";
 export declare class DeviceModel {
-    newDevice(userId: string, walletId: any, body: IDevice): Promise<IDeviceModel>;
+    newDevice(userId: string, walletId: string, body: IDevice, newDeviceCode: string): Promise<IDeviceModel>;
+    verifyNewDeviceCode(newDeviceCode: string): Promise<boolean>;
+    newDeviceCode(userId: string, walletId: string, newDeviceBody: INewDevice): Promise<{
+        proceed: boolean;
+        message?: undefined;
+    } | {
+        proceed: boolean;
+        message: any;
+    }>;
     private validateDeviceAdd;
     getQr(body: any): Promise<{
         error: boolean;

@@ -7,9 +7,14 @@ const s3_1 = require("../../lib/services/s3");
 const device_controller_1 = __importDefault(require("./device.controller"));
 exports.default = [
     {
-        path: "/device/newDevice",
+        path: "/device/newDevice/:code/add",
         method: "post",
         handler: [device_controller_1.default.newDevice]
+    },
+    {
+        path: "/device/newDevice/code",
+        method: "post",
+        handler: [device_controller_1.default.newDeviceCode]
     },
     {
         path: "/device/:deviceId/fetch",

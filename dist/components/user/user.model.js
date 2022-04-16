@@ -19,12 +19,14 @@ const helpers_1 = require("../../lib/helpers");
 const user_schema_1 = require("./user.schema");
 const socialAuth_1 = __importDefault(require("./../../lib/middleware/socialAuth"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const otp_1 = require("../../lib/services/otp");
+const otp_handler_1 = require("../../lib/services/otp-handler");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bson_1 = require("bson");
 const config_1 = require("../../config");
 const httpErrors_1 = require("../../lib/utils/httpErrors");
 const wallet_model_1 = __importDefault(require("../walllet/wallet.model"));
+const logger_1 = __importDefault(require("../../core/logger"));
+const logFileName = "[UserModal] : ";
 class UserModel {
     constructor() {
         // private async generateValidUsername(firstName: string, id: string | null = null) {
@@ -63,8 +65,24 @@ class UserModel {
     }
     fetch(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = yield user_schema_1.User.findById(id);
-            return data;
+            const data = yield user_schema_1.User.aggregate([
+                { $match: { _id: new bson_1.ObjectID(id) } },
+                {
+                    $lookup: {
+                        from: 'wallets',
+                        localField: 'walletId',
+                        foreignField: '_id',
+                        as: "wallet"
+                    },
+                },
+                {
+                    $unwind: {
+                        path: "$wallet"
+                    }
+                }
+            ]);
+            console.info(logFileName, "Logged User Data is :", data[0]);
+            return data[0];
         });
     }
     update(id, body) {
@@ -116,10 +134,7 @@ class UserModel {
                     }
                 }
             ]);
-            // console.log("user active plan is ", userPlan);
-            if (!((_a = userPlan[0]) === null || _a === void 0 ? void 0 : _a.activePlanInfo))
-                throw new httpErrors_1.HTTP400Error("NO_ACTIVE_PLAN");
-            return userPlan[0];
+            return ((_a = userPlan[0]) === null || _a === void 0 ? void 0 : _a.activePlan) || null;
         });
     }
     addPlanToUser(userId, activePlanName, activePlanId) {
@@ -174,7 +189,6 @@ class UserModel {
     }
     registerWithPhone(body) {
         return __awaiter(this, void 0, void 0, function* () {
-            // console.log("register with phone ", body);
             try {
                 const userExist = yield this.findUserByPhone(body.phone);
                 ;
@@ -189,7 +203,7 @@ class UserModel {
                 throw new httpErrors_1.HTTP400Error("OTP_NOT_SENT");
             }
             catch (e) {
-                console.log(e);
+                logger_1.default.error(logFileName, e);
                 if (e.code == 11000) {
                     throw new httpErrors_1.HTTP400Error(e.keyPattern.email ? "EMAIL_ALREADY_REGISTERED" : "PHONE_ALREADY_REGISTERED");
                 }
@@ -415,16 +429,15 @@ class UserModel {
     }
     ;
     updateOtp(id) {
-        console.log("New OTP");
         const otp = helpers_1.otpGenerator();
         user_schema_1.User.findByIdAndUpdate(id, { otp }).then();
         return otp;
     }
     sendOtpToMobile(otp, phone) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(`send this ${otp} to ${phone}`);
+            logger_1.default.debug(logFileName, `send this ${otp} to ${phone}`);
             const message = `Your SpotDoit Services login OTP is ${otp}.`;
-            return yield otp_1.sendMessage(phone, message);
+            return yield otp_handler_1.sendMessage(phone, message);
         });
     }
     addNewToken(dataToStore) {

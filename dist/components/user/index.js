@@ -39,7 +39,7 @@ exports.default = [
         handler: [user_controller_1.default.fetchAccountMetrics]
     },
     {
-        path: "/user/loggeduser",
+        path: "/user/loggedUser",
         method: "get",
         handler: [user_controller_1.default.getLoggedUser]
     },

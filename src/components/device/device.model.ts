@@ -1,4 +1,5 @@
-import { EDeviceStatus, IDeviceTokenData } from '../device/device.interface';
+import logger from '../../core/logger';
+import { EDeviceStatus, IDeviceTokenData, INewDevice } from '../device/device.interface';
 import { MessageQueue } from './../messages/message.schema';
 import { deviceKeyConfig } from './../../config/index';
 import { IImageMessage } from './../../lib/services/whatsapp/whatsapp.interface';
@@ -13,19 +14,40 @@ import { ObjectID } from 'bson';
 import jwt from 'jsonwebtoken';
 import dayjs from 'dayjs'
 import { sanatizeMobile, validateMobile } from '../../lib/utils';
+import * as otpHandler from '../../lib/services/otp-handler';
 
+const logFileName = "[DeviceModal] : ";
 export class DeviceModel {
-    public async newDevice(userId:string,walletId,body: IDevice) {
+    public async newDevice(userId:string,walletId:string,body: IDevice,newDeviceCode:string) {
         body.userId = userId;
         const device = await this.findDeviceByPhone(body.phone);
         this.validateDeviceAdd(userId,device);
+        await this.verifyNewDeviceCode(newDeviceCode);
+        logger.info(logFileName,`Device ${body.phone} verified`);
         const newDevice = new Device(body);
         const newDeviceData:IDeviceModel = await newDevice.saveDevice();
         if(!newDeviceData) throw new HTTP400Error("UNKNOWN_ERROR");
-        let expiresOn = dayjs().add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN|| '3d').replace("d", "")), 'day').toDate().toUTCString();;
+        let expiresOn = dayjs().add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN || '3d').replace("d", "")), 'day').toDate().toUTCString();;
         const keys = await this.generateNewKey(userId,walletId,newDeviceData._id,{name:process.env.DEFAULT_APIKEY_NAME,expiresOn});
         return newDeviceData;
     }
+
+    public async verifyNewDeviceCode(newDeviceCode:string){
+        if(newDeviceCode){
+            return true;
+        }
+        return false;
+    }
+
+    public async newDeviceCode(userId:string,walletId:string,newDeviceBody:INewDevice){
+        const device = await this.findDeviceByPhone(newDeviceBody.phone);
+        this.validateDeviceAdd(userId,device);
+        const result  =  await otpHandler.sendNewDeviceCode(newDeviceBody.name);
+        return result;
+    }
+
+
+  
 
     private validateDeviceAdd(userId:string,device:IDevice){
         if (device && device.userId == userId) return device;

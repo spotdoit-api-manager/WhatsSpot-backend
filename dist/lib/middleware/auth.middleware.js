@@ -23,7 +23,6 @@ exports.Authorization = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
             const token = req.header('Authorization') || "";
             const data = yield handleToken(token);
             if (data) {
-                console.log(data);
                 req.userId = data._id;
                 req.walletId = data.walletId;
                 req.role = data.role;

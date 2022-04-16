@@ -40,7 +40,7 @@ export declare class MessageModel {
     fetchGroupMessageSentContacts(messageId: string): Promise<any[]>;
     private hasActivePlan;
     private isPlanReachedMaxMessage;
-    sendTextMessage(userId: string, body: any, deviceId: string, walletId: string): Promise<{
+    sendTextMessage(userId: string, to: string, messageText: string, deviceId: string, walletId: string): Promise<{
         error: boolean;
         message: IMessage;
         creditUsed: number;

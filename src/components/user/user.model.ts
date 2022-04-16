@@ -9,14 +9,16 @@ import { IUserModel } from "./user.schema";
 import socialAuth from "./../../lib/middleware/socialAuth";
 import bcrypt from 'bcrypt';
 import axios from 'axios';
-import { sendMessage } from "../../lib/services/otp";
+import { sendMessage } from "../../lib/services/otp-handler";
 import jwt from 'jsonwebtoken';
 import { ObjectID } from "bson";
 import { commonConfig } from "../../config";
 import { HTTP400Error, HTTP401Error } from "../../lib/utils/httpErrors";
 import walletModel, { WalletModel } from '../walllet/wallet.model';
 import plansModel from '../plans/plans.model';
+import logger from '../../core/logger';
 
+const logFileName = "[UserModal] : ";
 export class UserModel {
   public async fetchAll() {
 
@@ -31,8 +33,25 @@ export class UserModel {
   }
 
  public async fetch(id: string) {
-    const data = await User.findById(id);
-    return data;
+    const data = await User.aggregate([
+      {$match:{_id:new ObjectID(id)}},
+      {
+        $lookup:{
+          from:'wallets',
+          localField: 'walletId',
+          foreignField: '_id',
+          as:"wallet"
+        },
+         
+      }
+     ,{
+      $unwind:{
+        path:"$wallet"
+        }
+     }
+    ]);
+    console.info(logFileName,"Logged User Data is :",data[0]);
+    return data[0];
   }
 
   public async update(id: string, body: IUserModel) {
@@ -81,11 +100,8 @@ export class UserModel {
           planInfo:1
         }
       }
-    ]);
-    // console.log("user active plan is ", userPlan);
-    if(!userPlan[0]?.activePlanInfo) throw new HTTP400Error("NO_ACTIVE_PLAN");
-    
-    return userPlan[0];
+    ]);    
+    return userPlan[0]?.activePlan || null;
   }
 
   public async addPlanToUser(userId:string,activePlanName:string,activePlanId:string){
@@ -137,7 +153,6 @@ try{
   }
 
   async registerWithPhone(body: IUser) {
-    // console.log("register with phone ", body);
     try {
       const userExist = await this.findUserByPhone(body.phone);;
       if(userExist) throw new HTTP401Error("USER_ALREADY_EXIST");
@@ -149,7 +164,7 @@ try{
       }
       throw new HTTP400Error("OTP_NOT_SENT");
     } catch (e) {
-      console.log(e);
+      logger.error(logFileName,e);
       if (e.code == 11000) {
         throw new HTTP400Error(e.keyPattern.email ? "EMAIL_ALREADY_REGISTERED" : "PHONE_ALREADY_REGISTERED");
       }
@@ -368,14 +383,13 @@ try{
   };
 
   updateOtp(id: string): number {
-    console.log("New OTP");
     const otp = otpGenerator();
     User.findByIdAndUpdate(id, { otp }).then();
     return otp;
   }
 
   async sendOtpToMobile(otp: number, phone: string) {
-    console.log(`send this ${otp} to ${phone}`);
+    logger.debug(logFileName,`send this ${otp} to ${phone}`);
     const message = `Your SpotDoit Services login OTP is ${otp}.`;
     return await sendMessage(phone, message);
   }
