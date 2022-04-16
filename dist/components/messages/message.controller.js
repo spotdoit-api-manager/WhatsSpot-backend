@@ -29,6 +29,17 @@ class MessageController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.sendFastMessage = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("Send fast text message request", req.userId, req.walletId, req.deviceId);
+                responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield message_model_1.default.sendFastTextMessage(req.userId, req.body.to, req.body.message, req.deviceId, req.walletId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
         this.sendTextMessage = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {

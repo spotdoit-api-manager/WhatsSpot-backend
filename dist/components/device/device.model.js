@@ -160,7 +160,8 @@ class DeviceModel {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
             let condition = { _id: new bson_1.ObjectID(deviceId) };
-            // if (status) condition.status = status;
+            if (status)
+                condition.status = status;
             const result = yield device_shema_1.Device.aggregate([
                 { $match: condition },
                 { $set: { _id: { $toObjectId: "$_id" } } },

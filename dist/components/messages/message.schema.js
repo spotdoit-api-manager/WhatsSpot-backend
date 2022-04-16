@@ -11,6 +11,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FastMessage = exports.MessageQueue = void 0;
 const mongoose_1 = require("mongoose");
+const contactSentSchema = new mongoose_1.Schema({
+    phoneNumber: {
+        type: String,
+        required: true
+    },
+    name: {
+        type: String,
+        required: false
+    },
+    status: {
+        type: String,
+        enum: ["SENT", "ERROR", "PENDING"]
+    },
+    reason: {
+        type: String,
+    }
+}, { timestamps: true });
 const messageSchema = new mongoose_1.Schema({
     to: {
         type: String,
@@ -46,19 +63,7 @@ const messageSchema = new mongoose_1.Schema({
         type: Boolean,
         default: false
     },
-    contactsSent: [{
-            phoneNumber: {
-                type: String,
-                required: true
-            },
-            status: {
-                type: String,
-                enum: ["SENT", "ERROR", "PENDING"]
-            },
-            reason: {
-                type: String,
-            }
-        }]
+    contactsSent: [contactSentSchema]
 }, {
     timestamps: true,
 });

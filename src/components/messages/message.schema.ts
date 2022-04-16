@@ -6,6 +6,24 @@ export interface IMessageModel extends IMessage, Document {
   addMessage(): any;
 }
 
+const contactSentSchema = new Schema({
+  phoneNumber:{
+    type:String,
+    required:true
+  },
+  name:{
+    type:String,
+    required:false
+  },
+  status:{
+    type:String,
+    enum:["SENT","ERROR","PENDING"]
+  },
+  reason:{
+    type:String,
+  }
+},{timestamps: true});
+
 
 const messageSchema = new Schema(
   {
@@ -43,19 +61,7 @@ const messageSchema = new Schema(
       type:Boolean,
       default: false
     },
-    contactsSent:[{
-      phoneNumber:{
-        type:String,
-        required:true
-      },
-      status:{
-        type:String,
-        enum:["SENT","ERROR","PENDING"]
-      },
-      reason:{
-        type:String,
-      }
-    }]
+    contactsSent:[contactSentSchema]
   },
   {
     timestamps: true,

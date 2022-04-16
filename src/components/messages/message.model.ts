@@ -21,7 +21,7 @@ export class MessageModel {
 
     public async retryFailedMessage(userId: string, deviceId: string) {
         const messages = await MessageQueue.find({ userId: new ObjectID(userId), deviceId: new ObjectID(deviceId), status: EMessageStatus.ERROR });
-        logger.info(logFileName,`Found ${messages.length} Failed Messages for user ${userId}`);
+        logger.info(logFileName, `Found ${messages.length} Failed Messages for user ${userId}`);
         messageQueueService.sendErrorMessageForDevice(messages, deviceId);
         if (messages) return { error: false, messageCount: messages.length };
         throw new HTTP401Error("NO_MESSAGES_FOUND")
@@ -31,20 +31,20 @@ export class MessageModel {
         await MessageQueue.updateOne({ _id: id }, { status: status, reason: reason });
     }
 
-    public updateMessageToGroupStatus = async (id: string,contact:IContact, status: EMessageStatus, reason: string = null) => {
-        await MessageQueue.updateOne({ _id: id },{$push:{contactsSent:{phoneNumber:contact.phoneNumber,name:contact.name, status: status, reason: reason }}});
+    public updateMessageToGroupStatus = async (id: string, contact: IContact, status: EMessageStatus, reason: string = null) => {
+        await MessageQueue.updateOne({ _id: id }, { $push: { contactsSent: { phoneNumber: contact.phoneNumber, name: contact.name, status: status, reason: reason } } });
     }
 
 
-    public async addMessageToQueue(userId: string, body: {groups:IGroupList[],numbers:string|IContact[],message:string,isGroup:boolean}, deviceId: string) {
+    public async addMessageToQueue(userId: string, body: { groups: IGroupList[], numbers: string | IContact[], message: string, isGroup: boolean }, deviceId: string) {
         console.log("add to queue request", body, deviceId);
         const device = await deviceModel.findDeviceById(deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
 
         const messagesBody: IMessage[] = [];
-        if(body.isGroup){
-            body.groups.forEach((group:IGroupList)=>{
-                const newBody: IMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.QUEUE, to:group._id, message: body.message, status: EMessageStatus.PENDING,isGroup:true }
+        if (body.isGroup) {
+            body.groups.forEach((group: IGroupList) => {
+                const newBody: IMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.QUEUE, to: group._id, message: body.message, status: EMessageStatus.PENDING, isGroup: true }
                 messagesBody.push(newBody);
             });
             return await this.addMultipleMessageToQueue(messagesBody);
@@ -54,7 +54,7 @@ export class MessageModel {
         if (typeof (body.numbers) === 'string') {
             numbers.push(body.numbers);
         } else {
-            body.numbers.forEach((contact:IContact) =>{
+            body.numbers.forEach((contact: IContact) => {
                 numbers.push(contact.phoneNumber);
             })
         }
@@ -91,63 +91,67 @@ export class MessageModel {
         }
         return { error: true, message: "NOT_ADDED" };
     }
-    public async fetchGroupMessageSentContacts(messageId:string){
+    public async fetchGroupMessageSentContacts(messageId: string) {
         const result = await MessageQueue.aggregate([
-            {$match:{_id:new ObjectID(messageId)}},
-            {$project:{
-                contactsSent:1
-            }}
+            { $match: { _id: new ObjectID(messageId) } },
+            {
+                $project: {
+                    contactsSent: 1
+                }
+            }
         ]);
         // console.log("sent contact ",result);
         return result
     }
 
     private async hasActivePlan(userId: string) {
-        const userCurrentPlan:{activePlanInfo:IUserPlanModel,planInfo:IPlanModel} = await userModel.fetchUserActivePlan(userId);
-        if (userCurrentPlan && userCurrentPlan.activePlanInfo){ 
-            const isMessageOver:boolean = !Boolean(userCurrentPlan.planInfo.planMaxMessage - userCurrentPlan.activePlanInfo.sentMessageCount);
+        const userCurrentPlan: { activePlanInfo: IUserPlanModel, planInfo: IPlanModel } = await userModel.fetchUserActivePlan(userId);
+        if (userCurrentPlan && userCurrentPlan.activePlanInfo) {
+            const isMessageOver: boolean = !Boolean(userCurrentPlan.planInfo.planMaxMessage - userCurrentPlan.activePlanInfo.sentMessageCount);
             console.log(`isMessageOver is ${isMessageOver}`);
-            
-            return { hasActivePlan: true,isMessageOver, activePlanInfo:userCurrentPlan.activePlanInfo,planInfo:userCurrentPlan.planInfo };
+
+            return { hasActivePlan: true, isMessageOver, activePlanInfo: userCurrentPlan.activePlanInfo, planInfo: userCurrentPlan.planInfo };
         }
         return { hasActivePlan: false }
     }
 
-private isPlanReachedMaxMessage(userCurrentPlan){
-    
-}
+    private isPlanReachedMaxMessage(userCurrentPlan) {
 
-    public async sendTextMessage(userId: string, to:string,messageText:string, deviceId: string, walletId: string) {
+    }
+
+    public async sendFastTextMessage(userId: string, to: string, messageText: string, deviceId: string, walletId: string) {
+        const device = await deviceModel.findDeviceById(deviceId);
+        if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
+        const result = await this.sendTextMessage(userId, to, messageText, deviceId, walletId);
+        const newBody: IMessage = { phone: device.phone, userId, to: to, reason: result?.message, sendType: ESendType.FAST, message: messageText, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT }
+        await this.saveFastMessage(newBody);
+    }
+    public async sendTextMessage(userId: string, to: string, messageText: string, deviceId: string, walletId: string) {
         try {
             to = sanatizeMobile(to);
             if (!validateMobile(to)) throw new HTTP401Error(`INVALID_NUMBER`);
             const device = await deviceModel.findDeviceById(deviceId);
             if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-            const { hasActivePlan,isMessageOver, activePlanInfo,planInfo } = await this.hasActivePlan(userId);
-            if(isMessageOver) throw new HTTP400Error("MESSAGES_EXHAUSTED","message exhausted for your active plan");
-            logger.info(logFileName,`User ${userId} hasPlanActive: ${hasActivePlan}`);
+            const { hasActivePlan, isMessageOver, activePlanInfo, planInfo } = await this.hasActivePlan(userId);
+            if (isMessageOver) throw new HTTP400Error("MESSAGES_EXHAUSTED", "message exhausted for your active plan");
+            logger.info(logFileName, `User ${userId} hasPlanActive: ${hasActivePlan}`);
             if (!hasActivePlan) {
-             const {isValidAmount,balance} =    await walletModel.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
-             logger.info(logFileName,`VlaidAmount ${isValidAmount}`)
-             if(!isValidAmount) throw new Error(`NOT_ENOUGH_BALANCE`);
+                const { isValidAmount, balance } = await walletModel.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
+                logger.info(logFileName, `VlaidAmount ${isValidAmount}`)
+                if (!isValidAmount) throw new Error(`NOT_ENOUGH_BALANCE`);
             }
             const result = await whatsappClientService.sendTextMessage(device.phone, to, messageText);
-            const newBody: IMessage = { phone: device.phone, userId, to: to, reason: result?.message, sendType: ESendType.FAST, message: messageText, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT }
-            await this.saveFastMessage(newBody);
-            console.log(result);
-            if (result.error) {
-                throw new Error(result.message);
-            }
+            if(result.error) return result;
             if (hasActivePlan) {
                 await plansModel.increamentMessageCount(activePlanInfo._id);
-                return { error: false, message: newBody, creditUsed: 0 }
+                return { error: false, creditUsed: 0 }
             } else {
-                const paymentMetaData = { deviceId: deviceId, to: newBody.to };
-                const paymentResult = await walletModel.makePaymentFromWallet(walletId, userId, parseFloat(process.env.TEXT_MESSAGE_RATE), `message to ${newBody.to} from device ${device.name}(${device.phone})`, paymentMetaData);
-                return { error: false, message: newBody, creditUsed: process.env.TEXT_MESSAGE_RATE, walletBalance: paymentResult.wallet.balance }
+                const paymentMetaData = { deviceId: deviceId, to: to };
+                const paymentResult = await walletModel.makePaymentFromWallet(walletId, userId, parseFloat(process.env.TEXT_MESSAGE_RATE), `message to ${to} from device ${device.name}(${device.phone})`, paymentMetaData);
+                return { error: false, creditUsed: process.env.TEXT_MESSAGE_RATE, walletBalance: paymentResult.wallet.balance }
             }
         } catch (err) {
-            logger.error(logFileName,err);
+            logger.error(logFileName, err);
             throw new HTTP400Error(err.message);
         }
     }

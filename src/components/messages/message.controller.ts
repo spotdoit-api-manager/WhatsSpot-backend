@@ -15,6 +15,19 @@ export class MessageController{
           next(responseHandler.sendError(e));
         }
       };
+
+      public sendFastMessage = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          console.log("Send fast text message request",req.userId,req.walletId,req.deviceId);
+    
+          responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendFastTextMessage(req.userId,req.body.to,req.body.message,req.deviceId,req.walletId)).send();
+        } catch (e) {
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
+
       
       public sendTextMessage = async (req: Request, res: Response, next: NextFunction) => {
         const responseHandler = new ResponseHandler();

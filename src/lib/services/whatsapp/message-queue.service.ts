@@ -45,6 +45,8 @@ export class MessageQueueService {
             const groupContacts:IContact[] = await contactModel.fetchGroupContacts(userId,groupId);
             const walletId = (await walletModel.getWalletIdByUserId(message.userId));
             const contactsSent = message.contactsSent || [];
+
+            let anyContactError :boolean = false;
             for(let c=0;c<groupContacts.length;c++){
                 const contact:IContact = groupContacts[c];
                 const idx = contactsSent.findIndex((c:IContact)=>c.phoneNumber==contact.phoneNumber);
@@ -52,21 +54,22 @@ export class MessageQueueService {
                 try {
                     const body = {to:contact.phoneNumber,message:message.message};
                     const result: any = await messageModel.sendTextMessage(message.userId,body.to,body.message,message.deviceId,walletId);
-                    if (!result.error) {
-                     await messageModel.updateMessageToGroupStatus(message._id,contact, EMessageStatus.SENT);
-                    //  await walletModel.makePaymentFromWallet(walletId,message.userId,parseFloat(process.env.TEXT_MESSAGE_RATE),`sent queue message to ${message.to} from ${message.phone}`,{deviceId:message.deviceId,to:message.to,type:EMessageStatus.PENDING});
-                    }else{
+                    if (result.error) {
+                        anyContactError = true;
                         await messageModel.updateMessageToGroupStatus(message._id,contact, EMessageStatus.ERROR, result.message);
+                        //  await walletModel.makePaymentFromWallet(walletId,message.userId,parseFloat(process.env.TEXT_MESSAGE_RATE),`sent queue message to ${message.to} from ${message.phone}`,{deviceId:message.deviceId,to:message.to,type:EMessageStatus.PENDING});
+                    }else{
+                        await messageModel.updateMessageToGroupStatus(message._id,contact, EMessageStatus.SENT);
                     }
                 } catch (e) {
-                    // if(e.message == 'CLIENT_NOT_AUTHENTICATED' || e.message == 'CLIENT_NOT_FOUND'){
-                    //     await messageModel.updateMessageToGroupStatus(message._id,contact, EMessageStatus.ERROR, e.message);
-                    //     break;
-                    // }
+                    anyContactError = true;
                     await messageModel.updateMessageToGroupStatus(message._id,contact, EMessageStatus.ERROR, e.message);
                     continue;
                 }
             }
+            
+            await messageModel.updateMessageStatus(message._id, anyContactError?EMessageStatus.ERROR:EMessageStatus.SENT);
+
         }        
     }
   

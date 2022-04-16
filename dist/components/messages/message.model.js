@@ -107,9 +107,11 @@ class MessageModel {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield message_schema_1.MessageQueue.aggregate([
                 { $match: { _id: new bson_1.ObjectID(messageId) } },
-                { $project: {
+                {
+                    $project: {
                         contactsSent: 1
-                    } }
+                    }
+                }
             ]);
             // console.log("sent contact ",result);
             return result;
@@ -127,6 +129,16 @@ class MessageModel {
         });
     }
     isPlanReachedMaxMessage(userCurrentPlan) {
+    }
+    sendFastTextMessage(userId, to, messageText, deviceId, walletId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const device = yield device_model_1.default.findDeviceById(deviceId);
+            if (!device)
+                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
+            const result = yield this.sendTextMessage(userId, to, messageText, deviceId, walletId);
+            const newBody = { phone: device.phone, userId, to: to, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, message: messageText, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
+            yield this.saveFastMessage(newBody);
+        });
     }
     sendTextMessage(userId, to, messageText, deviceId, walletId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -148,20 +160,16 @@ class MessageModel {
                         throw new Error(`NOT_ENOUGH_BALANCE`);
                 }
                 const result = yield whatsapp_client_service_1.default.sendTextMessage(device.phone, to, messageText);
-                const newBody = { phone: device.phone, userId, to: to, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, message: messageText, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
-                yield this.saveFastMessage(newBody);
-                console.log(result);
-                if (result.error) {
-                    throw new Error(result.message);
-                }
+                if (result.error)
+                    return result;
                 if (hasActivePlan) {
                     yield plans_model_1.default.increamentMessageCount(activePlanInfo._id);
-                    return { error: false, message: newBody, creditUsed: 0 };
+                    return { error: false, creditUsed: 0 };
                 }
                 else {
-                    const paymentMetaData = { deviceId: deviceId, to: newBody.to };
-                    const paymentResult = yield wallet_model_1.default.makePaymentFromWallet(walletId, userId, parseFloat(process.env.TEXT_MESSAGE_RATE), `message to ${newBody.to} from device ${device.name}(${device.phone})`, paymentMetaData);
-                    return { error: false, message: newBody, creditUsed: process.env.TEXT_MESSAGE_RATE, walletBalance: paymentResult.wallet.balance };
+                    const paymentMetaData = { deviceId: deviceId, to: to };
+                    const paymentResult = yield wallet_model_1.default.makePaymentFromWallet(walletId, userId, parseFloat(process.env.TEXT_MESSAGE_RATE), `message to ${to} from device ${device.name}(${device.phone})`, paymentMetaData);
+                    return { error: false, creditUsed: process.env.TEXT_MESSAGE_RATE, walletBalance: paymentResult.wallet.balance };
                 }
             }
             catch (err) {

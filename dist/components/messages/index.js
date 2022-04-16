@@ -17,7 +17,7 @@ exports.default = [
         path: "/message/send/textMessage",
         method: "post",
         escapeAuth: true,
-        handler: [whatsapp_middleware_1.DeviceKeyValidator, message_controller_1.default.sendTextMessage]
+        handler: [whatsapp_middleware_1.DeviceKeyValidator, message_controller_1.default.sendFastMessage]
     },
     {
         path: "/message/testMessage",

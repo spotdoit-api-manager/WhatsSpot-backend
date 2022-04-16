@@ -12,7 +12,7 @@ export default [
         path:"/message/send/textMessage",
         method: "post",
         escapeAuth: true,
-        handler: [DeviceKeyValidator, messageController.sendTextMessage]
+        handler: [DeviceKeyValidator, messageController.sendFastMessage]
     },
     {
         path:"/message/testMessage",

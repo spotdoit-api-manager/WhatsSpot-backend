@@ -59,6 +59,7 @@ class MessageQueueService {
                 const groupContacts = yield contact_model_1.default.fetchGroupContacts(userId, groupId);
                 const walletId = (yield wallet_model_1.default.getWalletIdByUserId(message.userId));
                 const contactsSent = message.contactsSent || [];
+                let anyContactError = false;
                 for (let c = 0; c < groupContacts.length; c++) {
                     const contact = groupContacts[c];
                     const idx = contactsSent.findIndex((c) => c.phoneNumber == contact.phoneNumber);
@@ -67,23 +68,22 @@ class MessageQueueService {
                     try {
                         const body = { to: contact.phoneNumber, message: message.message };
                         const result = yield message_model_1.default.sendTextMessage(message.userId, body.to, body.message, message.deviceId, walletId);
-                        if (!result.error) {
-                            yield message_model_1.default.updateMessageToGroupStatus(message._id, contact, message_interface_1.EMessageStatus.SENT);
+                        if (result.error) {
+                            anyContactError = true;
+                            yield message_model_1.default.updateMessageToGroupStatus(message._id, contact, message_interface_1.EMessageStatus.ERROR, result.message);
                             //  await walletModel.makePaymentFromWallet(walletId,message.userId,parseFloat(process.env.TEXT_MESSAGE_RATE),`sent queue message to ${message.to} from ${message.phone}`,{deviceId:message.deviceId,to:message.to,type:EMessageStatus.PENDING});
                         }
                         else {
-                            yield message_model_1.default.updateMessageToGroupStatus(message._id, contact, message_interface_1.EMessageStatus.ERROR, result.message);
+                            yield message_model_1.default.updateMessageToGroupStatus(message._id, contact, message_interface_1.EMessageStatus.SENT);
                         }
                     }
                     catch (e) {
-                        // if(e.message == 'CLIENT_NOT_AUTHENTICATED' || e.message == 'CLIENT_NOT_FOUND'){
-                        //     await messageModel.updateMessageToGroupStatus(message._id,contact, EMessageStatus.ERROR, e.message);
-                        //     break;
-                        // }
+                        anyContactError = true;
                         yield message_model_1.default.updateMessageToGroupStatus(message._id, contact, message_interface_1.EMessageStatus.ERROR, e.message);
                         continue;
                     }
                 }
+                yield message_model_1.default.updateMessageStatus(message._id, anyContactError ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT);
             }
         });
     }

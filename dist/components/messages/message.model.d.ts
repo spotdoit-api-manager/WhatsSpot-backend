@@ -40,17 +40,8 @@ export declare class MessageModel {
     fetchGroupMessageSentContacts(messageId: string): Promise<any[]>;
     private hasActivePlan;
     private isPlanReachedMaxMessage;
-    sendTextMessage(userId: string, to: string, messageText: string, deviceId: string, walletId: string): Promise<{
-        error: boolean;
-        message: IMessage;
-        creditUsed: number;
-        walletBalance?: undefined;
-    } | {
-        error: boolean;
-        message: IMessage;
-        creditUsed: string;
-        walletBalance: number;
-    }>;
+    sendFastTextMessage(userId: string, to: string, messageText: string, deviceId: string, walletId: string): Promise<void>;
+    sendTextMessage(userId: string, to: string, messageText: string, deviceId: string, walletId: string): Promise<any>;
     sendImageMessage(body: any, deviceId: string): Promise<void>;
     saveFastMessage(messageBody: IMessage): Promise<{
         error: boolean;

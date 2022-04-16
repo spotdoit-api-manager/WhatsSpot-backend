@@ -109,7 +109,7 @@ export class DeviceModel {
 
     private async fetchMessagesByStatus(deviceId: string, status: EMessageStatus = null) {
         let condition: any = { _id: new ObjectID(deviceId) };
-        // if (status) condition.status = status;
+        if (status) condition.status = status;
         const result = await Device.aggregate([
             { $match: condition },
             { $set: { _id: { $toObjectId: "$_id" } } },
