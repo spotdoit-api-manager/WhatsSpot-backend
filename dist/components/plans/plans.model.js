@@ -18,6 +18,7 @@ const plans_interface_1 = require("./plans.interface");
 const httpErrors_1 = require("../../lib/utils/httpErrors");
 const dayjs_1 = __importDefault(require("dayjs"));
 const user_model_1 = __importDefault(require("../user/user.model"));
+const plan_manager_service_1 = __importDefault(require("../../lib/services/plan.manager.service"));
 class PlansModel {
     fetchPlanById(planId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -50,8 +51,7 @@ class PlansModel {
     }
     deletePlan(planId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield plans_schema_1.Plan.findOneAndDelete(planId);
-            return result;
+            return yield plan_manager_service_1.default.deletePlan(planId);
         });
     }
     activatePlan(userId, planId, planTransactionId) {

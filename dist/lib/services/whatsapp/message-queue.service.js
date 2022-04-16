@@ -23,6 +23,7 @@ const whatsapp_client_service_1 = __importDefault(require("./whatsapp-client.ser
 const socket_1 = __importDefault(require("../socket"));
 const contact_model_1 = __importDefault(require("../../../components/contact/contact.model"));
 const FETCH_PENDING_INTERVAL = 10;
+const logFileName = '[MessageQueueService] : ';
 class MessageQueueService {
     constructor() {
         this.getPendingMessagesToContacts();
@@ -31,7 +32,7 @@ class MessageQueueService {
     getPendingMessagesToContacts(limit = 10) {
         return __awaiter(this, void 0, void 0, function* () {
             const pendingMessagesToContacts = yield message_schema_1.MessageQueue.find({ status: message_interface_1.EMessageStatus.PENDING, isGroup: false }).sort({ _id: 1 }).limit(limit);
-            console.log(`FOUND ${pendingMessagesToContacts.length} PENDING MESSAGES TO CONTACT`);
+            console.log(logFileName, `FOUND ${pendingMessagesToContacts.length} PENDING MESSAGES TO CONTACT`);
             const result = yield this.sendPendingMessageToContacts(pendingMessagesToContacts);
             setTimeout(() => {
                 this.getPendingMessagesToContacts();
@@ -41,7 +42,7 @@ class MessageQueueService {
     getPendingMessagesToGroup(limit = 1) {
         return __awaiter(this, void 0, void 0, function* () {
             const pendingMessagesToGroup = yield message_schema_1.MessageQueue.find({ status: message_interface_1.EMessageStatus.PENDING, isGroup: true }).sort({ _id: 1 }).limit(limit);
-            console.log(`FOUND ${pendingMessagesToGroup.length} PENDING MESSAGES TO GROUP`);
+            console.info(logFileName, `FOUND ${pendingMessagesToGroup.length} PENDING MESSAGES TO GROUP`);
             const resultGroupContact = yield this.sendPendingMessageToGroup(pendingMessagesToGroup);
             setTimeout(() => {
                 this.getPendingMessagesToGroup();
@@ -75,12 +76,10 @@ class MessageQueueService {
                         }
                     }
                     catch (e) {
-                        if (e.message == 'CLIENT_NOT_AUTHENTICATED' || e.message == 'CLIENT_NOT_FOUND') {
-                            console.log("Client not authenticated.Cancelling group message sending..");
-                            yield message_model_1.default.updateMessageToGroupStatus(message._id, contact, message_interface_1.EMessageStatus.ERROR, e.message);
-                            break;
-                        }
-                        console.log(e.message);
+                        // if(e.message == 'CLIENT_NOT_AUTHENTICATED' || e.message == 'CLIENT_NOT_FOUND'){
+                        //     await messageModel.updateMessageToGroupStatus(message._id,contact, EMessageStatus.ERROR, e.message);
+                        //     break;
+                        // }
                         yield message_model_1.default.updateMessageToGroupStatus(message._id, contact, message_interface_1.EMessageStatus.ERROR, e.message);
                         continue;
                     }
@@ -106,7 +105,6 @@ class MessageQueueService {
                         }
                     }
                     catch (e) {
-                        console.log(e.message);
                         yield message_model_1.default.updateMessageStatus(message._id, message_interface_1.EMessageStatus.ERROR, e.message);
                         continue;
                     }
@@ -137,7 +135,6 @@ class MessageQueueService {
                         }
                     }
                     catch (e) {
-                        console.log(e);
                         yield message_model_1.default.updateMessageStatus(message._id, message_interface_1.EMessageStatus.ERROR, e.message);
                         continue;
                     }

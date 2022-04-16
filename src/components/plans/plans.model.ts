@@ -3,7 +3,7 @@ import { EPLANS, EPlanStatus, IPLAN, IUserPlan } from "./plans.interface";
 import { HTTP401Error } from "../../lib/utils/httpErrors";
 import dayjs from "dayjs";
 import userModel from "../user/user.model";
-
+import planManagerService from "../../lib/services/plan.manager.service";
 export class PlansModel{
 
 public async fetchPlanById(planId:string){
@@ -32,8 +32,7 @@ public async updatePlan(adminId:string,planId:string,planUpdate:any){
 
 
 public async deletePlan(planId:string){
-    const result= await Plan.findOneAndDelete(planId);
-    return result;
+  return await planManagerService.deletePlan(planId);
 }
 
 public async activatePlan(userId:string,planId:string,planTransactionId:string){
@@ -67,6 +66,8 @@ public async increamentMessageCount(activePlanId:string){
     const result = await UserPlan.findByIdAndUpdate(activePlanId,{$inc:{sentMessageCount:1}});
     return result;
 }
+
+
 
 
 

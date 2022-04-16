@@ -9,12 +9,15 @@ import messageQueueService from './message-queue.service';
 import { IImageMessage } from './whatsapp.interface';
 import { sanatizeMobile } from '../../../lib/utils';
 import instanceProvider from './instance.provider';
-
+import planManagerService from '../plan.manager.service';
 interface IWhatsappClient {
     [phone: string]: number
 }
 
+const logFileName = '[WhatsappClientService] : ';
+
 export const eventEmitter = new EventEmitter();
+
 export class WhatsappClient {
     
     clients: IWhatsappClient = clients;
@@ -24,7 +27,7 @@ export class WhatsappClient {
         const clientInstance = new Whatsapp(phone);
         const instaceId = instanceProvider.getInstanceId(clientInstance); 
         clients[phone] = instaceId;    
-        console.log(`Number of instance present = ${Object.keys(this.clients).length}`);
+        console.info(logFileName,`Number of instance present = ${Object.keys(this.clients).length}`);
         return clientInstance;
     }
 
@@ -60,12 +63,12 @@ export class WhatsappClient {
         this.removeClientInstanceByPhone(phone);
         const client = this.addClient(phone);
         client.on("qr", (qrData) => {
-            console.log("got qr ", qrData.qr);
+            console.debug(logFileName,"got qr ", qrData.qr);
             socketManager.sendQrCode(phone, qrData);
         });
 
         client.on("authenticated", (client) => {
-            console.log("got authenticated ", client.phone);
+            console.debug(logFileName,"got authenticated ", client.phone);
             socketManager.sendAuthenticated(client.phone);
         })
        const result:any =  await client.initiClient();
@@ -74,7 +77,7 @@ export class WhatsappClient {
     }
 
     public removeClientInstanceByPhone(phone:string){
-        console.log(`Removing client ${phone}`);
+        console.debug(logFileName,`Removing client ${phone}`);
         const instanceId = this.clients[phone];
         if(!instanceId) return {error:true,message:"INSTANCE_NOT_FOUND"};
         delete this.clients[phone];
@@ -83,7 +86,7 @@ export class WhatsappClient {
 
     private removeClientByInstanceId(instanceId:number) {
         try {
-            console.log(`Removing client instance ${instanceId}`);
+            console.debug(logFileName,`Removing client ${instanceId}`);
 
             let instance =  instanceProvider.getClassInstance(Whatsapp, instanceId);
             instance.endClient();
@@ -92,14 +95,14 @@ export class WhatsappClient {
             return {error:false,message:"client removed"}
 
         } catch (err) {
-            console.log("error in client end ", err);
+            console.error(logFileName,"error in client end ", err);
             return {error:true,message:err.message}
         }
     }
 
     public sendTextMessage = async (phone: string, to: string, message: string) => {
         try {
-            console.log("sending message to ", to);
+            console.debug(logFileName,"sending message to ", to);
             const clientInstance = this.getClientInstanceByPhone(phone);
             if (!clientInstance) return { error: true, message: "CLIENT_NOT_FOUND" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
@@ -112,7 +115,7 @@ export class WhatsappClient {
 
     public sendImageMessage = async (phone: string, to: string, msg: IImageMessage) => {
         try {
-            console.log("sending image message to ", to);
+            console.debug(logFileName,"sending image message to ", to);
             const client = this.getClientInstanceByPhone(phone);
             if (!client) return { error: true, message: "CLIENT_NOT_FOUND" };
             if (!client.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
@@ -128,24 +131,18 @@ export class WhatsappClient {
 
 
     public async initializeAllClients() {
-        console.info("INITIALIZING ALL CLIENTS...");
+        console.info(logFileName,"INITIALIZING ALL CLIENTS...");
         const condition = { authState: true };
         const devices = await deviceModel.findDeviceByCondition(condition);
-        console.info("Total Clients to Initialize: ", devices.length);
+        console.info(logFileName,"Total Clients to Initialize: ", devices.length);
         for (let i = 0; i < devices.length; i++) {
             const device = devices[i];
-            console.log(`client${i}:${device.phone}`);
+            console.debug(logFileName,`client${i}:${device.phone}`);
            const client =  this.addClient(device.phone);
            await client.initiClient();
         }
 
-        setTimeout(()=>{//to do
-            console.log("STARTED_MESSAGE_QUEUE_SERVICE...");
-            // messageQueueService.;
-        },10000)
     }
-
-
 
 
 }

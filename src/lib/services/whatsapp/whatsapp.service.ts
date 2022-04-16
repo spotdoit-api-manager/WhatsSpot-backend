@@ -15,6 +15,8 @@ import makeWASocket, {
 import deviceModel from './../../../components/device/device.model';
 import path from 'path';
 import instanceProvider from './instance.provider';
+import logger from '../../../core/logger';
+const logFileName = '[WhatsappService] : ';
 export default class Whatsapp extends EventEmitter {
   client: any;
   phone: string;
@@ -71,7 +73,7 @@ export default class Whatsapp extends EventEmitter {
           return;
         }
       } catch (err) {
-        console.log(err);
+        console.error(logFileName,err);
       }
     });
   };
@@ -98,11 +100,11 @@ export default class Whatsapp extends EventEmitter {
         else if (connection === "close") this.handleConnectionClose(lastDisconnect);
         else{
           const reason: IReason = this.getDisconnectReason(lastDisconnect);
-          console.debug("connection update (not open| not close)", update, reason);
+          console.debug(logFileName,"connection update (not open| not close)", update, reason);
           this.qrInProcess = true;
         }
       } catch (err) {
-        console.log(`Error in handling connection Update ${this.phone}`,err);
+        console.error(logFileName,`Error in handling connection Update ${this.phone}`,err);
       }
     });
 
@@ -113,11 +115,11 @@ export default class Whatsapp extends EventEmitter {
         const msg = m.messages[0];
 
         if (!msg.key.fromMe) {
-          console.log(`received msg :${msg.message?.conversation}`);
-          console.log(`From: ${msg.key.remoteJid}`);
+          console.debug(logFileName,`received msg :${msg.message?.conversation}`);
+          console.debug(logFileName,`From: ${msg.key.remoteJid}`);
         } else {
-          console.log(`sent msg :${JSON.stringify(msg.message)}`);
-          console.log(`to: ${msg.key.remoteJid}`);
+          console.log(logFileName,`sent msg :${JSON.stringify(msg.message)}`);
+          console.log(logFileName,`to: ${msg.key.remoteJid}`);
         }
         if (!msg.key.fromMe && m.type === "notify") {
           // console.log("replying to", m.messages[0].key.remoteJid);
@@ -129,8 +131,7 @@ export default class Whatsapp extends EventEmitter {
           // await this.sendMessageWTyping(this.phone, { text: 'Hello there!' }, msg.key.remoteJid)
         }
       } catch (err) {
-        console.log(err);
-
+        console.error(logFileName,err);
       }
     });
   }
@@ -147,7 +148,7 @@ export default class Whatsapp extends EventEmitter {
     console.log("RETRYING CONNECTION..", this.phone);
     this.retryCount++;
     if(this.isMaxRetryReached()){
-      console.log(`[${this.phone}] Max Connection Retry Reached....`)
+      console.warn(logFileName,`[${this.phone}] Max Connection Retry Reached....`)
     }
     this.client.ev.removeAllListeners();
     await this.initiClient();
@@ -162,7 +163,7 @@ export default class Whatsapp extends EventEmitter {
   }
 
   private async handleConnectionOpen(){
-    console.log(`Connection open`);
+     logger.success(logFileName,`Connection open`);
     this.qrRequested = true;
     this.qrInProcess = false;
     await deviceModel.updateDevice(this.phone, {
@@ -173,10 +174,9 @@ export default class Whatsapp extends EventEmitter {
   }
 
   private async handleConnectionClose(lastDisconnect){
-    console.log(`Connection closed`);
     const shouldReconnect = (lastDisconnect.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
     if (shouldReconnect) {
-      console.log(`Connection Close (Not Logged Out) Retrying..`);
+      console.warn(logFileName,`CONNECTION_CLOSED (NOT_LOGGED_OUT) Retrying......`);
       return await this.reconnectClient();
     }
     else {
@@ -186,7 +186,7 @@ export default class Whatsapp extends EventEmitter {
       });
       this.qrInProcess = false;
       this.qrRequested = false;
-      console.log("connection closed (logged out)", reason, this.phone);
+      console.warn(logFileName,"CONNECTION_CLOSED (LOGGEDOUT)", reason, this.phone);
       this.emit('LOGGEDOUT', { phone: this.phone, reason: reason?.message });
     }
   }

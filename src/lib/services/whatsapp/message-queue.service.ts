@@ -12,7 +12,7 @@ import { P } from 'pino';
 import { WhatsappServiceError } from '../../../core/errors/errors';
 
 const FETCH_PENDING_INTERVAL = 10;
-
+const logFileName = '[MessageQueueService] : ';
 export class MessageQueueService {
 
     constructor(){
@@ -21,7 +21,7 @@ export class MessageQueueService {
     }
     public async getPendingMessagesToContacts(limit: number = 10) {
         const pendingMessagesToContacts = await MessageQueue.find({ status: EMessageStatus.PENDING,isGroup: false}).sort({ _id: 1 }).limit(limit);
-        console.log(`FOUND ${pendingMessagesToContacts.length} PENDING MESSAGES TO CONTACT`);
+        console.log(logFileName,`FOUND ${pendingMessagesToContacts.length} PENDING MESSAGES TO CONTACT`);
         const result = await this.sendPendingMessageToContacts(pendingMessagesToContacts);
         setTimeout(() => {            
             this.getPendingMessagesToContacts();
@@ -30,7 +30,7 @@ export class MessageQueueService {
 
     public async getPendingMessagesToGroup(limit: number = 1) {
         const pendingMessagesToGroup = await MessageQueue.find({ status: EMessageStatus.PENDING,isGroup: true}).sort({ _id: 1 }).limit(limit);
-        console.log(`FOUND ${pendingMessagesToGroup.length} PENDING MESSAGES TO GROUP`);
+        console.info(logFileName,`FOUND ${pendingMessagesToGroup.length} PENDING MESSAGES TO GROUP`);
         const resultGroupContact = await this.sendPendingMessageToGroup(pendingMessagesToGroup);
         setTimeout(() => {            
             this.getPendingMessagesToGroup();
@@ -59,13 +59,10 @@ export class MessageQueueService {
                         await messageModel.updateMessageToGroupStatus(message._id,contact, EMessageStatus.ERROR, result.message);
                     }
                 } catch (e) {
-                    if(e.message == 'CLIENT_NOT_AUTHENTICATED' || e.message == 'CLIENT_NOT_FOUND'){
-                        console.log("Client not authenticated.Cancelling group message sending..");
-                        await messageModel.updateMessageToGroupStatus(message._id,contact, EMessageStatus.ERROR, e.message);
-
-                        break;
-                    }
-                    console.log(e.message);
+                    // if(e.message == 'CLIENT_NOT_AUTHENTICATED' || e.message == 'CLIENT_NOT_FOUND'){
+                    //     await messageModel.updateMessageToGroupStatus(message._id,contact, EMessageStatus.ERROR, e.message);
+                    //     break;
+                    // }
                     await messageModel.updateMessageToGroupStatus(message._id,contact, EMessageStatus.ERROR, e.message);
                     continue;
                 }
@@ -89,7 +86,6 @@ export class MessageQueueService {
                         await messageModel.updateMessageStatus(message._id, EMessageStatus.ERROR, result.message);
                     }
                 } catch (e) {
-                    console.log(e.message);
                     await messageModel.updateMessageStatus(message._id, EMessageStatus.ERROR, e.message);
                     continue;
                 }
@@ -124,7 +120,6 @@ export class MessageQueueService {
                         await messageModel.updateMessageStatus(message._id, EMessageStatus.ERROR, result.message);
                     }
                 } catch (e) {
-                    console.log(e);
                     await messageModel.updateMessageStatus(message._id, EMessageStatus.ERROR, e.message);
                     continue;
                 }
