@@ -1,39 +1,39 @@
-import { IReason } from './../../lib/services/whatsapp/whatsapp.interface';
+import { IReason } from "./../../lib/services/whatsapp/whatsapp.interface";
 
 
 export interface INewDevice{
-    name:string,
-    phone:string,
+    name: string;
+    phone: string;
 }
 export interface IDevice {
-    name: string,
-    phone: string,
-    authState: boolean,
-    reason: IReason,
-    userId: string,
-    apiKeys: IApiKey[],
+    name: string;
+    phone: string;
+    authState: boolean;
+    reason: IReason;
+    userId: string;
+    apiKeys: IApiKey[];
 }
 
 export interface IApiKey {
-    token: string,
-    expiresOn: string,
-    name: string,
-    createdOn: Date,
+    token: string;
+    expiresOn: string;
+    name: string;
+    createdOn: Date;
     status: {
-        status: EApiKeyStatus,
-        reason: string | null
-    }
+        status: EApiKeyStatus;
+        reason: string | null;
+    };
 }
 
 export interface IDeviceTokenData {
-    deviceId: string,
-    walletId:string,
-    userId:string
+    deviceId: string;
+    walletId: string;
+    userId: string;
 }
 
 export interface TextMessage {
-    message: String,
-    numbers: string
+    message: string;
+    numbers: string;
 }
 
 export enum EApiKeyStatus {
@@ -43,11 +43,11 @@ export enum EApiKeyStatus {
 
 
 export interface IMessageMetrics {
-    totalFastError: number
-    totalFastSuccess: number
-    totalQueueError: number
-    totalQueuePending: number
-    totalQueueSuccess: number
+    totalFastError: number;
+    totalFastSuccess: number;
+    totalQueueError: number;
+    totalQueuePending: number;
+    totalQueueSuccess: number;
 }
 
 export enum EDeviceStatus{

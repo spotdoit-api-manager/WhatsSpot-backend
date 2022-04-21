@@ -1,6 +1,6 @@
 export const paymentTemplate = (data: any): string => {
-    return `<html><head><title>PolBol Paytm Portal</title></head><body><form action="${data.final_url}" method="POST" name="f1">${data.formFields}</form><script type="text/javascript">document.f1.submit()</script></body></html>`
-}
+    return `<html><head><title>PolBol Paytm Portal</title></head><body><form action="${data.final_url}" method="POST" name="f1">${data.formFields}</form><script type="text/javascript">document.f1.submit()</script></body></html>`;
+};
 
 export const responseTemplate = (data: any): string => {
     return `<html>
@@ -81,5 +81,5 @@ export const responseTemplate = (data: any): string => {
     </div>
     
     </body>
-    </html>`
-}
+    </html>`;
+};

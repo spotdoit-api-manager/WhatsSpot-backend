@@ -1,4 +1,4 @@
-import { ICreateOrder } from './razorpay.interface';
+import { ICreateOrder } from "./razorpay.interface";
 export declare class RazorPayService {
     private readonly razorPyaInstance;
     createOrder: (userId: string, createOrder: ICreateOrder) => Promise<unknown>;

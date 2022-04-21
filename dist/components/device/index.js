@@ -94,7 +94,7 @@ exports.default = [
         path: "/device/send/imageMessage/:deviceId",
         method: "post",
         escapeAuth: true,
-        handler: [s3_1.s3UploadMulter.single('file'), device_controller_1.default.sendImageMessage]
+        handler: [s3_1.s3UploadMulter.single("file"), device_controller_1.default.sendImageMessage]
     },
     {
         path: "/device/:deviceId/prevMessages",

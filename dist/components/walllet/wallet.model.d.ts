@@ -14,7 +14,7 @@ export declare class WalletModel {
     }>;
     getWalletIdAndValidateTransactionAmount(userId: string, amountToDebit: number): Promise<any>;
     removeCreditFromWallet(walletId: string, removeCredit: number): Promise<IWalletModel>;
-    makePaymentFromWallet(walletId: string, userId: string, amount: number, description: string, metaData?: Object): Promise<{
+    makePaymentFromWallet(walletId: string, userId: string, amount: number, description: string, metaData?: Record<string, any>): Promise<{
         error: boolean;
         transaction: Promise<import("../transaction/transaction.schema").ITransactionModel>;
         wallet: IWalletModel;

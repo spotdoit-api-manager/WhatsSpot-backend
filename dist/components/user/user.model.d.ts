@@ -1,4 +1,4 @@
-import { IUser, ITokenData, IDataStoredInToken } from './user.interface';
+import { IUser, ITokenData, IDataStoredInToken } from "./user.interface";
 import { IUserModel } from "./user.schema";
 export declare class UserModel {
     fetchAll(): Promise<IUserModel[]>;

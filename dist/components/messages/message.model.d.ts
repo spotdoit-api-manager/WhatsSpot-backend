@@ -1,5 +1,5 @@
-import { IMessage, EMessageStatus } from './message.interface';
-import { IContact, IGroupList } from '../contact/contact.interface';
+import { IMessage, EMessageStatus } from "./message.interface";
+import { IContact, IGroupList } from "../contact/contact.interface";
 export declare class MessageModel {
     retryFailedMessage(userId: string, deviceId: string): Promise<{
         error: boolean;

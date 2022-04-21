@@ -33,7 +33,7 @@ class ContactModal {
     }
     fetchContacts(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            let result = yield contact_schema_1.Contact.aggregate([
+            const result = yield contact_schema_1.Contact.aggregate([
                 { $match: { userId: new bson_1.ObjectID(userId) } }
             ]);
             return result;
@@ -58,7 +58,7 @@ class ContactModal {
     }
     addContactsToGroup(userId, groupId, contacts) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(`add contact `, contacts);
+            console.log("add contact ", contacts);
             for (let i = 0; i < contacts.length; i++) {
                 const contact = contacts[i];
                 const result = yield contact_schema_1.ContactGroup.findByIdAndUpdate(groupId, { $push: { contacts: { name: contact.name, phoneNumber: contact.phoneNumber } } }, { upsert: true, new: true });

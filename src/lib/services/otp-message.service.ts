@@ -1,8 +1,8 @@
-import { deSanatizeMobile } from './../utils/index';
-import { WhatsappConfig } from './../interfaces/providers.interface';
-import { pilvoConfig, fast2SmsConfig } from './../../config/index';
-import axios from 'axios';
-const plivo = require('plivo');
+import { deSanatizeMobile } from "./../utils/index";
+import { WhatsappConfig } from "./../interfaces/providers.interface";
+import { pilvoConfig, fast2SmsConfig } from "./../../config/index";
+import axios from "axios";
+const plivo = require("plivo");
 
 export class OTPMessagesService {
   private _plivoClient: any;
@@ -20,41 +20,41 @@ export class OTPMessagesService {
     console.log("sending message to ",number,message);
     
     const body = {
-      route: 'v3',
+      route: "v3",
       sender_id: fast2SmsConfig.senderId,
       message: message,
-      language: 'english',
+      language: "english",
       flash: 0,
       numbers: deSanatizeMobile(number),
     };
     try {
       const result = await axios.post(fast2SmsConfig.url, body, {
-        headers: { authorization: fast2SmsConfig.authToken, 'content-type': 'application/json' },
+        headers: { authorization: fast2SmsConfig.authToken, "content-type": "application/json" },
       });
       
       if(result.data && result.data.return){
         return {proceed: true};
       }
-      return {proceed:false,message:result.data.message}
+      return {proceed:false,message:result.data.message};
     } catch (err) {
-      console.error('sendFast2Sms send error' + err);
+      console.error("sendFast2Sms send error" + err);
       return {proceed: false};
 
     }
   }
 
 public sendTextLocalMessage = async (to: string, message: string) => {
-    return axios.get('https://api.textlocal.in/send/', {
+    return axios.get("https://api.textlocal.in/send/", {
     params: {
       apiKey:"jkhljkhkljhkljhkljh7i87gho87y8y8",
       // sender: 'SENDER',
-      numbers: '91' + to,
+      numbers: "91" + to,
       message: message
     }
   }).then((response) => {
     const responseJson = response.data;
     console.log(responseJson);
-    if (responseJson.status === 'success') {
+    if (responseJson.status === "success") {
       console.log(`Send OTP Success to ${to}`);
       return {proceed: true};
     } else {

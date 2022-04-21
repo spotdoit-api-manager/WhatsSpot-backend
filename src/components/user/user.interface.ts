@@ -14,16 +14,16 @@ export interface IUser {
     dateOfBirth?: Date;
     followers?: Array<string>;
     following?: Array<string>;
-    avatar?: Buffer,
+    avatar?: Buffer;
     deactivation: boolean;
-    walletId?:string,
-    activePlan:IPlanRef,
-    previousPlans:IPlanRef[]
+    walletId?: string;
+    activePlan: IPlanRef;
+    previousPlans: IPlanRef[];
 }
 
 export interface IPlanRef{
-    planName:string,
-    planRef:string
+    planName: string;
+    planRef: string;
 }
 
 export interface ITokenData {
@@ -32,6 +32,6 @@ export interface ITokenData {
 }
 
 export interface IDataStoredInToken{
-    id:string,
-    walletId:string
+    id: string;
+    walletId: string;
 }

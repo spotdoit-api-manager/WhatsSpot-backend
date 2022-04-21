@@ -1,16 +1,16 @@
-import deviceModel from './../../components/device/device.model';
+import deviceModel from "./../../components/device/device.model";
 import { Socket } from "socket.io";
 import { schedule } from "node-cron";
 import { configCors, rateLimitConfig } from "../../config";
 import { io } from "socket.io-client";
 import whatsappService from "./whatsapp/whatsapp.service";
-import { IMessageProgress } from '../interfaces/socket.interface';
+import { IMessageProgress } from "../interfaces/socket.interface";
 
 let webClient: Socket;
 interface QRData {
-  error: boolean,
-  qr: string,
-  reason?: string
+  error: boolean;
+  qr: string;
+  reason?: string;
 }
 
 export class SocketManager {
@@ -71,7 +71,7 @@ export class SocketManager {
     webClient.emit(`${data.phone}_LOGGEDOUT`, data);
   }
 
-  public sendFailedMessageSendProgress(deviceId:string,progressData: IMessageProgress) {
+  public sendFailedMessageSendProgress(deviceId: string,progressData: IMessageProgress) {
     if (!webClient) return console.log("webClient not connected..");
     console.log("sendign failed message over to ", progressData);
     webClient.emit(`${deviceId}_FAILED_PROGRESS`, progressData);

@@ -62,7 +62,7 @@ exports.skipLimitOnPage = (page = 1) => {
     return { skip: pageLimit * (page - 1), limit: pageLimit };
 };
 exports.getTime = (date) => {
-    return new Date(date).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+    return new Date(date).toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
 };
 exports.getNextDate = (day = 2) => {
     return new Date(new Date().getTime() + day * 24 * 60 * 60 * 1000);
@@ -71,7 +71,7 @@ exports.isValidMongoId = (str) => {
     return str.match(/^[a-f\d]{24}$/i);
 };
 exports.pruneFields = (body, fields) => {
-    const fieldsArray = fields.split(' ');
+    const fieldsArray = fields.split(" ");
     fieldsArray.forEach(field => {
         delete body[field];
     });

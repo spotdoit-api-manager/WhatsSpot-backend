@@ -44,7 +44,7 @@ exports.requestLogger = (req, res, next) => {
     next();
 };
 const reqConsoleLogger = (logValue) => {
-    let { status, method, url, time } = logValue;
+    const { status, method, url, time } = logValue;
     if (status < 400) {
         util_1.log(green(`${method} ${url} -> `) + bgGreen(`${status}`) + cyan(` ${time}ms`));
     }

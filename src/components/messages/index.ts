@@ -1,6 +1,6 @@
-import { validateTestMessageRequest } from './../testMessage/testMessage.middleware';
-import { DeviceKeyValidator } from './../../lib/middleware/whatsapp.middleware';
-import messageController from './message.controller';
+import { validateTestMessageRequest } from "./../testMessage/testMessage.middleware";
+import { DeviceKeyValidator } from "./../../lib/middleware/whatsapp.middleware";
+import messageController from "./message.controller";
 export default [
     {
         path:"/message/addToQueue",
@@ -20,4 +20,4 @@ export default [
         escapeAuth: true,
         handler: [validateTestMessageRequest,messageController.sendTestMessage]
     }
-]
+];

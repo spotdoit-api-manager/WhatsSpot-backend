@@ -69,9 +69,9 @@ class UserModel {
                 { $match: { _id: new bson_1.ObjectID(id) } },
                 {
                     $lookup: {
-                        from: 'wallets',
-                        localField: 'walletId',
-                        foreignField: '_id',
+                        from: "wallets",
+                        localField: "walletId",
+                        foreignField: "_id",
                         as: "wallet"
                     },
                 },
@@ -244,8 +244,8 @@ class UserModel {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield this.isUserExist(body);
-                body.role = 'user';
-                let data = yield this.add(body);
+                body.role = "user";
+                const data = yield this.add(body);
                 const userData = yield this.addNewToken(data._id);
                 return userData;
             }
@@ -261,12 +261,12 @@ class UserModel {
                 const { username, password } = body;
                 // 1>  check email and password exist
                 if (!username || !password) {
-                    throw new httpErrors_1.HTTP400Error('Please provide username or password');
+                    throw new httpErrors_1.HTTP400Error("Please provide username or password");
                 }
                 // 2> check if user exist and password is correct
-                const user = yield user_schema_1.User.findOne({ username: username }).select('+password');
+                const user = yield user_schema_1.User.findOne({ username: username }).select("+password");
                 if (user) {
-                    throw new httpErrors_1.HTTP400Error('Invalid username or password');
+                    throw new httpErrors_1.HTTP400Error("Invalid username or password");
                 }
             }
             catch (e) {
@@ -280,12 +280,12 @@ class UserModel {
                 const { username, password } = body;
                 // 1>  check email and password exist
                 if (!username || !password) {
-                    throw new httpErrors_1.HTTP400Error('Please provide username or password');
+                    throw new httpErrors_1.HTTP400Error("Please provide username or password");
                 }
                 // 2> check if user exist and password is correct
-                const user = yield user_schema_1.User.findOne({ username: username }).select('+password');
+                const user = yield user_schema_1.User.findOne({ username: username }).select("+password");
                 if (!user || !(yield user.correctPassword(password, user.password))) {
-                    throw new httpErrors_1.HTTP400Error('Invalid email or password');
+                    throw new httpErrors_1.HTTP400Error("Invalid email or password");
                 }
                 // 3> if eveything is ohkay send the token back
                 const userData = yield this.addNewToken(user._id);
@@ -314,8 +314,8 @@ class UserModel {
             try {
                 //, { appleSub: data.id }
                 console.log(data);
-                let userInfo = yield user_schema_1.User.findOne({ $or: [{ $and: [{ email: { $ne: null } }, { email: { $eq: data.email } }] }, { $and: [{ facebookId: { $ne: null } }, { facebookId: { $eq: data.id } }] }] });
-                console.log('User At Social Auth :', userInfo);
+                const userInfo = yield user_schema_1.User.findOne({ $or: [{ $and: [{ email: { $ne: null } }, { email: { $eq: data.email } }] }, { $and: [{ facebookId: { $ne: null } }, { facebookId: { $eq: data.id } }] }] });
+                console.log("User At Social Auth :", userInfo);
                 if (userInfo) {
                     console.log(userInfo);
                     console.log(userInfo, "User info here");
@@ -335,23 +335,23 @@ class UserModel {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 let user;
-                if (body.authProvider === 'google') {
+                if (body.authProvider === "google") {
                     user = yield socialAuth_1.default.getGoogleUserInfo(body.access_token);
                 }
-                else if (body.authProvider === 'facebook') {
+                else if (body.authProvider === "facebook") {
                     user = yield socialAuth_1.default.getFacebookUserInfo(body.access_token);
                 }
-                else if (body.authProvider === 'apple') {
+                else if (body.authProvider === "apple") {
                     // user = await socialAuth.verifyAppleUserInfo(body);
                 }
-                console.log('Login Info as Fetched By Auth Provider : ', user);
-                let response = yield this.authenticateWithAccesToken(user);
+                console.log("Login Info as Fetched By Auth Provider : ", user);
+                const response = yield this.authenticateWithAccesToken(user);
                 if (!response.isExisted) {
                     let u;
-                    let userName = yield this.generateValidUsername(user.given_name);
-                    if (body.authProvider === 'facebook') {
+                    const userName = yield this.generateValidUsername(user.given_name);
+                    if (body.authProvider === "facebook") {
                         u = {
-                            role: 'user',
+                            role: "user",
                             firstName: `${user.given_name}`,
                             username: userName,
                             lastName: `${user.family_name}`,
@@ -359,10 +359,10 @@ class UserModel {
                             facebookId: user.id
                         };
                     }
-                    else if (body.authProvider === 'google') {
+                    else if (body.authProvider === "google") {
                         console.log(user);
                         u = {
-                            role: 'user',
+                            role: "user",
                             firstName: `${user.given_name}`,
                             username: userName,
                             lastName: `${user.family_name}`,
@@ -510,16 +510,16 @@ class UserModel {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 let user;
-                if (body.authProvider === 'google') {
+                if (body.authProvider === "google") {
                     user = yield socialAuth_1.default.getGoogleUserInfo(body.access_token);
                 }
-                else if (body.authProvider === 'facebook') {
+                else if (body.authProvider === "facebook") {
                     user = yield socialAuth_1.default.getFacebookUserInfo(body.access_token);
                 }
-                console.log('User At Addding Phone In Social Auth:', user);
+                console.log("User At Addding Phone In Social Auth:", user);
                 if (user) {
-                    let temp = yield user_schema_1.User.findOne({ $or: [{ $and: [{ email: { $ne: null } }, { email: { $eq: user.email } }] }, { $and: [{ facebookId: { $ne: null } }, { facebookId: { $eq: user.id } }] }] }); //If User exist but starting facebook auth
-                    let updatePhone = yield user_schema_1.User.findOne({ $or: [{ facebookId: user.id }, { appleSub: user.id }] }); // If user added facebookId but while adding phone number entred worng number and an OTP is sent
+                    const temp = yield user_schema_1.User.findOne({ $or: [{ $and: [{ email: { $ne: null } }, { email: { $eq: user.email } }] }, { $and: [{ facebookId: { $ne: null } }, { facebookId: { $eq: user.id } }] }] }); //If User exist but starting facebook auth
+                    const updatePhone = yield user_schema_1.User.findOne({ $or: [{ facebookId: user.id }, { appleSub: user.id }] }); // If user added facebookId but while adding phone number entred worng number and an OTP is sent
                     if (temp) {
                         // if (body.authProvider === 'facebook') {
                         //   await User.updateOne({ phone: body.phone }, { $set: { facebookId: user.id } });
@@ -543,7 +543,7 @@ class UserModel {
                         }
                     }
                     else if (updatePhone) {
-                        let data = yield user_schema_1.User.findOneAndUpdate({ $or: [{ facebookId: user.id }, { appleSub: user.id }] }, { $set: { phone: body.phone } });
+                        const data = yield user_schema_1.User.findOneAndUpdate({ $or: [{ facebookId: user.id }, { appleSub: user.id }] }, { $set: { phone: body.phone } });
                         if (data) {
                             const otp = this.updateOtp(data._id);
                             console.log(otp);
@@ -558,15 +558,15 @@ class UserModel {
                             }
                         }
                         else {
-                            throw new httpErrors_1.HTTP400Error('Error in Facebook User for Updatiing Phone');
+                            throw new httpErrors_1.HTTP400Error("Error in Facebook User for Updatiing Phone");
                         }
                     }
                     else { // If we are adding a completely new user
                         let u;
-                        let userName = yield this.generateValidUsername(user.given_name);
-                        if (body.authProvider === 'facebook') {
+                        const userName = yield this.generateValidUsername(user.given_name);
+                        if (body.authProvider === "facebook") {
                             u = {
-                                role: 'user',
+                                role: "user",
                                 firstName: `${user.given_name}`,
                                 username: userName,
                                 lastName: `${user.family_name}`,
@@ -574,10 +574,10 @@ class UserModel {
                                 facebookId: user.id
                             };
                         }
-                        else if (body.authProvider === 'google') {
+                        else if (body.authProvider === "google") {
                             console.log(user);
                             u = {
-                                role: 'user',
+                                role: "user",
                                 firstName: `${user.given_name}`,
                                 username: userName,
                                 lastName: `${user.family_name}`,
@@ -585,7 +585,7 @@ class UserModel {
                                 email: user.email,
                             };
                         }
-                        let data = yield this.add(u);
+                        const data = yield this.add(u);
                         const otp = this.updateOtp(data._id);
                         console.log(otp);
                         let otpData;
@@ -600,7 +600,7 @@ class UserModel {
                     }
                 }
                 else {
-                    throw new httpErrors_1.HTTP400Error('Not Authorised to edit phone number');
+                    throw new httpErrors_1.HTTP400Error("Not Authorised to edit phone number");
                 }
             }
             catch (e) {
@@ -663,7 +663,7 @@ class UserModel {
     getAccountMetrics(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("user id is ", userId);
-            let result = yield user_schema_1.User.aggregate([
+            const result = yield user_schema_1.User.aggregate([
                 { $match: { _id: new bson_1.ObjectID(userId) } },
                 { $set: { _id: { $toObjectId: "$_id" } } },
                 {
@@ -681,7 +681,7 @@ class UserModel {
                 },
                 {
                     $unwind: {
-                        path: '$devices'
+                        path: "$devices"
                     }
                 },
                 { $project: {
@@ -762,9 +762,9 @@ class UserModel {
                     $group: {
                         _id: "$_id",
                         totalDevices: { $sum: 1 },
-                        activeDevices: { '$sum': {
-                                '$cond': [
-                                    { '$eq': ['$authState', true] },
+                        activeDevices: { "$sum": {
+                                "$cond": [
+                                    { "$eq": ["$authState", true] },
                                     1,
                                     0
                                 ]

@@ -1,4 +1,4 @@
-import { DeviceKeyValidator } from './../../lib/middleware/whatsapp.middleware';
+import { DeviceKeyValidator } from "./../../lib/middleware/whatsapp.middleware";
 import { s3UploadMulter } from "../../lib/services/s3";
 import deviceController from "./device.controller";
 
@@ -95,7 +95,7 @@ export default [
         path: "/device/send/imageMessage/:deviceId",
         method: "post",
         escapeAuth: true,
-        handler: [s3UploadMulter.single('file'), deviceController.sendImageMessage]
+        handler: [s3UploadMulter.single("file"), deviceController.sendImageMessage]
     },
     {
         path: "/device/:deviceId/prevMessages",

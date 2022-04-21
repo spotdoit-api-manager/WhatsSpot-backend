@@ -1,4 +1,4 @@
-import { IMessageProgress } from '../interfaces/socket.interface';
+import { IMessageProgress } from "../interfaces/socket.interface";
 interface QRData {
     error: boolean;
     qr: string;

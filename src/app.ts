@@ -1,16 +1,16 @@
-import { HTTP400Error } from './lib/utils/httpErrors';
+import { HTTP400Error } from "./lib/utils/httpErrors";
 import express from "express";
 /* Custom imports */
 import {applyMiddleware, applyRoutes} from "./lib/utils";
-import middleware from './lib/middleware/index'
+import middleware from "./lib/middleware/index";
 import routes from "./routes";
 import errorHandlersMiddleware from "./lib/middleware/errorHandlers.middleware";
 import dbConnection from "./lib/helpers/dbConnection";
 
-import { schedule } from 'node-cron';
+import { schedule } from "node-cron";
 
 process.on("uncaughtException", e => {
-    console.log(e)
+    console.log(e);
   console.log(e.message, "uncaught Exception");
   process.exit(1);
 });

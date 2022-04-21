@@ -1,4 +1,4 @@
-import { IWallet } from './wallet.interface';
+import { IWallet } from "./wallet.interface";
 import { Document, Model } from "mongoose";
 export interface IWalletModel extends IWallet, Document {
     addNewWallet(): any;

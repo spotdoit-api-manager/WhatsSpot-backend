@@ -60,8 +60,8 @@ class MessageModel {
                 });
                 return yield this.addMultipleMessageToQueue(messagesBody);
             }
-            let numbers = [];
-            if (typeof (body.numbers) === 'string') {
+            const numbers = [];
+            if (typeof (body.numbers) === "string") {
                 numbers.push(body.numbers);
             }
             else {
@@ -87,7 +87,7 @@ class MessageModel {
     addSingleMessageToQueue(messageBody) {
         return __awaiter(this, void 0, void 0, function* () {
             const newMessage = new message_schema_1.MessageQueue(messageBody);
-            let data = newMessage.addMessage();
+            const data = newMessage.addMessage();
             if (data) {
                 return { error: false };
             }
@@ -145,7 +145,7 @@ class MessageModel {
             try {
                 to = index_1.sanatizeMobile(to);
                 if (!utils_1.validateMobile(to))
-                    throw new httpErrors_1.HTTP401Error(`INVALID_NUMBER`);
+                    throw new httpErrors_1.HTTP401Error("INVALID_NUMBER");
                 const device = yield device_model_1.default.findDeviceById(deviceId);
                 if (!device)
                     throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
@@ -157,7 +157,7 @@ class MessageModel {
                     const { isValidAmount, balance } = yield wallet_model_1.default.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
                     logger_1.default.info(logFileName, `VlaidAmount ${isValidAmount}`);
                     if (!isValidAmount)
-                        throw new Error(`NOT_ENOUGH_BALANCE`);
+                        throw new Error("NOT_ENOUGH_BALANCE");
                 }
                 const result = yield whatsapp_client_service_1.default.sendTextMessage(device.phone, to, messageText);
                 if (result.error)
@@ -184,7 +184,7 @@ class MessageModel {
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const to = body.to;
-            const msg = { image: body.locationUrl, caption: body.caption || '' };
+            const msg = { image: body.locationUrl, caption: body.caption || "" };
             const result = yield whatsapp_client_service_1.default.sendImageMessage(device.phone, to, msg);
             // console.log(result);
         });
@@ -192,7 +192,7 @@ class MessageModel {
     saveFastMessage(messageBody) {
         return __awaiter(this, void 0, void 0, function* () {
             const newMessage = new message_schema_1.FastMessage(messageBody);
-            let data = yield newMessage.addMessage();
+            const data = yield newMessage.addMessage();
             if (data) {
                 return { error: false };
             }

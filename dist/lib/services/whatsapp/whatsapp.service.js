@@ -38,7 +38,7 @@ const baileys_1 = __importStar(require("@adiwajshing/baileys"));
 const device_model_1 = __importDefault(require("./../../../components/device/device.model"));
 const instance_provider_1 = __importDefault(require("./instance.provider"));
 const logger_1 = __importDefault(require("../../../core/logger"));
-const logFileName = '[WhatsappService] : ';
+const logFileName = "[WhatsappService] : ";
 class Whatsapp extends events_1.EventEmitter {
     constructor(phone) {
         super();
@@ -125,7 +125,7 @@ class Whatsapp extends events_1.EventEmitter {
                 yield baileys_1.delay(500);
                 logger_1.default.log("serialized phone ", jid);
                 logger_1.default.log("message is ", msg);
-                let msgBody = {
+                const msgBody = {
                     image: msg.image,
                     caption: msg.caption
                 };
@@ -235,7 +235,7 @@ class Whatsapp extends events_1.EventEmitter {
     }
     handleConnectionOpen() {
         return __awaiter(this, void 0, void 0, function* () {
-            logger_1.default.info(logFileName, `CONNECTION_OPENED`);
+            logger_1.default.info(logFileName, "CONNECTION_OPENED");
             this.qrRequested = true;
             this.qrInProcess = false;
             yield device_model_1.default.updateDevice(this.phone, {
@@ -250,7 +250,7 @@ class Whatsapp extends events_1.EventEmitter {
         return __awaiter(this, void 0, void 0, function* () {
             const shouldReconnect = ((_b = (_a = lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.statusCode) !== baileys_1.DisconnectReason.loggedOut;
             if (shouldReconnect) {
-                logger_1.default.warn(logFileName, `CONNECTION_CLOSED (NOT_LOGGED_OUT) Retrying......`);
+                logger_1.default.warn(logFileName, "CONNECTION_CLOSED (NOT_LOGGED_OUT) Retrying......");
                 return yield this.reconnectClient();
             }
             else {
@@ -261,7 +261,7 @@ class Whatsapp extends events_1.EventEmitter {
                 this.qrInProcess = false;
                 this.qrRequested = false;
                 logger_1.default.warn(logFileName, "CONNECTION_CLOSED (LOGGEDOUT)", reason, this.phone);
-                this.emit('LOGGEDOUT', { phone: this.phone, reason: reason === null || reason === void 0 ? void 0 : reason.message });
+                this.emit("LOGGEDOUT", { phone: this.phone, reason: reason === null || reason === void 0 ? void 0 : reason.message });
             }
         });
     }

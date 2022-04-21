@@ -1,8 +1,8 @@
-import Moment from 'moment-timezone'
-import cron from 'node-cron';
+import Moment from "moment-timezone";
+import cron from "node-cron";
 
 console.log(process.env.NODE_ENV);
-if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "development") {
   // cron.schedule('*/15 * * * *', async () => {
   //   // schedule your jobs
   // });

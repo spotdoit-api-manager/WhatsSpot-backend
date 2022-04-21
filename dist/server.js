@@ -7,7 +7,7 @@ const dotenv_1 = require("dotenv");
 const http_1 = require("http");
 // import dash from 'appmetrics-dash';
 // Initializing the dot env file very early of this project to use every where
-dotenv_1.config({ path: './config.env' });
+dotenv_1.config({ path: "./config.env" });
 // calling app to create server :: Our logics will belong to this app.
 const app_1 = require("./app");
 const whatsapp_client_service_1 = __importDefault(require("./lib/services/whatsapp/whatsapp-client.service"));

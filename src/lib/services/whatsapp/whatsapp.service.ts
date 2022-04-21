@@ -1,5 +1,5 @@
-import { getSerializedPhone } from './whatsapp-utils';
-import { IImageMessage, IReason } from './whatsapp.interface';
+import { getSerializedPhone } from "./whatsapp-utils";
+import { IImageMessage, IReason } from "./whatsapp.interface";
 import { EventEmitter } from "events";
 import P from "pino";
 import { Boom } from "@hapi/boom";
@@ -12,11 +12,11 @@ import makeWASocket, {
   SocketConfig,
 } from "@adiwajshing/baileys";
 
-import deviceModel from './../../../components/device/device.model';
-import path from 'path';
-import instanceProvider from './instance.provider';
-import logger from '../../../core/logger';
-const logFileName = '[WhatsappService] : ';
+import deviceModel from "./../../../components/device/device.model";
+import path from "path";
+import instanceProvider from "./instance.provider";
+import logger from "../../../core/logger";
+const logFileName = "[WhatsappService] : ";
 export default class Whatsapp extends EventEmitter {
   client: any;
   phone: string;
@@ -24,7 +24,7 @@ export default class Whatsapp extends EventEmitter {
   saveState: any;
   public authState: boolean = false;
   qrInProcess: boolean =false;
-  qrRequested:boolean = false;
+  qrRequested: boolean = false;
   public _instanceId: number;
   private retryCount =0;
   constructor(phone: string) {
@@ -47,9 +47,9 @@ export default class Whatsapp extends EventEmitter {
       this.client = sock;
       this.startBasicEventListners();
       // await this.client.waitForSocketOpen();
-      return { error: false }
+      return { error: false };
     } catch (err) {
-      return { error: true, message: err.message }
+      return { error: true, message: err.message };
     }
   };
 
@@ -139,7 +139,7 @@ export default class Whatsapp extends EventEmitter {
   private isMaxRetryReached(){
     if(this.retryCount>parseInt(process.env.MAX_WHATSAPP_RETRY)){
       this.client.ev.removeAllListeners();
-      return true
+      return true;
     }
     return false;
   }
@@ -148,7 +148,7 @@ export default class Whatsapp extends EventEmitter {
     logger.warn("RETRYING CONNECTION..", this.phone);
     this.retryCount++;
     if(this.isMaxRetryReached()){
-      logger.warn(logFileName,`[${this.phone}] Max Connection Retry Reached....`)
+      logger.warn(logFileName,`[${this.phone}] Max Connection Retry Reached....`);
     }
     this.client.ev.removeAllListeners();
     await this.initiClient();
@@ -163,7 +163,7 @@ export default class Whatsapp extends EventEmitter {
   }
 
   private async handleConnectionOpen(){
-     logger.info(logFileName,`CONNECTION_OPENED`);
+     logger.info(logFileName,"CONNECTION_OPENED");
     this.qrRequested = true;
     this.qrInProcess = false;
     await deviceModel.updateDevice(this.phone, {
@@ -176,7 +176,7 @@ export default class Whatsapp extends EventEmitter {
   private async handleConnectionClose(lastDisconnect){
     const shouldReconnect = (lastDisconnect.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
     if (shouldReconnect) {
-      logger.warn(logFileName,`CONNECTION_CLOSED (NOT_LOGGED_OUT) Retrying......`);
+      logger.warn(logFileName,"CONNECTION_CLOSED (NOT_LOGGED_OUT) Retrying......");
       return await this.reconnectClient();
     }
     else {
@@ -187,7 +187,7 @@ export default class Whatsapp extends EventEmitter {
       this.qrInProcess = false;
       this.qrRequested = false;
       logger.warn(logFileName,"CONNECTION_CLOSED (LOGGEDOUT)", reason, this.phone);
-      this.emit('LOGGEDOUT', { phone: this.phone, reason: reason?.message });
+      this.emit("LOGGEDOUT", { phone: this.phone, reason: reason?.message });
     }
   }
   private sendMessageWTyping = async (
@@ -223,7 +223,7 @@ export default class Whatsapp extends EventEmitter {
       return { error: false };
     } catch (e) {
       logger.log(e);
-      return { error: true, message: e.message }
+      return { error: true, message: e.message };
     }
   };
 
@@ -237,10 +237,10 @@ export default class Whatsapp extends EventEmitter {
       await delay(500);
       logger.log("serialized phone ", jid);
       logger.log("message is ",msg as any);
-      let msgBody = {
+      const msgBody = {
         image: msg.image,
         caption: msg.caption
-      }
+      };
       const result = await this.client.sendMessage(jid, msgBody);
       if (result.status != 1) {
         return { error: true };
@@ -249,7 +249,7 @@ export default class Whatsapp extends EventEmitter {
     } catch (e) {
       logger.log(e);
 
-      return { error: true, message: e.message }
+      return { error: true, message: e.message };
     }
   };
 

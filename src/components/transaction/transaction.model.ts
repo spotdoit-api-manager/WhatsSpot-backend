@@ -1,16 +1,16 @@
-import { ObjectID } from 'bson';
-import { HTTP401Error } from './../../lib/utils/httpErrors';
-import { Transaction, ITransactionModel } from './transaction.schema';
+import { ObjectID } from "bson";
+import { HTTP401Error } from "./../../lib/utils/httpErrors";
+import { Transaction, ITransactionModel } from "./transaction.schema";
 import { ETransactionStatus, ETransactionTypes, ITransaction } from "./transaction.interface";
-import { any } from 'async';
+import { any } from "async";
 
 export class TransactionModel {
 
 public fetchTransactionById(walletId,transactionId){
-        return Transaction.findOne({walletId:new ObjectID(walletId),_id:new ObjectID(transactionId)})
+        return Transaction.findOne({walletId:new ObjectID(walletId),_id:new ObjectID(transactionId)});
 }
 
-    public async fetchTransactions(walletId:string) {
+    public async fetchTransactions(walletId: string) {
         const result = await Transaction.aggregate([
             { $match: { walletId: new ObjectID(walletId) } },
             { $sort: { createdAt: -1 } },
@@ -31,10 +31,10 @@ public fetchTransactionById(walletId,transactionId){
 
     
 
-    public async createTransactionForRazorPay(planId:string,orderId: string, userId: string, walletId: string, type: ETransactionTypes, amount: number, description: string) {
+    public async createTransactionForRazorPay(planId: string,orderId: string, userId: string, walletId: string, type: ETransactionTypes, amount: number, description: string) {
         try {
 
-            const transactionBody:ITransaction= {
+            const transactionBody: ITransaction= {
                 orderId,
                 userId,
                 walletId,
@@ -45,21 +45,21 @@ public fetchTransactionById(walletId,transactionId){
                     planId
                 },
                 status: ETransactionStatus.PENDING
-            }
+            };
             const newTransaction: ITransactionModel = new Transaction(transactionBody);
             const transaction: ITransactionModel = await newTransaction.addTransaction();
             if (!transaction) throw new HTTP401Error("UNKNOW_ERROR");
             return transaction;
         } catch (err) {
-            throw new HTTP401Error(err.message)
+            throw new HTTP401Error(err.message);
         }
     }
 
 
-    public async createTransactionForWallet(walletId: string, userId: string, type: ETransactionTypes, amount: number, description: string,metaData:Object={}) {
+    public async createTransactionForWallet(walletId: string, userId: string, type: ETransactionTypes, amount: number, description: string,metaData: Record<string, any>={}) {
         try {            
             const orderId = new ObjectID();
-            const transactionBody:ITransaction = {
+            const transactionBody: ITransaction = {
                 orderId:String(orderId),
                 userId,
                 walletId,
@@ -68,7 +68,7 @@ public fetchTransactionById(walletId,transactionId){
                 metaData,
                 description,
                 status: ETransactionStatus.SUCCESS
-            }
+            };
             console.log("transaction body is ",transactionBody);
             
             const newTransaction: ITransactionModel = new Transaction(transactionBody);
@@ -78,7 +78,7 @@ public fetchTransactionById(walletId,transactionId){
             if (!transaction) throw new HTTP401Error("UNKNOW_ERROR");
             return transaction;
         } catch (err) {
-            throw new HTTP401Error(err.message)
+            throw new HTTP401Error(err.message);
         }
     }
 
@@ -90,4 +90,4 @@ public fetchTransactionById(walletId,transactionId){
     }
 }
 
-export default new TransactionModel()
+export default new TransactionModel();

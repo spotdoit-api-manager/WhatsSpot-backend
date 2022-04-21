@@ -1,17 +1,17 @@
 //import { googleOAuth } from '../../config/index'
-import axios from 'axios';
+import axios from "axios";
 //import * as queryString from 'query-string';
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 //import jwkClient from 'jwks-rsa';
 
 
-class socialAuthenticator {
+class SocialAuthenticator {
 
     public async getFacebookUserInfo(token: string) {
-        let { data } = await axios.get(`https://graph.facebook.com/me?fields=id,first_name,email,last_name&access_token=${token}`);
+        const { data } = await axios.get(`https://graph.facebook.com/me?fields=id,first_name,email,last_name&access_token=${token}`);
         data.given_name = data.first_name;
         data.family_name = data.last_name;
-        data.picture = 'https://polbol-media.s3.ap-south-1.amazonaws.com/ic_user_dummy.jpg'
+        data.picture = "https://polbol-media.s3.ap-south-1.amazonaws.com/ic_user_dummy.jpg";
         return data;
     }
 
@@ -93,8 +93,8 @@ class socialAuthenticator {
 
     public async getGoogleUserInfo(access_token: string) {
         const { data } = await axios({
-            url: 'https://www.googleapis.com/oauth2/v2/userinfo',
-            method: 'get',
+            url: "https://www.googleapis.com/oauth2/v2/userinfo",
+            method: "get",
             headers: {
                 Authorization: `Bearer ${access_token}`,
             },
@@ -109,4 +109,4 @@ class socialAuthenticator {
     // }
 }
 
-export default new socialAuthenticator()
+export default new SocialAuthenticator();

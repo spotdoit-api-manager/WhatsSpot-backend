@@ -1,20 +1,20 @@
-import { ITransactionModel } from './../transaction/transaction.schema';
-import { ETransactionStatus, ETransactionTypes } from '../transaction/transaction.interface';
-import transactionModel from '../transaction/transaction.model';
-import { razorPaySecrets } from './../../config/index';
-import { HTTP401Error } from './../../lib/utils/httpErrors';
-import { ICreateOrder, IVerifyPayment } from './razorpay.interface';
-import razorpayService from './razorpay.service';
-import walletModel from '../walllet/wallet.model';
-import crypto from 'crypto';
-import { EPLANS, IPLAN } from '../plans/plans.interface';
-import plansModel from '../plans/plans.model';
+import { ITransactionModel } from "./../transaction/transaction.schema";
+import { ETransactionStatus, ETransactionTypes } from "../transaction/transaction.interface";
+import transactionModel from "../transaction/transaction.model";
+import { razorPaySecrets } from "./../../config/index";
+import { HTTP401Error } from "./../../lib/utils/httpErrors";
+import { ICreateOrder, IVerifyPayment } from "./razorpay.interface";
+import razorpayService from "./razorpay.service";
+import walletModel from "../walllet/wallet.model";
+import crypto from "crypto";
+import { EPLANS, IPLAN } from "../plans/plans.interface";
+import plansModel from "../plans/plans.model";
 
 
 export class RazorPayModel {
-    public async createOrder(userId: string,walletId:string, body: ICreateOrder) {
+    public async createOrder(userId: string,walletId: string, body: ICreateOrder) {
         try {
-            const plan:IPLAN = await plansModel.fetchPlanByPlanId(body.planId);
+            const plan: IPLAN = await plansModel.fetchPlanByPlanId(body.planId);
             console.log("fetch plan ",plan);
             
             if(!plan) throw new Error("INVALID_PLAN");
@@ -23,7 +23,7 @@ export class RazorPayModel {
             console.log(order);
             if (order.error) throw new Error(order.message);
             const transactionMessage = plan.planId == "PAYG" ?"Adding money to wallet":`Buying plan -> ${plan.planName}`;
-            const transaction:ITransactionModel = await transactionModel.createTransactionForRazorPay(plan.planId,order.order.id,userId,walletId,ETransactionTypes.CREDIT,body.amount,transactionMessage);
+            const transaction: ITransactionModel = await transactionModel.createTransactionForRazorPay(plan.planId,order.order.id,userId,walletId,ETransactionTypes.CREDIT,body.amount,transactionMessage);
             if(!transaction) throw new Error("UNKNOWN_ERROR");
             order.order.transactionId = transaction._id;
             order.order.planId = plan.planId;
@@ -37,37 +37,37 @@ export class RazorPayModel {
         }
     }
 
-    public async verifyPayment(userId:string,walletId:string,body: IVerifyPayment) {
+    public async verifyPayment(userId: string,walletId: string,body: IVerifyPayment) {
         console.log("got verification of ",userId,walletId,body);
         try{
            
-            let id = body.orderId + "|" + body.paymentId;
+            const id = body.orderId + "|" + body.paymentId;
             
-            const expectedSignature = crypto.createHmac('sha256', razorPaySecrets.secret)
+            const expectedSignature = crypto.createHmac("sha256", razorPaySecrets.secret)
             .update(id.toString())
-            .digest('hex');
+            .digest("hex");
             console.log("sig received ", body.razorpay_signature);
             console.log("sig generated ", expectedSignature);
-            let response = { signatureIsValid: false };
+            const response = { signatureIsValid: false };
         if (expectedSignature === body.razorpay_signature) {
-            const updatedTransaction:ITransactionModel  = await transactionModel.updateTransactionStatus(body.transactionId,ETransactionStatus.SUCCESS);
-            console.log(`Updated transaction is `,updatedTransaction);
-            console.log(`Updated transaction metadata is `,updatedTransaction.metaData,updatedTransaction.metaData.planId);
+            const updatedTransaction: ITransactionModel  = await transactionModel.updateTransactionStatus(body.transactionId,ETransactionStatus.SUCCESS);
+            console.log("Updated transaction is ",updatedTransaction);
+            console.log("Updated transaction metadata is ",updatedTransaction.metaData,updatedTransaction.metaData.planId);
 
-            if(updatedTransaction?.metaData && updatedTransaction?.metaData.get('planId') != EPLANS.PAYG){
-                console.log(`Plan payment verified `);
-                const activatedPlan = await plansModel.activatePlan(userId,updatedTransaction.metaData.get('planId'),updatedTransaction._id);
+            if(updatedTransaction?.metaData && updatedTransaction?.metaData.get("planId") != EPLANS.PAYG){
+                console.log("Plan payment verified ");
+                const activatedPlan = await plansModel.activatePlan(userId,updatedTransaction.metaData.get("planId"),updatedTransaction._id);
                 console.log(activatedPlan);
                 
             }
             else
             {
-                console.log(`Wallet payment verified`);
+                console.log("Wallet payment verified");
                 
                 const updatedWallet = await walletModel.addCreditToWallet(walletId,updatedTransaction.amount);
             }
             
-            response.signatureIsValid = true
+            response.signatureIsValid = true;
             return response;
         }
         // console.log("returning ",response);
@@ -79,4 +79,4 @@ export class RazorPayModel {
 }
 }
 
-export default new RazorPayModel()
+export default new RazorPayModel();

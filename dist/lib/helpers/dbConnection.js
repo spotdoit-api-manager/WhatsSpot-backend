@@ -23,10 +23,10 @@ const mongoose_1 = require("mongoose");
 const chalk = __importStar(require("chalk"));
 const config_1 = require("../../config");
 //require database URL from properties file
-var connected = chalk.default.bold.cyan;
-var error = chalk.default.bold.yellow;
-var disconnected = chalk.default.bold.red;
-var termination = chalk.default.bold.magenta;
+const connected = chalk.default.bold.cyan;
+const error = chalk.default.bold.yellow;
+const disconnected = chalk.default.bold.red;
+const termination = chalk.default.bold.magenta;
 class Connection {
     constructor(uri) {
         this.mongoUrl = uri;
@@ -34,16 +34,16 @@ class Connection {
     mongoConnection() {
         const dbURL = this.mongoUrl;
         mongoose_1.connect(dbURL, this.mongoOption());
-        mongoose_1.connection.on('connected', () => {
+        mongoose_1.connection.on("connected", () => {
             console.log(connected("Mongoose default connection is open to ", dbURL, "\u{1F60D}"));
         });
-        mongoose_1.connection.on('error', (err) => {
+        mongoose_1.connection.on("error", (err) => {
             console.log(error("Mongoose default connection has occured " + err + " error"));
         });
-        mongoose_1.connection.on('disconnected', () => {
+        mongoose_1.connection.on("disconnected", () => {
             console.log(disconnected("Mongoose default connection is disconnected"));
         });
-        process.on('SIGINT', () => {
+        process.on("SIGINT", () => {
             mongoose_1.connection.close(() => {
                 console.log(termination("Mongoose default connection is disconnected due to application termination"));
                 process.exit(0);

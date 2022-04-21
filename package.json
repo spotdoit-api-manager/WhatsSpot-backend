@@ -1,12 +1,12 @@
 {
-    "name": "express-typescript-starter",
+    "name": "SpotMessenger",
     "version": "0.1.0",
     "description": "A starting point for Node.js express apps with TypeScript",
     "repository": {
         "type": "git",
         "url": "https://github.com/Microsoft/TypeScript-Node-Starter"
     },
-    "author": "Ishan Chaudhary",
+    "author": "Ranjit Kumar Pandit",
     "license": "MIT",
     "scripts": {
         "compile-debug": "npm run build && npm run serve-debug",

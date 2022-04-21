@@ -55,24 +55,24 @@ class RazorPayModel {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("got verification of ", userId, walletId, body);
             try {
-                let id = body.orderId + "|" + body.paymentId;
-                const expectedSignature = crypto_1.default.createHmac('sha256', index_1.razorPaySecrets.secret)
+                const id = body.orderId + "|" + body.paymentId;
+                const expectedSignature = crypto_1.default.createHmac("sha256", index_1.razorPaySecrets.secret)
                     .update(id.toString())
-                    .digest('hex');
+                    .digest("hex");
                 console.log("sig received ", body.razorpay_signature);
                 console.log("sig generated ", expectedSignature);
-                let response = { signatureIsValid: false };
+                const response = { signatureIsValid: false };
                 if (expectedSignature === body.razorpay_signature) {
                     const updatedTransaction = yield transaction_model_1.default.updateTransactionStatus(body.transactionId, transaction_interface_1.ETransactionStatus.SUCCESS);
-                    console.log(`Updated transaction is `, updatedTransaction);
-                    console.log(`Updated transaction metadata is `, updatedTransaction.metaData, updatedTransaction.metaData.planId);
-                    if ((updatedTransaction === null || updatedTransaction === void 0 ? void 0 : updatedTransaction.metaData) && (updatedTransaction === null || updatedTransaction === void 0 ? void 0 : updatedTransaction.metaData.get('planId')) != plans_interface_1.EPLANS.PAYG) {
-                        console.log(`Plan payment verified `);
-                        const activatedPlan = yield plans_model_1.default.activatePlan(userId, updatedTransaction.metaData.get('planId'), updatedTransaction._id);
+                    console.log("Updated transaction is ", updatedTransaction);
+                    console.log("Updated transaction metadata is ", updatedTransaction.metaData, updatedTransaction.metaData.planId);
+                    if ((updatedTransaction === null || updatedTransaction === void 0 ? void 0 : updatedTransaction.metaData) && (updatedTransaction === null || updatedTransaction === void 0 ? void 0 : updatedTransaction.metaData.get("planId")) != plans_interface_1.EPLANS.PAYG) {
+                        console.log("Plan payment verified ");
+                        const activatedPlan = yield plans_model_1.default.activatePlan(userId, updatedTransaction.metaData.get("planId"), updatedTransaction._id);
                         console.log(activatedPlan);
                     }
                     else {
-                        console.log(`Wallet payment verified`);
+                        console.log("Wallet payment verified");
                         const updatedWallet = yield wallet_model_1.default.addCreditToWallet(walletId, updatedTransaction.amount);
                     }
                     response.signatureIsValid = true;

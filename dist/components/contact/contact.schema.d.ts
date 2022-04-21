@@ -1,4 +1,4 @@
-import { IContact, IContactsGroup } from './contact.interface';
+import { IContact, IContactsGroup } from "./contact.interface";
 import { Document, Model } from "mongoose";
 export interface IContactModel extends IContact, Document {
     saveContact(): any;

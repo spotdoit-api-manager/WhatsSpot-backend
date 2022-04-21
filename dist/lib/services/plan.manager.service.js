@@ -18,7 +18,7 @@ const plans_interface_1 = require("../../components/plans/plans.interface");
 const plans_schema_2 = require("../../components/plans/plans.schema");
 const logger_1 = __importDefault(require("../../core/logger"));
 const EXPIRE_PLAN_CHECK_INTERVAL = 5;
-const logFileName = '[PlanMangerService]: ';
+const logFileName = "[PlanMangerService]: ";
 class PlanManager {
     constructor() {
         this.fetchExpiredPlans();

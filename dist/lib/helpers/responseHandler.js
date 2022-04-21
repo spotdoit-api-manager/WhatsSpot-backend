@@ -94,10 +94,10 @@ class ResponseHandler {
         if (e instanceof httpErrors_1.HTTP409Error) {
             return new httpErrors_1.HTTP409Error(e.message, e.description);
         }
-        if (e.name === 'ValidationError') {
+        if (e.name === "ValidationError") {
             return new httpErrors_1.HTTP400Error(e.message, "Schema validation error.");
         }
-        if (e.name === 'MongoError') {
+        if (e.name === "MongoError") {
             return new httpErrors_1.HTTP400Error(e.message, "Schema validation error.");
         }
         console.log(e);
@@ -107,7 +107,7 @@ class ResponseHandler {
         if (!this.req || !this.res) {
             throw new Error("please set req Res function to get start");
         }
-        this.res.writeHead(this.statusCode, { 'Content-Type': 'text/html' });
+        this.res.writeHead(this.statusCode, { "Content-Type": "text/html" });
         this.res.write(this.payload);
         this.res.end();
     }

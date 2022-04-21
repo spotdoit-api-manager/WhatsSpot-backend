@@ -1,10 +1,10 @@
-import contactModel from './contact.model';
+import contactModel from "./contact.model";
 import { NextFunction, Request, Response } from "express";
 import ResponseHandler from "../../lib/helpers/responseHandler";
 
 export class ContactControler{
 
-    public async addNewContact(req:Request,res:Response,next:NextFunction){
+    public async addNewContact(req: Request,res: Response,next: NextFunction){
         const responseHandler = new ResponseHandler();
         try {    
             console.log("New Contact Add Request");
@@ -17,7 +17,7 @@ export class ContactControler{
         }
     }   
 
-    public async fetchContacts(req:Request,res:Response,next:NextFunction){
+    public async fetchContacts(req: Request,res: Response,next: NextFunction){
       const responseHandler = new ResponseHandler();
       try {    
           console.log("Fetch Contact  Request");
@@ -28,7 +28,7 @@ export class ContactControler{
       }
   }   
 
-  public async fetchGroupContacts(req:Request,res:Response,next:NextFunction){
+  public async fetchGroupContacts(req: Request,res: Response,next: NextFunction){
     const responseHandler = new ResponseHandler();
     try {    
         console.log("Fetch Group Contact  Request",req.params.groupId);
@@ -40,7 +40,7 @@ export class ContactControler{
 } 
 
 
-public async addContactsToGroup(req:Request,res:Response,next:NextFunction){
+public async addContactsToGroup(req: Request,res: Response,next: NextFunction){
   const responseHandler = new ResponseHandler();
   try {    
       console.log("Add Contact to Group  Request",req.params.groupId);
@@ -50,7 +50,7 @@ public async addContactsToGroup(req:Request,res:Response,next:NextFunction){
               next(responseHandler.sendError(e));
   }
 } 
-public async fetchGroups(req:Request,res:Response,next:NextFunction){
+public async fetchGroups(req: Request,res: Response,next: NextFunction){
   const responseHandler = new ResponseHandler();
   try {    
       console.log("Fetch Groups  Request");
@@ -62,7 +62,7 @@ public async fetchGroups(req:Request,res:Response,next:NextFunction){
 } 
 
 
-public async createNewGroup(req:Request,res:Response,next:NextFunction){
+public async createNewGroup(req: Request,res: Response,next: NextFunction){
   const responseHandler = new ResponseHandler();
   try {    
       console.log("Group Create  Request");
@@ -73,7 +73,7 @@ public async createNewGroup(req:Request,res:Response,next:NextFunction){
   }
 } 
 
-public async deleteGroup(req:Request,res:Response,next:NextFunction){
+public async deleteGroup(req: Request,res: Response,next: NextFunction){
   const responseHandler = new ResponseHandler();
   try {    
       console.log("Group Create  Request");
@@ -85,7 +85,7 @@ public async deleteGroup(req:Request,res:Response,next:NextFunction){
 } 
 
 
-  public async editContacts(req:Request,res:Response,next:NextFunction){
+  public async editContacts(req: Request,res: Response,next: NextFunction){
     const responseHandler = new ResponseHandler();
     try {    
         console.log("Edit Contact  Request");
@@ -96,7 +96,7 @@ public async deleteGroup(req:Request,res:Response,next:NextFunction){
     }
 }  
 
-public async editGroupContacts(req:Request,res:Response,next:NextFunction){
+public async editGroupContacts(req: Request,res: Response,next: NextFunction){
   const responseHandler = new ResponseHandler();
   try {    
       console.log("Edit Contact  Request");
@@ -107,7 +107,7 @@ public async editGroupContacts(req:Request,res:Response,next:NextFunction){
   }
 }  
 
-public async deleteContacts(req:Request,res:Response,next:NextFunction){
+public async deleteContacts(req: Request,res: Response,next: NextFunction){
   const responseHandler = new ResponseHandler();
   try {    
       console.log("Edit Contact  Request");
@@ -118,7 +118,7 @@ public async deleteContacts(req:Request,res:Response,next:NextFunction){
   }
 }  
 
-public async deleteGroupContacts(req:Request,res:Response,next:NextFunction){
+public async deleteGroupContacts(req: Request,res: Response,next: NextFunction){
   const responseHandler = new ResponseHandler();
   try {    
       console.log("Delete Group Contact  Request");
@@ -130,7 +130,7 @@ public async deleteGroupContacts(req:Request,res:Response,next:NextFunction){
 }  
 
 
-public async addGroupContacts(req:Request,res:Response,next:NextFunction){
+public async addGroupContacts(req: Request,res: Response,next: NextFunction){
   const responseHandler = new ResponseHandler();
   try {    
       console.log("Group add Contact  Request");

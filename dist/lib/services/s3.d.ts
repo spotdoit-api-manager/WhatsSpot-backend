@@ -1,5 +1,5 @@
 import { S3 } from "aws-sdk";
-import multer from 'multer';
+import multer from "multer";
 export declare const s3: S3;
 export declare const s3UploadMulter: multer.Multer;
 interface IData {

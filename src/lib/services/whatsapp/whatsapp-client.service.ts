@@ -1,21 +1,21 @@
-import socketManager from './../socket';
-import { HTTP200Error } from '../../utils/httpErrors';
+import socketManager from "./../socket";
+import { HTTP200Error } from "../../utils/httpErrors";
 
-import { EventEmitter } from 'events';
-import clients from '../../../data/clients.data';
-import Whatsapp from './whatsapp.service';
-import deviceModel from '../../../components/device/device.model';
-import messageQueueService from './message-queue.service';
-import { IImageMessage } from './whatsapp.interface';
-import { sanatizeMobile } from '../../../lib/utils';
-import instanceProvider from './instance.provider';
-import planManagerService from '../plan.manager.service';
-import logger from '../../../core/logger';
+import { EventEmitter } from "events";
+import clients from "../../../data/clients.data";
+import Whatsapp from "./whatsapp.service";
+import deviceModel from "../../../components/device/device.model";
+import messageQueueService from "./message-queue.service";
+import { IImageMessage } from "./whatsapp.interface";
+import { sanatizeMobile } from "../../../lib/utils";
+import instanceProvider from "./instance.provider";
+import planManagerService from "../plan.manager.service";
+import logger from "../../../core/logger";
 interface IWhatsappClient {
-    [phone: string]: number
+    [phone: string]: number;
 }
 
-const logFileName = '[WhatsappClientService] : ';
+const logFileName = "[WhatsappClientService] : ";
 
 export const eventEmitter = new EventEmitter();
 
@@ -32,11 +32,11 @@ export class WhatsappClient {
         return clientInstance;
     }
 
-    public getClientInstanceByPhone(phone:string){
+    public getClientInstanceByPhone(phone: string){
         return this.getClientInstanceByInstanceId(this.clients[phone]);
     }
 
-    public getClientInstanceByInstanceId = (instanceId:number)=>{
+    public getClientInstanceByInstanceId = (instanceId: number)=>{
         try{ 
             const instance = instanceProvider.getClassInstance(Whatsapp, instanceId); 
             return instance;
@@ -50,12 +50,12 @@ export class WhatsappClient {
         try {
             const client = this.getClientInstanceByPhone(phone);
             client.logoutClient();
-            client.on('LOGGEDOUT', (data: any) => {
+            client.on("LOGGEDOUT", (data: any) => {
                 socketManager.sendLoggedout(data);
-            })
-            return { error: false }
+            });
+            return { error: false };
         } catch (e) {
-            return { error: true, message: e.message }
+            return { error: true, message: e.message };
         }
     }
 
@@ -71,13 +71,13 @@ export class WhatsappClient {
         client.on("authenticated", (client) => {
             console.debug(logFileName,"got authenticated ", client.phone);
             socketManager.sendAuthenticated(client.phone);
-        })
-       const result:any =  await client.initiClient();
+        });
+       const result: any =  await client.initiClient();
        if(result.error) return result;
         client.getQr();
     }
 
-    public removeClientInstanceByPhone(phone:string){
+    public removeClientInstanceByPhone(phone: string){
         console.debug(logFileName,`Removing client ${phone}`);
         const instanceId = this.clients[phone];
         if(!instanceId) return {error:true,message:"INSTANCE_NOT_FOUND"};
@@ -85,7 +85,7 @@ export class WhatsappClient {
         return this.removeClientByInstanceId(instanceId);
     }
 
-    private removeClientByInstanceId(instanceId:number) {
+    private removeClientByInstanceId(instanceId: number) {
         try {
             console.debug(logFileName,`Removing client ${instanceId}`);
 
@@ -93,11 +93,11 @@ export class WhatsappClient {
             instance.endClient();
             instanceProvider.removeClassInstance(Whatsapp, instanceId);
             instance =null;
-            return {error:false,message:"client removed"}
+            return {error:false,message:"client removed"};
 
         } catch (err) {
             console.error(logFileName,"error in client end ", err);
-            return {error:true,message:err.message}
+            return {error:true,message:err.message};
         }
     }
 

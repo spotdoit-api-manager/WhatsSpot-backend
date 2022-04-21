@@ -23,7 +23,7 @@ const socket_1 = __importDefault(require("../socket"));
 const contact_model_1 = __importDefault(require("../../../components/contact/contact.model"));
 const logger_1 = __importDefault(require("../../../core/logger"));
 const FETCH_PENDING_INTERVAL = 10;
-const logFileName = '[MessageQueueService] : ';
+const logFileName = "[MessageQueueService] : ";
 class MessageQueueService {
     constructor() {
         this.getPendingMessagesToContacts();

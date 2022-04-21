@@ -1,4 +1,4 @@
-import { IContact, IContactsGroup } from './contact.interface';
+import { IContact, IContactsGroup } from "./contact.interface";
 import { Document, model, Model, Schema, SchemaType } from "mongoose";
 
 export interface IContactModel extends IContact, Document {
@@ -22,12 +22,12 @@ const contactSchema = new Schema({
         }
 },{
     timestamps:true
-})
+});
 
 
 contactSchema.methods.saveContact = async function () {
     return this.save();
-  }
+  };
 
 
   export interface IContactGroupModel extends IContactsGroup, Document {
@@ -60,12 +60,12 @@ contactSchema.methods.saveContact = async function () {
    
 },{
     timestamps:true
-})
+});
 
 
 groupSchema.methods.saveGroup = async function () {
     return this.save();
-  }
+  };
   
   export const Contact: Model<IContactModel> = model<IContactModel>("Contact", contactSchema);
   export const ContactGroup: Model<IContactGroupModel> = model<IContactGroupModel>("ContactGroup", groupSchema);

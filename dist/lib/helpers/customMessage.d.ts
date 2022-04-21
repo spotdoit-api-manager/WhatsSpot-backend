@@ -1,18 +1,18 @@
 /**
  * Feedback component custom messages.
  */
-export declare let user: {
+export declare const user: {
     CREATED: string;
     CREATED_DEC: string;
     FETCH_ALL: string;
     UPDATED: string;
 };
-export declare let specialization: {
+export declare const specialization: {
     CREATED: string;
     CREATED_DEC: string;
     FETCH_ALL: string;
 };
-export declare let post: {
+export declare const post: {
     CREATED: string;
     CREATED_DEC: string;
     FETCH_ALL: string;
@@ -22,7 +22,7 @@ export declare let post: {
     UPDATED: string;
     DELETE_ALL: string;
 };
-export declare let competition: {
+export declare const competition: {
     CREATED: string;
     UPDATED: string;
     CREATED_DEC: string;
@@ -33,24 +33,24 @@ export declare let competition: {
     LEAD_CREATED: string;
     LEAD_NOT_CREATED: string;
 };
-export declare let region: {
+export declare const region: {
     FETCH_ALL: string;
     CREATED: string;
     UPDATED: string;
 };
-export declare let channel: {
+export declare const channel: {
     FETCH_ALL: string;
     CREATED: string;
     UPDATED: string;
 };
-export declare let poll: {
+export declare const poll: {
     CREATED: string;
     CREATED_DEC: string;
     FETCH_ALL: string;
     UPDATED: string;
     RESULTS: string;
 };
-export declare let award: {
+export declare const award: {
     CREATED: string;
     CREATED_DEC: string;
     FETCH_ALL: string;
@@ -63,22 +63,22 @@ export declare let award: {
     NOMINEES_LIST: string;
     CREATED_SHOW: string;
 };
-export declare let comments: {
+export declare const comments: {
     CREATED: string;
     FETCH_ALL: string;
     FETCH_REPLIES: string;
 };
-export declare let likes: {
+export declare const likes: {
     CHANGED: string;
     USERS: string;
 };
-export declare let ques: {
+export declare const ques: {
     CREATED: string;
     CREATED_DEC: string;
     FETCH_ALL: string;
     UPDATED: string;
 };
-export declare let quiz: {
+export declare const quiz: {
     CREATED: string;
     CREATED_DEC: string;
     FETCH_ALL: string;
@@ -88,7 +88,7 @@ export declare let quiz: {
     CATEGORY_INFO: string;
     FETCH_PLAYED: string;
 };
-export declare let score: {
+export declare const score: {
     CREATED: string;
     CREATED_DEC: string;
     FETCH_ALL: string;
@@ -97,7 +97,7 @@ export declare let score: {
     SUBMIT_ANSWER: string;
     TIMED_OUT: string;
 };
-export declare let wallet: {
+export declare const wallet: {
     BALANCE: string;
     TRANSACTION: string;
     BUYHINT: string;

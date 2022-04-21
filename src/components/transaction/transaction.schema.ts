@@ -1,4 +1,4 @@
-import { ITransaction } from './transaction.interface';
+import { ITransaction } from "./transaction.interface";
 import { Document, model, Model, Mongoose, Schema, SchemaTypes } from "mongoose";
 
 export interface ITransactionModel extends ITransaction,Document{
@@ -51,7 +51,7 @@ const TransactionSchema = new Schema({
 
   TransactionSchema.methods.addTransaction = async function () {
     return this.save();
-}
+};
 
 
   export const Transaction: Model<ITransactionModel> = model<ITransactionModel>("transaction", TransactionSchema);

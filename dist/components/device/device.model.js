@@ -78,7 +78,7 @@ class DeviceModel {
             const newDeviceData = yield newDevice.saveDevice();
             if (!newDeviceData)
                 throw new httpErrors_1.HTTP400Error("UNKNOWN_ERROR");
-            let expiresOn = dayjs_1.default().add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN || '3d').replace("d", "")), 'day').toDate().toUTCString();
+            const expiresOn = dayjs_1.default().add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN || "3d").replace("d", "")), "day").toDate().toUTCString();
             ;
             const keys = yield this.generateNewKey(userId, walletId, newDeviceData._id, { name: process.env.DEFAULT_APIKEY_NAME, expiresOn });
             return newDeviceData;
@@ -159,7 +159,7 @@ class DeviceModel {
     fetchMessagesByStatus(deviceId, status = null) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            let condition = { _id: new bson_1.ObjectID(deviceId) };
+            const condition = { _id: new bson_1.ObjectID(deviceId) };
             if (status)
                 condition.status = status;
             const result = yield device_shema_1.Device.aggregate([
@@ -191,13 +191,13 @@ class DeviceModel {
                         messages: { $setUnion: ["$fastMessages", "$queueMessages"] }
                     }
                 },
-                { $unwind: '$messages' },
+                { $unwind: "$messages" },
                 {
                     $sort: {
                         "messages.createdAt": -1
                     }
                 },
-                { $group: { _id: '$_id', messages: { $push: '$messages' } } }
+                { $group: { _id: "$_id", messages: { $push: "$messages" } } }
             ]);
             return ((_a = result[0]) === null || _a === void 0 ? void 0 : _a.messages) || null;
         });
@@ -246,7 +246,7 @@ class DeviceModel {
                 let expiresIn = null;
                 if (body.expiresOn != "NEVER") {
                     const expiresOn = dayjs_1.default(new Date(body.expiresOn));
-                    const diff = expiresOn.diff(dayjs_1.default(), 'day', true);
+                    const diff = expiresOn.diff(dayjs_1.default(), "day", true);
                     expiresIn = `${Math.floor(diff)}d`;
                 }
                 const totalAvailableKeys = yield this.getTotalAvailableApiKeys(deviceId);

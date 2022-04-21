@@ -4,7 +4,7 @@ export interface IPLAN {
     planAmount: number;
     planPeriod: number;
     planPeriodUnit: string;
-    planInfo: String[];
+    planInfo: string[];
     planMaxMessage: number | null;
     isBest: boolean;
 }

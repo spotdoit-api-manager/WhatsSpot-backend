@@ -1,7 +1,7 @@
 /// <reference types="node" />
-import { EventEmitter } from 'events';
-import Whatsapp from './whatsapp.service';
-import { IImageMessage } from './whatsapp.interface';
+import { EventEmitter } from "events";
+import Whatsapp from "./whatsapp.service";
+import { IImageMessage } from "./whatsapp.interface";
 interface IWhatsappClient {
     [phone: string]: number;
 }

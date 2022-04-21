@@ -4,7 +4,7 @@ import { HTTP400Error, HTTP401Error, HTTP403Error, HTTP404Error, HTTP409Error } 
 
 // Custom error interface.
 interface ICustomError extends Error {
-  errors?: any // It comes with mongoose error
+  errors?: any; // It comes with mongoose error
 }
 
 class ResponseHandler implements IErrorResponse {
@@ -57,7 +57,7 @@ class ResponseHandler implements IErrorResponse {
   onWrite(payload?: any) {
     this.statusCode = 200;
     this.status = 1;
-    this.payload=payload
+    this.payload=payload;
     return this;
   }
 
@@ -117,10 +117,10 @@ class ResponseHandler implements IErrorResponse {
     if (e instanceof HTTP409Error) {
       return new HTTP409Error(e.message, e.description);
     }
-    if (e.name === 'ValidationError') {
+    if (e.name === "ValidationError") {
       return new HTTP400Error(e.message, "Schema validation error.");
     }
-    if (e.name === 'MongoError') {
+    if (e.name === "MongoError") {
       return new HTTP400Error(e.message, "Schema validation error.");
     }
 
@@ -132,9 +132,9 @@ class ResponseHandler implements IErrorResponse {
     if (!this.req || !this.res) {
       throw new Error("please set req Res function to get start");
     }
-    this.res.writeHead(this.statusCode, { 'Content-Type': 'text/html' })
-    this.res.write(this.payload)
-    this.res.end()
+    this.res.writeHead(this.statusCode, { "Content-Type": "text/html" });
+    this.res.write(this.payload);
+    this.res.end();
   }
 
 }

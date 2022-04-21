@@ -1,18 +1,18 @@
-import { EDeviceStatus } from './../../../components/device/device.interface';
-import deviceModel from '../../../components/device/device.model';
-import messageModel from '../../../components/messages/message.model';
-import walletModel from '../../../components/walllet/wallet.model';
-import { EMessageStatus, IMessage } from './../../../components/messages/message.interface';
-import { MessageQueue, IMessageModel } from './../../../components/messages/message.schema';
-import whatsappClientService from './whatsapp-client.service';
-import  socketManager from '../socket';
-import contactModel from '../../../components/contact/contact.model';
-import { IContact } from '../../../components/contact/contact.interface';
-import { P } from 'pino';
-import { WhatsappServiceError } from '../../../core/errors/errors';
-import logger from '../../../core/logger';
+import { EDeviceStatus } from "./../../../components/device/device.interface";
+import deviceModel from "../../../components/device/device.model";
+import messageModel from "../../../components/messages/message.model";
+import walletModel from "../../../components/walllet/wallet.model";
+import { EMessageStatus, IMessage } from "./../../../components/messages/message.interface";
+import { MessageQueue, IMessageModel } from "./../../../components/messages/message.schema";
+import whatsappClientService from "./whatsapp-client.service";
+import  socketManager from "../socket";
+import contactModel from "../../../components/contact/contact.model";
+import { IContact } from "../../../components/contact/contact.interface";
+import { P } from "pino";
+import { WhatsappServiceError } from "../../../core/errors/errors";
+import logger from "../../../core/logger";
 const FETCH_PENDING_INTERVAL = 10;
-const logFileName = '[MessageQueueService] : ';
+const logFileName = "[MessageQueueService] : ";
 export class MessageQueueService {
 
     constructor(){
@@ -37,19 +37,19 @@ export class MessageQueueService {
         }, FETCH_PENDING_INTERVAL * 1000);
     };
 
-      public async sendPendingMessageToGroup(pendingMessages:IMessageModel[]){
+      public async sendPendingMessageToGroup(pendingMessages: IMessageModel[]){
         for(let i =0;i<pendingMessages.length;i++){
-            const message:IMessageModel = pendingMessages[i];
+            const message: IMessageModel = pendingMessages[i];
             const groupId = message.to;
             const userId = message.userId;
-            const groupContacts:IContact[] = await contactModel.fetchGroupContacts(userId,groupId);
+            const groupContacts: IContact[] = await contactModel.fetchGroupContacts(userId,groupId);
             const walletId = (await walletModel.getWalletIdByUserId(message.userId));
             const contactsSent = message.contactsSent || [];
 
-            let anyContactError :boolean = false;
+            let anyContactError: boolean = false;
             for(let c=0;c<groupContacts.length;c++){
-                const contact:IContact = groupContacts[c];
-                const idx = contactsSent.findIndex((c:IContact)=>c.phoneNumber==contact.phoneNumber);
+                const contact: IContact = groupContacts[c];
+                const idx = contactsSent.findIndex((c: IContact)=>c.phoneNumber==contact.phoneNumber);
                 if(idx>-1 && contactsSent[idx].status==EMessageStatus.SENT) continue;
                 try {
                     const body = {to:contact.phoneNumber,message:message.message};
@@ -77,7 +77,7 @@ export class MessageQueueService {
         return new Promise(async (resolve) => {
 
             for (let i = 0; i < pendingMessages.length; i++) {
-                const message:IMessageModel = pendingMessages[i];
+                const message: IMessageModel = pendingMessages[i];
                 try {
                     const walletId = (await walletModel.getWalletIdByUserId(message.userId));
                     const body = {to:message.to,message:message.message};
@@ -94,20 +94,20 @@ export class MessageQueueService {
                 }
             }
             
-            resolve({ error: false })
+            resolve({ error: false });
 
-        })
+        });
     };
 
 
 
 
-    public async sendErrorMessageForDevice(errorMessages: IMessageModel[],deviceId:string) {
+    public async sendErrorMessageForDevice(errorMessages: IMessageModel[],deviceId: string) {
         return new Promise(async (resolve) => {
             await deviceModel.updateDeviceStatus(deviceId,EDeviceStatus.SENDING);
 
             for (let i = 0; i < errorMessages.length; i++) {
-                const message:IMessageModel = errorMessages[i];
+                const message: IMessageModel = errorMessages[i];
                 logger.info(logFileName,`Sending failed message ${message._id}`);
                 try {
                     // const walletId = await walletModel.getWalletIdAndValidateTransactionAmount(message.userId,parseFloat(process.env.TEXT_MESSAGE_RATE));
@@ -131,12 +131,12 @@ export class MessageQueueService {
                 }
             }
             deviceModel.updateDeviceStatus(deviceId,EDeviceStatus.IDLE);
-            resolve({ error: false })
+            resolve({ error: false });
 
-        })
+        });
     }
 
 
 }
 
-export default new MessageQueueService()
+export default new MessageQueueService();

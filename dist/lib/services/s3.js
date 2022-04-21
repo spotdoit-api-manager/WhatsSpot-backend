@@ -23,9 +23,9 @@ const httpErrors_1 = require("../utils/httpErrors");
 // signatureVersion: s3Config.sign,
 // s3Config.region
 exports.s3 = new aws_sdk_1.S3({
-    accessKeyId: 'JKGJKHGJKGJGJHGJKHG',
-    secretAccessKey: 'JGU768GO87Y87OGH87G87G8/1uzG',
-    region: 'ap-south-1'
+    accessKeyId: "JKGJKHGJKGJGJHGJKHG",
+    secretAccessKey: "JGU768GO87Y87OGH87G87G8/1uzG",
+    region: "ap-south-1"
 });
 // export const s3 = new S3({
 //   accessKeyId:s3Config.accessKey,
@@ -36,20 +36,20 @@ exports.s3 = new aws_sdk_1.S3({
 exports.s3UploadMulter = multer_1.default({
     storage: multer_s3_1.default({
         s3: exports.s3,
-        bucket: 'ikc-poll',
-        acl: 'public-read',
+        bucket: "ikc-poll",
+        acl: "public-read",
         contentType: multer_s3_1.default.AUTO_CONTENT_TYPE,
         key: (req, file, cb) => {
             console.log(file);
-            cb(null, Date.now().toString() + '-' + file.originalname);
+            cb(null, Date.now().toString() + "-" + file.originalname);
         }
     })
 });
 const getSignedUrl = (Key, ContentType) => {
     return new Promise((resolve, reject) => {
-        exports.s3.getSignedUrl('putObject', {
+        exports.s3.getSignedUrl("putObject", {
             Bucket: "polbol-images",
-            ContentType: 'multipart/form-data',
+            ContentType: "multipart/form-data",
             Key
         }, (err, url) => {
             if (err) {

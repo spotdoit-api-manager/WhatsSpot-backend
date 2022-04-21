@@ -1,10 +1,10 @@
-import { Plan } from './../../components/plans/plans.schema';
+import { Plan } from "./../../components/plans/plans.schema";
 import { EPlanStatus } from "../../components/plans/plans.interface";
 import { IUserPlan } from "../../components/plans/plans.interface";
 import { UserPlan,IUserPlanModel } from "../../components/plans/plans.schema";
-import logger from '../../core/logger';
+import logger from "../../core/logger";
 const EXPIRE_PLAN_CHECK_INTERVAL = 5;
-const logFileName =  '[PlanMangerService]: ';
+const logFileName =  "[PlanMangerService]: ";
 export class PlanManager{
     constructor(){
         this.fetchExpiredPlans();
@@ -12,7 +12,7 @@ export class PlanManager{
 
     private async fetchExpiredPlans(){
         const now = new Date();        
-        const expiredPlans:IUserPlanModel[]= await  UserPlan.find({endDate:{$lte:now},planStatus:EPlanStatus.ACTIVE});
+        const expiredPlans: IUserPlanModel[]= await  UserPlan.find({endDate:{$lte:now},planStatus:EPlanStatus.ACTIVE});
         logger.info(logFileName,`FOUND ${expiredPlans.length} EXPIRED PLANS`);
         for(const plan of expiredPlans){
             const result = await this.expirePlan(plan._id);
@@ -22,12 +22,12 @@ export class PlanManager{
         },EXPIRE_PLAN_CHECK_INTERVAL*1000);
     }
 
-    public async expirePlan(plan:IUserPlanModel){
+    public async expirePlan(plan: IUserPlanModel){
         const result = await UserPlan.findByIdAndUpdate(plan._id,{planStatus:EPlanStatus.EXPIRED});
-        logger.info(logFileName,`Plan ${plan._id} Expired`)
+        logger.info(logFileName,`Plan ${plan._id} Expired`);
     }
 
-    public async deletePlan(planId:string){
+    public async deletePlan(planId: string){
         const result= await Plan.findOneAndDelete(planId);
         return result;
     }

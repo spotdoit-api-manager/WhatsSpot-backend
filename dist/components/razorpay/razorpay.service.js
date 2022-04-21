@@ -13,7 +13,7 @@ class RazorPayService {
             return new Promise((resolve) => {
                 try {
                     console.log("creating order with ", createOrder, userId, index_1.razorPaySecrets.key, index_1.razorPaySecrets.secret);
-                    var options = {
+                    const options = {
                         amount: createOrder.amount * 100,
                         currency: "INR",
                         receipt: `receipt_${userId}`,

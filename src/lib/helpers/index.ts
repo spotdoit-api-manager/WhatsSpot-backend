@@ -1,6 +1,6 @@
-import {HTTP400Error} from '../utils/httpErrors';
-import jwt from 'jsonwebtoken';
-import {commonConfig, s3Config} from '../../config';
+import {HTTP400Error} from "../utils/httpErrors";
+import jwt from "jsonwebtoken";
+import {commonConfig, s3Config} from "../../config";
 /* All common helpers will come here */
 
 /**
@@ -47,7 +47,7 @@ export const imageUrl = (imgPath: string | string[]) => {
     imgPath.map((el: string) => regEx.test(el) ? el : `${s3Config.url}${el}`));
 };
 
-export const skipLimitOnPage = (page: number = 1): { skip: number, limit: number } => {
+export const skipLimitOnPage = (page: number = 1): { skip: number; limit: number } => {
   if (isNaN(page)) {
     throw new HTTP400Error("please provide a paging to this api in query string:: ?page=<positive number>");
   }
@@ -58,7 +58,7 @@ export const skipLimitOnPage = (page: number = 1): { skip: number, limit: number
 };
 
 export const getTime = (date: string) => {
-  return new Date(date).toLocaleString('en-US', {hour: 'numeric', minute: 'numeric', hour12: true});
+  return new Date(date).toLocaleString("en-US", {hour: "numeric", minute: "numeric", hour12: true});
 };
 
 export const getNextDate = (day: number = 2) => {
@@ -70,7 +70,7 @@ export const isValidMongoId = (str: string) => {
 };
 
 export const pruneFields = (body: any, fields: string) => {
-  const fieldsArray = fields.split(' ');
+  const fieldsArray = fields.split(" ");
   fieldsArray.forEach(field => {
     delete body[field];
   });

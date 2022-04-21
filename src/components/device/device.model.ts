@@ -1,45 +1,45 @@
-import logger from '../../core/logger';
-import { EDeviceStatus, IDeviceTokenData, INewDevice } from '../device/device.interface';
-import { MessageQueue } from './../messages/message.schema';
-import { deviceKeyConfig } from './../../config/index';
-import { IImageMessage } from './../../lib/services/whatsapp/whatsapp.interface';
-import { EMessageStatus, ESendType, IMessage } from './../messages/message.interface';
-import { HTTP400Error, HTTP401Error } from './../../lib/utils/httpErrors';
+import logger from "../../core/logger";
+import { EDeviceStatus, IDeviceTokenData, INewDevice } from "../device/device.interface";
+import { MessageQueue } from "./../messages/message.schema";
+import { deviceKeyConfig } from "./../../config/index";
+import { IImageMessage } from "./../../lib/services/whatsapp/whatsapp.interface";
+import { EMessageStatus, ESendType, IMessage } from "./../messages/message.interface";
+import { HTTP400Error, HTTP401Error } from "./../../lib/utils/httpErrors";
 import { EApiKeyStatus, IApiKey, IDevice, TextMessage } from "./device.interface";
 import { Device, IDeviceModel } from "./device.shema";
-import whatsappClientService from '../../lib/services/whatsapp/whatsapp-client.service';
-import fileManagement from '../../lib/helpers/file.management';
-import messageModel from '../messages/message.model';
-import { ObjectID } from 'bson';
-import jwt from 'jsonwebtoken';
-import dayjs from 'dayjs'
-import { sanatizeMobile, validateMobile } from '../../lib/utils';
-import * as otpHandler from '../../lib/services/otp-handler';
+import whatsappClientService from "../../lib/services/whatsapp/whatsapp-client.service";
+import fileManagement from "../../lib/helpers/file.management";
+import messageModel from "../messages/message.model";
+import { ObjectID } from "bson";
+import jwt from "jsonwebtoken";
+import dayjs from "dayjs";
+import { sanatizeMobile, validateMobile } from "../../lib/utils";
+import * as otpHandler from "../../lib/services/otp-handler";
 
 const logFileName = "[DeviceModal] : ";
 export class DeviceModel {
-    public async newDevice(userId:string,walletId:string,body: IDevice,newDeviceCode:string) {
+    public async newDevice(userId: string,walletId: string,body: IDevice,newDeviceCode: string) {
         body.userId = userId;
         const device = await this.findDeviceByPhone(body.phone);
         this.validateDeviceAdd(userId,device);
         await this.verifyNewDeviceCode(newDeviceCode);
         logger.info(logFileName,`Device ${body.phone} verified`);
         const newDevice = new Device(body);
-        const newDeviceData:IDeviceModel = await newDevice.saveDevice();
+        const newDeviceData: IDeviceModel = await newDevice.saveDevice();
         if(!newDeviceData) throw new HTTP400Error("UNKNOWN_ERROR");
-        let expiresOn = dayjs().add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN || '3d').replace("d", "")), 'day').toDate().toUTCString();;
+        const expiresOn = dayjs().add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN || "3d").replace("d", "")), "day").toDate().toUTCString();;
         const keys = await this.generateNewKey(userId,walletId,newDeviceData._id,{name:process.env.DEFAULT_APIKEY_NAME,expiresOn});
         return newDeviceData;
     }
 
-    public async verifyNewDeviceCode(newDeviceCode:string){
+    public async verifyNewDeviceCode(newDeviceCode: string){
         if(newDeviceCode){
             return true;
         }
         return false;
     }
 
-    public async newDeviceCode(userId:string,walletId:string,newDeviceBody:INewDevice){
+    public async newDeviceCode(userId: string,walletId: string,newDeviceBody: INewDevice){
         const device = await this.findDeviceByPhone(newDeviceBody.phone);
         this.validateDeviceAdd(userId,device);
         const result  =  await otpHandler.sendNewDeviceCode(newDeviceBody.name);
@@ -49,7 +49,7 @@ export class DeviceModel {
 
   
 
-    private validateDeviceAdd(userId:string,device:IDevice){
+    private validateDeviceAdd(userId: string,device: IDevice){
         if (device && device.userId == userId) return device;
         else if(device && device.userId != userId) throw new HTTP401Error("DEVICE_ALREADY_REGISTERD","This device is already added by some user");
     }
@@ -64,7 +64,7 @@ export class DeviceModel {
         return { message: "QR_REQUESTED" };
     };
 
-    public async removeClient(body:any){
+    public async removeClient(body: any){
         const device = await this.findDeviceById(body.deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const data = whatsappClientService.removeClientInstanceByPhone(device.phone);
@@ -108,7 +108,7 @@ export class DeviceModel {
     }
 
     private async fetchMessagesByStatus(deviceId: string, status: EMessageStatus = null) {
-        let condition: any = { _id: new ObjectID(deviceId) };
+        const condition: any = { _id: new ObjectID(deviceId) };
         if (status) condition.status = status;
         const result = await Device.aggregate([
             { $match: condition },
@@ -141,14 +141,14 @@ export class DeviceModel {
                     messages: { $setUnion: ["$fastMessages", "$queueMessages"] }
                 }
             },
-            { $unwind: '$messages' },
+            { $unwind: "$messages" },
 
             {
                 $sort: {
                     "messages.createdAt": -1
                 }
             },
-            { $group: { _id: '$_id', messages: { $push: '$messages' } } }
+            { $group: { _id: "$_id", messages: { $push: "$messages" } } }
            
         ]);
         return result[0]?.messages || null;
@@ -159,7 +159,7 @@ export class DeviceModel {
         const device = await this.findDeviceById(body.deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
-        const res:any = await fileManagement.deleteFile(authFilePath);
+        const res: any = await fileManagement.deleteFile(authFilePath);
         if(res.error) throw new HTTP401Error(res.message);
         await this.updateDevice(device.phone, { reason: null });
         return { message: "DEVICE_LOGGEDOUT" };
@@ -185,21 +185,21 @@ export class DeviceModel {
         return { message: "DEVICE_LOGGED_OUT", device: device };
     }
 
-    public async generateNewKey(userId:string,walletId:string,deviceId: string, body: any) {
+    public async generateNewKey(userId: string,walletId: string,deviceId: string, body: any) {
         if (!body.name || !body.expiresOn) throw new HTTP400Error("Fields missing");
         try {
             let expiresIn = null;
             if (body.expiresOn != "NEVER") {
                 const expiresOn = dayjs(new Date(body.expiresOn));
-                const diff = expiresOn.diff(dayjs(), 'day', true);
+                const diff = expiresOn.diff(dayjs(), "day", true);
                 expiresIn = `${Math.floor(diff)}d`;
             }
             const totalAvailableKeys = await this.getTotalAvailableApiKeys(deviceId);
 
             if (totalAvailableKeys < parseInt(process.env.MAX_APIKEY_PER_DEVICE)) {
-                const apiKeyData:IDeviceTokenData = {walletId,userId,deviceId}
+                const apiKeyData: IDeviceTokenData = {walletId,userId,deviceId};
                 const token = this.generateDeviceKey(apiKeyData, expiresIn);
-                const tokenData:IApiKey = { name: body.name, createdOn: new Date(), token: token, expiresOn: body.expiresOn, status: { status: EApiKeyStatus.ACTIVE, reason: null } };
+                const tokenData: IApiKey = { name: body.name, createdOn: new Date(), token: token, expiresOn: body.expiresOn, status: { status: EApiKeyStatus.ACTIVE, reason: null } };
                 await this.addNewTokenDataToDevice(deviceId, tokenData);
                 return tokenData;
             }
@@ -265,7 +265,7 @@ export class DeviceModel {
         const options = { upsert: true, new: true, setDefaultsOnInsert: true };
         const client = await Device.findOneAndUpdate({ phone: phone }, { ...clientData }, options);
         if (!client) return { error: true, message: "some error occured" };
-        return { error: false }
+        return { error: false };
     }
 
 
@@ -287,7 +287,7 @@ export class DeviceModel {
     public async findDeviceByCondition(condition) {
         const data = await Device.aggregate([{
             $match: condition
-        }])
+        }]);
         return data;
     }
 
@@ -397,7 +397,7 @@ export class DeviceModel {
                             totalQueueSuccess: 0
                         }
                     }
-                ]
+                ];
             };
             return result[0];
         } catch (err) {
@@ -408,14 +408,14 @@ export class DeviceModel {
     }
 
 
-    public async retryFailedMessage(userId:string,deviceId:string){
-        const result:any = await  messageModel.retryFailedMessage(userId,deviceId);
+    public async retryFailedMessage(userId: string,deviceId: string){
+        const result: any = await  messageModel.retryFailedMessage(userId,deviceId);
         if(result.error) throw new HTTP401Error(result.message);
         return {error:false,message:"RETRY_REQUESTED",messageCount:result.messageCount};
     }
 
-    public async updateDeviceStatus(deviceId:string,status:EDeviceStatus){
-        const result = await Device.findByIdAndUpdate(deviceId,{deviceStatus:status})
+    public async updateDeviceStatus(deviceId: string,status: EDeviceStatus){
+        const result = await Device.findByIdAndUpdate(deviceId,{deviceStatus:status});
         return result;
     }
 

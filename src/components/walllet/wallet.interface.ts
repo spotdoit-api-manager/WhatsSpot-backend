@@ -1,5 +1,5 @@
 export interface IWallet{
-    balance:number,
-    userId:string
+    balance: number;
+    userId: string;
 }
 

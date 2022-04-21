@@ -21,7 +21,7 @@ const device_model_1 = __importDefault(require("../../../components/device/devic
 const utils_1 = require("../../../lib/utils");
 const instance_provider_1 = __importDefault(require("./instance.provider"));
 const logger_1 = __importDefault(require("../../../core/logger"));
-const logFileName = '[WhatsappClientService] : ';
+const logFileName = "[WhatsappClientService] : ";
 exports.eventEmitter = new events_1.EventEmitter();
 class WhatsappClient {
     constructor() {
@@ -98,7 +98,7 @@ class WhatsappClient {
             try {
                 const client = this.getClientInstanceByPhone(phone);
                 client.logoutClient();
-                client.on('LOGGEDOUT', (data) => {
+                client.on("LOGGEDOUT", (data) => {
                     socket_1.default.sendLoggedout(data);
                 });
                 return { error: false };

@@ -34,14 +34,14 @@ const deviceSchema = new mongoose_1.Schema({
             status: {
                 status: {
                     type: String,
-                    enum: ['ACTIVE', 'INACTIVE']
+                    enum: ["ACTIVE", "INACTIVE"]
                 },
                 reason: String
             }
         }],
     deviceStatus: {
         type: String,
-        enum: ['SENDING', 'IDLE']
+        enum: ["SENDING", "IDLE"]
     },
     authState: Boolean,
     reason: {

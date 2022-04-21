@@ -1,4 +1,4 @@
-import { IDevice, EApiKeyStatus } from './device.interface';
+import { IDevice, EApiKeyStatus } from "./device.interface";
 import { Document, Model, model, Schema, Types } from "mongoose";
 import { validateMobile } from "../../lib/utils";
 
@@ -30,14 +30,14 @@ const deviceSchema = new Schema(
       status: {
         status: {
           type: String,
-          enum: ['ACTIVE', 'INACTIVE']
+          enum: ["ACTIVE", "INACTIVE"]
         },
         reason: String
       }
     }],
     deviceStatus:{
       type:String,
-      enum:['SENDING','IDLE']
+      enum:["SENDING","IDLE"]
     },
     authState: Boolean,
     reason: {
@@ -53,6 +53,6 @@ const deviceSchema = new Schema(
 
 deviceSchema.methods.saveDevice = async function () {
   return this.save();
-}
+};
 
 export const Device: Model<IDeviceModel> = model<IDeviceModel>("Device", deviceSchema);

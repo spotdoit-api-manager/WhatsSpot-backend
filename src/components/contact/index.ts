@@ -62,4 +62,4 @@ export default [
     method:"post",
     handler:[contactController.addGroupContacts]
 }
-]
+];

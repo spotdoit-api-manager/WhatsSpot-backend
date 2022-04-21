@@ -29,4 +29,4 @@ export class RazorPayController{
       };
 }
 
-export default new RazorPayController()
+export default new RazorPayController();

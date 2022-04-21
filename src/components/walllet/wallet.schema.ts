@@ -1,4 +1,4 @@
-import { IWallet } from './wallet.interface';
+import { IWallet } from "./wallet.interface";
 import { Document, model, Model, Mongoose, Schema, SchemaTypes } from "mongoose";
 
 export interface IWalletModel extends IWallet,Document{
@@ -22,7 +22,7 @@ const WalletSchema = new Schema({
   
 WalletSchema.methods.addNewAllet = async function () {
     return this.save();
-}
+};
 
 
 const TransactionSchema = new Schema({

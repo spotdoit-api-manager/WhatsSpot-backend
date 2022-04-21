@@ -1,4 +1,4 @@
 export interface IMessageProgress{
-    total:number,
-    current:number
+    total: number;
+    current: number;
 }

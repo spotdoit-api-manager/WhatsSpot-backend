@@ -29,9 +29,9 @@ exports.applyRoutes = (routes, router) => {
 };
 exports.mongoDBProjectFields = (fieldsString, prefix) => {
     const result = {};
-    fieldsString.split(' ').map(field => {
+    fieldsString.split(" ").map(field => {
         if (prefix) {
-            result[prefix + '.' + field] = 1;
+            result[prefix + "." + field] = 1;
         }
         else {
             result[field] = 1;
@@ -44,7 +44,7 @@ exports.getPaginationInfo = (pageNo = 1) => {
     const skip = (pageNo - 1) * limit;
     return { limit, skip };
 };
-exports.validateMobile = (phone = '') => {
+exports.validateMobile = (phone = "") => {
     // const regmm='^([0|+[0-9]{1,5})?([7-9][0-9]{9})$';
     // const regmob = new RegExp(regmm);
     if (phone.length == 12) {

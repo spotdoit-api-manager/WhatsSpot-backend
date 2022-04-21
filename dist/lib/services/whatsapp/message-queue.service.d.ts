@@ -1,4 +1,4 @@
-import { IMessageModel } from './../../../components/messages/message.schema';
+import { IMessageModel } from "./../../../components/messages/message.schema";
 export declare class MessageQueueService {
     constructor();
     getPendingMessagesToContacts(limit?: number): Promise<void>;

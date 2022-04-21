@@ -1,18 +1,18 @@
 
 
-import fs from 'fs';
-import winston from 'winston';
-import winstonDaily from 'winston-daily-rotate-file';
+import fs from "fs";
+import winston from "winston";
+import winstonDaily from "winston-daily-rotate-file";
 
-const logFileName = '[Logger] : ';
-Object.defineProperty(Array.prototype, 'insert', {
-    value:function ( index:number, item:string ) {
+const logFileName = "[Logger] : ";
+Object.defineProperty(Array.prototype, "insert", {
+    value:function ( index: number, item: string ) {
         this.splice( index, 0, item );
     }
 });
 
 // logs dir
-const logDir = __dirname + '/../logs';
+const logDir = __dirname + "/../logs";
 
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir);
@@ -27,11 +27,13 @@ const logFormat = winston.format.printf(({ timestamp, level, message }) => `${ti
  */
 
 const logger = winston.createLogger({
+  level: process.env.NODE_ENV === "production" ? "error" : "debug",
+
   format: winston.format.combine(
     winston.format.colorize(),
 
     winston.format.timestamp({
-      format: 'DD-MM-YYYY HH:mm:ss',
+      format: "DD-MM-YYYY HH:mm:ss",
     }),
     logFormat,
   ),
@@ -39,19 +41,19 @@ const logger = winston.createLogger({
     // debug log setting
     new winstonDaily({
       level: process.env.NODE_ENV === "production" ? "error" : "debug",
-      datePattern: 'DD-MM-YYYY',
-      dirname: logDir + '/debug', // log file /logs/debug/*.log in save
-      filename: `%DATE%.log`,
+      datePattern: "DD-MM-YYYY",
+      dirname: logDir + "/debug", // log file /logs/debug/*.log in save
+      filename: "%DATE%.log",
       maxFiles: 30, // 30 Days saved
       json: false,
       zippedArchive: true,
     }),
     // error log setting
     new winstonDaily({
-      level: 'error',
-      datePattern: 'DD-MM-YYYY',
-      dirname: logDir + '/error', // log file /logs/error/*.log in save
-      filename: `%DATE%.log`,
+      level: "error",
+      datePattern: "DD-MM-YYYY",
+      dirname: logDir + "/error", // log file /logs/error/*.log in save
+      filename: "%DATE%.log",
       maxFiles: 30, // 30 Days saved
       handleExceptions: true,
       json: false,
@@ -67,9 +69,9 @@ logger.add(
 );
 
 const wrapper = ( original ) => {
-    return (...args:any) => {
+    return (...args: any) => {
         args.forEach((arg,index)=>{
-            if(typeof arg === 'object'){
+            if(typeof arg === "object"){
                 args[index] = JSON.stringify(arg);
             }
         });
@@ -86,7 +88,7 @@ logger.silly = wrapper(logger.silly);
 
 const stream = {
   write: (message: string) => {
-    logger.info(message.substring(0, message.lastIndexOf('\n')));
+    logger.info(message.substring(0, message.lastIndexOf("\n")));
   },
 };
 

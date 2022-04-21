@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { IImageMessage } from './whatsapp.interface';
+import { IImageMessage } from "./whatsapp.interface";
 import { EventEmitter } from "events";
 import { AnyMessageContent, AuthenticationState } from "@adiwajshing/baileys";
 export default class Whatsapp extends EventEmitter {

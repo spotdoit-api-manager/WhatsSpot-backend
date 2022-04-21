@@ -1,5 +1,5 @@
-import { PlivoCredentials, Fast2SmsCredentials } from './../lib/interfaces/providers.interface';
-import { ITestMessageConfig } from './config.interface';
+import { PlivoCredentials, Fast2SmsCredentials } from "./../lib/interfaces/providers.interface";
+import { ITestMessageConfig } from "./config.interface";
 export declare const mongoUrl: () => string;
 export declare const configCors: {
     allowOrigin: string[];

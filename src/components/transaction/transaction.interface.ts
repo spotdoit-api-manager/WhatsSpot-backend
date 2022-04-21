@@ -1,12 +1,12 @@
 export interface ITransaction{
-    amount:number,
-    type:ETransactionTypes,
-    userId:string,
-    walletId:string,
-    orderId:string,
-    description?:string,
-    status:ETransactionStatus,
-    metaData:any,
+    amount: number;
+    type: ETransactionTypes;
+    userId: string;
+    walletId: string;
+    orderId: string;
+    description?: string;
+    status: ETransactionStatus;
+    metaData: any;
 }
 
 export enum ETransactionTypes{

@@ -20,7 +20,7 @@ export const allowCors = (router: Router) => {
         return callback(null, true);
       }
       if (configCors.allowOrigin.indexOf(origin) === -1) {
-        const msg = `The CORS policy for this site does not allow access from the specified Origin.`;
+        const msg = "The CORS policy for this site does not allow access from the specified Origin.";
         return callback(new Error(msg), false);
       }
       return callback(null, true);

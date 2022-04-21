@@ -31,7 +31,7 @@ class UserController {
         this.registerWithPhone = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
-                responseHandler.reqRes(req, res).onFetch('OTP_SENT', yield user_model_1.default.registerWithPhone(req.body)).send();
+                responseHandler.reqRes(req, res).onFetch("OTP_SENT", yield user_model_1.default.registerWithPhone(req.body)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -41,7 +41,7 @@ class UserController {
         this.loginWithPhone = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
-                responseHandler.reqRes(req, res).onFetch('OTP_SENT', yield user_model_1.default.loginWithPhone(req.body)).send();
+                responseHandler.reqRes(req, res).onFetch("OTP_SENT", yield user_model_1.default.loginWithPhone(req.body)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -51,7 +51,7 @@ class UserController {
         this.resendOTP = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
-                responseHandler.reqRes(req, res).onFetch('OTP_SENT_AGAIN', yield user_model_1.default.resendOTP(req.params.id, req.body)).send();
+                responseHandler.reqRes(req, res).onFetch("OTP_SENT_AGAIN", yield user_model_1.default.resendOTP(req.params.id, req.body)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -153,7 +153,7 @@ class UserController {
             const responseHandler = new responseHandler_1.default();
             try {
                 const data = yield user_model_1.default.verifyOtp(req.params.id, req.query.otp);
-                res.setHeader('Set-Cookie', data.cookie);
+                res.setHeader("Set-Cookie", data.cookie);
                 // res.set('X-Auth', data.token);
                 responseHandler
                     .reqRes(req, res)

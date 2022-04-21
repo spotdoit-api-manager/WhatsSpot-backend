@@ -20,7 +20,7 @@ const config_1 = require("../../config");
 exports.Authorization = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (req.header("Authorization")) {
-            const token = req.header('Authorization') || "";
+            const token = req.header("Authorization") || "";
             const data = yield handleToken(token);
             if (data) {
                 req.userId = data._id;
@@ -44,7 +44,7 @@ exports.Authorization = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
 });
 exports.AdminAuthorization = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        if (req.role === 'admin') {
+        if (req.role === "admin") {
             next();
         }
         else {
@@ -59,7 +59,7 @@ exports.AdminAuthorization = (req, res, next) => __awaiter(void 0, void 0, void 
 });
 exports.RoleAuthorization = (role) => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        if (req.role === 'admin' || req.role === role) {
+        if (req.role === "admin" || req.role === role) {
             next();
         }
         else {
@@ -76,7 +76,7 @@ const handleToken = (token) => __awaiter(void 0, void 0, void 0, function* () {
         token = token.split(" ")[1];
         const userData = (yield jsonwebtoken_1.default.verify(token, config_1.commonConfig.jwtSecretKey)) || { user: {} };
         const userDetails = userData;
-        const data = yield mongoose_1.model('User').findOne({
+        const data = yield mongoose_1.model("User").findOne({
             _id: userDetails.id,
         });
         if (data) {

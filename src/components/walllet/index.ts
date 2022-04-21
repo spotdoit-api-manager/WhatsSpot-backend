@@ -13,4 +13,4 @@ export default [
         escapeAuth: false,
         handler: [walletController.fetchTransactions]
     }
-]
+];

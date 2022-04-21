@@ -50,9 +50,9 @@ export const applyRoutes = (routes: IRoute[], router: Router) => {
 
 export const mongoDBProjectFields = (fieldsString: string, prefix?: string) => {
   const result: any = {};
-  fieldsString.split(' ').map(field => {
+  fieldsString.split(" ").map(field => {
     if (prefix) {
-      result[prefix + '.' + field] = 1;
+      result[prefix + "." + field] = 1;
     } else {
       result[field] = 1;
     }
@@ -60,30 +60,30 @@ export const mongoDBProjectFields = (fieldsString: string, prefix?: string) => {
   return result;
 };
 
-export const getPaginationInfo = (pageNo:number=1)=>{
+export const getPaginationInfo = (pageNo: number=1)=>{
   const limit = 20;
   const skip = (pageNo-1)*limit;
   return {limit,skip};
-}
+};
 
 
-export  const validateMobile=(phone:string='')=>{
+export  const validateMobile=(phone: string="")=>{
     // const regmm='^([0|+[0-9]{1,5})?([7-9][0-9]{9})$';
     // const regmob = new RegExp(regmm);
     if(phone.length==12){
         return true;
     }
         return false;    
-}
+};
 
-export const sanatizeMobile=(phone:string)=>{
+export const sanatizeMobile=(phone: string)=>{
   phone.replace("+","");
   if(phone.length==10) return `91${phone}`;
   return phone;
-}
+};
 
-export const deSanatizeMobile=(phone:string)=>{
+export const deSanatizeMobile=(phone: string)=>{
   phone.replace("+","");
   if(phone.length==12) return phone.slice(2);
   return phone;
-}
+};

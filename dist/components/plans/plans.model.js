@@ -70,7 +70,7 @@ class PlansModel {
     }
     calculatePlanEndDate(plan) {
         return __awaiter(this, void 0, void 0, function* () {
-            let endDate = dayjs_1.default(new Date());
+            const endDate = dayjs_1.default(new Date());
             if (plan.planId == plans_interface_1.EPLANS.PAYG) {
                 return endDate.toDate();
             }

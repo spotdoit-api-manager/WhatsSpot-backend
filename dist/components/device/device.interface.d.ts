@@ -1,4 +1,4 @@
-import { IReason } from './../../lib/services/whatsapp/whatsapp.interface';
+import { IReason } from "./../../lib/services/whatsapp/whatsapp.interface";
 export interface INewDevice {
     name: string;
     phone: string;
@@ -27,7 +27,7 @@ export interface IDeviceTokenData {
     userId: string;
 }
 export interface TextMessage {
-    message: String;
+    message: string;
     numbers: string;
 }
 export declare enum EApiKeyStatus {

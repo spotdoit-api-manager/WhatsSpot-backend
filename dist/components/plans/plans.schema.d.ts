@@ -1,5 +1,5 @@
 import { Document, Model } from "mongoose";
-import { IUserPlan, IPLAN } from './plans.interface';
+import { IUserPlan, IPLAN } from "./plans.interface";
 export interface IPlanModel extends IPLAN, Document {
     addPlan(): any;
 }

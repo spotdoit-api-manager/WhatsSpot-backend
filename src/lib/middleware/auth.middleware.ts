@@ -1,12 +1,12 @@
-import {HTTP401Error} from '../utils/httpErrors';
-import jwt from 'jsonwebtoken';
+import {HTTP401Error} from "../utils/httpErrors";
+import jwt from "jsonwebtoken";
 import {NextFunction, Request, Response} from "express";
-import {model} from 'mongoose';
-import {commonConfig} from '../../config';
-import {IUserModel} from '../../components/user/user.schema';
+import {model} from "mongoose";
+import {commonConfig} from "../../config";
+import {IUserModel} from "../../components/user/user.schema";
 
 interface IUserToken {
-  user?: object
+  user?: object;
 }
 
 interface IUserTokenDetails {
@@ -19,7 +19,7 @@ interface IUserTokenDetails {
 export const Authorization = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (req.header("Authorization")) {
-      const token: string = req.header('Authorization') || "";
+      const token: string = req.header("Authorization") || "";
       const data: IUserModel = await handleToken(token);
       if (data) {        
         req.userId = data._id;
@@ -41,7 +41,7 @@ export const Authorization = async (req: Request, res: Response, next: NextFunct
 
 export const AdminAuthorization = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (req.role === 'admin') {
+    if (req.role === "admin") {
       next();
     } else {
       const e  = new HTTP401Error("Incorrect Role for Request. Your Role : " + req.role);
@@ -54,9 +54,9 @@ export const AdminAuthorization = async (req: Request, res: Response, next: Next
   }
 };
 
-export const RoleAuthorization = (role:string) =>  async (req: Request, res: Response, next: NextFunction) => {
+export const RoleAuthorization = (role: string) =>  async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (req.role === 'admin' || req.role === role) {
+    if (req.role === "admin" || req.role === role) {
       next();
     } else {
       throw new HTTP401Error("Incorrect Role for Request. Your Role : " + req.role);
@@ -73,7 +73,7 @@ const handleToken = async (token: string) => {
     const userData: IUserToken = await jwt.verify(token, commonConfig.jwtSecretKey) as object || {user: {}};
 
       const userDetails: IUserTokenDetails = userData as object;
-    const data: IUserModel | null = await model<IUserModel>('User').findOne({
+    const data: IUserModel | null = await model<IUserModel>("User").findOne({
       _id: userDetails.id,
     //   tokens: {$in: [token]}
     });

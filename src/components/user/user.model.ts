@@ -1,22 +1,22 @@
-import { sanatizeMobile } from './../../lib/utils/index';
-import { IWallet } from './../walllet/wallet.interface';
-import { IWalletModel } from './../walllet/wallet.schema';
-import { EMessageStatus } from './../messages/message.interface';
+import { sanatizeMobile } from "./../../lib/utils/index";
+import { IWallet } from "./../walllet/wallet.interface";
+import { IWalletModel } from "./../walllet/wallet.schema";
+import { EMessageStatus } from "./../messages/message.interface";
 import { generateToken, imageUrl, isValidMongoId, otpGenerator } from "../../lib/helpers";
 import { User, UserSchema } from "./user.schema";
-import { IUser, ITokenData, IDataStoredInToken, IPlanRef } from './user.interface';
+import { IUser, ITokenData, IDataStoredInToken, IPlanRef } from "./user.interface";
 import { IUserModel } from "./user.schema";
 import socialAuth from "./../../lib/middleware/socialAuth";
-import bcrypt from 'bcrypt';
-import axios from 'axios';
+import bcrypt from "bcrypt";
+import axios from "axios";
 import { sendMessage } from "../../lib/services/otp-handler";
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 import { ObjectID } from "bson";
 import { commonConfig } from "../../config";
 import { HTTP400Error, HTTP401Error } from "../../lib/utils/httpErrors";
-import walletModel, { WalletModel } from '../walllet/wallet.model';
-import plansModel from '../plans/plans.model';
-import logger from '../../core/logger';
+import walletModel, { WalletModel } from "../walllet/wallet.model";
+import plansModel from "../plans/plans.model";
+import logger from "../../core/logger";
 
 const logFileName = "[UserModal] : ";
 export class UserModel {
@@ -27,7 +27,7 @@ export class UserModel {
     return data;
   }
   
-  private async findUserById(userId:string){
+  private async findUserById(userId: string){
     const user = await User.findById(userId);
     return user;
   }
@@ -37,9 +37,9 @@ export class UserModel {
       {$match:{_id:new ObjectID(id)}},
       {
         $lookup:{
-          from:'wallets',
-          localField: 'walletId',
-          foreignField: '_id',
+          from:"wallets",
+          localField: "walletId",
+          foreignField: "_id",
           as:"wallet"
         },
          
@@ -58,11 +58,11 @@ export class UserModel {
     const data = await User.findByIdAndUpdate(id, body, {
       runValidators: true,
       new: true
-    })
+    });
 
     return data;
   }
-  public async fetchUserActivePlan(userId:string){
+  public async fetchUserActivePlan(userId: string){
     const userPlan = await User.aggregate([
       {$match:{_id:new ObjectID(userId)}},
       {
@@ -104,15 +104,15 @@ export class UserModel {
     return userPlan[0]?.activePlan || null;
   }
 
-  public async addPlanToUser(userId:string,activePlanName:string,activePlanId:string){
-    const planRef:IPlanRef = {planName:activePlanName,planRef:activePlanId}
+  public async addPlanToUser(userId: string,activePlanName: string,activePlanId: string){
+    const planRef: IPlanRef = {planName:activePlanName,planRef:activePlanId};
     const result = await User.findByIdAndUpdate(userId,{activePlan:planRef});
   }
   
 
  
 
-  public async expireUserPlan(userId:string){
+  public async expireUserPlan(userId: string){
     const result = await User.findByIdAndUpdate(userId,{$unset:{activePlan:1}});
   }
 
@@ -132,13 +132,13 @@ export class UserModel {
     return { _id: data._id };
   }
 
-  async createNewUser(body:IUser){
+  async createNewUser(body: IUser){
 try{
   body.role="user";
   const existingUser = await this.isUserExistByPhone(body.phone);
   let data: IUserModel;
   if (!existingUser) {
-    const wallet:IWalletModel = await walletModel.createWallet();
+    const wallet: IWalletModel = await walletModel.createWallet();
     body.walletId = wallet._id;
     const newUser: IUserModel = new User(body);
     data = await newUser.addNewUser();
@@ -148,7 +148,7 @@ try{
   }
   return existingUser;
 }catch(err){
-  throw new HTTP400Error(err.message)
+  throw new HTTP400Error(err.message);
 }
   }
 
@@ -156,7 +156,7 @@ try{
     try {
       const userExist = await this.findUserByPhone(body.phone);;
       if(userExist) throw new HTTP401Error("USER_ALREADY_EXIST");
-     const user:IUserModel = await this.createNewUser(body);
+     const user: IUserModel = await this.createNewUser(body);
       const otp = this.updateOtp(user._id);
       const otpData = await this.sendOtpToMobile(otp, body.phone);
       if (otpData.proceed) {
@@ -172,8 +172,8 @@ try{
     }
   }
 
-  public async loginWithPhone(body:IUser){
-    const user:IUserModel = await this.findUserByPhone(body.phone);
+  public async loginWithPhone(body: IUser){
+    const user: IUserModel = await this.findUserByPhone(body.phone);
     if(!user) throw new HTTP401Error("USER_NOT_FOUND");
     const otp = this.updateOtp(user._id);
     const otpData = await this.sendOtpToMobile(otp, body.phone);
@@ -182,8 +182,8 @@ try{
     }
   }
 
-  public async resendOTP(id:string,body:any){
-    const user:IUserModel = await User.findOne({_id:new ObjectID(id),phone:sanatizeMobile(body.phoneNumber)});
+  public async resendOTP(id: string,body: any){
+    const user: IUserModel = await User.findOne({_id:new ObjectID(id),phone:sanatizeMobile(body.phoneNumber)});
     if(!user) throw new HTTP401Error("USER_NOT_FOUND");
     const otp = this.updateOtp(user._id);
     const otpData = await this.sendOtpToMobile(otp, body.phone);
@@ -192,15 +192,15 @@ try{
     }
   }
 
-  private async findUserByPhone(phone:string){
+  private async findUserByPhone(phone: string){
     return await User.findOne({phone});
   }
 
   public async signUp(body: IUserModel) {
     try {
       await this.isUserExist(body);
-      body.role = 'user';
-      let data = await this.add(body);
+      body.role = "user";
+      const data = await this.add(body);
     
       const userData = await this.addNewToken(data._id);
 
@@ -218,13 +218,13 @@ try{
 
       // 1>  check email and password exist
       if (!username || !password) {
-        throw new HTTP400Error('Please provide username or password');
+        throw new HTTP400Error("Please provide username or password");
       }
       // 2> check if user exist and password is correct
-      const user = await User.findOne({ username: username }).select('+password');
+      const user = await User.findOne({ username: username }).select("+password");
 
       if (user) {
-        throw new HTTP400Error('Invalid username or password');
+        throw new HTTP400Error("Invalid username or password");
       }
     } catch (e) {
       throw new HTTP400Error(e.message);
@@ -237,13 +237,13 @@ try{
 
       // 1>  check email and password exist
       if (!username || !password) {
-        throw new HTTP400Error('Please provide username or password');
+        throw new HTTP400Error("Please provide username or password");
       }
       // 2> check if user exist and password is correct
-      const user = await User.findOne({ username: username }).select('+password');
+      const user = await User.findOne({ username: username }).select("+password");
 
       if (!user || !(await user.correctPassword(password, user.password))) {
-        throw new HTTP400Error('Invalid email or password');
+        throw new HTTP400Error("Invalid email or password");
       }
       // 3> if eveything is ohkay send the token back
       const userData = await this.addNewToken(user._id);
@@ -256,7 +256,7 @@ try{
 
   public async verifyUser(otp: string, userId: string) {
     // console.log("verify user ", userId, otp);
-    return { proceed: true }
+    return { proceed: true };
 
   }
   public async isUserExistByPhone(phone: string) {
@@ -268,8 +268,8 @@ try{
     try {
       //, { appleSub: data.id }
       console.log(data);
-      let userInfo = await User.findOne({ $or: [{ $and: [{ email: { $ne: null } }, { email: { $eq: data.email } }] }, { $and: [{ facebookId: { $ne: null } }, { facebookId: { $eq: data.id } }] }] });
-      console.log('User At Social Auth :', userInfo);
+      const userInfo = await User.findOne({ $or: [{ $and: [{ email: { $ne: null } }, { email: { $eq: data.email } }] }, { $and: [{ facebookId: { $ne: null } }, { facebookId: { $eq: data.id } }] }] });
+      console.log("User At Social Auth :", userInfo);
       if (userInfo) {
         console.log(userInfo);
         console.log(userInfo, "User info here");
@@ -288,38 +288,38 @@ try{
   public async loginViaSocialAccessToken(body: any) {
     try {
       let user;
-      if (body.authProvider === 'google') {
+      if (body.authProvider === "google") {
         user = await socialAuth.getGoogleUserInfo(body.access_token);
-      } else if (body.authProvider === 'facebook') {
+      } else if (body.authProvider === "facebook") {
         user = await socialAuth.getFacebookUserInfo(body.access_token);
-      } else if (body.authProvider === 'apple') {
+      } else if (body.authProvider === "apple") {
         // user = await socialAuth.verifyAppleUserInfo(body);
       }
-      console.log('Login Info as Fetched By Auth Provider : ', user)
-      let response = await this.authenticateWithAccesToken(user);
+      console.log("Login Info as Fetched By Auth Provider : ", user);
+      const response = await this.authenticateWithAccesToken(user);
 
       if (!response.isExisted) {
         let u;
-        let userName = await this.generateValidUsername(user.given_name);
-        if (body.authProvider === 'facebook') {
+        const userName = await this.generateValidUsername(user.given_name);
+        if (body.authProvider === "facebook") {
           u = {
-            role: 'user',
+            role: "user",
             firstName: `${user.given_name}`,
             username: userName,
             lastName: `${user.family_name}`,
             phone: body.phone,
             facebookId: user.id
-          }
-        } else if (body.authProvider === 'google') {
+          };
+        } else if (body.authProvider === "google") {
           console.log(user);
           u = {
-            role: 'user',
+            role: "user",
             firstName: `${user.given_name}`,
             username: userName,
             lastName: `${user.family_name}`,
             phone: body.phone,
             email: user.email,
-          }
+          };
         }
 
         const data = await this.add(u);
@@ -338,7 +338,7 @@ try{
 
     const data = User.findOneAndUpdate({ id: userId }, {
       $push: { "followers": id }
-    })
+    });
 
     return data;
   };
@@ -350,7 +350,7 @@ try{
   public async addFollowing(id: string, userId: string) {
     const data = User.findOneAndUpdate({ _id: userId }, {
       $push: { "following": id }
-    })
+    });
 
     return data;
   };
@@ -359,7 +359,7 @@ try{
   public async addFollowRequest(id: string, userId: string) {
     const data = User.findOneAndUpdate({ id: userId }, {
       $push: { "followRequest": id }
-    })
+    });
 
     return data;
   };
@@ -372,7 +372,7 @@ try{
     if (data) {
       await User.findOneAndUpdate({ id: userId }, {
         $push: { "followRequest": id }
-      })
+      });
 
       await User.findOneAndUpdate({ id }, {
         $push: { "following": userId }
@@ -413,14 +413,14 @@ try{
   //   return userName;
   // }
 
-  public signToken = (dataToStore:IDataStoredInToken) => {
+  public signToken = (dataToStore: IDataStoredInToken) => {
     return jwt.sign(dataToStore, commonConfig.jwtSecretKey, {
       expiresIn: process.env.JWT_EXPIRES_IN,
     });
   };
 
 
-  public async addNewToken(dataToStore:IDataStoredInToken) {
+  public async addNewToken(dataToStore: IDataStoredInToken) {
     const token = this.signToken(dataToStore);
 
     const data = {
@@ -452,7 +452,7 @@ try{
         this.updateOtp(id);
       const wallet = await walletModel.fetchWalletByUserId(id);
       const data = await User.findOneAndUpdate({ _id: new ObjectID(id) }, { $set: { isVerified: true,walletId:wallet._id, } }, { new: true });
-      const dataToStore:IDataStoredInToken = {id,walletId:wallet._id};
+      const dataToStore: IDataStoredInToken = {id,walletId:wallet._id};
       const tokenData = await this.addNewToken(dataToStore);
       const cookie = this.createCookie(tokenData);
 
@@ -468,16 +468,16 @@ try{
   }
   private async generateValidUsername(firstName: string, id: string | null = null) {
     let s = this.randomString(6);
-    let userName = `${firstName}_${s}`
+    let userName = `${firstName}_${s}`;
     if (id == null) {
       while ((await User.findOne({ "userName": userName }).count()) > 0) {
         s = this.randomString(6);
-        userName = `${firstName}_${s}`
+        userName = `${firstName}_${s}`;
       }
     } else {
       while ((await User.findOne({ _id: { $ne: id }, "userName": userName }).count()) > 0) {
         s = this.randomString(6);
-        userName = `${firstName}_${s}`
+        userName = `${firstName}_${s}`;
       }
     }
     return userName;
@@ -490,15 +490,15 @@ try{
   public async addPhone(body: any) {
     try {
       let user;
-      if (body.authProvider === 'google') {
+      if (body.authProvider === "google") {
         user = await socialAuth.getGoogleUserInfo(body.access_token);
-      } else if (body.authProvider === 'facebook') {
+      } else if (body.authProvider === "facebook") {
         user = await socialAuth.getFacebookUserInfo(body.access_token);
       }
-      console.log('User At Addding Phone In Social Auth:', user);
+      console.log("User At Addding Phone In Social Auth:", user);
       if (user) {
-        let temp = await User.findOne({ $or: [{ $and: [{ email: { $ne: null } }, { email: { $eq: user.email } }] }, { $and: [{ facebookId: { $ne: null } }, { facebookId: { $eq: user.id } }] }] }); //If User exist but starting facebook auth
-        let updatePhone = await User.findOne({ $or: [{ facebookId: user.id }, { appleSub: user.id }] }); // If user added facebookId but while adding phone number entred worng number and an OTP is sent
+        const temp = await User.findOne({ $or: [{ $and: [{ email: { $ne: null } }, { email: { $eq: user.email } }] }, { $and: [{ facebookId: { $ne: null } }, { facebookId: { $eq: user.id } }] }] }); //If User exist but starting facebook auth
+        const updatePhone = await User.findOne({ $or: [{ facebookId: user.id }, { appleSub: user.id }] }); // If user added facebookId but while adding phone number entred worng number and an OTP is sent
         if (temp) {
           // if (body.authProvider === 'facebook') {
           //   await User.updateOne({ phone: body.phone }, { $set: { facebookId: user.id } });
@@ -520,7 +520,7 @@ try{
             throw new HTTP400Error("Unable to Send OTP");
           }
         } else if (updatePhone) {
-          let data = await User.findOneAndUpdate({ $or: [{ facebookId: user.id }, { appleSub: user.id }] }, { $set: { phone: body.phone } });
+          const data = await User.findOneAndUpdate({ $or: [{ facebookId: user.id }, { appleSub: user.id }] }, { $set: { phone: body.phone } });
           if (data) {
             const otp = this.updateOtp(data._id);
             console.log(otp);
@@ -533,33 +533,33 @@ try{
               throw new HTTP400Error("Unable to Send OTP");
             }
           } else {
-            throw new HTTP400Error('Error in Facebook User for Updatiing Phone');
+            throw new HTTP400Error("Error in Facebook User for Updatiing Phone");
           }
         } else { // If we are adding a completely new user
           let u;
-          let userName = await this.generateValidUsername(user.given_name);
-          if (body.authProvider === 'facebook') {
+          const userName = await this.generateValidUsername(user.given_name);
+          if (body.authProvider === "facebook") {
             u = {
-              role: 'user',
+              role: "user",
               firstName: `${user.given_name}`,
               username: userName,
               lastName: `${user.family_name}`,
               phone: body.phone,
               facebookId: user.id
-            }
-          } else if (body.authProvider === 'google') {
+            };
+          } else if (body.authProvider === "google") {
             console.log(user);
             u = {
-              role: 'user',
+              role: "user",
               firstName: `${user.given_name}`,
               username: userName,
               lastName: `${user.family_name}`,
               phone: body.phone,
               email: user.email,
-            }
+            };
           }
 
-          let data = await this.add(u);
+          const data = await this.add(u);
           const otp = this.updateOtp(data._id);
           console.log(otp);
           let otpData;
@@ -572,7 +572,7 @@ try{
           }
         }
       } else {
-        throw new HTTP400Error('Not Authorised to edit phone number');
+        throw new HTTP400Error("Not Authorised to edit phone number");
       }
     } catch (e) {
       console.log(e);
@@ -634,10 +634,10 @@ try{
 
     return { proceed: false };
   };
-  public async getAccountMetrics(userId:string){
+  public async getAccountMetrics(userId: string){
     console.log("user id is ",userId);
     
-    let result = await User.aggregate([
+    const result = await User.aggregate([
       { $match: {_id:new ObjectID(userId)} },
       { $set: { _id: { $toObjectId: "$_id" } } },
       {
@@ -656,7 +656,7 @@ try{
     },
     {
       $unwind: {
-          path: '$devices'
+          path: "$devices"
               }
   },
   {$project:{
@@ -740,9 +740,9 @@ try{
         $group: {
           _id:"$_id",
              totalDevices : {$sum: 1},
-             activeDevices:  {'$sum': {
-              '$cond': [
-                  { '$eq': ['$authState', true]},
+             activeDevices:  {"$sum": {
+              "$cond": [
+                  { "$eq": ["$authState", true]},
                   1, 
                   0
               ]

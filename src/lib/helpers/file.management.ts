@@ -1,20 +1,20 @@
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
 export class FileManagement{
-    public async deleteFile(filePath:string){
+    public async deleteFile(filePath: string){
       return new Promise((resolve)=>{
         console.log("delete path ",path.join(__dirname, filePath));
         
         try{
           fs.unlink(filePath,()=>{
-            resolve({error:false})
+            resolve({error:false});
           });
         }catch(e){
           console.log("error in deleting file ",e);
-         resolve({error:true,message:e.message})
+         resolve({error:true,message:e.message});
         }
-      })
+      });
     }
 }
 

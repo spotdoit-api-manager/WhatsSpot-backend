@@ -16,21 +16,21 @@ exports.OTPMessagesService = void 0;
 const index_1 = require("./../utils/index");
 const index_2 = require("./../../config/index");
 const axios_1 = __importDefault(require("axios"));
-const plivo = require('plivo');
+const plivo = require("plivo");
 class OTPMessagesService {
     constructor() {
         this.sendTextLocalMessage = (to, message) => __awaiter(this, void 0, void 0, function* () {
-            return axios_1.default.get('https://api.textlocal.in/send/', {
+            return axios_1.default.get("https://api.textlocal.in/send/", {
                 params: {
                     apiKey: "jkhljkhkljhkljhkljh7i87gho87y8y8",
                     // sender: 'SENDER',
-                    numbers: '91' + to,
+                    numbers: "91" + to,
                     message: message
                 }
             }).then((response) => {
                 const responseJson = response.data;
                 console.log(responseJson);
-                if (responseJson.status === 'success') {
+                if (responseJson.status === "success") {
                     console.log(`Send OTP Success to ${to}`);
                     return { proceed: true };
                 }
@@ -58,16 +58,16 @@ class OTPMessagesService {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("sending message to ", number, message);
             const body = {
-                route: 'v3',
+                route: "v3",
                 sender_id: index_2.fast2SmsConfig.senderId,
                 message: message,
-                language: 'english',
+                language: "english",
                 flash: 0,
                 numbers: index_1.deSanatizeMobile(number),
             };
             try {
                 const result = yield axios_1.default.post(index_2.fast2SmsConfig.url, body, {
-                    headers: { authorization: index_2.fast2SmsConfig.authToken, 'content-type': 'application/json' },
+                    headers: { authorization: index_2.fast2SmsConfig.authToken, "content-type": "application/json" },
                 });
                 if (result.data && result.data.return) {
                     return { proceed: true };
@@ -75,7 +75,7 @@ class OTPMessagesService {
                 return { proceed: false, message: result.data.message };
             }
             catch (err) {
-                console.error('sendFast2Sms send error' + err);
+                console.error("sendFast2Sms send error" + err);
                 return { proceed: false };
             }
         });

@@ -17,12 +17,12 @@ exports.mongoUrl = () => {
 exports.configCors = {
     // Allow your domains to restrict ill apis.
     allowOrigin: [
-        'http://localhost:3000',
-        'http://127.0.0.1:5500',
-        'http://localhost:4200',
-        'https://spotdoit.in',
-        'https://services.spotdoit.in',
-        'https://services-console.spotdoit.in'
+        "http://localhost:3000",
+        "http://127.0.0.1:5500",
+        "http://localhost:4200",
+        "https://spotdoit.in",
+        "https://services.spotdoit.in",
+        "https://services-console.spotdoit.in"
         //add your origin
     ],
     // Expose additional which are restricted.
@@ -46,7 +46,7 @@ exports.textLocalConfig = {
 exports.s3Config = {
     accessKey: process.env.S3_ACCEESS_ID || "",
     secretKey: process.env.S3_SECRET_KEY || "",
-    sign: process.env.S3_SIGN_VERSION || 'v4',
+    sign: process.env.S3_SIGN_VERSION || "v4",
     region: process.env.S3_REGION || "us-east-1",
     url: process.env.S3_URL || "",
 };
@@ -64,9 +64,9 @@ exports.paginationConfig = {
     MAX_NOTIFICATIONS: 50
 };
 exports.googleOAuth = {
-    CLIENT_ID: '737333346336-s4mkj3ud2l79rug8tgg7u1u1231g6u94.apps.googleusercontent.com',
-    CLIENT_SECRET: 'xOE1E9P46fTZo2Kwq6UsE7Rs',
-    REDIRECT: 'http://ec2-13-235-90-125.ap-south-1.compute.amazonaws.com:2112/api/v1/user/login/socialAuth/google/callBack'
+    CLIENT_ID: "737333346336-s4mkj3ud2l79rug8tgg7u1u1231g6u94.apps.googleusercontent.com",
+    CLIENT_SECRET: "xOE1E9P46fTZo2Kwq6UsE7Rs",
+    REDIRECT: "http://ec2-13-235-90-125.ap-south-1.compute.amazonaws.com:2112/api/v1/user/login/socialAuth/google/callBack"
 };
 exports.razorPaySecrets = {
     key: process.env.RazorPay_KEY,

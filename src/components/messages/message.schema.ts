@@ -1,4 +1,4 @@
-import { IMessage } from './message.interface';
+import { IMessage } from "./message.interface";
 import { Document, Model, model, Schema, SchemaType, SchemaTypes } from "mongoose";
 import { validateMobile } from "../../lib/utils";
 
@@ -70,7 +70,7 @@ const messageSchema = new Schema(
 
 messageSchema.methods.addMessage = async function () {
   return this.save();
-}
+};
 
 export const MessageQueue: Model<IMessageModel> = model<IMessageModel>("MessageQueue", messageSchema);
 export const FastMessage: Model<IMessageModel> = model<IMessageModel>("FastMessage", messageSchema);

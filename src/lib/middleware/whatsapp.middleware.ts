@@ -1,10 +1,10 @@
-import { IDeviceTokenData } from './../../components/device/device.interface';
-import { deviceKeyConfig } from './../../config/index';
-import { IDeviceModel } from './../../components/device/device.shema';
+import { IDeviceTokenData } from "./../../components/device/device.interface";
+import { deviceKeyConfig } from "./../../config/index";
+import { IDeviceModel } from "./../../components/device/device.shema";
 import { NextFunction, Request, Response } from "express";
-import jwt from 'jsonwebtoken';
-import deviceModel from '../../components/device/device.model';
-import { HTTP401Error } from '../utils/httpErrors';
+import jwt from "jsonwebtoken";
+import deviceModel from "../../components/device/device.model";
+import { HTTP401Error } from "../utils/httpErrors";
 
 export const DeviceKeyValidator = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -15,8 +15,8 @@ export const DeviceKeyValidator = async (req: Request, res: Response, next: Next
             
             if (tokenData) {
                 req.deviceId = tokenData.deviceId;
-                req.userId =tokenData.userId
-                req.walletId = tokenData.walletId
+                req.userId =tokenData.userId;
+                req.walletId = tokenData.walletId;
                 next();
             }
         } else {

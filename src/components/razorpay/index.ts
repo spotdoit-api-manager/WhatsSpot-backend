@@ -11,4 +11,4 @@ export default [
         method:"post",
         handler:[razorpayController.verifyPayment]
     }
-]
+];

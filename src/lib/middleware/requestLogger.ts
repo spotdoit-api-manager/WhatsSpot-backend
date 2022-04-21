@@ -12,10 +12,10 @@ const bgGreen = chalk.default.bgGreenBright;
 const bgYellow = chalk.default.bgYellow;
 
 interface Logger {
-    method: String,
-    url: String,
-    status: Number,
-    time: Number
+    method: string;
+    url: string;
+    status: number;
+    time: number;
 }
 
 export const requestLogger = (req: Request, res: Response, next: Next) => {
@@ -35,7 +35,7 @@ export const requestLogger = (req: Request, res: Response, next: Next) => {
 
 
 const reqConsoleLogger = (logValue: Logger) => {
-    let { status, method, url, time } = logValue;
+    const { status, method, url, time } = logValue;
     if (status < 400) {
         log(green(`${method} ${url} -> `) + bgGreen(`${status}`) + cyan(` ${time}ms`));
     } else if (status < 500) {
@@ -43,4 +43,4 @@ const reqConsoleLogger = (logValue: Logger) => {
     } else {
         log(red(`${method} ${url} -> `) + bgRed(`${status}`) + cyan(` ${time}ms`));
     }
-}
+};

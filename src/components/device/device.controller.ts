@@ -1,8 +1,8 @@
-import { IMessage } from './../messages/message.interface';
+import { IMessage } from "./../messages/message.interface";
 import { NextFunction, Request, Response } from "express";
 import ResponseHandler from "../../lib/helpers/responseHandler";
 import deviceModel from "./device.model";
-import messageModel from '../messages/message.model';
+import messageModel from "../messages/message.model";
 
 export class DeviceController {
   public newDevice = async (

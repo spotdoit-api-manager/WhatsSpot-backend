@@ -1,5 +1,5 @@
 import { Document, model, Model, Mongoose, Schema, SchemaType, SchemaTypes } from "mongoose";
-import { IUserPlan, IPLAN } from './plans.interface';
+import { IUserPlan, IPLAN } from "./plans.interface";
 
 export interface IPlanModel extends IPLAN,Document{
     addPlan(): any;
@@ -51,10 +51,10 @@ isBest:{
 
   planSchema.methods.addPlan = async function () {
     return this.save();
-}
+};
 
 
-const userPlanSchema:Schema = new Schema({
+const userPlanSchema: Schema = new Schema({
     userId:{
         required:true,
         type:SchemaTypes.ObjectId,
@@ -92,11 +92,11 @@ const userPlanSchema:Schema = new Schema({
         enum:["ACTIVE","EXPIRED"]
 
     }
-},{timestamps: true})
+},{timestamps: true});
 
 userPlanSchema.methods.savePlan = async function () {
     return this.save();
-}
+};
 
   export const Plan: Model<IPlanModel> = model<IPlanModel>("Plan", planSchema);
-  export const UserPlan:Model<IUserPlanModel> = model<IUserPlanModel>("UserPlan",userPlanSchema);
+  export const UserPlan: Model<IUserPlanModel> = model<IUserPlanModel>("UserPlan",userPlanSchema);

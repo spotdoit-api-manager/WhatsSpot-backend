@@ -1,4 +1,4 @@
 export interface ITestMessage{
-    phoneNumber:string,
-    messageCount:number,
+    phoneNumber: string;
+    messageCount: number;
 }
