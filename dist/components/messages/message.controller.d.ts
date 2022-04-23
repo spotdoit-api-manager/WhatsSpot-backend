@@ -4,6 +4,7 @@ export declare class MessageController {
     sendFastMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     sendTextMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     sendTestMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    sendRawMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 }
 declare const _default: MessageController;
 export default _default;

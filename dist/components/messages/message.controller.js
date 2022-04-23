@@ -62,6 +62,17 @@ class MessageController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.sendRawMessage = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("Send raw message request", req.body.deviceId, req.body.message);
+                responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield testMessage_model_1.default.sendRawMessage(req.body.to, req.body.message)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
     }
 }
 exports.MessageController = MessageController;

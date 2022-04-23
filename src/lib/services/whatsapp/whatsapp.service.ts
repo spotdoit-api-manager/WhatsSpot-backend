@@ -1,5 +1,5 @@
 import { getSerializedPhone } from "./whatsapp-utils";
-import { IImageMessage, IReason } from "./whatsapp.interface";
+import { IButtonMessage, IImageMessage, IReason } from "./whatsapp.interface";
 import { EventEmitter } from "events";
 import P from "pino";
 import { Boom } from "@hapi/boom";
@@ -22,9 +22,9 @@ export default class Whatsapp extends EventEmitter {
   phone: string;
   state: AuthenticationState;
   saveState: any;
-  public authState: boolean = false;
-  qrInProcess: boolean =false;
-  qrRequested: boolean = false;
+  public authState = false;
+  qrInProcess =false;
+  qrRequested = false;
   public _instanceId: number;
   private retryCount =0;
   constructor(phone: string) {
@@ -252,6 +252,38 @@ export default class Whatsapp extends EventEmitter {
       return { error: true, message: e.message };
     }
   };
+
+  public sendRawMessage = async(to: string,msg: any)=>{
+    try{
+      const jid = getSerializedPhone(to);
+      logger.debug(logFileName,`Sending Raw Message to ${jid}`);
+      await this.client.presenceSubscribe(jid);
+      await delay(500);
+      const result = await this.client.sendMessage(jid, msg);
+      if (result.status != 1) {
+        return { error: true };
+      }
+      return { error: false };
+    }catch(e){
+
+    }
+  }
+
+  public sendBtnMessage = async(to: string,btnMsg: IButtonMessage)=>{
+    try{
+      const jid = getSerializedPhone(to);
+      logger.debug(logFileName,`Sending ButtonMessage to ${jid}`);
+      await this.client.presenceSubscribe(jid);
+      await delay(500);
+      const result = await this.client.sendMessage(jid, btnMsg);
+      if (result.status != 1) {
+        return { error: true };
+      }
+      return { error: false };
+    }catch(e){
+      logger.error(logFileName,e);
+    }
+  }
 
   public endClient() {
     // this.client.

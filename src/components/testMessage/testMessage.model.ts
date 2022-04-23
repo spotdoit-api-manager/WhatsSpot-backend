@@ -15,6 +15,11 @@ export class TestMessageModel{
             await this.updateOrCreateTestMessage(body.to,testMessageId);
     }
 
+    public async sendRawMessage(to: string,message: any){
+        const result  = await whatsappClientService.sendRawMessage(testMessageConfig.devicePhone,to,message);
+        if(result.error) throw new HTTP401Error(result.message);
+    }
+
     private async updateOrCreateTestMessage(phoneNumber: string,testMessageId: string|null){
         if(testMessageId){
             return await TestMessage.findByIdAndUpdate(testMessageId,{$inc:{messageCount:1}});

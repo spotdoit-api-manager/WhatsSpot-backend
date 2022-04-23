@@ -31,6 +31,13 @@ class TestMessageModel {
             yield this.updateOrCreateTestMessage(body.to, testMessageId);
         });
     }
+    sendRawMessage(to, message) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield whatsapp_client_service_1.default.sendRawMessage(config_1.testMessageConfig.devicePhone, to, message);
+            if (result.error)
+                throw new httpErrors_1.HTTP401Error(result.message);
+        });
+    }
     updateOrCreateTestMessage(phoneNumber, testMessageId) {
         return __awaiter(this, void 0, void 0, function* () {
             if (testMessageId) {

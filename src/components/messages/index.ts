@@ -19,5 +19,11 @@ export default [
         method: "post",
         escapeAuth: true,
         handler: [validateTestMessageRequest,messageController.sendTestMessage]
+    },
+    {
+        path:"/message/rawMessage",
+        method: "post",
+        escapeAuth: true,
+        handler: [messageController.sendRawMessage]
     }
 ];

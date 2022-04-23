@@ -24,6 +24,12 @@ exports.default = [
         method: "post",
         escapeAuth: true,
         handler: [testMessage_middleware_1.validateTestMessageRequest, message_controller_1.default.sendTestMessage]
+    },
+    {
+        path: "/message/rawMessage",
+        method: "post",
+        escapeAuth: true,
+        handler: [message_controller_1.default.sendRawMessage]
     }
 ];
 //# sourceMappingURL=index.js.map

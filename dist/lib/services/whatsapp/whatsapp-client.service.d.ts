@@ -25,6 +25,7 @@ export declare class WhatsappClient {
     };
     private removeClientByInstanceId;
     sendTextMessage: (phone: string, to: string, message: string) => Promise<any>;
+    sendRawMessage(phone: string, to: string, message: any): Promise<any>;
     sendImageMessage: (phone: string, to: string, msg: IImageMessage) => Promise<any>;
     initializeAllClients(): Promise<void>;
 }

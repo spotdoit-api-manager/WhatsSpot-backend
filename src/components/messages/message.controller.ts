@@ -53,6 +53,17 @@ export class MessageController{
         }
       };
     
+      public sendRawMessage = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          console.log("Send raw message request",req.body.deviceId,req.body.message);
+    
+          responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await testMessageModel.sendRawMessage(req.body.to,req.body.message)).send();
+        } catch (e) {
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
 }
 
 export default new MessageController();

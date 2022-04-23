@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/interface-name-prefix */
 import socketManager from "./../socket";
 import { HTTP200Error } from "../../utils/httpErrors";
 
@@ -113,6 +114,19 @@ export class WhatsappClient {
             return { error: true, message: e.message };
         }
     };
+
+    public async sendRawMessage(phone: string,to: string,message: any){
+        try {
+            logger.info(logFileName,`Sending Raw Message to ${to}`);
+            const clientInstance = this.getClientInstanceByPhone(phone);
+            if (!clientInstance) return { error: true, message: "CLIENT_NOT_FOUND" };
+            if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+            const data = await clientInstance.sendRawMessage(sanatizeMobile(to), message);
+            return data;
+        } catch (e) {
+            return { error: true, message: e.message };
+        }
+    }
 
     public sendImageMessage = async (phone: string, to: string, msg: IImageMessage) => {
         try {

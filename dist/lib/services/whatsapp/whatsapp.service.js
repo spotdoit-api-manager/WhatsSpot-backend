@@ -140,6 +140,37 @@ class Whatsapp extends events_1.EventEmitter {
                 return { error: true, message: e.message };
             }
         });
+        this.sendRawMessage = (to, msg) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const jid = whatsapp_utils_1.getSerializedPhone(to);
+                logger_1.default.debug(logFileName, `Sending Raw Message to ${jid}`);
+                yield this.client.presenceSubscribe(jid);
+                yield baileys_1.delay(500);
+                const result = yield this.client.sendMessage(jid, msg);
+                if (result.status != 1) {
+                    return { error: true };
+                }
+                return { error: false };
+            }
+            catch (e) {
+            }
+        });
+        this.sendBtnMessage = (to, btnMsg) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const jid = whatsapp_utils_1.getSerializedPhone(to);
+                logger_1.default.debug(logFileName, `Sending ButtonMessage to ${jid}`);
+                yield this.client.presenceSubscribe(jid);
+                yield baileys_1.delay(500);
+                const result = yield this.client.sendMessage(jid, btnMsg);
+                if (result.status != 1) {
+                    return { error: true };
+                }
+                return { error: false };
+            }
+            catch (e) {
+                logger_1.default.error(logFileName, e);
+            }
+        });
         this._instanceId = instance_provider_1.default.addInstance(this);
         this.state = baileys_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
         this.saveState = baileys_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
