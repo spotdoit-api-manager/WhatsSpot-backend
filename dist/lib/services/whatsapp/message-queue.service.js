@@ -67,7 +67,7 @@ class MessageQueueService {
                         continue;
                     try {
                         const body = { to: contact.phoneNumber, message: message.message };
-                        const result = yield message_model_1.default.sendTextMessage(message.userId, body.to, body.message, message.deviceId, walletId);
+                        const result = yield message_model_1.default.sendMessage(message.userId, body.to, body.message, message.messageType, message.deviceId, walletId);
                         if (result.error) {
                             anyContactError = true;
                             yield message_model_1.default.updateMessageToGroupStatus(message._id, contact, message_interface_1.EMessageStatus.ERROR, result.message);
@@ -95,7 +95,7 @@ class MessageQueueService {
                     try {
                         const walletId = (yield wallet_model_1.default.getWalletIdByUserId(message.userId));
                         const body = { to: message.to, message: message.message };
-                        const result = yield message_model_1.default.sendTextMessage(message.userId, body.to, body.message, message.deviceId, walletId);
+                        const result = yield message_model_1.default.sendMessage(message.userId, body.to, body.message, message.messageType, message.deviceId, walletId);
                         if (!result.error) {
                             yield message_model_1.default.updateMessageStatus(message._id, message_interface_1.EMessageStatus.SENT);
                             //  await walletModel.makePaymentFromWallet(walletId,message.userId,parseFloat(process.env.TEXT_MESSAGE_RATE),`sent queue message to ${message.to} from ${message.phone}`,{deviceId:message.deviceId,to:message.to,type:EMessageStatus.PENDING});
@@ -124,7 +124,7 @@ class MessageQueueService {
                     try {
                         // const walletId = await walletModel.getWalletIdAndValidateTransactionAmount(message.userId,parseFloat(process.env.TEXT_MESSAGE_RATE));
                         const walletId = yield wallet_model_1.default.getWalletIdByUserId(message.userId);
-                        const result = yield message_model_1.default.sendTextMessage(message.userId, message.to, message.message, message.deviceId, walletId);
+                        const result = yield message_model_1.default.sendMessage(message.userId, message.to, message.message, message.messageType, message.deviceId, walletId);
                         // const result: any = await whatsappClientService.sendTextMessage(message.phone, message.to as string, message.message);
                         if (!result.error) {
                             yield message_model_1.default.updateMessageStatus(message._id, message_interface_1.EMessageStatus.SENT);

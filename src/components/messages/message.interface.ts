@@ -1,6 +1,10 @@
 
+import { EWhatsappMessageTypes } from './../../lib/services/whatsapp/whatsapp.enum';
+import { IWhatsappMessage, IWhatsappTextMessage } from './../../lib/services/whatsapp/whatsapp.interface';
+
 export interface IMessage {
-    message: string,
+    messageType:EWhatsappMessageTypes;
+    message: IWhatsappMessage,
     to: string ,
     status: String,
     phone: string
@@ -25,3 +29,4 @@ export enum ESendType {
     FAST = "FAST",
     QUEUE = "QUEUE"
 }
+

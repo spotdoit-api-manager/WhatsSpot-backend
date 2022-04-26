@@ -1,16 +1,14 @@
+import { IWhatsappListMessage } from "./whatsapp.interface";
 /* eslint-disable @typescript-eslint/interface-name-prefix */
 import socketManager from "./../socket";
-import { HTTP200Error } from "../../utils/httpErrors";
 
 import { EventEmitter } from "events";
 import clients from "../../../data/clients.data";
 import Whatsapp from "./whatsapp.service";
 import deviceModel from "../../../components/device/device.model";
-import messageQueueService from "./message-queue.service";
-import { IImageMessage } from "./whatsapp.interface";
+import { IImageMessage, IWhatsappTextMessage } from "./whatsapp.interface";
 import { sanatizeMobile } from "../../../lib/utils";
 import instanceProvider from "./instance.provider";
-import planManagerService from "../plan.manager.service";
 import logger from "../../../core/logger";
 interface IWhatsappClient {
     [phone: string]: number;
@@ -102,10 +100,10 @@ export class WhatsappClient {
         }
     }
 
-    public sendTextMessage = async (phone: string, to: string, message: string) => {
+    public sendTextMessage = async (from: string, to: string, message: IWhatsappTextMessage) => {
         try {
             logger.info(logFileName,`Sending Text Message to ${to}`);
-            const clientInstance = this.getClientInstanceByPhone(phone);
+            const clientInstance = this.getClientInstanceByPhone(from);
             if (!clientInstance) return { error: true, message: "CLIENT_NOT_FOUND" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             const data = await clientInstance.sendTextMessage(sanatizeMobile(to), message);
@@ -114,6 +112,19 @@ export class WhatsappClient {
             return { error: true, message: e.message };
         }
     };
+
+    public sendListMessage = async(from: string,to: string,message: IWhatsappListMessage) => {
+        try {
+            logger.info(logFileName,`Sending List Message to ${to}`);
+            const clientInstance = this.getClientInstanceByPhone(from);
+            if (!clientInstance) return { error: true, message: "CLIENT_NOT_FOUND" };
+            if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+            const data = await clientInstance.sendListMessage(sanatizeMobile(to), message);
+            return data;
+        } catch (e) {
+            return { error: true, message: e.message };
+        }
+    }
 
     public async sendRawMessage(phone: string,to: string,message: any){
         try {
@@ -146,18 +157,23 @@ export class WhatsappClient {
 
 
     public async initializeAllClients() {
-        logger.info(logFileName,"INITIALIZING ALL CLIENTS...");
-        const condition = { authState: true };
-        const devices = await deviceModel.findDeviceByCondition(condition);
-        logger.info(logFileName,"Total Clients to Initialize: ", devices.length);
+        if(process.env.RECONNECT_CLIENT === "true"){
+
+            logger.info(logFileName,"INITIALIZING ALL CLIENTS...");
+            const condition = { authState: true };
+            const devices = await deviceModel.findDeviceByCondition(condition);
+            logger.info(logFileName,"Total Clients to Initialize: ", devices.length);
         for (let i = 0; i < devices.length; i++) {
             const device = devices[i];
             console.debug(logFileName,`client${i}:${device.phone}`);
-           const client =  this.addClient(device.phone);
-           await client.initiClient();
+            const client =  this.addClient(device.phone);
+            await client.initiClient();
         }
-
+        
+    }else{
+        logger.warn(logFileName,"Client initialization is disabled");
     }
+}
 
 
 }

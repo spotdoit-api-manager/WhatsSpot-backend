@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageModel = void 0;
+const whatsapp_enum_1 = require("./../../lib/services/whatsapp/whatsapp.enum");
 const bson_1 = require("bson");
 const index_1 = require("./../../lib/utils/index");
 const utils_1 = require("../../lib/utils");
@@ -48,14 +49,14 @@ class MessageModel {
     }
     addMessageToQueue(userId, body, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("add to queue request", body, deviceId);
+            logger_1.default.debug(logFileName, "add to queue request", body, deviceId);
             const device = yield device_model_1.default.findDeviceById(deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const messagesBody = [];
             if (body.isGroup) {
                 body.groups.forEach((group) => {
-                    const newBody = { phone: device.phone, userId, deviceId: deviceId, sendType: message_interface_1.ESendType.QUEUE, to: group._id, message: body.message, status: message_interface_1.EMessageStatus.PENDING, isGroup: true };
+                    const newBody = { phone: device.phone, userId, deviceId: deviceId, sendType: message_interface_1.ESendType.QUEUE, to: group._id, messageType: body.messageType, message: body.message, status: message_interface_1.EMessageStatus.PENDING, isGroup: true };
                     messagesBody.push(newBody);
                 });
                 return yield this.addMultipleMessageToQueue(messagesBody);
@@ -73,7 +74,7 @@ class MessageModel {
                 const to = index_1.sanatizeMobile(numbers[i]);
                 if (!utils_1.validateMobile(to))
                     throw new httpErrors_1.HTTP400Error(`${numbers[i]} is not valid Number at index ${i}`);
-                const newBody = { phone: device.phone, userId, deviceId: deviceId, sendType: message_interface_1.ESendType.QUEUE, to, message: body.message, status: message_interface_1.EMessageStatus.PENDING };
+                const newBody = { phone: device.phone, userId, deviceId: deviceId, sendType: message_interface_1.ESendType.QUEUE, to, messageType: body.messageType, message: body.message, status: message_interface_1.EMessageStatus.PENDING };
                 messagesBody.push(newBody);
             }
             const result = yield this.addMultipleMessageToQueue(messagesBody);
@@ -128,19 +129,19 @@ class MessageModel {
             return { hasActivePlan: false };
         });
     }
-    isPlanReachedMaxMessage(userCurrentPlan) {
-    }
-    sendFastTextMessage(userId, to, messageText, deviceId, walletId) {
+    // private isPlanReachedMaxMessage(userCurrentPlan) {
+    // }
+    sendFastTextMessage(userId, to, message, deviceId, walletId) {
         return __awaiter(this, void 0, void 0, function* () {
             const device = yield device_model_1.default.findDeviceById(deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
-            const result = yield this.sendTextMessage(userId, to, messageText, deviceId, walletId);
-            const newBody = { phone: device.phone, userId, to: to, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, message: messageText, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
+            const result = yield this.sendMessage(userId, to, message, whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, deviceId, walletId);
+            const newBody = { phone: device.phone, userId, to: to, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, messageType: whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
             yield this.saveFastMessage(newBody);
         });
     }
-    sendTextMessage(userId, to, messageText, deviceId, walletId) {
+    sendMessage(userId, to, message, messageType, deviceId, walletId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 to = index_1.sanatizeMobile(to);
@@ -159,7 +160,7 @@ class MessageModel {
                     if (!isValidAmount)
                         throw new Error("NOT_ENOUGH_BALANCE");
                 }
-                const result = yield whatsapp_client_service_1.default.sendTextMessage(device.phone, to, messageText);
+                const result = yield this.sendTypeMessage(messageType, message, device.phone, to);
                 if (result.error)
                     return result;
                 if (hasActivePlan) {
@@ -197,6 +198,17 @@ class MessageModel {
                 return { error: false };
             }
             return { error: true, message: "NOT_ADDED" };
+        });
+    }
+    sendTypeMessage(messageType, message, from, to) {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log("sending type message ", messageType);
+            switch (messageType) {
+                case whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE:
+                    return yield whatsapp_client_service_1.default.sendTextMessage(from, to, message);
+                case whatsapp_enum_1.EWhatsappMessageTypes.LIST_MESSAGE:
+                    return yield whatsapp_client_service_1.default.sendListMessage(from, to, message);
+            }
         });
     }
 }

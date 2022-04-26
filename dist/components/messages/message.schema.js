@@ -28,12 +28,63 @@ const contactSentSchema = new mongoose_1.Schema({
         type: String,
     }
 }, { timestamps: true });
+const whatsappTextMessageSchema = new mongoose_1.Schema({
+    text: {
+        type: String,
+        required: true
+    }
+});
+const whatsappListMessageSchema = new mongoose_1.Schema({
+    title: {
+        type: String,
+        required: true,
+    },
+    text: {
+        type: String,
+        required: true,
+    },
+    footer: {
+        type: String,
+        required: true,
+    },
+    buttonText: {
+        type: String,
+        required: true,
+    },
+    sections: [
+        { title: {
+                type: String,
+                required: true,
+            },
+            rows: [{
+                    title: {
+                        type: String,
+                        required: true,
+                    },
+                    rowId: {
+                        type: String,
+                        required: true,
+                    },
+                    description: {
+                        type: String,
+                        required: false,
+                    },
+                }]
+        }
+    ]
+});
 const messageSchema = new mongoose_1.Schema({
     to: {
         type: String,
         required: true,
     },
-    message: String,
+    messageType: {
+        type: String,
+        enum: ["LIST_MESSAGE", "TEXT_MESSAGE", "BUTTON_MESSAGE"]
+    },
+    message: {
+        type: mongoose_1.Schema.Types.Mixed,
+    },
     sendType: {
         type: String,
         enum: ["FAST", "QUEUE"]

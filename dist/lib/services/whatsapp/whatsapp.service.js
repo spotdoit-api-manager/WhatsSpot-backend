@@ -103,11 +103,27 @@ class Whatsapp extends events_1.EventEmitter {
         this.sendTextMessage = (to, msg) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const jid = whatsapp_utils_1.getSerializedPhone(to);
+                logger_1.default.info(logFileName, `Sending Text Message to ${jid} ${JSON.stringify(msg)}`);
                 yield this.client.presenceSubscribe(jid);
                 yield baileys_1.delay(500);
-                const result = yield this.client.sendMessage(jid, {
-                    text: msg, detectLinks: true,
-                });
+                const result = yield this.client.sendMessage(jid, Object.assign(Object.assign({}, msg), { detectLinks: true }));
+                if (result.status != 1) {
+                    return { error: true };
+                }
+                return { error: false };
+            }
+            catch (e) {
+                logger_1.default.log(e);
+                return { error: true, message: e.message };
+            }
+        });
+        this.sendListMessage = (to, msg) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const jid = whatsapp_utils_1.getSerializedPhone(to);
+                logger_1.default.info(logFileName, `Sending List Message to ${jid} ${JSON.stringify(msg)}`);
+                yield this.client.presenceSubscribe(jid);
+                yield baileys_1.delay(500);
+                const result = yield this.client.sendMessage(jid, Object.assign(Object.assign({}, msg), { detectLinks: true }));
                 if (result.status != 1) {
                     return { error: true };
                 }

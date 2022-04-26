@@ -1,3 +1,5 @@
+import { EWhatsappMessageTypes } from "./../../lib/services/whatsapp/whatsapp.enum";
+import { IWhatsappMessage, IWhatsappTextMessage } from "./../../lib/services/whatsapp/whatsapp.interface";
 import { IMessage, EMessageStatus } from "./message.interface";
 import { IContact, IGroupList } from "../contact/contact.interface";
 export declare class MessageModel {
@@ -10,8 +12,9 @@ export declare class MessageModel {
     addMessageToQueue(userId: string, body: {
         groups: IGroupList[];
         numbers: string | IContact[];
-        message: string;
+        message: IWhatsappMessage;
         isGroup: boolean;
+        messageType: EWhatsappMessageTypes;
     }, deviceId: string): Promise<{
         error: boolean;
         message?: undefined;
@@ -39,9 +42,8 @@ export declare class MessageModel {
     }>;
     fetchGroupMessageSentContacts(messageId: string): Promise<any[]>;
     private hasActivePlan;
-    private isPlanReachedMaxMessage;
-    sendFastTextMessage(userId: string, to: string, messageText: string, deviceId: string, walletId: string): Promise<void>;
-    sendTextMessage(userId: string, to: string, messageText: string, deviceId: string, walletId: string): Promise<any>;
+    sendFastTextMessage(userId: string, to: string, message: IWhatsappTextMessage, deviceId: string, walletId: string): Promise<void>;
+    sendMessage(userId: string, to: string, message: IWhatsappTextMessage, messageType: EWhatsappMessageTypes, deviceId: string, walletId: string): Promise<any>;
     sendImageMessage(body: any, deviceId: string): Promise<void>;
     saveFastMessage(messageBody: IMessage): Promise<{
         error: boolean;
@@ -50,6 +52,7 @@ export declare class MessageModel {
         error: boolean;
         message: string;
     }>;
+    sendTypeMessage(messageType: EWhatsappMessageTypes, message: IWhatsappMessage, from: string, to: string): Promise<any>;
 }
 declare const _default: MessageModel;
 export default _default;

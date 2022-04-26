@@ -46,14 +46,14 @@ export class MessageQueueService {
             const walletId = (await walletModel.getWalletIdByUserId(message.userId));
             const contactsSent = message.contactsSent || [];
 
-            let anyContactError: boolean = false;
+            let anyContactError = false;
             for(let c=0;c<groupContacts.length;c++){
                 const contact: IContact = groupContacts[c];
                 const idx = contactsSent.findIndex((c: IContact)=>c.phoneNumber==contact.phoneNumber);
                 if(idx>-1 && contactsSent[idx].status==EMessageStatus.SENT) continue;
                 try {
                     const body = {to:contact.phoneNumber,message:message.message};
-                    const result: any = await messageModel.sendTextMessage(message.userId,body.to,body.message,message.deviceId,walletId);
+                    const result: any = await messageModel.sendMessage(message.userId,body.to,body.message,message.messageType,message.deviceId,walletId);
                     if (result.error) {
                         anyContactError = true;
                         await messageModel.updateMessageToGroupStatus(message._id,contact, EMessageStatus.ERROR, result.message);
@@ -81,7 +81,7 @@ export class MessageQueueService {
                 try {
                     const walletId = (await walletModel.getWalletIdByUserId(message.userId));
                     const body = {to:message.to,message:message.message};
-                    const result: any = await messageModel.sendTextMessage(message.userId,body.to,body.message,message.deviceId,walletId);
+                    const result: any = await messageModel.sendMessage(message.userId,body.to,body.message,message.messageType,message.deviceId,walletId);
                     if (!result.error) {
                      await messageModel.updateMessageStatus(message._id, EMessageStatus.SENT);
                     //  await walletModel.makePaymentFromWallet(walletId,message.userId,parseFloat(process.env.TEXT_MESSAGE_RATE),`sent queue message to ${message.to} from ${message.phone}`,{deviceId:message.deviceId,to:message.to,type:EMessageStatus.PENDING});
@@ -112,7 +112,7 @@ export class MessageQueueService {
                 try {
                     // const walletId = await walletModel.getWalletIdAndValidateTransactionAmount(message.userId,parseFloat(process.env.TEXT_MESSAGE_RATE));
                     const walletId = await walletModel.getWalletIdByUserId(message.userId);
-                    const result: any = await messageModel.sendTextMessage(message.userId,message.to,message.message,message.deviceId,walletId);
+                    const result: any = await messageModel.sendMessage(message.userId,message.to,message.message,message.messageType,message.deviceId,walletId);
 
                     // const result: any = await whatsappClientService.sendTextMessage(message.phone, message.to as string, message.message);
                     if (!result.error) {

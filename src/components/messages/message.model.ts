@@ -1,5 +1,7 @@
+
+import { EWhatsappMessageTypes } from "./../../lib/services/whatsapp/whatsapp.enum";
 import { ObjectID } from "bson";
-import { IImageMessage } from "./../../lib/services/whatsapp/whatsapp.interface";
+import { IImageMessage, IWhatsappMessage, IWhatsappTextMessage,IWhatsappListMessage } from "./../../lib/services/whatsapp/whatsapp.interface";
 import { sanatizeMobile } from "./../../lib/utils/index";
 import { validateMobile } from "../../lib/utils";
 import { HTTP400Error, HTTP401Error } from "../../lib/utils/httpErrors";
@@ -36,15 +38,15 @@ export class MessageModel {
     }
 
 
-    public async addMessageToQueue(userId: string, body: { groups: IGroupList[]; numbers: string | IContact[]; message: string; isGroup: boolean }, deviceId: string) {
-        console.log("add to queue request", body, deviceId);
+    public async addMessageToQueue(userId: string, body: { groups: IGroupList[]; numbers: string | IContact[]; message: IWhatsappMessage; isGroup: boolean;messageType: EWhatsappMessageTypes }, deviceId: string) {
+        logger.debug(logFileName,"add to queue request", body, deviceId);
         const device = await deviceModel.findDeviceById(deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
 
         const messagesBody: IMessage[] = [];
         if (body.isGroup) {
             body.groups.forEach((group: IGroupList) => {
-                const newBody: IMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.QUEUE, to: group._id, message: body.message, status: EMessageStatus.PENDING, isGroup: true };
+                const newBody: IMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.QUEUE, to: group._id,messageType:body.messageType, message: body.message, status: EMessageStatus.PENDING, isGroup: true };
                 messagesBody.push(newBody);
             });
             return await this.addMultipleMessageToQueue(messagesBody);
@@ -62,7 +64,7 @@ export class MessageModel {
         for (let i = 0; i < numbers.length; i++) {
             const to = sanatizeMobile(numbers[i]);
             if (!validateMobile(to)) throw new HTTP400Error(`${numbers[i]} is not valid Number at index ${i}`);
-            const newBody: IMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.QUEUE, to, message: body.message, status: EMessageStatus.PENDING };
+            const newBody: IMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.QUEUE, to,messageType:body.messageType, message: body.message, status: EMessageStatus.PENDING };
             messagesBody.push(newBody);
         }
 
@@ -107,7 +109,7 @@ export class MessageModel {
     private async hasActivePlan(userId: string) {
         const userCurrentPlan: { activePlanInfo: IUserPlanModel; planInfo: IPlanModel } = await userModel.fetchUserActivePlan(userId);
         if (userCurrentPlan && userCurrentPlan.activePlanInfo) {
-            const isMessageOver: boolean = !Boolean(userCurrentPlan.planInfo.planMaxMessage - userCurrentPlan.activePlanInfo.sentMessageCount);
+            const isMessageOver = !Boolean(userCurrentPlan.planInfo.planMaxMessage - userCurrentPlan.activePlanInfo.sentMessageCount);
             console.log(`isMessageOver is ${isMessageOver}`);
 
             return { hasActivePlan: true, isMessageOver, activePlanInfo: userCurrentPlan.activePlanInfo, planInfo: userCurrentPlan.planInfo };
@@ -115,18 +117,18 @@ export class MessageModel {
         return { hasActivePlan: false };
     }
 
-    private isPlanReachedMaxMessage(userCurrentPlan) {
+    // private isPlanReachedMaxMessage(userCurrentPlan) {
 
-    }
+    // }
 
-    public async sendFastTextMessage(userId: string, to: string, messageText: string, deviceId: string, walletId: string) {
+    public async sendFastTextMessage(userId: string, to: string, message: IWhatsappTextMessage, deviceId: string, walletId: string) {
         const device = await deviceModel.findDeviceById(deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-        const result = await this.sendTextMessage(userId, to, messageText, deviceId, walletId);
-        const newBody: IMessage = { phone: device.phone, userId, to: to, reason: result?.message, sendType: ESendType.FAST, message: messageText, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT };
+        const result = await this.sendMessage(userId, to, message,EWhatsappMessageTypes.TEXT_MESSAGE, deviceId, walletId);
+        const newBody: IMessage = { phone: device.phone, userId, to: to, reason: result?.message, sendType: ESendType.FAST,messageType:EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT };
         await this.saveFastMessage(newBody);
     }
-    public async sendTextMessage(userId: string, to: string, messageText: string, deviceId: string, walletId: string) {
+    public async sendMessage(userId: string, to: string, message: IWhatsappTextMessage,messageType: EWhatsappMessageTypes, deviceId: string, walletId: string) {
         try {
             to = sanatizeMobile(to);
             if (!validateMobile(to)) throw new HTTP401Error("INVALID_NUMBER");
@@ -140,7 +142,7 @@ export class MessageModel {
                 logger.info(logFileName, `VlaidAmount ${isValidAmount}`);
                 if (!isValidAmount) throw new Error("NOT_ENOUGH_BALANCE");
             }
-            const result = await whatsappClientService.sendTextMessage(device.phone, to, messageText);
+            const result = await this.sendTypeMessage(messageType,message,device.phone,to);
             if(result.error) return result;
             if (hasActivePlan) {
                 await plansModel.increamentMessageCount(activePlanInfo._id);
@@ -175,5 +177,19 @@ export class MessageModel {
         }
         return { error: true, message: "NOT_ADDED" };
     }
+
+    public async sendTypeMessage(messageType: EWhatsappMessageTypes,message: IWhatsappMessage,from: string,to: string){
+        console.log("sending type message ",messageType);
+        
+        switch(messageType){
+            case EWhatsappMessageTypes.TEXT_MESSAGE:
+                return await whatsappClientService.sendTextMessage(from, to, message);
+            case EWhatsappMessageTypes.LIST_MESSAGE:
+                return await whatsappClientService.sendListMessage(from, to, message as IWhatsappListMessage);    
+                
+
+        }
+    }
+
 }
 export default new MessageModel();

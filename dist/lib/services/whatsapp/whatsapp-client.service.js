@@ -59,15 +59,30 @@ class WhatsappClient {
                 return result;
             client.getQr();
         });
-        this.sendTextMessage = (phone, to, message) => __awaiter(this, void 0, void 0, function* () {
+        this.sendTextMessage = (from, to, message) => __awaiter(this, void 0, void 0, function* () {
             try {
                 logger_1.default.info(logFileName, `Sending Text Message to ${to}`);
-                const clientInstance = this.getClientInstanceByPhone(phone);
+                const clientInstance = this.getClientInstanceByPhone(from);
                 if (!clientInstance)
                     return { error: true, message: "CLIENT_NOT_FOUND" };
                 if (!clientInstance.authState)
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
                 const data = yield clientInstance.sendTextMessage(utils_1.sanatizeMobile(to), message);
+                return data;
+            }
+            catch (e) {
+                return { error: true, message: e.message };
+            }
+        });
+        this.sendListMessage = (from, to, message) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                logger_1.default.info(logFileName, `Sending List Message to ${to}`);
+                const clientInstance = this.getClientInstanceByPhone(from);
+                if (!clientInstance)
+                    return { error: true, message: "CLIENT_NOT_FOUND" };
+                if (!clientInstance.authState)
+                    return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+                const data = yield clientInstance.sendListMessage(utils_1.sanatizeMobile(to), message);
                 return data;
             }
             catch (e) {
@@ -150,15 +165,20 @@ class WhatsappClient {
     }
     initializeAllClients() {
         return __awaiter(this, void 0, void 0, function* () {
-            logger_1.default.info(logFileName, "INITIALIZING ALL CLIENTS...");
-            const condition = { authState: true };
-            const devices = yield device_model_1.default.findDeviceByCondition(condition);
-            logger_1.default.info(logFileName, "Total Clients to Initialize: ", devices.length);
-            for (let i = 0; i < devices.length; i++) {
-                const device = devices[i];
-                console.debug(logFileName, `client${i}:${device.phone}`);
-                const client = this.addClient(device.phone);
-                yield client.initiClient();
+            if (process.env.RECONNECT_CLIENT === "true") {
+                logger_1.default.info(logFileName, "INITIALIZING ALL CLIENTS...");
+                const condition = { authState: true };
+                const devices = yield device_model_1.default.findDeviceByCondition(condition);
+                logger_1.default.info(logFileName, "Total Clients to Initialize: ", devices.length);
+                for (let i = 0; i < devices.length; i++) {
+                    const device = devices[i];
+                    console.debug(logFileName, `client${i}:${device.phone}`);
+                    const client = this.addClient(device.phone);
+                    yield client.initiClient();
+                }
+            }
+            else {
+                logger_1.default.warn(logFileName, "Client initialization is disabled");
             }
         });
     }

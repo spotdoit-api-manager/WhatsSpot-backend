@@ -1,7 +1,7 @@
 /// <reference types="node" />
-import { IButtonMessage, IImageMessage } from "./whatsapp.interface";
+import { IButtonMessage, IImageMessage, IWhatsappListMessage, IWhatsappTextMessage } from "./whatsapp.interface";
 import { EventEmitter } from "events";
-import { AnyMessageContent, AuthenticationState } from "@adiwajshing/baileys";
+import { AuthenticationState } from "@adiwajshing/baileys";
 export default class Whatsapp extends EventEmitter {
     client: any;
     phone: string;
@@ -29,7 +29,14 @@ export default class Whatsapp extends EventEmitter {
     private handleConnectionOpen;
     private handleConnectionClose;
     private sendMessageWTyping;
-    sendTextMessage: (to: string, msg: AnyMessageContent) => Promise<{
+    sendTextMessage: (to: string, msg: IWhatsappTextMessage) => Promise<{
+        error: boolean;
+        message?: undefined;
+    } | {
+        error: boolean;
+        message: any;
+    }>;
+    sendListMessage: (to: string, msg: IWhatsappListMessage) => Promise<{
         error: boolean;
         message?: undefined;
     } | {

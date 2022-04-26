@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/interface-name-prefix */
 import { IMessage } from "./message.interface";
 import { Document, Model, model, Schema, SchemaType, SchemaTypes } from "mongoose";
 import { validateMobile } from "../../lib/utils";
@@ -24,6 +25,54 @@ const contactSentSchema = new Schema({
   }
 },{timestamps: true});
 
+const whatsappTextMessageSchema = new Schema({
+  text:{
+    type:String,
+    required:true
+  }
+});
+
+const whatsappListMessageSchema = new Schema({
+  title: {
+    type:String,
+    required:true,
+  },
+  text: {
+    type:String,
+    required:true,
+  },
+  footer: {
+    type:String,
+    required:true,
+  },
+  buttonText: {
+    type:String,
+    required:true,
+  },
+  sections: [
+   { title: {
+    type:String,
+    required:true,
+  },
+    rows: [{
+      title: {
+        type:String,
+        required:true,
+      },
+      rowId: {
+        type:String,
+        required:true,
+      },
+      description: {
+        type:String,
+        required:false,
+      },
+    }]
+  }
+  ]
+});
+
+
 
 const messageSchema = new Schema(
   {
@@ -31,7 +80,13 @@ const messageSchema = new Schema(
       type: String,
       required: true,
     },
-    message: String,
+    messageType:{
+      type:String,
+      enum:["LIST_MESSAGE","TEXT_MESSAGE","BUTTON_MESSAGE"]
+    },
+    message:{
+      type:Schema.Types.Mixed,
+    },
     sendType: {
       type: String,
       enum: ["FAST", "QUEUE"]

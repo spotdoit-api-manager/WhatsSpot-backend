@@ -10,7 +10,7 @@ export class TestMessageModel{
     }
 
     public async sendTestMessage(body: any,testMessageId: string|null){
-            const result  = await whatsappClientService.sendTextMessage(testMessageConfig.devicePhone,body.to,testMessageConfig.message);
+            const result  = await whatsappClientService.sendTextMessage(testMessageConfig.devicePhone,body.to,{text:testMessageConfig.message});
             if(result.error) throw new HTTP401Error(result.message);
             await this.updateOrCreateTestMessage(body.to,testMessageId);
     }

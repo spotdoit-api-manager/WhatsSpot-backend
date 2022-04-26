@@ -176,7 +176,7 @@ export class DeviceController {
     try {
       console.log("Send text message request");
 
-      responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendTextMessage(req.userId,req.body.to,req.body.message, req.params.deviceId,req.walletId)).send();
+      responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendMessage(req.userId,req.body.to,req.body.message,req.body.messageType, req.params.deviceId,req.walletId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));

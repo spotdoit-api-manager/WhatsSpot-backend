@@ -1,5 +1,5 @@
 import { getSerializedPhone } from "./whatsapp-utils";
-import { IButtonMessage, IImageMessage, IReason } from "./whatsapp.interface";
+import { IButtonMessage, IImageMessage, IReason, IWhatsappListMessage, IWhatsappTextMessage } from "./whatsapp.interface";
 import { EventEmitter } from "events";
 import P from "pino";
 import { Boom } from "@hapi/boom";
@@ -208,14 +208,15 @@ export default class Whatsapp extends EventEmitter {
 
   public sendTextMessage = async (
     to: string,
-    msg: AnyMessageContent,
+    msg: IWhatsappTextMessage,
   ) => {
     try {
       const jid = getSerializedPhone(to);
+      logger.info(logFileName,`Sending Text Message to ${jid} ${JSON.stringify(msg)}`);
       await this.client.presenceSubscribe(jid);
       await delay(500);
       const result = await this.client.sendMessage(jid, {
-        text: msg, detectLinks: true,
+        ...msg, detectLinks: true,
       });
       if (result.status != 1) {
         return { error: true };
@@ -227,6 +228,28 @@ export default class Whatsapp extends EventEmitter {
     }
   };
 
+  public sendListMessage = async (
+    to: string,
+    msg: IWhatsappListMessage,
+  ) => {
+    try {
+      const jid = getSerializedPhone(to);
+      logger.info(logFileName,`Sending List Message to ${jid} ${JSON.stringify(msg)}`);
+
+      await this.client.presenceSubscribe(jid);
+      await delay(500);
+      const result = await this.client.sendMessage(jid, {
+        ...msg, detectLinks: true,
+      });
+      if (result.status != 1) {
+        return { error: true };
+      }
+      return { error: false };
+    } catch (e) {
+      logger.log(e);
+      return { error: true, message: e.message };
+    }
+  };
   public sendMediaMessage = async (
     to: string,
     msg: IImageMessage,

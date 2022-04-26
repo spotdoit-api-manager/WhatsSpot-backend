@@ -25,7 +25,7 @@ class TestMessageModel {
     }
     sendTestMessage(body, testMessageId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield whatsapp_client_service_1.default.sendTextMessage(config_1.testMessageConfig.devicePhone, body.to, config_1.testMessageConfig.message);
+            const result = yield whatsapp_client_service_1.default.sendTextMessage(config_1.testMessageConfig.devicePhone, body.to, { text: config_1.testMessageConfig.message });
             if (result.error)
                 throw new httpErrors_1.HTTP401Error(result.message);
             yield this.updateOrCreateTestMessage(body.to, testMessageId);
