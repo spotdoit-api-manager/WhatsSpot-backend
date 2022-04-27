@@ -6,9 +6,10 @@ export declare class DeviceModel {
     verifyNewDeviceCode(newDeviceCode: string): Promise<boolean>;
     newDeviceCode(userId: string, walletId: string, newDeviceBody: INewDevice): Promise<{
         proceed: boolean;
-        message: any;
+        message?: undefined;
     } | {
         proceed: boolean;
+        message: any;
     }>;
     private validateDeviceAdd;
     getQr(body: any): Promise<{

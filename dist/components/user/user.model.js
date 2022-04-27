@@ -1,4 +1,23 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -18,7 +37,7 @@ const message_interface_1 = require("./../messages/message.interface");
 const helpers_1 = require("../../lib/helpers");
 const user_schema_1 = require("./user.schema");
 const socialAuth_1 = __importDefault(require("./../../lib/middleware/socialAuth"));
-const bcrypt_1 = __importDefault(require("bcrypt"));
+const bcrypt = __importStar(require("bcryptjs"));
 const otp_handler_1 = require("../../lib/services/otp-handler");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bson_1 = require("bson");
@@ -157,7 +176,7 @@ class UserModel {
         return __awaiter(this, void 0, void 0, function* () {
             // console.log('User Info While Adding new User', body);
             if (body.password) {
-                body.password = yield bcrypt_1.default.hash(body.password, 12);
+                body.password = yield bcrypt.hash(body.password, 12);
             }
             const q = new user_schema_1.User(body);
             const data = yield q.addNewUser();

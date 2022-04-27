@@ -59,10 +59,9 @@ export declare class UserModel {
     updateOtp(id: string): number;
     sendOtpToMobile(otp: number, phone: string): Promise<{
         proceed: boolean;
-        message?: undefined;
+        message: any;
     } | {
         proceed: boolean;
-        message: any;
     }>;
     signToken: (dataToStore: IDataStoredInToken) => string;
     addNewToken(dataToStore: IDataStoredInToken): Promise<{
@@ -96,10 +95,9 @@ export declare class UserModel {
     genrateOTP(phone: string): Promise<{
         res: {
             proceed: boolean;
-            message?: undefined;
+            message: any;
         } | {
             proceed: boolean;
-            message: any;
         };
         proceed: boolean;
     } | {
