@@ -179,10 +179,11 @@ class DeviceController {
             }
         });
         this.sendImageMessage = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            var _a;
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("qr request");
-                req.body.locationUrl = req.file.location;
+                req.body.locationUrl = (_a = req.file) === null || _a === void 0 ? void 0 : _a.location;
                 responseHandler.reqRes(req, res).onFetch("SENT_MESSAGE", yield message_model_1.default.sendImageMessage(req.body, req.params.deviceId)).send();
             }
             catch (e) {

@@ -188,7 +188,7 @@ export class DeviceController {
     const responseHandler = new ResponseHandler();
     try {
       console.log("qr request");
-      req.body.locationUrl = req.file.location;
+      req.body.locationUrl = req.file?.location;
 
       responseHandler.reqRes(req, res).onFetch("SENT_MESSAGE", await messageModel.sendImageMessage(req.body, req.params.deviceId)).send();
     } catch (e) {
