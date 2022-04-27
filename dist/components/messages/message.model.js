@@ -208,6 +208,8 @@ class MessageModel {
                     return yield whatsapp_client_service_1.default.sendTextMessage(from, to, message);
                 case whatsapp_enum_1.EWhatsappMessageTypes.LIST_MESSAGE:
                     return yield whatsapp_client_service_1.default.sendListMessage(from, to, message);
+                case whatsapp_enum_1.EWhatsappMessageTypes.BUTTON_MESSAGE:
+                    return yield whatsapp_client_service_1.default.sendButtonMessage(from, to, message);
             }
         });
     }

@@ -1,7 +1,7 @@
 
 import { EWhatsappMessageTypes } from "./../../lib/services/whatsapp/whatsapp.enum";
 import { ObjectID } from "bson";
-import { IImageMessage, IWhatsappMessage, IWhatsappTextMessage,IWhatsappListMessage } from "./../../lib/services/whatsapp/whatsapp.interface";
+import { IImageMessage, IWhatsappMessage, IWhatsappTextMessage,IWhatsappListMessage, IWhatsappButtonMessage } from "./../../lib/services/whatsapp/whatsapp.interface";
 import { sanatizeMobile } from "./../../lib/utils/index";
 import { validateMobile } from "../../lib/utils";
 import { HTTP400Error, HTTP401Error } from "../../lib/utils/httpErrors";
@@ -183,10 +183,11 @@ export class MessageModel {
         
         switch(messageType){
             case EWhatsappMessageTypes.TEXT_MESSAGE:
-                return await whatsappClientService.sendTextMessage(from, to, message);
+                return await whatsappClientService.sendTextMessage(from, to, message as IWhatsappTextMessage);
             case EWhatsappMessageTypes.LIST_MESSAGE:
                 return await whatsappClientService.sendListMessage(from, to, message as IWhatsappListMessage);    
-                
+            case EWhatsappMessageTypes.BUTTON_MESSAGE:
+                return await whatsappClientService.sendButtonMessage(from, to, message as IWhatsappButtonMessage);     
 
         }
     }

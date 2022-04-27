@@ -1,4 +1,4 @@
-import { IWhatsappListMessage } from "./whatsapp.interface";
+import { IWhatsappListMessage,IWhatsappButtonMessage } from "./whatsapp.interface";
 /* eslint-disable @typescript-eslint/interface-name-prefix */
 import socketManager from "./../socket";
 
@@ -126,6 +126,18 @@ export class WhatsappClient {
         }
     }
 
+    public sendButtonMessage = async(from: string,to: string,message: IWhatsappButtonMessage) => {
+        try {
+            logger.info(logFileName,`Sending Button Message to ${to}`);
+            const clientInstance = this.getClientInstanceByPhone(from);
+            if (!clientInstance) return { error: true, message: "CLIENT_NOT_FOUND" };
+            if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+            const data = await clientInstance.sendListMessage(sanatizeMobile(to), message);
+            return data;
+        } catch (e) {
+            return { error: true, message: e.message };
+        }
+    }
     public async sendRawMessage(phone: string,to: string,message: any){
         try {
             logger.info(logFileName,`Sending Raw Message to ${to}`);

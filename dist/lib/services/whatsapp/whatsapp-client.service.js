@@ -89,6 +89,21 @@ class WhatsappClient {
                 return { error: true, message: e.message };
             }
         });
+        this.sendButtonMessage = (from, to, message) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                logger_1.default.info(logFileName, `Sending Button Message to ${to}`);
+                const clientInstance = this.getClientInstanceByPhone(from);
+                if (!clientInstance)
+                    return { error: true, message: "CLIENT_NOT_FOUND" };
+                if (!clientInstance.authState)
+                    return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+                const data = yield clientInstance.sendListMessage(utils_1.sanatizeMobile(to), message);
+                return data;
+            }
+            catch (e) {
+                return { error: true, message: e.message };
+            }
+        });
         this.sendImageMessage = (phone, to, msg) => __awaiter(this, void 0, void 0, function* () {
             try {
                 console.debug(logFileName, "sending image message to ", to);

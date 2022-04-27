@@ -31,6 +31,21 @@ export interface IButtonMessage{
     
 }
 
+
+// BUTTON_MESSAGE 
+
+export interface IWhatsappButtonMessage {
+  text: string;
+  footer: string;
+  buttons: IWhatsappButtonMessageButton[];
+  headerType: number
+}
+export interface IWhatsappButtonMessageButton {
+  buttonId: string;
+  buttonText: { displayText: string };
+  type: number;
+}
+
   
   export interface IWhatsappListMessage {
     title: string;
