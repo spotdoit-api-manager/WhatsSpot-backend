@@ -30,7 +30,6 @@
         "@adiwajshing/baileys-md": "github:adiwajshing/baileys#multi-device",
         "@types/bcrypt": "^5.0.0",
         "@types/events": "^3.0.0",
-        "appmetrics-dash": "^5.3.0",
         "async": "^3.1.0",
         "async-redis": "^2.0.0",
         "aws-sdk": "^2.820.0",
