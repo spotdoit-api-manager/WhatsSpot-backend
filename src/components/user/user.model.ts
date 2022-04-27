@@ -7,7 +7,7 @@ import { User, UserSchema } from "./user.schema";
 import { IUser, ITokenData, IDataStoredInToken, IPlanRef } from "./user.interface";
 import { IUserModel } from "./user.schema";
 import socialAuth from "./../../lib/middleware/socialAuth";
-import bcrypt from "bcrypt";
+import * as  bcrypt from "bcryptjs";
 import axios from "axios";
 import { sendMessage } from "../../lib/services/otp-handler";
 import jwt from "jsonwebtoken";

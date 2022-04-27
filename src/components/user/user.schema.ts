@@ -2,7 +2,7 @@ import { EPLANS } from "./../plans/plans.interface";
 import { Document,Model, model, Schema, SchemaTypes } from "mongoose";
 import { NextFunction } from "express";
 import { IUser } from "./user.interface";
-import bcrypt from "bcrypt";
+import * as bcrypt from "bcryptjs";
 
 export interface IUserModel extends IUser,Document{
   addNewUser(): any;
