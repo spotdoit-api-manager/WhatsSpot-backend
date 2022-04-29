@@ -3,17 +3,17 @@ import { ObjectID } from "bson";
 import { IContact, IContactsGroup } from "./contact.interface";
 import { IContactModel,Contact, ContactGroup, IContactGroupModel } from "./contact.schema";
 import logger from "../../core/logger";
-
+const logFileName = "[ContactsModel]";
 export class ContactModal{
 
         public async addNewContacts(userId: string,contacts: IContact[]){        
             console.log("New Contact ",contacts);
             
             const newContacts: IContactModel[]= this.createNewContact(contacts,userId);
-            console.log("new contacts ",newContacts);
-                const result = await Contact.updateMany({},newContacts,{upsert:true,new:true,multi:true});
-                return result;
-           
+            console.log("new contacts ",newContacts);            
+                    const result = await Contact.insertMany(newContacts,{ordered:false});
+                    return result;
+   
         }
 
         private createNewContact(contacts: IContact[],userId: string){

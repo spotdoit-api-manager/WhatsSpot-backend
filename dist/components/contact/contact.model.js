@@ -16,13 +16,14 @@ exports.ContactModal = void 0;
 const bson_1 = require("bson");
 const contact_schema_1 = require("./contact.schema");
 const logger_1 = __importDefault(require("../../core/logger"));
+const logFileName = "[ContactsModel]";
 class ContactModal {
     addNewContacts(userId, contacts) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("New Contact ", contacts);
             const newContacts = this.createNewContact(contacts, userId);
             console.log("new contacts ", newContacts);
-            const result = yield contact_schema_1.Contact.updateMany({}, newContacts, { upsert: true, new: true, multi: true });
+            const result = yield contact_schema_1.Contact.insertMany(newContacts, { ordered: false });
             return result;
         });
     }

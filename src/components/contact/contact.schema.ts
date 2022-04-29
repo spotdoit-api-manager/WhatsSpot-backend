@@ -17,10 +17,10 @@ const contactSchema = new Schema({
         type:String,
         required:true
     },
-        phoneNumber:{
-            type:String,
-            required:true,
-            unique:false
+    phoneNumber:{
+    type:String,
+    required:true,
+    unique:false
         }
 },{
     timestamps:true
