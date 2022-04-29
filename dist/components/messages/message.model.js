@@ -82,7 +82,7 @@ class MessageModel {
                 throw new httpErrors_1.HTTP401Error(result.message);
             }
             delete messagesBody[0].to;
-            return { error: false, message: messagesBody[0], numbers };
+            return { error: false, messageInfo: result.result, numbers };
         });
     }
     addSingleMessageToQueue(messageBody) {
@@ -99,7 +99,7 @@ class MessageModel {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield message_schema_1.MessageQueue.insertMany(messages);
             if (result) {
-                return { error: false };
+                return { error: false, result };
             }
             return { error: true, message: "NOT_ADDED" };
         });
@@ -131,14 +131,38 @@ class MessageModel {
     }
     // private isPlanReachedMaxMessage(userCurrentPlan) {
     // }
-    sendFastTextMessage(userId, to, message, deviceId, walletId) {
+    sendFastMessage(userId, numbers, message, messageType, deviceId, walletId) {
         return __awaiter(this, void 0, void 0, function* () {
             const device = yield device_model_1.default.findDeviceById(deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
-            const result = yield this.sendMessage(userId, to, message, whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, deviceId, walletId);
-            const newBody = { phone: device.phone, userId, to: to, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, messageType: whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
-            yield this.saveFastMessage(newBody);
+            const results = [];
+            if (typeof numbers == "string") {
+                const result = yield this.sendMessage(userId, numbers, message, messageType, deviceId, walletId);
+                const newBody = { phone: device.phone, userId, to: numbers, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, messageType: whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
+                const saveResult = yield this.saveFastMessage(newBody);
+                results.push(Object.assign(Object.assign({}, result), { messageInfo: saveResult.data }));
+            }
+            else if (typeof numbers == "object") {
+                numbers.forEach((number, index) => {
+                    const to = index_1.sanatizeMobile(number);
+                    if (!utils_1.validateMobile(to))
+                        throw new httpErrors_1.HTTP401Error(`Invalid number ${number} at ${index}`);
+                });
+                for (let i = 0; i < numbers.length; i++) {
+                    const to = index_1.sanatizeMobile(numbers[i]);
+                    const result = yield this.sendMessage(userId, to, message, messageType, deviceId, walletId);
+                    results.push(Object.assign(Object.assign({}, result), { messageInfo: { phone: device.phone, message, to: numbers, messageType: whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, userId, deviceId } }));
+                    const newBody = { phone: device.phone, userId, to, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, messageType: whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
+                    const saveResult = yield this.saveFastMessage(newBody);
+                    results.push(Object.assign(Object.assign({}, result), { messageInfo: saveResult.data }));
+                }
+            }
+            else {
+                throw new httpErrors_1.HTTP400Error("INVALID_NUMBER_TYPE");
+            }
+            logger_1.default.info(logFileName, results);
+            return results;
         });
     }
     sendMessage(userId, to, message, messageType, deviceId, walletId) {
@@ -156,7 +180,7 @@ class MessageModel {
                 logger_1.default.info(logFileName, `User ${userId} hasPlanActive: ${hasActivePlan}`);
                 if (!hasActivePlan) {
                     const { isValidAmount, balance } = yield wallet_model_1.default.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
-                    logger_1.default.info(logFileName, `VlaidAmount ${isValidAmount}`);
+                    logger_1.default.info(logFileName, `validAMount ${isValidAmount}`);
                     if (!isValidAmount)
                         throw new Error("NOT_ENOUGH_BALANCE");
                 }
@@ -165,12 +189,12 @@ class MessageModel {
                     return result;
                 if (hasActivePlan) {
                     yield plans_model_1.default.increamentMessageCount(activePlanInfo._id);
-                    return { error: false, creditUsed: 0 };
+                    return { error: false, creditUsed: 0, message: result.message };
                 }
                 else {
                     const paymentMetaData = { deviceId: deviceId, to: to };
                     const paymentResult = yield wallet_model_1.default.makePaymentFromWallet(walletId, userId, parseFloat(process.env.TEXT_MESSAGE_RATE), `message to ${to} from device ${device.name}(${device.phone})`, paymentMetaData);
-                    return { error: false, creditUsed: process.env.TEXT_MESSAGE_RATE, walletBalance: paymentResult.wallet.balance };
+                    return { error: false, creditUsed: process.env.TEXT_MESSAGE_RATE, walletBalance: paymentResult.wallet.balance, message: result.message };
                 }
             }
             catch (err) {
@@ -195,7 +219,7 @@ class MessageModel {
             const newMessage = new message_schema_1.FastMessage(messageBody);
             const data = yield newMessage.addMessage();
             if (data) {
-                return { error: false };
+                return { error: false, data };
             }
             return { error: true, message: "NOT_ADDED" };
         });

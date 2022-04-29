@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DeviceKeyValidator = void 0;
-const index_1 = require("./../../config/index");
+const index_1 = require("../../config/index");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const httpErrors_1 = require("../utils/httpErrors");
 const logger_1 = __importDefault(require("../../core/logger"));
@@ -52,4 +52,4 @@ exports.DeviceKeyValidator = (req, res, next) => __awaiter(void 0, void 0, void 
         next(e);
     }
 });
-//# sourceMappingURL=whatsapp.middleware.js.map
+//# sourceMappingURL=device-key.middleware.js.map

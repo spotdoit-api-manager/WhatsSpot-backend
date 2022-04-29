@@ -1,6 +1,7 @@
 import { EWhatsappMessageTypes } from "./../../lib/services/whatsapp/whatsapp.enum";
 import { IWhatsappMessage, IWhatsappTextMessage } from "./../../lib/services/whatsapp/whatsapp.interface";
 import { IMessage, EMessageStatus } from "./message.interface";
+import { IMessageModel } from "./message.schema";
 import { IContact, IGroupList } from "../contact/contact.interface";
 export declare class MessageModel {
     retryFailedMessage(userId: string, deviceId: string): Promise<{
@@ -17,13 +18,15 @@ export declare class MessageModel {
         messageType: EWhatsappMessageTypes;
     }, deviceId: string): Promise<{
         error: boolean;
+        result: IMessageModel[];
         message?: undefined;
     } | {
         error: boolean;
         message: string;
+        result?: undefined;
     } | {
         error: boolean;
-        message: IMessage;
+        messageInfo: IMessageModel[];
         numbers: any[];
     }>;
     addSingleMessageToQueue(messageBody: IMessage): Promise<{
@@ -35,22 +38,26 @@ export declare class MessageModel {
     }>;
     addMultipleMessageToQueue(messages: IMessage[]): Promise<{
         error: boolean;
+        result: IMessageModel[];
         message?: undefined;
     } | {
         error: boolean;
         message: string;
+        result?: undefined;
     }>;
     fetchGroupMessageSentContacts(messageId: string): Promise<any[]>;
     private hasActivePlan;
-    sendFastTextMessage(userId: string, to: string, message: IWhatsappTextMessage, deviceId: string, walletId: string): Promise<void>;
+    sendFastMessage(userId: string, numbers: string | string[], message: IWhatsappTextMessage, messageType: EWhatsappMessageTypes, deviceId: string, walletId: string): Promise<any[]>;
     sendMessage(userId: string, to: string, message: IWhatsappTextMessage, messageType: EWhatsappMessageTypes, deviceId: string, walletId: string): Promise<any>;
     sendImageMessage(body: any, deviceId: string): Promise<void>;
     saveFastMessage(messageBody: IMessage): Promise<{
         error: boolean;
+        data: any;
         message?: undefined;
     } | {
         error: boolean;
         message: string;
+        data?: undefined;
     }>;
     sendTypeMessage(messageType: EWhatsappMessageTypes, message: IWhatsappMessage, from: string, to: string): Promise<any>;
 }
