@@ -2,6 +2,7 @@ import { MessageQueue } from "./../messages/message.schema";
 import { ObjectID } from "bson";
 import { IContact, IContactsGroup } from "./contact.interface";
 import { IContactModel,Contact, ContactGroup, IContactGroupModel } from "./contact.schema";
+import logger from "../../core/logger";
 
 export class ContactModal{
 
@@ -10,7 +11,7 @@ export class ContactModal{
             
             const newContacts: IContactModel[]= this.createNewContact(contacts,userId);
             console.log("new contacts ",newContacts);
-                const result = await Contact.updateMany({},newContacts,{upsert:true,new:true});
+                const result = await Contact.updateMany({},newContacts,{upsert:true,new:true,multi:true});
                 return result;
            
         }
@@ -134,7 +135,7 @@ export class ContactModal{
        
 
         public addGroupContacts(userId: string,groupId: string,contacts: IContact[]){
-            
+                logger.info("add group contacts ",contacts);
         }
 }
 

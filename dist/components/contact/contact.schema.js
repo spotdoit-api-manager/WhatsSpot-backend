@@ -14,7 +14,8 @@ const mongoose_1 = require("mongoose");
 const contactSchema = new mongoose_1.Schema({
     userId: {
         type: mongoose_1.Schema.Types.ObjectId,
-        ref: "users"
+        ref: "users",
+        required: true
     },
     name: {
         type: String,

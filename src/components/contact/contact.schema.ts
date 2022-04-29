@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/interface-name-prefix */
 import { IContact, IContactsGroup } from "./contact.interface";
 import { Document, model, Model, Schema, SchemaType } from "mongoose";
 
@@ -9,7 +10,8 @@ export interface IContactModel extends IContact, Document {
 const contactSchema = new Schema({
     userId:{
         type:Schema.Types.ObjectId,
-        ref:"users"
+        ref:"users",
+        required:true
     },
     name:{
         type:String,
