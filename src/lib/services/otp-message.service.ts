@@ -1,20 +1,24 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { deSanatizeMobile } from "./../utils/index";
 import { WhatsappConfig } from "./../interfaces/providers.interface";
 import { pilvoConfig, fast2SmsConfig } from "./../../config/index";
 import axios from "axios";
-const plivo = require("plivo");
-
+import messageModel from "../../components/messages/message.model";
+import { EWhatsappMessageTypes } from "./whatsapp/whatsapp.enum";
+import logger from "../../lib/utils/logger";
+// const plivo = require("plivo");
+const logFileName = "[OTPService] : ";
 export class OTPMessagesService {
-  private _plivoClient: any;
-  constructor() {
-    this._plivoClient = new plivo.Client(pilvoConfig.authId,pilvoConfig.authToken);
-  }
+  // private _plivoClient: any;
+  // constructor() {
+  //   this._plivoClient = new plivo.Client(pilvoConfig.authId,pilvoConfig.authToken);
+  // }
 
-  async sendPilvoSMS(fullNumber: string, message: string) {
-    const result = await this._plivoClient.messages.create(pilvoConfig.sourceNumber, fullNumber, message);
-    console.log("pilvo result ",result);
-    return {proceed: true};
-  }
+  // async sendPilvoSMS(fullNumber: string, message: string) {
+  //   const result = await this._plivoClient.messages.create(pilvoConfig.sourceNumber, fullNumber, message);
+  //   console.log("pilvo result ",result);
+  //   return {proceed: true};
+  // }
 
   async sendFast2Sms(number: string, message: string) {
     console.log("sending message to ",number,message);
@@ -68,6 +72,15 @@ public sendTextLocalMessage = async (to: string, message: string) => {
     return {proceed: false};
   });
 };
+
+
+public  sendWhatsappMessage(to: string,message: string){
+  try{
+    messageModel.sendTypeMessage(EWhatsappMessageTypes.TEXT_MESSAGE,{text:message},process.env.TEST_MESSAGE_DEVICE_NUMBER,to);
+  }catch(e){
+    logger.info(logFileName,`Error sending whatsapp OTP to ${to}`);
+  }
+}
 
 }
 

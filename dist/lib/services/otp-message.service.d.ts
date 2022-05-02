@@ -1,9 +1,4 @@
 export declare class OTPMessagesService {
-    private _plivoClient;
-    constructor();
-    sendPilvoSMS(fullNumber: string, message: string): Promise<{
-        proceed: boolean;
-    }>;
     sendFast2Sms(number: string, message: string): Promise<{
         proceed: boolean;
         message?: undefined;
@@ -16,6 +11,7 @@ export declare class OTPMessagesService {
     } | {
         proceed: boolean;
     }>;
+    sendWhatsappMessage(to: string, message: string): void;
 }
 declare const _default: OTPMessagesService;
 export default _default;
