@@ -42,7 +42,7 @@ export class DeviceModel {
     public async newDeviceCode(userId: string,walletId: string,newDeviceBody: INewDevice){
         const device = await this.findDeviceByPhone(newDeviceBody.phone);
         this.validateDeviceAdd(userId,device);
-        const result  =  await otpHandler.sendNewDeviceCode(newDeviceBody.name);
+        const result  =  await otpHandler.sendNewDeviceCode(newDeviceBody.phone);
         return result;
     }
 

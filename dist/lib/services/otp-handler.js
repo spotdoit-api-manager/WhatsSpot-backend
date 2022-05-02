@@ -27,7 +27,7 @@ exports.sendMessage = (to, message) => __awaiter(void 0, void 0, void 0, functio
 exports.sendNewDeviceCode = (to) => __awaiter(void 0, void 0, void 0, function* () {
     const env = process.env.NODE_ENV;
     const otp = helpers_1.otpGenerator();
-    const message = `Device verification code is ${otp}`;
+    const message = `Your Device verification code is ${otp}`;
     logger_1.default.info(logFileName, message);
     if (env == "development")
         return { proceed: true };

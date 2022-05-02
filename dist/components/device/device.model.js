@@ -96,7 +96,7 @@ class DeviceModel {
         return __awaiter(this, void 0, void 0, function* () {
             const device = yield this.findDeviceByPhone(newDeviceBody.phone);
             this.validateDeviceAdd(userId, device);
-            const result = yield otpHandler.sendNewDeviceCode(newDeviceBody.name);
+            const result = yield otpHandler.sendNewDeviceCode(newDeviceBody.phone);
             return result;
         });
     }

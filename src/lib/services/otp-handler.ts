@@ -16,7 +16,7 @@ export const sendMessage = async (to: string, message: string) => {
 export const sendNewDeviceCode = async (to: string) => {
   const env = process.env.NODE_ENV;
   const otp = otpGenerator();
-  const message = `Device verification code is ${otp}`;
+  const message = `Your Device verification code is ${otp}`;
   logger.info(logFileName,message);
   if(env=="development") return {proceed:true};
   return await OTPMessagesService.sendFast2Sms(sanatizeMobile(to),message);

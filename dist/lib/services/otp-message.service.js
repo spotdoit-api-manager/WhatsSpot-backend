@@ -13,12 +13,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OTPMessagesService = void 0;
+/* eslint-disable @typescript-eslint/camelcase */
 const index_1 = require("./../utils/index");
 const index_2 = require("./../../config/index");
 const axios_1 = __importDefault(require("axios"));
-const plivo = require("plivo");
+// const plivo = require("plivo");
 class OTPMessagesService {
     constructor() {
+        // private _plivoClient: any;
+        // constructor() {
+        //   this._plivoClient = new plivo.Client(pilvoConfig.authId,pilvoConfig.authToken);
+        // }
         this.sendTextLocalMessage = (to, message) => __awaiter(this, void 0, void 0, function* () {
             return axios_1.default.get("https://api.textlocal.in/send/", {
                 params: {
@@ -45,15 +50,12 @@ class OTPMessagesService {
                 return { proceed: false };
             });
         });
-        this._plivoClient = new plivo.Client(index_2.pilvoConfig.authId, index_2.pilvoConfig.authToken);
     }
-    sendPilvoSMS(fullNumber, message) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const result = yield this._plivoClient.messages.create(index_2.pilvoConfig.sourceNumber, fullNumber, message);
-            console.log("pilvo result ", result);
-            return { proceed: true };
-        });
-    }
+    // async sendPilvoSMS(fullNumber: string, message: string) {
+    //   const result = await this._plivoClient.messages.create(pilvoConfig.sourceNumber, fullNumber, message);
+    //   console.log("pilvo result ",result);
+    //   return {proceed: true};
+    // }
     sendFast2Sms(number, message) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("sending message to ", number, message);
