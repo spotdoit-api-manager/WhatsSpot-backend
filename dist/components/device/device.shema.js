@@ -17,6 +17,16 @@ const deviceSchema = new mongoose_1.Schema({
         type: String,
         required: true,
     },
+    isDeleted: {
+        status: {
+            type: Boolean,
+            default: false
+        },
+        deletedAt: {
+            type: Date,
+            required: false
+        }
+    },
     userId: {
         type: mongoose_1.Schema.Types.ObjectId,
         ref: "User"

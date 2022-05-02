@@ -107,6 +107,7 @@ class Whatsapp extends events_1.EventEmitter {
                 yield this.client.presenceSubscribe(jid);
                 yield baileys_1.delay(500);
                 const result = yield this.client.sendMessage(jid, Object.assign(Object.assign({}, msg), { detectLinks: true }));
+                logger_1.default.debug(result);
                 if (result.status != 1) {
                     return { error: true };
                 }
@@ -124,6 +125,7 @@ class Whatsapp extends events_1.EventEmitter {
                 yield this.client.presenceSubscribe(jid);
                 yield baileys_1.delay(500);
                 const result = yield this.client.sendMessage(jid, Object.assign(Object.assign({}, msg), { detectLinks: true }));
+                logger_1.default.debug(result);
                 if (result.status != 1) {
                     return { error: true };
                 }
@@ -178,6 +180,7 @@ class Whatsapp extends events_1.EventEmitter {
                 yield this.client.presenceSubscribe(jid);
                 yield baileys_1.delay(500);
                 const result = yield this.client.sendMessage(jid, btnMsg);
+                logger_1.default.debug(result);
                 if (result.status != 1) {
                     return { error: true };
                 }
@@ -317,7 +320,15 @@ class Whatsapp extends events_1.EventEmitter {
         this.client.end();
     }
     logoutClient() {
-        this.client.logout();
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.client.logout();
+                return { error: false };
+            }
+            catch (e) {
+                return { error: true, message: e.message };
+            }
+        });
     }
 }
 exports.default = Whatsapp;

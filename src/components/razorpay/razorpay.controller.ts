@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import ResponseHandler from "../../lib/helpers/responseHandler";
-import razorpayModel from "./razorpay.model";
+import razorPayModel from "./razorpay.model";
 
 
 export class RazorPayController{
@@ -9,7 +9,7 @@ export class RazorPayController{
         console.log("create new order");
         
         try {    
-          responseHandler.reqRes(req, res).onFetch("ORDER_CREATED", await razorpayModel.createOrder(req.userId,req.walletId,req.body)).send();
+          responseHandler.reqRes(req, res).onFetch("ORDER_CREATED", await razorPayModel.createOrder(req.userId,req.walletId,req.body)).send();
         } catch (e) {
           // send error with next function.
           next(responseHandler.sendError(e));
@@ -21,7 +21,7 @@ export class RazorPayController{
         console.log("create new order");
         
         try {    
-          responseHandler.reqRes(req, res).onFetch("ORDER_CREATED", await razorpayModel.verifyPayment(req.userId,req.walletId,req.body)).send();
+          responseHandler.reqRes(req, res).onFetch("ORDER_CREATED", await razorPayModel.verifyPayment(req.userId,req.walletId,req.body)).send();
         } catch (e) {
           // send error with next function.
           next(responseHandler.sendError(e.message));

@@ -1,4 +1,4 @@
-import { DeviceKeyValidator } from "./../../lib/middleware/whatsapp.middleware";
+import { DeviceKeyValidator } from "../../lib/middleware/device-key.middleware";
 import { s3UploadMulter } from "../../lib/services/s3";
 import deviceController from "./device.controller";
 
@@ -102,5 +102,10 @@ export default [
         method: "get",
         escapeAuth: false,
         handler: [deviceController.fetchPrevMessages]
-    }
+    },
+    {
+        path: "/device/removeDevice/:deviceId",
+        method: "delete",
+        handler: [deviceController.removeDevice]
+    },
 ];

@@ -101,6 +101,11 @@ exports.default = [
         method: "get",
         escapeAuth: false,
         handler: [device_controller_1.default.fetchPrevMessages]
-    }
+    },
+    {
+        path: "/device/removeDevice/:deviceId",
+        method: "delete",
+        handler: [device_controller_1.default.removeDevice]
+    },
 ];
 //# sourceMappingURL=index.js.map

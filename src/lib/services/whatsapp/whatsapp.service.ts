@@ -218,6 +218,8 @@ export default class Whatsapp extends EventEmitter {
       const result = await this.client.sendMessage(jid, {
         ...msg, detectLinks: true,
       });
+      logger.debug(result);
+
       if (result.status != 1) {
         return { error: true };
       }
@@ -241,6 +243,8 @@ export default class Whatsapp extends EventEmitter {
       const result = await this.client.sendMessage(jid, {
         ...msg, detectLinks: true,
       });
+      logger.debug(result);
+
       if (result.status != 1) {
         return { error: true };
       }
@@ -299,6 +303,7 @@ export default class Whatsapp extends EventEmitter {
       await this.client.presenceSubscribe(jid);
       await delay(500);
       const result = await this.client.sendMessage(jid, btnMsg);
+      logger.debug(result);
       if (result.status != 1) {
         return { error: true };
       }
@@ -314,8 +319,14 @@ export default class Whatsapp extends EventEmitter {
 
   }
 
-  public logoutClient() {
-    this.client.logout();
+  public async logoutClient() {
+    try{
+      await this.client.logout();
+      return {error:false};
+    }catch(e){
+      return {error:true,message:e.message};
+    }
+
   }
 
   // startSock()

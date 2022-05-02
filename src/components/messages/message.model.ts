@@ -9,7 +9,7 @@ import deviceModel from "../device/device.model";
 import { ESendType, IMessage, EMessageStatus } from "./message.interface";
 import { MessageQueue, FastMessage, IMessageModel } from "./message.schema";
 import whatsappClientService from "../../lib/services/whatsapp/whatsapp-client.service";
-import walletModel from "../walllet/wallet.model";
+import walletModel from "../wallet/wallet.model";
 import messageQueueService from "../../lib/services/whatsapp/message-queue.service";
 import userModel from "../user/user.model";
 import plansModel from "../plans/plans.model";
@@ -40,7 +40,7 @@ export class MessageModel {
 
     public async addMessageToQueue(userId: string, body: { groups: IGroupList[]; numbers: string | IContact[]; message: IWhatsappMessage; isGroup: boolean;messageType: EWhatsappMessageTypes }, deviceId: string) {
         logger.debug(logFileName,"add to queue request", body, deviceId);
-        const device = await deviceModel.findDeviceById(deviceId);
+        const device = await deviceModel.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
 
         const messagesBody: IMessage[] = [];
@@ -73,7 +73,7 @@ export class MessageModel {
             throw new HTTP401Error(result.message);
         }
         delete messagesBody[0].to;
-        return { error: false, message: messagesBody[0], numbers };
+        return { error: false, messageInfo: result.result, numbers };
     }
 
 
@@ -89,7 +89,7 @@ export class MessageModel {
     public async addMultipleMessageToQueue(messages: IMessage[]) {
         const result = await MessageQueue.insertMany(messages);
         if (result) {
-            return { error: false };
+            return { error: false,result };
         }
         return { error: true, message: "NOT_ADDED" };
     }
@@ -121,36 +121,58 @@ export class MessageModel {
 
     // }
 
-    public async sendFastTextMessage(userId: string, to: string, message: IWhatsappTextMessage, deviceId: string, walletId: string) {
-        const device = await deviceModel.findDeviceById(deviceId);
+    public async sendFastMessage(userId: string, numbers: string|string[], message: IWhatsappTextMessage,messageType: EWhatsappMessageTypes,deviceId: string, walletId: string) {
+        const device = await deviceModel.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-        const result = await this.sendMessage(userId, to, message,EWhatsappMessageTypes.TEXT_MESSAGE, deviceId, walletId);
-        const newBody: IMessage = { phone: device.phone, userId, to: to, reason: result?.message, sendType: ESendType.FAST,messageType:EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT };
-        await this.saveFastMessage(newBody);
+        const results=[];
+        if(typeof numbers == "string"){
+            const result = await this.sendMessage(userId, numbers as string, message,messageType, deviceId, walletId);
+            const newBody: IMessage = { phone: device.phone, userId, to:numbers, reason: result?.message, sendType: ESendType.FAST,messageType:EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT };
+            const saveResult = await this.saveFastMessage(newBody);
+            results.push({...result,messageInfo:saveResult.data});
+        }else if(typeof numbers == "object"){
+            numbers.forEach((number: string,index: number)=>{
+                const to = sanatizeMobile(number);
+                if (!validateMobile(to)) throw new HTTP401Error(`Invalid number ${number} at ${index}`);
+            });
+            for(let i=0;i<numbers.length;i++){
+                const to = sanatizeMobile(numbers[i]);
+                const result = await this.sendMessage(userId, to, message,messageType, deviceId, walletId);
+                results.push({...result,messageInfo:{phone:device.phone,message,to:numbers,messageType:EWhatsappMessageTypes.TEXT_MESSAGE,userId,deviceId}});
+                const newBody: IMessage = { phone: device.phone, userId, to, reason: result?.message, sendType: ESendType.FAST,messageType:EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT };
+            const saveResult = await this.saveFastMessage(newBody);
+            results.push({...result,messageInfo:saveResult.data});
+            }
+
+        }else{
+            throw new HTTP400Error("INVALID_NUMBER_TYPE");
+        }
+        logger.info(logFileName,results);
+        return results;
     }
     public async sendMessage(userId: string, to: string, message: IWhatsappTextMessage,messageType: EWhatsappMessageTypes, deviceId: string, walletId: string) {
         try {
             to = sanatizeMobile(to);
             if (!validateMobile(to)) throw new HTTP401Error("INVALID_NUMBER");
-            const device = await deviceModel.findDeviceById(deviceId);
+            const device = await deviceModel.findDeviceById(userId,deviceId);
             if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
             const { hasActivePlan, isMessageOver, activePlanInfo, planInfo } = await this.hasActivePlan(userId);
             if (isMessageOver) throw new HTTP400Error("MESSAGES_EXHAUSTED", "message exhausted for your active plan");
             logger.info(logFileName, `User ${userId} hasPlanActive: ${hasActivePlan}`);
             if (!hasActivePlan) {
                 const { isValidAmount, balance } = await walletModel.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
-                logger.info(logFileName, `VlaidAmount ${isValidAmount}`);
+                logger.info(logFileName, `validAMount ${isValidAmount}`);
                 if (!isValidAmount) throw new Error("NOT_ENOUGH_BALANCE");
             }
             const result = await this.sendTypeMessage(messageType,message,device.phone,to);
             if(result.error) return result;
             if (hasActivePlan) {
                 await plansModel.increamentMessageCount(activePlanInfo._id);
-                return { error: false, creditUsed: 0 };
+                return { error: false, creditUsed: 0, message: result.message };
             } else {
                 const paymentMetaData = { deviceId: deviceId, to: to };
                 const paymentResult = await walletModel.makePaymentFromWallet(walletId, userId, parseFloat(process.env.TEXT_MESSAGE_RATE), `message to ${to} from device ${device.name}(${device.phone})`, paymentMetaData);
-                return { error: false, creditUsed: process.env.TEXT_MESSAGE_RATE, walletBalance: paymentResult.wallet.balance };
+                return { error: false, creditUsed: process.env.TEXT_MESSAGE_RATE, walletBalance: paymentResult.wallet.balance,message:result.message };
             }
         } catch (err) {
             logger.error(logFileName, err);
@@ -161,8 +183,8 @@ export class MessageModel {
 
 
 
-    public async sendImageMessage(body: any, deviceId: string) {
-        const device = await deviceModel.findDeviceById(deviceId);
+    public async sendImageMessage(userId: string, deviceId: string,body: any,) {
+        const device = await deviceModel.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const to = body.to;
         const msg: IImageMessage = { image: body.locationUrl, caption: body.caption || "" };
@@ -173,7 +195,7 @@ export class MessageModel {
         const newMessage = new FastMessage(messageBody);
         const data = await newMessage.addMessage();
         if (data) {
-            return { error: false };
+            return { error: false,data };
         }
         return { error: true, message: "NOT_ADDED" };
     }

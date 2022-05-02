@@ -12,14 +12,14 @@ export declare class DeviceModel {
         message: any;
     }>;
     private validateDeviceAdd;
-    getQr(body: any): Promise<{
+    getQr(userId: string, deviceId: string): Promise<{
         error: boolean;
         message: string;
     } | {
         message: string;
         error?: undefined;
     }>;
-    removeClient(body: any): Promise<{
+    removeClient(userId: string, deviceId: string): Promise<{
         message: string;
     }>;
     fetchAllDevices: (userId: string) => Promise<any>;
@@ -27,10 +27,10 @@ export declare class DeviceModel {
     private fetchDeviceByCondition;
     fetchPrevMessages(deviceId: string): Promise<any>;
     private fetchMessagesByStatus;
-    deleteAuth(body: any): Promise<{
+    deleteAuth(userId: string, deviceId: string): Promise<{
         message: string;
     }>;
-    logoutDevice(body: any): Promise<{
+    logoutDevice(userId: string, deviceId: string): Promise<{
         message: string;
         device: IDeviceModel;
     }>;
@@ -49,7 +49,7 @@ export declare class DeviceModel {
         message?: undefined;
     }>;
     findDeviceByPhone(phone: string): Promise<IDeviceModel>;
-    findDeviceById(id: string): Promise<IDeviceModel>;
+    findDeviceById(userId: string, deviceId: string): Promise<IDeviceModel>;
     findDeviceByUseId(userId: string): Promise<any>;
     findDeviceByCondition(condition: any): Promise<any[]>;
     findDeviceByIdAndUserId(deviceId: string, userId: string): Promise<any>;
@@ -60,6 +60,7 @@ export declare class DeviceModel {
         messageCount: any;
     }>;
     updateDeviceStatus(deviceId: string, status: EDeviceStatus): Promise<IDeviceModel>;
+    removeDevice(userId: string, deviceId: string): Promise<void>;
 }
 declare const _default: DeviceModel;
 export default _default;

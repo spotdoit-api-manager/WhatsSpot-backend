@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/interface-name-prefix */
 import { IDevice, EApiKeyStatus } from "./device.interface";
 import { Document, Model, model, Schema, Types } from "mongoose";
 import { validateMobile } from "../../lib/utils";
@@ -12,6 +13,16 @@ const deviceSchema = new Schema(
     name: {
       type: String,
       required: true,
+    },
+    isDeleted:{
+      status:{
+        type:Boolean,
+        default: false
+      },
+      deletedAt:{
+        type:Date,
+        required: false
+      }
     },
     userId: {
       type: Schema.Types.ObjectId,

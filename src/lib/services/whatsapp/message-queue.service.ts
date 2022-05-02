@@ -1,7 +1,7 @@
 import { EDeviceStatus } from "./../../../components/device/device.interface";
 import deviceModel from "../../../components/device/device.model";
 import messageModel from "../../../components/messages/message.model";
-import walletModel from "../../../components/walllet/wallet.model";
+import walletModel from "../../../components/wallet/wallet.model";
 import { EMessageStatus, IMessage } from "./../../../components/messages/message.interface";
 import { MessageQueue, IMessageModel } from "./../../../components/messages/message.schema";
 import whatsappClientService from "./whatsapp-client.service";

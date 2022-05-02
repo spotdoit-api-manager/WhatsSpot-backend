@@ -1,4 +1,4 @@
-import { HTTP401Error } from "./../../lib/utils/httpErrors";
+import { HTTP401Error } from "../../lib/utils/httpErrors";
 import { ObjectID } from "bson";
 import { NextFunction } from "express";
 import ResponseHandler from "../../lib/helpers/responseHandler";

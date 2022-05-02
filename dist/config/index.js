@@ -21,8 +21,8 @@ exports.configCors = {
         "http://127.0.0.1:5500",
         "http://localhost:4200",
         "https://spotdoit.in",
-        "https://services.spotdoit.in",
-        "https://services-console.spotdoit.in"
+        "https://dashboard.whatsspot.in",
+        "https://whatsspot.in"
         //add your origin
     ],
     // Expose additional which are restricted.

@@ -8,17 +8,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContactModal = void 0;
 const bson_1 = require("bson");
 const contact_schema_1 = require("./contact.schema");
+const logger_1 = __importDefault(require("../../core/logger"));
+const logFileName = "[ContactsModel]";
 class ContactModal {
     addNewContacts(userId, contacts) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("New Contact ", contacts);
             const newContacts = this.createNewContact(contacts, userId);
             console.log("new contacts ", newContacts);
-            const result = yield contact_schema_1.Contact.updateMany({}, newContacts, { upsert: true, new: true });
+            const result = yield contact_schema_1.Contact.insertMany(newContacts, { ordered: false });
             return result;
         });
     }
@@ -137,6 +142,7 @@ class ContactModal {
         });
     }
     addGroupContacts(userId, groupId, contacts) {
+        logger_1.default.info("add group contacts ", contacts);
     }
 }
 exports.ContactModal = ContactModal;

@@ -57,5 +57,11 @@ export default class Whatsapp extends EventEmitter {
         error: boolean;
     }>;
     endClient(): void;
-    logoutClient(): void;
+    logoutClient(): Promise<{
+        error: boolean;
+        message?: undefined;
+    } | {
+        error: boolean;
+        message: any;
+    }>;
 }

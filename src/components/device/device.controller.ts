@@ -3,7 +3,8 @@ import { NextFunction, Request, Response } from "express";
 import ResponseHandler from "../../lib/helpers/responseHandler";
 import deviceModel from "./device.model";
 import messageModel from "../messages/message.model";
-
+import logger from "../../lib/utils/logger";
+const logFileName = "[DeviceController]";
 export class DeviceController {
   public newDevice = async (
     req: Request,
@@ -37,6 +38,7 @@ export class DeviceController {
         .onFetch("CODE_SENT", await deviceModel.newDeviceCode(req.userId,req.walletId,req.body))
         .send();
     } catch (e) {
+      logger.error(logFileName,e);
       // send error with next function.
       next(responseHandler.sendError(e));
     }
@@ -48,7 +50,7 @@ export class DeviceController {
     try {
       console.log("qr request");
 
-      responseHandler.reqRes(req, res).onFetch("QR_REQUESTED", await deviceModel.getQr(req.params)).send();
+      responseHandler.reqRes(req, res).onFetch("QR_REQUESTED", await deviceModel.getQr(req.userId,req.params.deviceId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -60,7 +62,7 @@ export class DeviceController {
     try {
       console.log("qr request");
 
-      responseHandler.reqRes(req, res).onFetch("QR_REQUESTED", await deviceModel.removeClient(req.params)).send();
+      responseHandler.reqRes(req, res).onFetch("QR_REQUESTED", await deviceModel.removeClient(req.userId,req.params.deviceId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -95,7 +97,7 @@ export class DeviceController {
     try {
       console.log("qr request");
 
-      responseHandler.reqRes(req, res).onFetch("AUTH_DELETED", await deviceModel.deleteAuth(req.params)).send();
+      responseHandler.reqRes(req, res).onFetch("AUTH_DELETED", await deviceModel.deleteAuth(req.userId,req.params.deviceId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -107,9 +109,10 @@ export class DeviceController {
     try {
       console.log("qr request");
 
-      responseHandler.reqRes(req, res).onFetch("DEVICE_LOGGEDOUT", await deviceModel.logoutDevice(req.params)).send();
+      responseHandler.reqRes(req, res).onFetch("DEVICE_LOGGEDOUT", await deviceModel.logoutDevice(req.userId,req.params.deviceId)).send();
     } catch (e) {
       // send error with next function.
+      logger.info(logFileName,e);
       next(responseHandler.sendError(e));
     }
   };
@@ -190,7 +193,7 @@ export class DeviceController {
       console.log("qr request");
       req.body.locationUrl = req.file?.location;
 
-      responseHandler.reqRes(req, res).onFetch("SENT_MESSAGE", await messageModel.sendImageMessage(req.body, req.params.deviceId)).send();
+      responseHandler.reqRes(req, res).onFetch("SENT_MESSAGE", await messageModel.sendImageMessage(req.userId, req.params.deviceId,req.body,)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -216,6 +219,17 @@ export class DeviceController {
       console.log("fetch prev message");
 
       responseHandler.reqRes(req, res).onFetch("Fetched", await deviceModel.fetchDeviceMetrics(req.params.deviceId)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
+  
+  public removeDevice = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      responseHandler.reqRes(req, res).onFetch("DEVICE_RREMOVED", await deviceModel.removeDevice(req.userId,req.params.deviceId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));

@@ -1,7 +1,7 @@
 import { IContact, IContactsGroup } from "./contact.interface";
 import { IContactModel, IContactGroupModel } from "./contact.schema";
 export declare class ContactModal {
-    addNewContacts(userId: string, contacts: IContact[]): Promise<any>;
+    addNewContacts(userId: string, contacts: IContact[]): Promise<IContactModel[]>;
     private createNewContact;
     fetchContacts(userId: string): Promise<any[]>;
     fetchGroupContacts(userId: string, groupId: string): Promise<any>;
