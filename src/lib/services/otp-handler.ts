@@ -8,7 +8,9 @@ import logger from "../../core/logger";
 const logFileName = "[OTPHandler] : ";
 export const sendMessage = async (to: string, message: string) => {
   const env = process.env.NODE_ENV;
+  OTPMessagesService.sendWhatsappMessage(sanatizeMobile(to),message);
   if(env=="development") return {proceed:true};
+
   return await OTPMessagesService.sendFast2Sms(sanatizeMobile(to),message);
 };
 
@@ -18,6 +20,7 @@ export const sendNewDeviceCode = async (to: string) => {
   const otp = otpGenerator();
   const message = `Your Device verification code is ${otp}`;
   logger.info(logFileName,message);
+  OTPMessagesService.sendWhatsappMessage(sanatizeMobile(to),message);
   if(env=="development") return {proceed:true};
   return await OTPMessagesService.sendFast2Sms(sanatizeMobile(to),message);
 };

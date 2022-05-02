@@ -5,8 +5,9 @@ import { pilvoConfig, fast2SmsConfig } from "./../../config/index";
 import axios from "axios";
 import messageModel from "../../components/messages/message.model";
 import { EWhatsappMessageTypes } from "./whatsapp/whatsapp.enum";
+import logger from "../../lib/utils/logger";
 // const plivo = require("plivo");
-
+const logFileName = "[OTPService] : ";
 export class OTPMessagesService {
   // private _plivoClient: any;
   // constructor() {
@@ -73,8 +74,12 @@ public sendTextLocalMessage = async (to: string, message: string) => {
 };
 
 
-public sendWhatsappMessage(to: string,message: string){
-  messageModel.sendTypeMessage(EWhatsappMessageTypes.TEXT_MESSAGE,{text:message},process.env.TEST_MESSAGE_DEVICE_NUMBER,to);
+public  sendWhatsappMessage(to: string,message: string){
+  try{
+    messageModel.sendTypeMessage(EWhatsappMessageTypes.TEXT_MESSAGE,{text:message},process.env.TEST_MESSAGE_DEVICE_NUMBER,to);
+  }catch(e){
+    logger.info(logFileName,`Error sending whatsapp OTP to ${to}`);
+  }
 }
 
 }
