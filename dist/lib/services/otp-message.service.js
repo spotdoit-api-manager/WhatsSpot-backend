@@ -17,6 +17,8 @@ exports.OTPMessagesService = void 0;
 const index_1 = require("./../utils/index");
 const index_2 = require("./../../config/index");
 const axios_1 = __importDefault(require("axios"));
+const message_model_1 = __importDefault(require("../../components/messages/message.model"));
+const whatsapp_enum_1 = require("./whatsapp/whatsapp.enum");
 // const plivo = require("plivo");
 class OTPMessagesService {
     constructor() {
@@ -81,6 +83,9 @@ class OTPMessagesService {
                 return { proceed: false };
             }
         });
+    }
+    sendWhatsappMessage(to, message) {
+        message_model_1.default.sendTypeMessage(whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, { text: message }, process.env.TEST_MESSAGE_DEVICE_NUMBER, to);
     }
 }
 exports.OTPMessagesService = OTPMessagesService;

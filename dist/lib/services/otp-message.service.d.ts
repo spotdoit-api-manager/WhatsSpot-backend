@@ -11,6 +11,7 @@ export declare class OTPMessagesService {
     } | {
         proceed: boolean;
     }>;
+    sendWhatsappMessage(to: string, message: string): void;
 }
 declare const _default: OTPMessagesService;
 export default _default;

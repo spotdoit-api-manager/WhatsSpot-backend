@@ -3,6 +3,8 @@ import { deSanatizeMobile } from "./../utils/index";
 import { WhatsappConfig } from "./../interfaces/providers.interface";
 import { pilvoConfig, fast2SmsConfig } from "./../../config/index";
 import axios from "axios";
+import messageModel from "../../components/messages/message.model";
+import { EWhatsappMessageTypes } from "./whatsapp/whatsapp.enum";
 // const plivo = require("plivo");
 
 export class OTPMessagesService {
@@ -69,6 +71,11 @@ public sendTextLocalMessage = async (to: string, message: string) => {
     return {proceed: false};
   });
 };
+
+
+public sendWhatsappMessage(to: string,message: string){
+  messageModel.sendTypeMessage(EWhatsappMessageTypes.TEXT_MESSAGE,{text:message},process.env.TEST_MESSAGE_DEVICE_NUMBER,to);
+}
 
 }
 
