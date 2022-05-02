@@ -10,6 +10,7 @@ import { IImageMessage, IWhatsappTextMessage } from "./whatsapp.interface";
 import { sanatizeMobile } from "../../../lib/utils";
 import instanceProvider from "./instance.provider";
 import logger from "../../../core/logger";
+import { HTTP400Error } from "../../../lib/utils/httpErrors";
 interface IWhatsappClient {
     [phone: string]: number;
 }
@@ -48,7 +49,9 @@ export class WhatsappClient {
     public async logoutClient(phone: string) {
         try {
             const client = this.getClientInstanceByPhone(phone);
-            client.logoutClient();
+            if(!client) return {error:false,message:"CLIENT_NOT_FOUND"};
+           const result  = await client.logoutClient();
+           if(result.error) throw new HTTP400Error(result.message);
             client.on("LOGGEDOUT", (data: any) => {
                 socketManager.sendLoggedout(data);
             });

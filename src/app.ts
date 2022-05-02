@@ -8,7 +8,8 @@ import errorHandlersMiddleware from "./lib/middleware/errorHandlers.middleware";
 import dbConnection from "./lib/helpers/dbConnection";
 
 import { schedule } from "node-cron";
-
+import logger from "./core/logger";
+const logFileName = "[App]";
 process.on("uncaughtException", e => {
     console.log(e);
   console.log(e.message, "uncaught Exception");
@@ -16,7 +17,8 @@ process.on("uncaughtException", e => {
 });
 
 process.on("unhandledRejection", e => {
-  console.log(e, "unhandled Rejection");
+  logger.info(logFileName,e);
+  console.log("unhandled Rejection");
   process.exit(1);
 });
 
@@ -39,7 +41,7 @@ const r1 = express.Router();
 
 app.use("/", applyRoutes(routes, r1)); // default api
 app.all("*", (req, res, next) => {
-  next(new HTTP400Error(`Can't found ${req.originalUrl} on services server`));
+  next(new HTTP400Error(`Can't found ${req.originalUrl} on WhatsSpot server`));
 });
 console.log("current env is ",process.env.NODE_ENV );
 

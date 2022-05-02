@@ -49,7 +49,7 @@ export declare class MessageModel {
     private hasActivePlan;
     sendFastMessage(userId: string, numbers: string | string[], message: IWhatsappTextMessage, messageType: EWhatsappMessageTypes, deviceId: string, walletId: string): Promise<any[]>;
     sendMessage(userId: string, to: string, message: IWhatsappTextMessage, messageType: EWhatsappMessageTypes, deviceId: string, walletId: string): Promise<any>;
-    sendImageMessage(body: any, deviceId: string): Promise<void>;
+    sendImageMessage(userId: string, deviceId: string, body: any): Promise<void>;
     saveFastMessage(messageBody: IMessage): Promise<{
         error: boolean;
         data: any;

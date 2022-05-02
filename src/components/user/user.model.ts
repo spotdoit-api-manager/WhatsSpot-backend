@@ -1,6 +1,6 @@
 import { sanatizeMobile } from "./../../lib/utils/index";
-import { IWallet } from "./../walllet/wallet.interface";
-import { IWalletModel } from "./../walllet/wallet.schema";
+import { IWallet } from "../wallet/wallet.interface";
+import { IWalletModel } from "../wallet/wallet.schema";
 import { EMessageStatus } from "./../messages/message.interface";
 import { generateToken, imageUrl, isValidMongoId, otpGenerator } from "../../lib/helpers";
 import { User, UserSchema } from "./user.schema";
@@ -14,7 +14,7 @@ import jwt from "jsonwebtoken";
 import { ObjectID } from "bson";
 import { commonConfig } from "../../config";
 import { HTTP400Error, HTTP401Error } from "../../lib/utils/httpErrors";
-import walletModel, { WalletModel } from "../walllet/wallet.model";
+import walletModel, { WalletModel } from "../wallet/wallet.model";
 import plansModel from "../plans/plans.model";
 import logger from "../../core/logger";
 
@@ -524,8 +524,7 @@ try{
           if (data) {
             const otp = this.updateOtp(data._id);
             console.log(otp);
-            let otpData;
-            otpData = await this.sendOtpToMobile(otp, body.phone);
+            const otpData = await this.sendOtpToMobile(otp, body.phone);
             console.log(otpData);
             if (otpData.proceed) {
               return { _id: data._id, isExisted: false };
@@ -562,8 +561,7 @@ try{
           const data = await this.add(u);
           const otp = this.updateOtp(data._id);
           console.log(otp);
-          let otpData;
-          otpData = await this.sendOtpToMobile(otp, body.phone);
+          const otpData = await this.sendOtpToMobile(otp, body.phone);
           console.log(otpData);
           if (otpData.proceed) {
             return { _id: data._id, isExisted: false };
@@ -611,8 +609,7 @@ try{
 
       const otp = await this.updateOtp(id);
 
-      let otpData;
-      otpData = await this.sendOtpToMobile(otp, phone);
+     const  otpData = await this.sendOtpToMobile(otp, phone);
       console.log(otpData);
       if (otpData.proceed) {
         return { _id: user._id, isExisted: true };
@@ -650,6 +647,13 @@ try{
             from: "devices",
             localField: "_id",
             foreignField: "userId",
+            pipeline: [
+              {
+                  $match: {
+                      "isDeleted.status":false 
+                  }
+              }
+          ],
             as: "devices"
         },
 

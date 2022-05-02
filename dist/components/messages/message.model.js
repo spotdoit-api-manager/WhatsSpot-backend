@@ -22,7 +22,7 @@ const device_model_1 = __importDefault(require("../device/device.model"));
 const message_interface_1 = require("./message.interface");
 const message_schema_1 = require("./message.schema");
 const whatsapp_client_service_1 = __importDefault(require("../../lib/services/whatsapp/whatsapp-client.service"));
-const wallet_model_1 = __importDefault(require("../walllet/wallet.model"));
+const wallet_model_1 = __importDefault(require("../wallet/wallet.model"));
 const message_queue_service_1 = __importDefault(require("../../lib/services/whatsapp/message-queue.service"));
 const user_model_1 = __importDefault(require("../user/user.model"));
 const plans_model_1 = __importDefault(require("../plans/plans.model"));
@@ -50,7 +50,7 @@ class MessageModel {
     addMessageToQueue(userId, body, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
             logger_1.default.debug(logFileName, "add to queue request", body, deviceId);
-            const device = yield device_model_1.default.findDeviceById(deviceId);
+            const device = yield device_model_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const messagesBody = [];
@@ -133,7 +133,7 @@ class MessageModel {
     // }
     sendFastMessage(userId, numbers, message, messageType, deviceId, walletId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const device = yield device_model_1.default.findDeviceById(deviceId);
+            const device = yield device_model_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const results = [];
@@ -171,7 +171,7 @@ class MessageModel {
                 to = index_1.sanatizeMobile(to);
                 if (!utils_1.validateMobile(to))
                     throw new httpErrors_1.HTTP401Error("INVALID_NUMBER");
-                const device = yield device_model_1.default.findDeviceById(deviceId);
+                const device = yield device_model_1.default.findDeviceById(userId, deviceId);
                 if (!device)
                     throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
                 const { hasActivePlan, isMessageOver, activePlanInfo, planInfo } = yield this.hasActivePlan(userId);
@@ -203,9 +203,9 @@ class MessageModel {
             }
         });
     }
-    sendImageMessage(body, deviceId) {
+    sendImageMessage(userId, deviceId, body) {
         return __awaiter(this, void 0, void 0, function* () {
-            const device = yield device_model_1.default.findDeviceById(deviceId);
+            const device = yield device_model_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const to = body.to;

@@ -12,13 +12,16 @@ const index_1 = __importDefault(require("./lib/middleware/index"));
 const routes_1 = __importDefault(require("./routes"));
 const errorHandlers_middleware_1 = __importDefault(require("./lib/middleware/errorHandlers.middleware"));
 const dbConnection_1 = __importDefault(require("./lib/helpers/dbConnection"));
+const logger_1 = __importDefault(require("./core/logger"));
+const logFileName = "[App]";
 process.on("uncaughtException", e => {
     console.log(e);
     console.log(e.message, "uncaught Exception");
     process.exit(1);
 });
 process.on("unhandledRejection", e => {
-    console.log(e, "unhandled Rejection");
+    logger_1.default.info(logFileName, e);
+    console.log("unhandled Rejection");
     process.exit(1);
 });
 // Initialize express app
@@ -35,7 +38,7 @@ dbConnection_1.default.mongoConnection();
 const r1 = express_1.default.Router();
 app.use("/", utils_1.applyRoutes(routes_1.default, r1)); // default api
 app.all("*", (req, res, next) => {
-    next(new httpErrors_1.HTTP400Error(`Can't found ${req.originalUrl} on services server`));
+    next(new httpErrors_1.HTTP400Error(`Can't found ${req.originalUrl} on WhatsSpot server`));
 });
 console.log("current env is ", process.env.NODE_ENV);
 /*---------------------------------------git push -u myorigin

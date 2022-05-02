@@ -4,21 +4,22 @@ import transactionModel from "../transaction/transaction.model";
 import { razorPaySecrets } from "./../../config/index";
 import { HTTP401Error } from "./../../lib/utils/httpErrors";
 import { ICreateOrder, IVerifyPayment } from "./razorpay.interface";
-import razorpayService from "./razorpay.service";
-import walletModel from "../walllet/wallet.model";
+import razorPayService from "./razorpay.service";
+import walletModel from "../wallet/wallet.model";
 import crypto from "crypto";
 import { EPLANS, IPLAN } from "../plans/plans.interface";
 import plansModel from "../plans/plans.model";
-
-
+import logger from "../../core/logger";
+const logFileName = "[RazorPayModel]";
 export class RazorPayModel {
     public async createOrder(userId: string,walletId: string, body: ICreateOrder) {
         try {
+            logger.info(logFileName,body);
             const plan: IPLAN = await plansModel.fetchPlanByPlanId(body.planId);
             console.log("fetch plan ",plan);
             
             if(!plan) throw new Error("INVALID_PLAN");
-            const order: any = await razorpayService.createOrder(userId, body);
+            const order: any = await razorPayService.createOrder(userId, body);
             if (!order) throw new Error("UNKNOWN_ERROR");
             console.log(order);
             if (order.error) throw new Error(order.message);

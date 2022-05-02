@@ -18,14 +18,17 @@ const transaction_model_1 = __importDefault(require("../transaction/transaction.
 const index_1 = require("./../../config/index");
 const httpErrors_1 = require("./../../lib/utils/httpErrors");
 const razorpay_service_1 = __importDefault(require("./razorpay.service"));
-const wallet_model_1 = __importDefault(require("../walllet/wallet.model"));
+const wallet_model_1 = __importDefault(require("../wallet/wallet.model"));
 const crypto_1 = __importDefault(require("crypto"));
 const plans_interface_1 = require("../plans/plans.interface");
 const plans_model_1 = __importDefault(require("../plans/plans.model"));
+const logger_1 = __importDefault(require("../../core/logger"));
+const logFileName = "[RazorPayModel]";
 class RazorPayModel {
     createOrder(userId, walletId, body) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                logger_1.default.info(logFileName, body);
                 const plan = yield plans_model_1.default.fetchPlanByPlanId(body.planId);
                 console.log("fetch plan ", plan);
                 if (!plan)

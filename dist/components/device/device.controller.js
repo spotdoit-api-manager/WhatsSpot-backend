@@ -16,6 +16,8 @@ exports.DeviceController = void 0;
 const responseHandler_1 = __importDefault(require("../../lib/helpers/responseHandler"));
 const device_model_1 = __importDefault(require("./device.model"));
 const message_model_1 = __importDefault(require("../messages/message.model"));
+const logger_1 = __importDefault(require("../../lib/utils/logger"));
+const logFileName = "[DeviceController]";
 class DeviceController {
     constructor() {
         this.newDevice = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -41,6 +43,7 @@ class DeviceController {
                     .send();
             }
             catch (e) {
+                logger_1.default.error(logFileName, e);
                 // send error with next function.
                 next(responseHandler.sendError(e));
             }
@@ -49,7 +52,7 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("qr request");
-                responseHandler.reqRes(req, res).onFetch("QR_REQUESTED", yield device_model_1.default.getQr(req.params)).send();
+                responseHandler.reqRes(req, res).onFetch("QR_REQUESTED", yield device_model_1.default.getQr(req.userId, req.params.deviceId)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -60,7 +63,7 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("qr request");
-                responseHandler.reqRes(req, res).onFetch("QR_REQUESTED", yield device_model_1.default.removeClient(req.params)).send();
+                responseHandler.reqRes(req, res).onFetch("QR_REQUESTED", yield device_model_1.default.removeClient(req.userId, req.params.deviceId)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -93,7 +96,7 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("qr request");
-                responseHandler.reqRes(req, res).onFetch("AUTH_DELETED", yield device_model_1.default.deleteAuth(req.params)).send();
+                responseHandler.reqRes(req, res).onFetch("AUTH_DELETED", yield device_model_1.default.deleteAuth(req.userId, req.params.deviceId)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -104,10 +107,11 @@ class DeviceController {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("qr request");
-                responseHandler.reqRes(req, res).onFetch("DEVICE_LOGGEDOUT", yield device_model_1.default.logoutDevice(req.params)).send();
+                responseHandler.reqRes(req, res).onFetch("DEVICE_LOGGEDOUT", yield device_model_1.default.logoutDevice(req.userId, req.params.deviceId)).send();
             }
             catch (e) {
                 // send error with next function.
+                logger_1.default.info(logFileName, e);
                 next(responseHandler.sendError(e));
             }
         });
@@ -184,7 +188,7 @@ class DeviceController {
             try {
                 console.log("qr request");
                 req.body.locationUrl = (_a = req.file) === null || _a === void 0 ? void 0 : _a.location;
-                responseHandler.reqRes(req, res).onFetch("SENT_MESSAGE", yield message_model_1.default.sendImageMessage(req.body, req.params.deviceId)).send();
+                responseHandler.reqRes(req, res).onFetch("SENT_MESSAGE", yield message_model_1.default.sendImageMessage(req.userId, req.params.deviceId, req.body)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -207,6 +211,16 @@ class DeviceController {
             try {
                 console.log("fetch prev message");
                 responseHandler.reqRes(req, res).onFetch("Fetched", yield device_model_1.default.fetchDeviceMetrics(req.params.deviceId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.removeDevice = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("DEVICE_RREMOVED", yield device_model_1.default.removeDevice(req.userId, req.params.deviceId)).send();
             }
             catch (e) {
                 // send error with next function.

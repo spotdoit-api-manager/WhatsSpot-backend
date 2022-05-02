@@ -43,7 +43,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bson_1 = require("bson");
 const config_1 = require("../../config");
 const httpErrors_1 = require("../../lib/utils/httpErrors");
-const wallet_model_1 = __importDefault(require("../walllet/wallet.model"));
+const wallet_model_1 = __importDefault(require("../wallet/wallet.model"));
 const logger_1 = __importDefault(require("../../core/logger"));
 const logFileName = "[UserModal] : ";
 class UserModel {
@@ -566,8 +566,7 @@ class UserModel {
                         if (data) {
                             const otp = this.updateOtp(data._id);
                             console.log(otp);
-                            let otpData;
-                            otpData = yield this.sendOtpToMobile(otp, body.phone);
+                            const otpData = yield this.sendOtpToMobile(otp, body.phone);
                             console.log(otpData);
                             if (otpData.proceed) {
                                 return { _id: data._id, isExisted: false };
@@ -607,8 +606,7 @@ class UserModel {
                         const data = yield this.add(u);
                         const otp = this.updateOtp(data._id);
                         console.log(otp);
-                        let otpData;
-                        otpData = yield this.sendOtpToMobile(otp, body.phone);
+                        const otpData = yield this.sendOtpToMobile(otp, body.phone);
                         console.log(otpData);
                         if (otpData.proceed) {
                             return { _id: data._id, isExisted: false };
@@ -654,8 +652,7 @@ class UserModel {
                     });
                 }
                 const otp = yield this.updateOtp(id);
-                let otpData;
-                otpData = yield this.sendOtpToMobile(otp, phone);
+                const otpData = yield this.sendOtpToMobile(otp, phone);
                 console.log(otpData);
                 if (otpData.proceed) {
                     return { _id: user._id, isExisted: true };
@@ -695,6 +692,13 @@ class UserModel {
                         from: "devices",
                         localField: "_id",
                         foreignField: "userId",
+                        pipeline: [
+                            {
+                                $match: {
+                                    "isDeleted.status": false
+                                }
+                            }
+                        ],
                         as: "devices"
                     },
                 },

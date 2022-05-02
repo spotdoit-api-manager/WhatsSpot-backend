@@ -1,7 +1,0 @@
-[32m [16-Apr-22 15:04:53] [42m [SUCCESS] [45m [Logger] :  [0m Testing Success-------------------------
-[32m [16-Apr-22 15:04:53] [44m  [INFO]   [45m [Logger] :  [0m Testing info-------------------------
-[32m [16-Apr-22 15:04:50] [44m  [INFO]   [45m [MessageQueueService] :  [0m FOUND 0 PENDING MESSAGES TO CONTACT
-[32m [16-Apr-22 15:04:62] [44m  [INFO]   [45m [MessageQueueService] :  [0m FOUND 1 PENDING MESSAGES TO GROUP
-[32m [16-Apr-22 15:04:73] [42m [SUCCESS] [45m [WhatsappService] :  [0m Connection open
-[32m [16-Apr-22 15:04:56] [44m  [INFO]   [45m [MessageQueueService] :  [0m FOUND 0 PENDING MESSAGES TO CONTACT
-[32m [16-Apr-22 15:04:40] [44m  [INFO]   [45m [MessageQueueService] :  [0m FOUND 1 PENDING MESSAGES TO GROUP

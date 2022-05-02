@@ -319,8 +319,14 @@ export default class Whatsapp extends EventEmitter {
 
   }
 
-  public logoutClient() {
-    this.client.logout();
+  public async logoutClient() {
+    try{
+      await this.client.logout();
+      return {error:false};
+    }catch(e){
+      return {error:true,message:e.message};
+    }
+
   }
 
   // startSock()

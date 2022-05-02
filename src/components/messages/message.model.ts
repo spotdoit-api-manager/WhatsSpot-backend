@@ -9,7 +9,7 @@ import deviceModel from "../device/device.model";
 import { ESendType, IMessage, EMessageStatus } from "./message.interface";
 import { MessageQueue, FastMessage, IMessageModel } from "./message.schema";
 import whatsappClientService from "../../lib/services/whatsapp/whatsapp-client.service";
-import walletModel from "../walllet/wallet.model";
+import walletModel from "../wallet/wallet.model";
 import messageQueueService from "../../lib/services/whatsapp/message-queue.service";
 import userModel from "../user/user.model";
 import plansModel from "../plans/plans.model";
@@ -40,7 +40,7 @@ export class MessageModel {
 
     public async addMessageToQueue(userId: string, body: { groups: IGroupList[]; numbers: string | IContact[]; message: IWhatsappMessage; isGroup: boolean;messageType: EWhatsappMessageTypes }, deviceId: string) {
         logger.debug(logFileName,"add to queue request", body, deviceId);
-        const device = await deviceModel.findDeviceById(deviceId);
+        const device = await deviceModel.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
 
         const messagesBody: IMessage[] = [];
@@ -122,7 +122,7 @@ export class MessageModel {
     // }
 
     public async sendFastMessage(userId: string, numbers: string|string[], message: IWhatsappTextMessage,messageType: EWhatsappMessageTypes,deviceId: string, walletId: string) {
-        const device = await deviceModel.findDeviceById(deviceId);
+        const device = await deviceModel.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const results=[];
         if(typeof numbers == "string"){
@@ -154,7 +154,7 @@ export class MessageModel {
         try {
             to = sanatizeMobile(to);
             if (!validateMobile(to)) throw new HTTP401Error("INVALID_NUMBER");
-            const device = await deviceModel.findDeviceById(deviceId);
+            const device = await deviceModel.findDeviceById(userId,deviceId);
             if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
             const { hasActivePlan, isMessageOver, activePlanInfo, planInfo } = await this.hasActivePlan(userId);
             if (isMessageOver) throw new HTTP400Error("MESSAGES_EXHAUSTED", "message exhausted for your active plan");
@@ -183,8 +183,8 @@ export class MessageModel {
 
 
 
-    public async sendImageMessage(body: any, deviceId: string) {
-        const device = await deviceModel.findDeviceById(deviceId);
+    public async sendImageMessage(userId: string, deviceId: string,body: any,) {
+        const device = await deviceModel.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const to = body.to;
         const msg: IImageMessage = { image: body.locationUrl, caption: body.caption || "" };

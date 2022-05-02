@@ -102,5 +102,10 @@ export default [
         method: "get",
         escapeAuth: false,
         handler: [deviceController.fetchPrevMessages]
-    }
+    },
+    {
+        path: "/device/removeDevice/:deviceId",
+        method: "delete",
+        handler: [deviceController.removeDevice]
+    },
 ];

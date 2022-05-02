@@ -12,5 +12,5 @@ export default [
         method: "get",
         escapeAuth: false,
         handler: [walletController.fetchTransactions]
-    }
+    },
 ];

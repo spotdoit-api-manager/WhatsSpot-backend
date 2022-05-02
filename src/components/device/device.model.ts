@@ -53,8 +53,8 @@ export class DeviceModel {
         if (device && device.userId == userId) return device;
         else if(device && device.userId != userId) throw new HTTP401Error("DEVICE_ALREADY_REGISTERD","This device is already added by some user");
     }
-    public async getQr(body: any) {
-        const device = await this.findDeviceById(body.deviceId);
+    public async getQr(userId: string,deviceId: string) {
+        const device = await this.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         if (device.authState) return { error: true, message: "ALREADY_AUTHENTICATED" };
         // if (!device.authState && device.reason && device.reason.statusCode === DisconnectReason.loggedOut) {
@@ -64,8 +64,8 @@ export class DeviceModel {
         return { message: "QR_REQUESTED" };
     };
 
-    public async removeClient(body: any){
-        const device = await this.findDeviceById(body.deviceId);
+    public async removeClient(userId: string,deviceId: string){
+        const device = await this.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const data = whatsappClientService.removeClientInstanceByPhone(device.phone);
         return { message: "CLIENT_REMOVED" };
@@ -83,7 +83,7 @@ export class DeviceModel {
 
     private async fetchDeviceByCondition(deviceId: string, userId: string) {
         const result = await Device.aggregate([
-            { $match: { _id: new ObjectID(deviceId), userId: new ObjectID(userId) } },
+            { $match: { _id: new ObjectID(deviceId), userId: new ObjectID(userId),"isDeleted.status":false } },
             {
                 $project: {
                     apiKeys: 0
@@ -155,8 +155,8 @@ export class DeviceModel {
     }
 
 
-    public async deleteAuth(body: any) {
-        const device = await this.findDeviceById(body.deviceId);
+    public async deleteAuth(userId: string,deviceId: string) {
+        const device = await this.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
         const res: any = await fileManagement.deleteFile(authFilePath);
@@ -165,8 +165,8 @@ export class DeviceModel {
         return { message: "DEVICE_LOGGEDOUT" };
     };
 
-    public async logoutDevice(body: any) {
-        const device = await this.findDeviceById(body.deviceId);
+    public async logoutDevice(userId: string,deviceId: string) {
+        const device = await this.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
 
@@ -270,17 +270,17 @@ export class DeviceModel {
 
 
     public async findDeviceByPhone(phone: string) {
-        const device = await Device.findOne({ phone });
+        const device = await Device.findOne({ phone,"isDeleted.status":false });
         return device;
     }
 
-    public async findDeviceById(id: string) {
-        const device = await Device.findById(id);
+    public async findDeviceById(userId: string,deviceId: string) {
+        const device = await Device.findOne({userId:new ObjectID(userId),_id:new ObjectID(deviceId),"isDeleted.status":false});
         return device;
     }
 
     public async findDeviceByUseId(userId: string) {
-        const devices = await Device.find({ userId: userId }).lean();
+        const devices = await Device.find({ userId: userId,"isDeleted.status":false }).lean();
         return devices;
     }
 
@@ -306,7 +306,7 @@ export class DeviceModel {
 
     public async fetchDeviceMetrics(deviceId: string) {
         try {
-            const condition = { _id: new ObjectID(deviceId) };
+            const condition = { _id: new ObjectID(deviceId),"isDeleted.status":false };
 
             let result = await Device.aggregate([
                 { $match: condition },
@@ -419,7 +419,10 @@ export class DeviceModel {
         return result;
     }
 
-
+    public async removeDevice(userId: string,deviceId: string){
+        await this.logoutDevice(userId,deviceId);
+        const result = await Device.findByIdAndUpdate(deviceId,{isDeleted:{status:true,deletedAt:new Date()}});
+    }
 }
 
 export default new DeviceModel();
