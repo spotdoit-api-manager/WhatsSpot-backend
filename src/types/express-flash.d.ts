@@ -13,7 +13,10 @@ declare namespace Express {
         isAuth?: boolean,
         deviceId?: string,
         walletId?:string,
-        testMessageId?:string|null
+        testMessageId?:string|null,
+        file:{
+            location: string
+        }
     }
 }
 
