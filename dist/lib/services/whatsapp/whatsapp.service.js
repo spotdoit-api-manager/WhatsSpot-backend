@@ -190,6 +190,23 @@ class Whatsapp extends events_1.EventEmitter {
                 logger_1.default.error(logFileName, e);
             }
         });
+        this.sendTemplateMessage = (to, templateMsg) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const jid = whatsapp_utils_1.getSerializedPhone(to);
+                logger_1.default.debug(logFileName, `Sending Template Message to ${jid}`);
+                yield this.client.presenceSubscribe(jid);
+                yield baileys_1.delay(500);
+                const result = yield this.client.sendMessage(jid, templateMsg);
+                logger_1.default.debug(result);
+                if (result.status != 1) {
+                    return { error: true };
+                }
+                return { error: false };
+            }
+            catch (e) {
+                logger_1.default.error(logFileName, e);
+            }
+        });
         this._instanceId = instance_provider_1.default.addInstance(this);
         this.state = baileys_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
         this.saveState = baileys_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;

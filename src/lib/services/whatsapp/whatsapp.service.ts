@@ -313,6 +313,23 @@ export default class Whatsapp extends EventEmitter {
     }
   }
 
+  public sendTemplateMessage = async(to: string,templateMsg: IButtonMessage)=>{
+    try{
+      const jid = getSerializedPhone(to);
+      logger.debug(logFileName,`Sending Template Message to ${jid}`);
+      await this.client.presenceSubscribe(jid);
+      await delay(500);
+      const result = await this.client.sendMessage(jid, templateMsg);
+      logger.debug(result);
+      if (result.status != 1) {
+        return { error: true };
+      }
+      return { error: false };
+    }catch(e){
+      logger.error(logFileName,e);
+    }
+  }
+
   public endClient() {
     // this.client.
     this.client.end();

@@ -76,3 +76,47 @@ export interface IWhatsappButtonMessageButton {
     vcard: string|null;
 
 }
+
+
+
+
+// **TEMPLATE MESSAGE
+export interface IWhatsappTemplateMessage {
+  text: string,
+  footer: string,
+  templateButtons: ITemplateButtons[]
+}
+
+
+export type ITemplateButtons = IURLButton | ICallButton | IQuickReplyButton;
+export enum ETemplateButtons {
+  URL_BUTTON = 'URL_BUTTON',
+  CALL_BUTTON = 'CALL_BUTTON',
+  QUICK_REPLY_BUTTON = 'QUICK_REPLY_BUTTON'
+}
+
+export interface IURLButton {
+  index: number,
+  urlButton: {
+    displayText: string,
+    url: string
+  }
+}
+
+
+export interface ICallButton {
+  index: number,
+  callButton: {
+    displayText: string,
+    phoneNumber: string
+  },
+
+}
+
+export interface IQuickReplyButton {
+  index: number,
+  quickReplyButton: {
+    displayText: string,
+    id: string
+  }
+}
