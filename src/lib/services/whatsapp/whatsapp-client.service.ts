@@ -1,4 +1,4 @@
-import { IWhatsappListMessage,IWhatsappButtonMessage } from "./whatsapp.interface";
+import { IWhatsappListMessage,IWhatsappButtonMessage, IWhatsappTemplateMessage } from "./whatsapp.interface";
 /* eslint-disable @typescript-eslint/interface-name-prefix */
 import socketManager from "./../socket";
 
@@ -135,12 +135,26 @@ export class WhatsappClient {
             const clientInstance = this.getClientInstanceByPhone(from);
             if (!clientInstance) return { error: true, message: "CLIENT_NOT_FOUND" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-            const data = await clientInstance.sendListMessage(sanatizeMobile(to), message);
+            const data = await clientInstance.sendButtonMessage(sanatizeMobile(to), message);
             return data;
         } catch (e) {
             return { error: true, message: e.message };
         }
     }
+
+    public sendTemplateMessage = async(from: string,to: string,message: IWhatsappTemplateMessage) => {
+        try {
+            logger.info(logFileName,`Sending Template Message to ${to}`);
+            const clientInstance = this.getClientInstanceByPhone(from);
+            if (!clientInstance) return { error: true, message: "CLIENT_NOT_FOUND" };
+            if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+            const data = await clientInstance.sendTemplateMessage(sanatizeMobile(to), message);
+            return data;
+        } catch (e) {
+            return { error: true, message: e.message };
+        }
+    }
+
     public async sendRawMessage(phone: string,to: string,message: any){
         try {
             logger.info(logFileName,`Sending Raw Message to ${to}`);

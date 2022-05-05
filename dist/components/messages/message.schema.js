@@ -80,7 +80,7 @@ const messageSchema = new mongoose_1.Schema({
     },
     messageType: {
         type: String,
-        enum: ["LIST_MESSAGE", "TEXT_MESSAGE", "BUTTON_MESSAGE"]
+        enum: ["LIST_MESSAGE", "TEXT_MESSAGE", "BUTTON_MESSAGE", "TEMPLATE_MESSAGE"]
     },
     message: {
         type: mongoose_1.Schema.Types.Mixed,

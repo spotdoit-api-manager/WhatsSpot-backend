@@ -56,6 +56,9 @@ export default class Whatsapp extends EventEmitter {
     sendBtnMessage: (to: string, btnMsg: IButtonMessage) => Promise<{
         error: boolean;
     }>;
+    sendTemplateMessage: (to: string, templateMsg: IButtonMessage) => Promise<{
+        error: boolean;
+    }>;
     endClient(): void;
     logoutClient(): Promise<{
         error: boolean;

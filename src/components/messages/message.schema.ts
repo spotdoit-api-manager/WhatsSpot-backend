@@ -82,7 +82,7 @@ const messageSchema = new Schema(
     },
     messageType:{
       type:String,
-      enum:["LIST_MESSAGE","TEXT_MESSAGE","BUTTON_MESSAGE"]
+      enum:["LIST_MESSAGE","TEXT_MESSAGE","BUTTON_MESSAGE","TEMPLATE_MESSAGE"]
     },
     message:{
       type:Schema.Types.Mixed,
