@@ -3,7 +3,6 @@ import { IApiKey, IDevice } from "./device.interface";
 import { IDeviceModel } from "./device.shema";
 export declare class DeviceModel {
     newDevice(userId: string, walletId: string, body: IDevice, newDeviceCode: string): Promise<IDeviceModel>;
-    verifyNewDeviceCode(newDeviceCode: string): Promise<boolean>;
     newDeviceCode(userId: string, walletId: string, newDeviceBody: INewDevice): Promise<{
         proceed: boolean;
         message: any;

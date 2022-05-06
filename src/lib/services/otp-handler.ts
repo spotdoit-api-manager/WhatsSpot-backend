@@ -15,9 +15,8 @@ export const sendMessage = async (to: string, message: string) => {
 };
 
 
-export const sendNewDeviceCode = async (to: string) => {
+export const sendNewDeviceCode = async (to: string,otp: number) => {
   const env = process.env.NODE_ENV;
-  const otp = otpGenerator();
   const message = `Your Device verification code is ${otp}`;
   logger.info(logFileName,message);
   OTPMessagesService.sendWhatsappMessage(sanatizeMobile(to),message);

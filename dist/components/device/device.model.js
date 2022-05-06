@@ -45,6 +45,7 @@ const bson_1 = require("bson");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dayjs_1 = __importDefault(require("dayjs"));
 const otpHandler = __importStar(require("../../lib/services/otp-handler"));
+const user_model_1 = __importDefault(require("../user/user.model"));
 const logFileName = "[DeviceModal] : ";
 class DeviceModel {
     constructor() {
@@ -72,7 +73,7 @@ class DeviceModel {
             body.userId = userId;
             const device = yield this.findDeviceByPhone(body.phone);
             this.validateDeviceAdd(userId, device);
-            yield this.verifyNewDeviceCode(newDeviceCode);
+            yield user_model_1.default.validateDeviceCode(userId, body.phone, parseInt(newDeviceCode));
             logger_1.default.info(logFileName, `Device ${body.phone} verified`);
             const newDevice = new device_shema_1.Device(body);
             const newDeviceData = yield newDevice.saveDevice();
@@ -84,19 +85,12 @@ class DeviceModel {
             return newDeviceData;
         });
     }
-    verifyNewDeviceCode(newDeviceCode) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (newDeviceCode) {
-                return true;
-            }
-            return false;
-        });
-    }
     newDeviceCode(userId, walletId, newDeviceBody) {
         return __awaiter(this, void 0, void 0, function* () {
             const device = yield this.findDeviceByPhone(newDeviceBody.phone);
             this.validateDeviceAdd(userId, device);
-            const result = yield otpHandler.sendNewDeviceCode(newDeviceBody.phone);
+            const code = yield user_model_1.default.updateDeviceCode(userId, newDeviceBody.phone);
+            const result = yield otpHandler.sendNewDeviceCode(newDeviceBody.phone, code);
             return result;
         });
     }

@@ -94,6 +94,10 @@ exports.UserSchema = new mongoose_1.Schema({
         enum: ["male", "female", "other"],
     },
     otp: Number,
+    deviceCodes: {
+        type: mongoose_1.SchemaTypes.Mixed,
+        required: false,
+    },
     isVerified: {
         type: Boolean,
         default: false

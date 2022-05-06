@@ -18,6 +18,9 @@ export interface IUser {
     walletId?: string;
     activePlan: IPlanRef;
     previousPlans: IPlanRef[];
+    deviceCodes: {
+        [key: string]: string;
+    };
 }
 export interface IPlanRef {
     planName: string;

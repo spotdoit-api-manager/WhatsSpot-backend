@@ -53,6 +53,17 @@ class MessageController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.queueTemplateMessage = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                req.body.messageType = whatsapp_enum_1.EWhatsappMessageTypes.TEMPLATE_MESSAGE;
+                responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE_TEMPLATE", yield message_model_1.default.addMessageToQueue(req.userId, req.body, req.deviceId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
         this.addToQueue = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
@@ -90,6 +101,17 @@ class MessageController {
             const responseHandler = new responseHandler_1.default();
             try {
                 req.body.messageType = whatsapp_enum_1.EWhatsappMessageTypes.BUTTON_MESSAGE;
+                responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield message_model_1.default.sendFastMessage(req.userId, req.body.numbers, req.body.message, req.body.messageType, req.deviceId, req.walletId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.fastTemplate = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                req.body.messageType = whatsapp_enum_1.EWhatsappMessageTypes.TEMPLATE_MESSAGE;
                 responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield message_model_1.default.sendFastMessage(req.userId, req.body.numbers, req.body.message, req.body.messageType, req.deviceId, req.walletId)).send();
             }
             catch (e) {

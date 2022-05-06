@@ -388,11 +388,25 @@ try{
     return otp;
   }
 
+  public async updateDeviceCode(userId: string,phone: string){
+    const code = otpGenerator();
+    const key =`deviceCodes.${phone}`;
+    const data = await User.findByIdAndUpdate(userId,{[key]:code});
+    return code;
+  }
+
+  public async validateDeviceCode(userId: string,devicePhone: string,code: number){
+    const key = `deviceCodes.${devicePhone}`;
+    const data = await User.findOne({"_id":new ObjectID(userId),[key]:code});
+    if(!data) throw new HTTP400Error("INVALID_CODE","The code you have entered is invalid");
+  }
   async sendOtpToMobile(otp: number, phone: string) {
     logger.debug(logFileName,`send this ${otp} to ${phone}`);
     const message = `Your SpotDoit Services login OTP is ${otp}.`;
     return await sendMessage(phone, message);
   }
+
+
 
 
 
@@ -645,13 +659,17 @@ try{
       {
         $lookup: {
             from: "devices",
-            localField: "_id",
-            foreignField: "userId",
+            // localField: "_id",
+            // foreignField: "userId",
+            let:{userId:"$_id"},
             pipeline: [
               {
                   $match: {
-                      "isDeleted.status":false 
+                      "isDeleted.status":false,
+                      $expr: {
+                       $eq: [ "$userId",  "$$userId" ] ,
                   }
+                }
               }
           ],
             as: "devices"

@@ -57,12 +57,13 @@ export declare class UserModel {
     addFollowRequest(id: string, userId: string): Promise<IUserModel>;
     acceptFollowRequest(id: string, userId: string): Promise<IUserModel>;
     updateOtp(id: string): number;
+    updateDeviceCode(userId: string, phone: string): Promise<number>;
+    validateDeviceCode(userId: string, devicePhone: string, code: number): Promise<void>;
     sendOtpToMobile(otp: number, phone: string): Promise<{
         proceed: boolean;
-        message?: undefined;
+        message: any;
     } | {
         proceed: boolean;
-        message: any;
     }>;
     signToken: (dataToStore: IDataStoredInToken) => string;
     addNewToken(dataToStore: IDataStoredInToken): Promise<{
@@ -96,10 +97,9 @@ export declare class UserModel {
     genrateOTP(phone: string): Promise<{
         res: {
             proceed: boolean;
-            message?: undefined;
+            message: any;
         } | {
             proceed: boolean;
-            message: any;
         };
         proceed: boolean;
     } | {

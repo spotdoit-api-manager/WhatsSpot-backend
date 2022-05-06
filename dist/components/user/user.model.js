@@ -452,6 +452,22 @@ class UserModel {
         user_schema_1.User.findByIdAndUpdate(id, { otp }).then();
         return otp;
     }
+    updateDeviceCode(userId, phone) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const code = helpers_1.otpGenerator();
+            const key = `deviceCodes.${phone}`;
+            const data = yield user_schema_1.User.findByIdAndUpdate(userId, { [key]: code });
+            return code;
+        });
+    }
+    validateDeviceCode(userId, devicePhone, code) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const key = `deviceCodes.${devicePhone}`;
+            const data = yield user_schema_1.User.findOne({ "_id": new bson_1.ObjectID(userId), [key]: code });
+            if (!data)
+                throw new httpErrors_1.HTTP400Error("INVALID_CODE", "The code you have entered is invalid");
+        });
+    }
     sendOtpToMobile(otp, phone) {
         return __awaiter(this, void 0, void 0, function* () {
             logger_1.default.debug(logFileName, `send this ${otp} to ${phone}`);
@@ -690,12 +706,16 @@ class UserModel {
                 {
                     $lookup: {
                         from: "devices",
-                        localField: "_id",
-                        foreignField: "userId",
+                        // localField: "_id",
+                        // foreignField: "userId",
+                        let: { userId: "$_id" },
                         pipeline: [
                             {
                                 $match: {
-                                    "isDeleted.status": false
+                                    "isDeleted.status": false,
+                                    $expr: {
+                                        $eq: ["$userId", "$$userId"],
+                                    }
                                 }
                             }
                         ],
