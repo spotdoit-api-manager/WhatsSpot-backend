@@ -19,7 +19,7 @@ public/css/main.css
 config.env
 # Coverage reports
 coverage
-
+sessions
 # API keys and secrets
 #.env
 
