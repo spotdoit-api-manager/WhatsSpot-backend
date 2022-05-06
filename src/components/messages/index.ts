@@ -1,7 +1,7 @@
 import { validateTestMessageRequest } from "./../testMessage/testMessage.middleware";
 import { DeviceKeyValidator } from "../../lib/middleware/device-key.middleware";
 import messageController from "./message.controller";
-import { validateTextMessage,validateListMessage,validateBtnMessage } from "../../lib/middleware/message.middleware";
+import { validateTextMessage,validateListMessage,validateBtnMessage,validateTemplateMessage } from "../../lib/middleware/message.middleware";
 export default [
 
     //queue message
@@ -23,6 +23,12 @@ export default [
         escapeAuth: true,
         handler: [DeviceKeyValidator,validateBtnMessage, messageController.queueBtnMessage]
     },
+    {
+        path:"/message/template",
+        method: "post",
+        escapeAuth: true,
+        handler: [DeviceKeyValidator,validateTemplateMessage, messageController.queueTemplateMessage]
+    },
     // fast messages
     {
         path:"/message/fast/text",
@@ -41,6 +47,12 @@ export default [
         method: "post",
         escapeAuth: true,
         handler: [DeviceKeyValidator,validateBtnMessage, messageController.fastBtn]
+    },
+    {
+        path:"/message/fast/template",
+        method: "post",
+        escapeAuth: true,
+        handler: [DeviceKeyValidator,validateTemplateMessage, messageController.fastTemplate]
     },
    
     {

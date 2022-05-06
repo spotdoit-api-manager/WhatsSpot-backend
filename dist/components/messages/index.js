@@ -27,6 +27,12 @@ exports.default = [
         escapeAuth: true,
         handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_1.validateBtnMessage, message_controller_1.default.queueBtnMessage]
     },
+    {
+        path: "/message/template",
+        method: "post",
+        escapeAuth: true,
+        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_1.validateTemplateMessage, message_controller_1.default.queueTemplateMessage]
+    },
     // fast messages
     {
         path: "/message/fast/text",
@@ -45,6 +51,12 @@ exports.default = [
         method: "post",
         escapeAuth: true,
         handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_1.validateBtnMessage, message_controller_1.default.fastBtn]
+    },
+    {
+        path: "/message/fast/template",
+        method: "post",
+        escapeAuth: true,
+        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_1.validateTemplateMessage, message_controller_1.default.fastTemplate]
     },
     {
         path: "/message/testMessage",
