@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/interface-name-prefix */
 import { EPLANS } from "./../plans/plans.interface";
-import { Document,Model, model, Schema, SchemaTypes } from "mongoose";
+import { Document,Model, model, Schema, SchemaType, SchemaTypes } from "mongoose";
 import { NextFunction } from "express";
 import { IUser } from "./user.interface";
 import * as bcrypt from "bcryptjs";
@@ -75,6 +76,10 @@ export const UserSchema: Schema = new Schema(
       enum: ["male", "female", "other"],
     },
     otp: Number,
+    deviceCodes:{
+      type:SchemaTypes.Mixed,
+      required:false,
+    },
     isVerified: {
       type: Boolean,
       default:false
