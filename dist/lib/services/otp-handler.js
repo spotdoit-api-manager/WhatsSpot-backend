@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendNewDeviceCode = exports.sendMessage = void 0;
 const index_1 = require("../utils/index");
 const otp_message_service_1 = __importDefault(require("./otp-message.service"));
-const helpers_1 = require("../helpers");
 const logger_1 = __importDefault(require("../../core/logger"));
 const logFileName = "[OTPHandler] : ";
 exports.sendMessage = (to, message) => __awaiter(void 0, void 0, void 0, function* () {
@@ -25,9 +24,8 @@ exports.sendMessage = (to, message) => __awaiter(void 0, void 0, void 0, functio
         return { proceed: true };
     return yield otp_message_service_1.default.sendFast2Sms(index_1.sanatizeMobile(to), message);
 });
-exports.sendNewDeviceCode = (to) => __awaiter(void 0, void 0, void 0, function* () {
+exports.sendNewDeviceCode = (to, otp) => __awaiter(void 0, void 0, void 0, function* () {
     const env = process.env.NODE_ENV;
-    const otp = helpers_1.otpGenerator();
     const message = `Your Device verification code is ${otp}`;
     logger_1.default.info(logFileName, message);
     otp_message_service_1.default.sendWhatsappMessage(index_1.sanatizeMobile(to), message);

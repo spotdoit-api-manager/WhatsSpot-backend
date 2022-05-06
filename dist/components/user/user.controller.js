@@ -109,6 +109,7 @@ class UserController {
                 responseHandler.reqRes(req, res).onCreate(customMessage_1.user.UPDATED, result).send();
             }
             catch (e) {
+                console.log(e);
                 next(responseHandler.sendError(e));
             }
         });
