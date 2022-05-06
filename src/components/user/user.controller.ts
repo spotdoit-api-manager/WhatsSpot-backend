@@ -106,6 +106,7 @@ class UserController {
      const result = await userModel.getAccountMetrics(req.userId);
       responseHandler.reqRes(req, res).onCreate(msg.UPDATED,result).send();
     } catch (e) {
+      console.log(e);
       next(responseHandler.sendError(e));
     }
   }

@@ -15,6 +15,7 @@ import jwt from "jsonwebtoken";
 import dayjs from "dayjs";
 import { sanatizeMobile, validateMobile } from "../../lib/utils";
 import * as otpHandler from "../../lib/services/otp-handler";
+import userModel from "../user/user.model";
 
 const logFileName = "[DeviceModal] : ";
 export class DeviceModel {
@@ -22,7 +23,7 @@ export class DeviceModel {
         body.userId = userId;
         const device = await this.findDeviceByPhone(body.phone);
         this.validateDeviceAdd(userId,device);
-        await this.verifyNewDeviceCode(newDeviceCode);
+        await userModel.validateDeviceCode(userId,body.phone,parseInt(newDeviceCode));
         logger.info(logFileName,`Device ${body.phone} verified`);
         const newDevice = new Device(body);
         const newDeviceData: IDeviceModel = await newDevice.saveDevice();
@@ -32,17 +33,13 @@ export class DeviceModel {
         return newDeviceData;
     }
 
-    public async verifyNewDeviceCode(newDeviceCode: string){
-        if(newDeviceCode){
-            return true;
-        }
-        return false;
-    }
+   
 
     public async newDeviceCode(userId: string,walletId: string,newDeviceBody: INewDevice){
         const device = await this.findDeviceByPhone(newDeviceBody.phone);
         this.validateDeviceAdd(userId,device);
-        const result  =  await otpHandler.sendNewDeviceCode(newDeviceBody.phone);
+        const code = await userModel.updateDeviceCode(userId,newDeviceBody.phone);
+        const result  =  await otpHandler.sendNewDeviceCode(newDeviceBody.phone,code);
         return result;
     }
 
