@@ -29,7 +29,11 @@ export class ContactModal{
 
         public async fetchContacts(userId: string){
             const result = await Contact.aggregate([
-                {$match:{userId:new ObjectID(userId)}}
+                {$match:{userId:new ObjectID(userId)}},
+                {$project:{
+                    name:1,
+                    phoneNumber:1
+                }}
             ]);
             
             return result;
@@ -42,17 +46,15 @@ export class ContactModal{
                 },
                 {
                     $project:{
-                        contacts:1
+                        contacts:{
+                            _id:1,
+                            name:1,
+                            phoneNumber:1
+                        }
                     }
                 },
-                // {
-                //     $unwind:{
-                //         path:"$contacts",
-                //     }
-                // },
-                
+              
             ]);
-            // console.log("group Contacts result is ",result);
             return result[0]?.contacts || [];
         }
 

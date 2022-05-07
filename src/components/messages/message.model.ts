@@ -165,14 +165,14 @@ export class MessageModel {
                 if (!isValidAmount) throw new Error("NOT_ENOUGH_BALANCE");
             }
             const result = await this.sendTypeMessage(messageType,message,device.phone,to);
-            if(result.error) return result;
+            if(result.error) throw Error(result.message);
             if (hasActivePlan) {
                 await plansModel.increamentMessageCount(activePlanInfo._id);
                 return { error: false, creditUsed: 0, message: result.message };
             } else {
                 const paymentMetaData = { deviceId: deviceId, to: to };
                 const paymentResult = await walletModel.makePaymentFromWallet(walletId, userId, parseFloat(process.env.TEXT_MESSAGE_RATE), `message to ${to} from device ${device.name}(${device.phone})`, paymentMetaData);
-                return { error: false, creditUsed: process.env.TEXT_MESSAGE_RATE, walletBalance: paymentResult.wallet.balance,message:result.message };
+                return { error: false, creditUsed: parseFloat(process.env.TEXT_MESSAGE_RATE), walletBalance: paymentResult.wallet.balance,message:result.message };
             }
         } catch (err) {
             logger.error(logFileName, err);

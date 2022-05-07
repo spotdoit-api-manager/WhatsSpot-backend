@@ -49,7 +49,7 @@ export class WhatsappClient {
     public async logoutClient(phone: string) {
         try {
             const client = this.getClientInstanceByPhone(phone);
-            if(!client) return {error:false,message:"CLIENT_NOT_FOUND"};
+            if(!client) return {error:false,message:"CLIENT_NOT_AUTHENTICATED"};
            const result  = await client.logoutClient();
            if(result.error) throw new HTTP400Error(result.message);
             client.on("LOGGEDOUT", (data: any) => {
@@ -107,7 +107,7 @@ export class WhatsappClient {
         try {
             logger.info(logFileName,`Sending Text Message to ${to}`);
             const clientInstance = this.getClientInstanceByPhone(from);
-            if (!clientInstance) return { error: true, message: "CLIENT_NOT_FOUND" };
+            if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             const data = await clientInstance.sendTextMessage(sanatizeMobile(to), message);
             return data;
@@ -120,7 +120,7 @@ export class WhatsappClient {
         try {
             logger.info(logFileName,`Sending List Message to ${to}`);
             const clientInstance = this.getClientInstanceByPhone(from);
-            if (!clientInstance) return { error: true, message: "CLIENT_NOT_FOUND" };
+            if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             const data = await clientInstance.sendListMessage(sanatizeMobile(to), message);
             return data;
@@ -133,7 +133,7 @@ export class WhatsappClient {
         try {
             logger.info(logFileName,`Sending Button Message to ${to}`);
             const clientInstance = this.getClientInstanceByPhone(from);
-            if (!clientInstance) return { error: true, message: "CLIENT_NOT_FOUND" };
+            if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             const data = await clientInstance.sendButtonMessage(sanatizeMobile(to), message);
             return data;
@@ -146,7 +146,7 @@ export class WhatsappClient {
         try {
             logger.info(logFileName,`Sending Template Message to ${to}`);
             const clientInstance = this.getClientInstanceByPhone(from);
-            if (!clientInstance) return { error: true, message: "CLIENT_NOT_FOUND" };
+            if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             const data = await clientInstance.sendTemplateMessage(sanatizeMobile(to), message);
             return data;
@@ -159,7 +159,7 @@ export class WhatsappClient {
         try {
             logger.info(logFileName,`Sending Raw Message to ${to}`);
             const clientInstance = this.getClientInstanceByPhone(phone);
-            if (!clientInstance) return { error: true, message: "CLIENT_NOT_FOUND" };
+            if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             const data = await clientInstance.sendRawMessage(sanatizeMobile(to), message);
             return data;
@@ -172,7 +172,7 @@ export class WhatsappClient {
         try {
             console.debug(logFileName,"sending image message to ", to);
             const client = this.getClientInstanceByPhone(phone);
-            if (!client) return { error: true, message: "CLIENT_NOT_FOUND" };
+            if (!client) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!client.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
 
             const data = await client.sendImageMessage(to, msg);

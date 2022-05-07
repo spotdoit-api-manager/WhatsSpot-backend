@@ -6,16 +6,19 @@ import { IImageMessage } from "./../../lib/services/whatsapp/whatsapp.interface"
 import { EMessageStatus, ESendType, IMessage } from "./../messages/message.interface";
 import { HTTP400Error, HTTP401Error } from "./../../lib/utils/httpErrors";
 import { EApiKeyStatus, IApiKey, IDevice, TextMessage } from "./device.interface";
-import { Device, IDeviceModel } from "./device.shema";
+import { Device, IApiKeyModal, IDeviceModel } from "./device.shema";
 import whatsappClientService from "../../lib/services/whatsapp/whatsapp-client.service";
 import fileManagement from "../../lib/helpers/file.management";
 import messageModel from "../messages/message.model";
+
 import { ObjectID } from "bson";
 import jwt from "jsonwebtoken";
 import dayjs from "dayjs";
+
 import { sanatizeMobile, validateMobile } from "../../lib/utils";
 import * as otpHandler from "../../lib/services/otp-handler";
 import userModel from "../user/user.model";
+import apiBlockListModel from "../api-blocklist/api-blocklist.model";
 
 const logFileName = "[DeviceModal] : ";
 export class DeviceModel {
@@ -186,17 +189,21 @@ export class DeviceModel {
         if (!body.name || !body.expiresOn) throw new HTTP400Error("Fields missing");
         try {
             let expiresIn = null;
+            let expiresOn: any;
             if (body.expiresOn != "NEVER") {
-                const expiresOn = dayjs(new Date(body.expiresOn));
+                 expiresOn = dayjs(new Date(body.expiresOn));
                 const diff = expiresOn.diff(dayjs(), "day", true);
                 expiresIn = `${Math.floor(diff)}d`;
+            }else{
+                expiresOn = dayjs();
+                expiresOn.add(50, "year");
             }
             const totalAvailableKeys = await this.getTotalAvailableApiKeys(deviceId);
 
             if (totalAvailableKeys < parseInt(process.env.MAX_APIKEY_PER_DEVICE)) {
                 const apiKeyData: IDeviceTokenData = {walletId,userId,deviceId};
                 const token = this.generateDeviceKey(apiKeyData, expiresIn);
-                const tokenData: IApiKey = { name: body.name, createdOn: new Date(), token: token, expiresOn: body.expiresOn, status: { status: EApiKeyStatus.ACTIVE, reason: null } };
+                const tokenData: IApiKey = { name: body.name, createdOn: new Date(), token: token, expiresOn:expiresOn?.toDate(), status: { status: EApiKeyStatus.ACTIVE, reason: null } };
                 await this.addNewTokenDataToDevice(deviceId, tokenData);
                 return tokenData;
             }
@@ -208,8 +215,9 @@ export class DeviceModel {
 
     public async deleteKey(deviceId: string, keyId: string) {
         try {
-            const result = await Device.updateOne({ _id: deviceId }, { $pull: { apiKeys: { _id: keyId } } });
-
+            const result = await Device.findOneAndUpdate({ _id: new ObjectID(deviceId) }, { $pull: { apiKeys: { _id: new ObjectID(keyId) } } },{upsert:false,new:false}).lean();
+            const apiData = result.apiKeys.find((x: IApiKeyModal) => x._id.toString() === keyId);
+            await  apiBlockListModel.addApiToBlockList(deviceId,apiData); 
         } catch (err) {
             throw new HTTP400Error(err.message);
         }

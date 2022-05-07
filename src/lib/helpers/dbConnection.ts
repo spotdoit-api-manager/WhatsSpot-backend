@@ -2,8 +2,9 @@ import { connect, connection } from "mongoose";
 import * as chalk from "chalk";
 import { MONGODB_URI } from "../utils/secrets";
 import { mongoUrl } from "../../config";
+import logger from "../../core/logger";
 //require database URL from properties file
-
+const logFileName ="[DBConnection] : ";
 const connected = chalk.default.bold.cyan;
 const error = chalk.default.bold.yellow;
 const disconnected = chalk.default.bold.red;
@@ -18,6 +19,7 @@ class Connection {
   }
 
   public mongoConnection() {
+    logger.info(logFileName, "Connecting to MongoDB...");
     const dbURL: any = this.mongoUrl;
     connect(dbURL, this.mongoOption());
 

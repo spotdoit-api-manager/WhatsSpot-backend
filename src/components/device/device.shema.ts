@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/interface-name-prefix */
-import { IDevice, EApiKeyStatus } from "./device.interface";
+import { IDevice, EApiKeyStatus, IApiKey } from "./device.interface";
 import { Document, Model, model, Schema, Types } from "mongoose";
 import { validateMobile } from "../../lib/utils";
 
 export interface IDeviceModel extends IDevice, Document {
   saveDevice(): any;
+}
+export interface IApiKeyModal extends IApiKey, Document {
 }
 
 
@@ -35,8 +37,8 @@ const deviceSchema = new Schema(
     },
     apiKeys: [{
       token: String,
-      expiresOn: String,
-      createdOn: String,
+      expiresOn: Date,
+      createdOn: Date,
       name: String,
       status: {
         status: {

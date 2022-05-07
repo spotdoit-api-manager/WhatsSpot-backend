@@ -10,7 +10,7 @@ export class MessageController{
     const responseHandler = new ResponseHandler();
     try {
       req.body.messageType = EWhatsappMessageTypes.TEXT_MESSAGE;
-      responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE_TEXT", await messageModel.addMessageToQueue(req.userId,req.body, req.deviceId)).send();
+      responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE", await messageModel.addMessageToQueue(req.userId,req.body, req.deviceId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -21,7 +21,7 @@ export class MessageController{
     const responseHandler = new ResponseHandler();
     try {
       req.body.messageType = EWhatsappMessageTypes.LIST_MESSAGE;
-      responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE_LIST", await messageModel.addMessageToQueue(req.userId,req.body, req.deviceId)).send();
+      responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE", await messageModel.addMessageToQueue(req.userId,req.body, req.deviceId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -32,7 +32,7 @@ export class MessageController{
     const responseHandler = new ResponseHandler();
     try {
       req.body.messageType = EWhatsappMessageTypes.BUTTON_MESSAGE;
-      responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE_BUTTOn", await messageModel.addMessageToQueue(req.userId,req.body, req.deviceId)).send();
+      responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE", await messageModel.addMessageToQueue(req.userId,req.body, req.deviceId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -43,7 +43,7 @@ export class MessageController{
     const responseHandler = new ResponseHandler();
     try {
       req.body.messageType = EWhatsappMessageTypes.TEMPLATE_MESSAGE;
-      responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE_TEMPLATE", await messageModel.addMessageToQueue(req.userId,req.body, req.deviceId)).send();
+      responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE", await messageModel.addMessageToQueue(req.userId,req.body, req.deviceId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));

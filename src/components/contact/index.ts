@@ -1,6 +1,25 @@
+import { DeviceKeyValidator } from "../../lib/middleware/device-key.middleware";
 import contactController from "./contact.controller";
 
 export default [
+    {
+        path:"/contacts", //user api to fetch contacts
+        method:"get",
+        escapeAuth:true,
+        handler:[DeviceKeyValidator,contactController.fetchContacts]
+    },
+    {
+        path:"/contacts/groups", //user api to fetch contacts
+        method:"get",
+        escapeAuth:true,
+        handler:[DeviceKeyValidator,contactController.fetchGroups]
+    },
+    {
+        path:"/contact/group/contacts/:groupId", //user api to fetch contacts
+        method:"get",
+        escapeAuth:true,
+        handler:[DeviceKeyValidator,contactController.fetchGroupContacts]
+    },
 {
     path:"/contact/add",
     method:"post",

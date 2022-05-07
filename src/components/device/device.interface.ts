@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/interface-name-prefix */
 import { IReason } from "./../../lib/services/whatsapp/whatsapp.interface";
 
 
@@ -16,7 +17,7 @@ export interface IDevice {
 
 export interface IApiKey {
     token: string;
-    expiresOn: string;
+    expiresOn: Date;
     name: string;
     createdOn: Date;
     status: {
