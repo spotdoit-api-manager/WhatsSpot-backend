@@ -69,10 +69,8 @@ public fetchTransactionById(walletId,transactionId){
                 description,
                 status: ETransactionStatus.SUCCESS
             };
-            console.log("transaction body is ",transactionBody);
             
             const newTransaction: ITransactionModel = new Transaction(transactionBody);
-            console.log("transaction is ",newTransaction);
             
             const transaction: ITransactionModel = await newTransaction.addTransaction();
             if (!transaction) throw new HTTP401Error("UNKNOW_ERROR");

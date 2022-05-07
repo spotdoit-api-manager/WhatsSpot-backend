@@ -17,7 +17,8 @@ export interface IMessage {
         phoneNumber: string,
          status:EMessageStatus,
          reason?:string
-    }]
+    }],
+    priority?: number
 }
 
 export enum EMessageStatus {

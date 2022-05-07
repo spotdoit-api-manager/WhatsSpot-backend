@@ -161,7 +161,7 @@ export class MessageModel {
             logger.info(logFileName, `User ${userId} hasPlanActive: ${hasActivePlan}`);
             if (!hasActivePlan) {
                 const { isValidAmount, balance } = await walletModel.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
-                logger.info(logFileName, `validAMount ${isValidAmount}`);
+                // logger.debug(logFileName, `validAMount ${isValidAmount}`);
                 if (!isValidAmount) throw new Error("NOT_ENOUGH_BALANCE");
             }
             const result = await this.sendTypeMessage(messageType,message,device.phone,to);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { EDeviceStatus } from "./../../../components/device/device.interface";
 import deviceModel from "../../../components/device/device.model";
 import messageModel from "../../../components/messages/message.model";
@@ -13,6 +14,7 @@ import { WhatsappServiceError } from "../../../core/errors/errors";
 import logger from "../../../core/logger";
 const FETCH_PENDING_INTERVAL = 10;
 const logFileName = "[MessageQueueService] : ";
+const MGCSPF= process.env.MGCSPF || 2;//mag group contact send per fetch;
 export class MessageQueueService {
 
     constructor(){
@@ -29,7 +31,7 @@ export class MessageQueueService {
     }
 
     public async getPendingMessagesToGroup(limit: number = 1) {
-        const pendingMessagesToGroup = await MessageQueue.find({ status: EMessageStatus.PENDING,isGroup: true}).sort({ _id: 1 }).limit(limit);
+        const pendingMessagesToGroup = await MessageQueue.find({ status: EMessageStatus.PENDING,isGroup: true}).sort({ _id: 1,priority:1 }).limit(limit);
         logger.info(logFileName,`FOUND ${pendingMessagesToGroup.length} PENDING MESSAGES TO GROUP`);
         const resultGroupContact = await this.sendPendingMessageToGroup(pendingMessagesToGroup);
         setTimeout(() => {            
@@ -37,7 +39,9 @@ export class MessageQueueService {
         }, FETCH_PENDING_INTERVAL * 1000);
     };
 
+    private MGCSPF_Counter = 0;
       public async sendPendingMessageToGroup(pendingMessages: IMessageModel[]){
+          this.MGCSPF_Counter =0;
         for(let i =0;i<pendingMessages.length;i++){
             const message: IMessageModel = pendingMessages[i];
             const groupId = message.to;
@@ -45,12 +49,19 @@ export class MessageQueueService {
             const groupContacts: IContact[] = await contactModel.fetchGroupContacts(userId,groupId);
             const walletId = (await walletModel.getWalletIdByUserId(message.userId));
             const contactsSent = message.contactsSent || [];
+            await this.updateMessagePriority(message._id,message?.priority || 0);
 
             let anyContactError = false;
             for(let c=0;c<groupContacts.length;c++){
+                if(this.MGCSPF_Counter>MGCSPF){
+                    logger.info(logFileName,`SENDING PENDING MESSAGE TO GROUP ${groupId} CONTACT REACHED ${MGCSPF} LIMIT`);
+                    break;
+                }
                 const contact: IContact = groupContacts[c];
                 const idx = contactsSent.findIndex((c: IContact)=>c.phoneNumber==contact.phoneNumber);
                 if(idx>-1 && contactsSent[idx].status==EMessageStatus.SENT) continue;
+                this.MGCSPF_Counter++;
+               
                 try {
                     const body = {to:contact.phoneNumber,message:message.message};
                     const result: any = await messageModel.sendMessage(message.userId,body.to,body.message,message.messageType,message.deviceId,walletId);
@@ -68,8 +79,9 @@ export class MessageQueueService {
                 }
             }
             
-            await messageModel.updateMessageStatus(message._id, anyContactError?EMessageStatus.ERROR:EMessageStatus.SENT);
-
+            if(contactsSent.length == groupContacts.length){
+                await messageModel.updateMessageStatus(message._id, anyContactError?EMessageStatus.ERROR:EMessageStatus.SENT);
+            }
         }        
     }
   
@@ -105,7 +117,6 @@ export class MessageQueueService {
     public async sendErrorMessageForDevice(errorMessages: IMessageModel[],deviceId: string) {
         return new Promise(async (resolve) => {
             await deviceModel.updateDeviceStatus(deviceId,EDeviceStatus.SENDING);
-
             for (let i = 0; i < errorMessages.length; i++) {
                 const message: IMessageModel = errorMessages[i];
                 logger.info(logFileName,`Sending failed message ${message._id}`);
@@ -135,8 +146,10 @@ export class MessageQueueService {
 
         });
     }
-
-
+    
+    private async updateMessagePriority(messageId: string,priority: number){
+        await MessageQueue.findByIdAndUpdate(messageId, {$inc:{priority:-1}});
+    }
 }
 
 export default new MessageQueueService();

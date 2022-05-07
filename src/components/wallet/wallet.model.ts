@@ -40,7 +40,6 @@ export class WalletModel {
                 }
             }
         ]);
-        console.log("wallet result ",result);
         
         return result[0] || null;
     }
@@ -54,7 +53,6 @@ export class WalletModel {
                 }
             }
         ]);
-        console.log("wallet result ",result);
         
         return result[0] || null;
     }
@@ -76,7 +74,7 @@ export class WalletModel {
 
         public async validateTransactionAmount(walletId: string,amountToDebit: number){
             const wallet = await this.fetchWallet(walletId);
-            logger.info(logFileName,`Validating transaction amount ${amountToDebit} for wallet ${walletId}`);
+            // logger.debug(logFileName,`Validating transaction amount ${amountToDebit} for wallet ${walletId}`);
             
             if(!wallet) throw new Error("WALLET_NOT_FOUND");
             if(wallet.balance>=amountToDebit) return {isValidAmount:true,balance:wallet.balance};
