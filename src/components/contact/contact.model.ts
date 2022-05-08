@@ -55,6 +55,7 @@ export class ContactModal{
                 },
               
             ]);
+            console.log(result);
             return result[0]?.contacts || [];
         }
 
@@ -116,6 +117,7 @@ export class ContactModal{
 
         public async deleteContacts(userId: string,contactsId: string[]){
             const finalResult =[];
+            // await Contact.deleteMany({_id:{$in:contactsId}});
             for (let i = 0; i < contactsId.length; i++) {
                 const cId = contactsId[i];
                 const result = await Contact.findByIdAndDelete(cId);

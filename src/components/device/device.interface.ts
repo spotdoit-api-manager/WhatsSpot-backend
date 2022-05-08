@@ -39,7 +39,8 @@ export interface TextMessage {
 
 export enum EApiKeyStatus {
     ACTIVE = "ACTIVE",
-    INACTIVE = "INACTIVE"
+    INACTIVE = "INACTIVE",
+    EXPIRED = "EXPIRED",
 }
 
 

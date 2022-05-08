@@ -43,7 +43,7 @@ const deviceSchema = new Schema(
       status: {
         status: {
           type: String,
-          enum: ["ACTIVE", "INACTIVE"]
+          enum: ["ACTIVE", "INACTIVE","EXPIRED"]
         },
         reason: String
       }

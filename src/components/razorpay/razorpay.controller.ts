@@ -9,7 +9,7 @@ export class RazorPayController{
         console.log("create new order");
         
         try {    
-          responseHandler.reqRes(req, res).onFetch("ORDER_CREATED", await razorPayModel.createOrder(req.userId,req.walletId,req.body)).send();
+          responseHandler.reqRes(req, res).onFetch("ORDER_CREATED", await razorPayModel.createOrder(req.userId,req.walletId,req.body.planId,req.body.amount)).send();
         } catch (e) {
           // send error with next function.
           next(responseHandler.sendError(e));
