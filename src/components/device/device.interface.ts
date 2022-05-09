@@ -2,7 +2,7 @@
 import { IReason } from "./../../lib/services/whatsapp/whatsapp.interface";
 
 
-export interface INewDevice{
+export interface INewDevice {
     name: string;
     phone: string;
 }
@@ -52,7 +52,22 @@ export interface IMessageMetrics {
     totalQueueSuccess: number;
 }
 
-export enum EDeviceStatus{
-    SENDING="SENDING",
-    IDLE="IDLE"
+export enum EDeviceStatus {
+    SENDING = "SENDING",
+    IDLE = "IDLE"
 }
+
+// const data = {
+//     "structuredQuery": {
+//         "from": [{ "collectionId": "messages" }],
+//         "orderBy": [
+//             {
+//                 "field": {
+//                     "fieldPath": "submitedOn"
+
+//                 },
+//                 "direction": "ASCENDING"
+//             }
+//         ]
+//     }
+// };
