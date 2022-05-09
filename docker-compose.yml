@@ -1,0 +1,17 @@
+version: '3.7'
+
+services:
+  whatsspot-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    volumes:
+      - ./src:/app/src
+      - ./nodemon.json:/app/nodemon.json
+    container_name: WhatsSpotBackend
+    expose:
+      - '4250'
+    ports:
+      - '4250:4250'
+    command: npm run compile
