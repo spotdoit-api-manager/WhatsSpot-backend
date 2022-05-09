@@ -5,6 +5,7 @@ import Razorpay from "../components/razorpay";
 import Messages from "../components/messages";
 import Plans from "../components/plans";
 import contact  from "../components/contact";
+import Admin from "../components/admin";
 
 export default [
     ...user,
@@ -13,5 +14,6 @@ export default [
     ...Messages,
     ...Wallet,
     ...Razorpay,
-    ...Plans
+    ...Plans,
+    ...Admin
 ];
