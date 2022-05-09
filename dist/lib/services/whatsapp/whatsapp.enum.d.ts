@@ -1,6 +1,0 @@
-export declare enum EWhatsappMessageTypes {
-    LIST_MESSAGE = "LIST_MESSAGE",
-    BUTTON_MESSAGE = "BUTTON_MESSAGE",
-    TEXT_MESSAGE = "TEXT_MESSAGE",
-    TEMPLATE_MESSAGE = "TEMPLATE_MESSAGE"
-}

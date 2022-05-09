@@ -54,7 +54,7 @@ public async fetchGroups(req: Request,res: Response,next: NextFunction){
   const responseHandler = new ResponseHandler();
   try {    
       console.log("Fetch Groups  Request");
-    responseHandler.reqRes(req, res).onFetch("GROUP_FETCHED", await contactModel.fetchGroups(req.userId)).send();
+    responseHandler.reqRes(req, res).onFetch("GROUPS_FETCHED", await contactModel.fetchGroups(req.userId)).send();
   } catch (e) {
       console.log(e);
               next(responseHandler.sendError(e));

@@ -1,3 +1,4 @@
+import { DeviceKeyValidator } from "./../../lib/middleware/device-key.middleware";
 import walletController from "./wallet.controller";
 
 export default [
@@ -12,5 +13,11 @@ export default [
         method: "get",
         escapeAuth: false,
         handler: [walletController.fetchTransactions]
+    },
+    {
+        path: "/wallet/balance",
+        method: "get",
+        escapeAuth: true,
+        handler: [DeviceKeyValidator,walletController.fetchBalance]
     },
 ];

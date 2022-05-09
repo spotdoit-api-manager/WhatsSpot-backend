@@ -6,52 +6,56 @@ import { IImageMessage } from "./../../lib/services/whatsapp/whatsapp.interface"
 import { EMessageStatus, ESendType, IMessage } from "./../messages/message.interface";
 import { HTTP400Error, HTTP401Error } from "./../../lib/utils/httpErrors";
 import { EApiKeyStatus, IApiKey, IDevice, TextMessage } from "./device.interface";
-import { Device, IDeviceModel } from "./device.shema";
+import { Device, IApiKeyModal, IDeviceModel } from "./device.shema";
 import whatsappClientService from "../../lib/services/whatsapp/whatsapp-client.service";
 import fileManagement from "../../lib/helpers/file.management";
 import messageModel from "../messages/message.model";
+
 import { ObjectID } from "bson";
 import jwt from "jsonwebtoken";
 import dayjs from "dayjs";
+
 import { sanatizeMobile, validateMobile } from "../../lib/utils";
 import * as otpHandler from "../../lib/services/otp-handler";
 import userModel from "../user/user.model";
+import apiBlockListModel from "../api-blocklist/api-blocklist.model";
+import spotSchedular from "../../lib/services/schedular";
 
 const logFileName = "[DeviceModal] : ";
 export class DeviceModel {
-    public async newDevice(userId: string,walletId: string,body: IDevice,newDeviceCode: string) {
+    public async newDevice(userId: string, walletId: string, body: IDevice, newDeviceCode: string) {
         body.userId = userId;
         const device = await this.findDeviceByPhone(body.phone);
-        this.validateDeviceAdd(userId,device);
-        await userModel.validateDeviceCode(userId,body.phone,parseInt(newDeviceCode));
-        logger.info(logFileName,`Device ${body.phone} verified`);
+        this.validateDeviceAdd(userId, device);
+        await userModel.validateDeviceCode(userId, body.phone, parseInt(newDeviceCode));
+        logger.info(logFileName, `Device ${body.phone} verified`);
         const newDevice = new Device(body);
         const newDeviceData: IDeviceModel = await newDevice.saveDevice();
-        if(!newDeviceData) throw new HTTP400Error("UNKNOWN_ERROR");
+        if (!newDeviceData) throw new HTTP400Error("UNKNOWN_ERROR");
         const expiresOn = dayjs().add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN || "3d").replace("d", "")), "day").toDate().toUTCString();;
-        const keys = await this.generateNewKey(userId,walletId,newDeviceData._id,{name:process.env.DEFAULT_APIKEY_NAME,expiresOn});
+        const keys = await this.generateNewKey(userId, walletId, newDeviceData._id, { name: process.env.DEFAULT_APIKEY_NAME, expiresOn });
         return newDeviceData;
     }
 
-   
 
-    public async newDeviceCode(userId: string,walletId: string,newDeviceBody: INewDevice){
+
+    public async newDeviceCode(userId: string, walletId: string, newDeviceBody: INewDevice) {
         const device = await this.findDeviceByPhone(newDeviceBody.phone);
-        this.validateDeviceAdd(userId,device);
-        const code = await userModel.updateDeviceCode(userId,newDeviceBody.phone);
-        const result  =  await otpHandler.sendNewDeviceCode(newDeviceBody.phone,code);
+        this.validateDeviceAdd(userId, device);
+        const code = await userModel.updateDeviceCode(userId, newDeviceBody.phone);
+        const result = await otpHandler.sendNewDeviceCode(newDeviceBody.phone, code);
         return result;
     }
 
 
-  
 
-    private validateDeviceAdd(userId: string,device: IDevice){
+
+    private validateDeviceAdd(userId: string, device: IDevice) {
         if (device && device.userId == userId) return device;
-        else if(device && device.userId != userId) throw new HTTP401Error("DEVICE_ALREADY_REGISTERD","This device is already added by some user");
+        else if (device && device.userId != userId) throw new HTTP401Error("DEVICE_ALREADY_REGISTERD", "This device is already added by some user");
     }
-    public async getQr(userId: string,deviceId: string) {
-        const device = await this.findDeviceById(userId,deviceId);
+    public async getQr(userId: string, deviceId: string) {
+        const device = await this.findDeviceById(userId, deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         if (device.authState) return { error: true, message: "ALREADY_AUTHENTICATED" };
         // if (!device.authState && device.reason && device.reason.statusCode === DisconnectReason.loggedOut) {
@@ -61,8 +65,8 @@ export class DeviceModel {
         return { message: "QR_REQUESTED" };
     };
 
-    public async removeClient(userId: string,deviceId: string){
-        const device = await this.findDeviceById(userId,deviceId);
+    public async removeClient(userId: string, deviceId: string) {
+        const device = await this.findDeviceById(userId, deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const data = whatsappClientService.removeClientInstanceByPhone(device.phone);
         return { message: "CLIENT_REMOVED" };
@@ -80,7 +84,7 @@ export class DeviceModel {
 
     private async fetchDeviceByCondition(deviceId: string, userId: string) {
         const result = await Device.aggregate([
-            { $match: { _id: new ObjectID(deviceId), userId: new ObjectID(userId),"isDeleted.status":false } },
+            { $match: { _id: new ObjectID(deviceId), userId: new ObjectID(userId), "isDeleted.status": false } },
             {
                 $project: {
                     apiKeys: 0
@@ -90,9 +94,9 @@ export class DeviceModel {
         return result[0] || null;
     }
 
-   
 
-  
+
+
 
     public async fetchPrevMessages(deviceId: string) {
         try {
@@ -146,24 +150,24 @@ export class DeviceModel {
                 }
             },
             { $group: { _id: "$_id", messages: { $push: "$messages" } } }
-           
+
         ]);
         return result[0]?.messages || null;
     }
 
 
-    public async deleteAuth(userId: string,deviceId: string) {
-        const device = await this.findDeviceById(userId,deviceId);
+    public async deleteAuth(userId: string, deviceId: string) {
+        const device = await this.findDeviceById(userId, deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
         const res: any = await fileManagement.deleteFile(authFilePath);
-        if(res.error) throw new HTTP401Error(res.message);
+        if (res.error) throw new HTTP401Error(res.message);
         await this.updateDevice(device.phone, { reason: null });
         return { message: "DEVICE_LOGGEDOUT" };
     };
 
-    public async logoutDevice(userId: string,deviceId: string) {
-        const device = await this.findDeviceById(userId,deviceId);
+    public async logoutDevice(userId: string, deviceId: string) {
+        const device = await this.findDeviceById(userId, deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
 
@@ -182,21 +186,25 @@ export class DeviceModel {
         return { message: "DEVICE_LOGGED_OUT", device: device };
     }
 
-    public async generateNewKey(userId: string,walletId: string,deviceId: string, body: any) {
+    public async generateNewKey(userId: string, walletId: string, deviceId: string, body: any) {
         if (!body.name || !body.expiresOn) throw new HTTP400Error("Fields missing");
         try {
             let expiresIn = null;
+            let expiresOn: any;
             if (body.expiresOn != "NEVER") {
-                const expiresOn = dayjs(new Date(body.expiresOn));
+                expiresOn = dayjs(new Date(body.expiresOn));
                 const diff = expiresOn.diff(dayjs(), "day", true);
                 expiresIn = `${Math.floor(diff)}d`;
+            } else {
+                expiresOn = dayjs();
+                expiresOn.add(50, "year");
             }
             const totalAvailableKeys = await this.getTotalAvailableApiKeys(deviceId);
 
             if (totalAvailableKeys < parseInt(process.env.MAX_APIKEY_PER_DEVICE)) {
-                const apiKeyData: IDeviceTokenData = {walletId,userId,deviceId};
+                const apiKeyData: IDeviceTokenData = { walletId, userId, deviceId };
                 const token = this.generateDeviceKey(apiKeyData, expiresIn);
-                const tokenData: IApiKey = { name: body.name, createdOn: new Date(), token: token, expiresOn: body.expiresOn, status: { status: EApiKeyStatus.ACTIVE, reason: null } };
+                const tokenData: IApiKey = { name: body.name, createdOn: new Date(), token: token, expiresOn: expiresOn?.toDate(), status: { status: EApiKeyStatus.ACTIVE, reason: null } };
                 await this.addNewTokenDataToDevice(deviceId, tokenData);
                 return tokenData;
             }
@@ -208,8 +216,9 @@ export class DeviceModel {
 
     public async deleteKey(deviceId: string, keyId: string) {
         try {
-            const result = await Device.updateOne({ _id: deviceId }, { $pull: { apiKeys: { _id: keyId } } });
-
+            const result = await Device.findOneAndUpdate({ _id: new ObjectID(deviceId) }, { $pull: { apiKeys: { _id: new ObjectID(keyId) } } }, { upsert: false, new: false }).lean();
+            const apiData = result.apiKeys.find((x: IApiKeyModal) => x._id.toString() === keyId);
+            await apiBlockListModel.addApiToBlockList(deviceId, apiData);
         } catch (err) {
             throw new HTTP400Error(err.message);
         }
@@ -227,8 +236,9 @@ export class DeviceModel {
 
         return keys[0]?.apiKeys || null;
     }
-    private async addNewTokenDataToDevice(deviceId: string, tokenData: any) {
-        const result = await Device.findByIdAndUpdate(deviceId, { $push: { apiKeys: tokenData } }, { "upsert": true, new: true });
+    private async addNewTokenDataToDevice(deviceId: string, tokenData: IApiKey) {
+        const result = await Device.findByIdAndUpdate(deviceId, { $push: { apiKeys: tokenData } }, { "upsert": true, new: true }).lean();
+        await spotSchedular.scheduleApiExpiration(deviceId, result.apiKeys[result.apiKeys.length - 1]);
     }
 
     private generateDeviceKey(apiKeyData: IDeviceTokenData, expiresIn: string) {
@@ -236,7 +246,19 @@ export class DeviceModel {
         return token;
     }
 
-    public signDeviceToken = (apiKeyData: IDeviceTokenData, expiresIn: string) => {        
+    public async expireApiKey(deviceId: string, apiKey: IApiKeyModal) {
+        logger.info(logFileName, `Expiring api key ${apiKey._id}`);
+        const result = await Device.findOneAndUpdate({
+            _id: new ObjectID(deviceId),
+            "apiKeys._id": new ObjectID(apiKey._id),
+        },
+            { $set: { "apiKeys.$.status.status": EApiKeyStatus.EXPIRED } },
+            {
+                new: true
+            }).lean();
+    }
+
+    public signDeviceToken = (apiKeyData: IDeviceTokenData, expiresIn: string) => {
         if (!expiresIn) {
             return jwt.sign(apiKeyData, deviceKeyConfig.jwtSecretKey, {});
         }
@@ -258,7 +280,7 @@ export class DeviceModel {
         return result[0].count;
     }
     public async updateDevice(phone: string, clientData: any) {
-        if (!phone) return  { error: true, message: "phone not provided in client update" };
+        if (!phone) return { error: true, message: "phone not provided in client update" };
         const options = { upsert: true, new: true, setDefaultsOnInsert: true };
         const client = await Device.findOneAndUpdate({ phone: phone }, { ...clientData }, options);
         if (!client) return { error: true, message: "some error occured" };
@@ -267,17 +289,17 @@ export class DeviceModel {
 
 
     public async findDeviceByPhone(phone: string) {
-        const device = await Device.findOne({ phone,"isDeleted.status":false });
+        const device = await Device.findOne({ phone, "isDeleted.status": false });
         return device;
     }
 
-    public async findDeviceById(userId: string,deviceId: string) {
-        const device = await Device.findOne({userId:new ObjectID(userId),_id:new ObjectID(deviceId),"isDeleted.status":false});
+    public async findDeviceById(userId: string, deviceId: string) {
+        const device = await Device.findOne({ userId: new ObjectID(userId), _id: new ObjectID(deviceId), "isDeleted.status": false });
         return device;
     }
 
     public async findDeviceByUseId(userId: string) {
-        const devices = await Device.find({ userId: userId,"isDeleted.status":false }).lean();
+        const devices = await Device.find({ userId: userId, "isDeleted.status": false }).lean();
         return devices;
     }
 
@@ -303,7 +325,7 @@ export class DeviceModel {
 
     public async fetchDeviceMetrics(deviceId: string) {
         try {
-            const condition = { _id: new ObjectID(deviceId),"isDeleted.status":false };
+            const condition = { _id: new ObjectID(deviceId), "isDeleted.status": false };
 
             let result = await Device.aggregate([
                 { $match: condition },
@@ -405,20 +427,20 @@ export class DeviceModel {
     }
 
 
-    public async retryFailedMessage(userId: string,deviceId: string){
-        const result: any = await  messageModel.retryFailedMessage(userId,deviceId);
-        if(result.error) throw new HTTP401Error(result.message);
-        return {error:false,message:"RETRY_REQUESTED",messageCount:result.messageCount};
+    public async retryFailedMessage(userId: string, deviceId: string) {
+        const result: any = await messageModel.retryFailedMessage(userId, deviceId);
+        if (result.error) throw new HTTP401Error(result.message);
+        return { error: false, message: "RETRY_REQUESTED", messageCount: result.messageCount };
     }
 
-    public async updateDeviceStatus(deviceId: string,status: EDeviceStatus){
-        const result = await Device.findByIdAndUpdate(deviceId,{deviceStatus:status});
+    public async updateDeviceStatus(deviceId: string, status: EDeviceStatus) {
+        const result = await Device.findByIdAndUpdate(deviceId, { deviceStatus: status });
         return result;
     }
 
-    public async removeDevice(userId: string,deviceId: string){
-        await this.logoutDevice(userId,deviceId);
-        const result = await Device.findByIdAndUpdate(deviceId,{isDeleted:{status:true,deletedAt:new Date()}});
+    public async removeDevice(userId: string, deviceId: string) {
+        await this.logoutDevice(userId, deviceId);
+        const result = await Device.findByIdAndUpdate(deviceId, { isDeleted: { status: true, deletedAt: new Date() } });
     }
 }
 

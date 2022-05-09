@@ -29,7 +29,11 @@ export class ContactModal{
 
         public async fetchContacts(userId: string){
             const result = await Contact.aggregate([
-                {$match:{userId:new ObjectID(userId)}}
+                {$match:{userId:new ObjectID(userId)}},
+                {$project:{
+                    name:1,
+                    phoneNumber:1
+                }}
             ]);
             
             return result;
@@ -42,17 +46,16 @@ export class ContactModal{
                 },
                 {
                     $project:{
-                        contacts:1
+                        contacts:{
+                            _id:1,
+                            name:1,
+                            phoneNumber:1
+                        }
                     }
                 },
-                // {
-                //     $unwind:{
-                //         path:"$contacts",
-                //     }
-                // },
-                
+              
             ]);
-            // console.log("group Contacts result is ",result);
+            console.log(result);
             return result[0]?.contacts || [];
         }
 
@@ -114,6 +117,7 @@ export class ContactModal{
 
         public async deleteContacts(userId: string,contactsId: string[]){
             const finalResult =[];
+            // await Contact.deleteMany({_id:{$in:contactsId}});
             for (let i = 0; i < contactsId.length; i++) {
                 const cId = contactsId[i];
                 const result = await Contact.findByIdAndDelete(cId);

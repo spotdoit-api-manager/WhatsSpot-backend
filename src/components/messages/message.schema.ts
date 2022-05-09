@@ -76,6 +76,11 @@ const whatsappListMessageSchema = new Schema({
 
 const messageSchema = new Schema(
   {
+    priority:{
+      type:Number,
+      required:true,
+      default:0
+    },
     to: {
       type: String,
       required: true,

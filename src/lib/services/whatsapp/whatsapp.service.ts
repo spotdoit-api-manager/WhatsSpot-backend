@@ -148,7 +148,10 @@ export default class Whatsapp extends EventEmitter {
     logger.warn("RETRYING CONNECTION..", this.phone);
     this.retryCount++;
     if(this.isMaxRetryReached()){
+      this.retryCount = 0;
       logger.warn(logFileName,`[${this.phone}] Max Connection Retry Reached....`);
+      // this.destroyClient();
+      return;
     }
     this.client.ev.removeAllListeners();
     await this.initiClient();
@@ -162,6 +165,9 @@ export default class Whatsapp extends EventEmitter {
     return reason;
   }
 
+  private destroyClient(){
+    return;
+  }
   private async handleConnectionOpen(){
      logger.info(logFileName,"CONNECTION_OPENED");
     this.qrRequested = true;
@@ -296,7 +302,7 @@ export default class Whatsapp extends EventEmitter {
     }
   }
 
-  public sendBtnMessage = async(to: string,btnMsg: IButtonMessage)=>{
+  public sendButtonMessage = async(to: string,btnMsg: IButtonMessage)=>{
     try{
       const jid = getSerializedPhone(to);
       logger.debug(logFileName,`Sending ButtonMessage to ${jid}`);

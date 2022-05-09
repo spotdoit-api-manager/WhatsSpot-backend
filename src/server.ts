@@ -1,7 +1,6 @@
 import { config } from "dotenv";
 import { Server } from "socket.io";
 import { createServer } from "http";
-// import dash from 'appmetrics-dash';
 
 
 // Initializing the dot env file very early of this project to use every where

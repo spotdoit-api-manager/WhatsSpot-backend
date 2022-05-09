@@ -12,19 +12,19 @@ import plansModel from "../plans/plans.model";
 import logger from "../../core/logger";
 const logFileName = "[RazorPayModel]";
 export class RazorPayModel {
-    public async createOrder(userId: string,walletId: string, body: ICreateOrder) {
+    public async createOrder(userId: string,walletId: string, planId: EPLANS,amount: number) {
         try {
-            logger.info(logFileName,body);
-            const plan: IPLAN = await plansModel.fetchPlanByPlanId(body.planId);
-            console.log("fetch plan ",plan);
+            logger.info(logFileName,planId,amount);
+            const plan: IPLAN = await plansModel.fetchPlanByPlanId(planId);
+            console.log("fetched plan ",plan);
             
             if(!plan) throw new Error("INVALID_PLAN");
-            const order: any = await razorPayService.createOrder(userId, body);
+            const order: any = await razorPayService.createOrder(userId, {planId,amount});
             if (!order) throw new Error("UNKNOWN_ERROR");
             console.log(order);
             if (order.error) throw new Error(order.message);
             const transactionMessage = plan.planId == "PAYG" ?"Adding money to wallet":`Buying plan -> ${plan.planName}`;
-            const transaction: ITransactionModel = await transactionModel.createTransactionForRazorPay(plan.planId,order.order.id,userId,walletId,ETransactionTypes.CREDIT,body.amount,transactionMessage);
+            const transaction: ITransactionModel = await transactionModel.createTransactionForRazorPay(plan.planId,order.order.id,userId,walletId,ETransactionTypes.CREDIT,amount,transactionMessage);
             if(!transaction) throw new Error("UNKNOWN_ERROR");
             order.order.transactionId = transaction._id;
             order.order.planId = plan.planId;
