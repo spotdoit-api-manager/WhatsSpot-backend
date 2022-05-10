@@ -38,7 +38,16 @@ export class AdminController{
           next(responseHandler.sendError(e));
         }
       };
-    
+      public metrics = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("ADDED", await adminModel.metrics()).send();
+        } catch (e) {
+            console.log(e);
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
 }
 
 

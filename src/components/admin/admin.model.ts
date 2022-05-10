@@ -9,10 +9,19 @@ import { AdminUser, IAdminUserModel } from "./admin.schema";
 import { ObjectID } from "bson";
 import { ITokenData } from "../user/user.interface";
 import jwt from "jsonwebtoken";
+import deviceModel from "../device/device.model";
+import userModel from "../user/user.model";
+import walletModel from "../wallet/wallet.model";
 
 const logFileName = "[AdminModel] : ";
 export class AdminModel {
 
+    public async metrics(){
+        const devicesMetrics = await deviceModel.fetchDevicesMetrics();
+        const usersMetrics = await userModel.fetchUserMetrics();
+        const walletBalance = await walletModel.getTotalWalletBalance();
+        return {devicesMetrics, usersMetrics,walletBalance};
+    }
     public async addNewAdmin(body: IAdminUser) {
         body.isSuperAdmin = false;
         const newAdminUser = new AdminUser(body);

@@ -25,6 +25,13 @@ export class WalletModel {
         return walletData;
     }
 
+    public async getTotalWalletBalance(){
+        const totalBalance = await Wallet.aggregate([
+            { $group: { _id: null, amount: { $sum: "$balance" } } }
+        ]);
+        return totalBalance[0].amount;
+    }
+
     public async fetchTransactions(userId: string, walletId: string) {
         console.log("fetch wallet transaciton ", userId, walletId);
         const transactions = await transactionModel.fetchTransactions(walletId);

@@ -19,4 +19,10 @@ export default [
         escapeAuth:true,
         handler: [adminController.verifyOtp]
       },
+      {
+        path: "/admin/metrics",
+        method: "get",
+        role:"admin",
+        handler: [adminController.metrics]
+      },
 ];

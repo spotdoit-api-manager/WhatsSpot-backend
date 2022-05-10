@@ -32,6 +32,11 @@ export class UserModel {
     return user;
   }
 
+  public async fetchUserMetrics(){
+    const totalUsers = await User.countDocuments();
+    return {totalUsers};
+  }
+
  public async fetch(id: string) {
     const data = await User.aggregate([
       {$match:{_id:new ObjectID(id)}},
