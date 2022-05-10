@@ -37,3 +37,8 @@ export interface IDataStoredInToken{
     id: string;
     walletId: string;
 }
+
+export enum ERoles{
+    ADMIN="admin",
+    USER="user"
+}

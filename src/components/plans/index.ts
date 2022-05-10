@@ -4,22 +4,20 @@ export default [
     {
         path:"/plans/addNewPlan",
         method:"post",
-        // role:"admin",
-        escapeAuth:true,
+        role:"admin",
         handler: [plansController.addNewPlan]
     },
     {
         path:"/plans/updatePlan/:planId",
         method:"post",
-        // role:"admin",
-        escapeAuth:true,
+        role:"admin",
+
         handler: [plansController.updatePlan]
     },
     {
         path:"/plans/deletePlan/:planId",
         method:"delete",
-        // role:"admin",
-        escapeAuth:true,
+        role:"admin",
         handler: [plansController.deletePlan]
     },
     {
@@ -32,6 +30,7 @@ export default [
         path:"/plans/fetchPlans",
         method:"get",
         escapeAuth:true,
+
         handler: [plansController.fetchPlans]
     },
     
