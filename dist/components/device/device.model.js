@@ -139,6 +139,14 @@ class DeviceModel {
             return result[0] || null;
         });
     }
+    fetchDevicesMetrics() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const totalDevices = yield device_shema_1.Device.countDocuments();
+            const activeDevices = yield device_shema_1.Device.countDocuments({ authState: true });
+            const deletedDevices = yield device_shema_1.Device.countDocuments({ authState: true });
+            return { totalDevices, activeDevices, deletedDevices };
+        });
+    }
     fetchPrevMessages(deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

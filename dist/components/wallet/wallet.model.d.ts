@@ -2,6 +2,7 @@ import { IWalletModel } from "./wallet.schema";
 export declare class WalletModel {
     createWallet(balance?: number): Promise<IWalletModel>;
     fetchWalletBalance(userId: string, walletId: string): Promise<any>;
+    getTotalWalletBalance(): Promise<any>;
     fetchTransactions(userId: string, walletId: string): Promise<any[]>;
     private fetchWallet;
     fetchWalletByUserId(userId: string): Promise<any>;

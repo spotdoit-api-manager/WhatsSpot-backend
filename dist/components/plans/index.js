@@ -8,22 +8,19 @@ exports.default = [
     {
         path: "/plans/addNewPlan",
         method: "post",
-        // role:"admin",
-        escapeAuth: true,
+        role: "admin",
         handler: [plans_controller_1.default.addNewPlan]
     },
     {
         path: "/plans/updatePlan/:planId",
         method: "post",
-        // role:"admin",
-        escapeAuth: true,
+        role: "admin",
         handler: [plans_controller_1.default.updatePlan]
     },
     {
         path: "/plans/deletePlan/:planId",
         method: "delete",
-        // role:"admin",
-        escapeAuth: true,
+        role: "admin",
         handler: [plans_controller_1.default.deletePlan]
     },
     {

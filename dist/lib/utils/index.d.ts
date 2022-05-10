@@ -1,11 +1,12 @@
 import { NextFunction, Request, Response, Router } from "express";
+import { ERoles } from "../../components/user/user.interface";
 declare type Wrapper = ((router: Router) => void);
 export declare const applyMiddleware: (middlewareWrappers: Wrapper[], router: Router) => void;
 declare type Handler = (req: Request, res: Response, next: NextFunction) => Promise<void> | void;
 export interface IRoute {
     path: string | string[];
     method: string;
-    role?: string;
+    role?: ERoles | string;
     escapeAuth?: boolean;
     adminOnly?: boolean;
     handler: Handler[];

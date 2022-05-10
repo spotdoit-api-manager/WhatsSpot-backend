@@ -23,6 +23,11 @@ export declare class DeviceModel {
     fetchAllDevices: (userId: string) => Promise<any>;
     fetchDevice: (deviceId: string, userId: string) => Promise<any>;
     private fetchDeviceByCondition;
+    fetchDevicesMetrics(): Promise<{
+        totalDevices: number;
+        activeDevices: number;
+        deletedDevices: number;
+    }>;
     fetchPrevMessages(deviceId: string): Promise<any>;
     private fetchMessagesByStatus;
     deleteAuth(userId: string, deviceId: string): Promise<{

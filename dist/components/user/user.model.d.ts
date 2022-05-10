@@ -3,6 +3,9 @@ import { IUserModel } from "./user.schema";
 export declare class UserModel {
     fetchAll(): Promise<IUserModel[]>;
     private findUserById;
+    fetchUserMetrics(): Promise<{
+        totalUsers: number;
+    }>;
     fetch(id: string): Promise<any>;
     update(id: string, body: IUserModel): Promise<IUserModel>;
     fetchUserActivePlan(userId: string): Promise<any>;

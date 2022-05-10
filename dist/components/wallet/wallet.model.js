@@ -36,6 +36,14 @@ class WalletModel {
             return walletData;
         });
     }
+    getTotalWalletBalance() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const totalBalance = yield wallet_schema_1.Wallet.aggregate([
+                { $group: { _id: null, amount: { $sum: "$balance" } } }
+            ]);
+            return totalBalance[0].amount;
+        });
+    }
     fetchTransactions(userId, walletId) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("fetch wallet transaciton ", userId, walletId);

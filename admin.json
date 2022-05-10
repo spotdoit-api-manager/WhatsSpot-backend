@@ -1,0 +1,9 @@
+[
+    {
+        "name": "Ranjit Kumar",
+        "phoneNumber": "9099858434",
+        "email": "ranjitkumar2448@yahoo.com",
+        "allowed": true,
+        "isSuperAdmin": false
+    }
+]

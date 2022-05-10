@@ -13,21 +13,35 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RoleAuthorization = exports.AdminAuthorization = exports.Authorization = void 0;
+/* eslint-disable @typescript-eslint/no-use-before-define */
+/* eslint-disable @typescript-eslint/interface-name-prefix */
 const httpErrors_1 = require("../utils/httpErrors");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const mongoose_1 = require("mongoose");
 const config_1 = require("../../config");
-exports.Authorization = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const user_interface_1 = require("../../components/user/user.interface");
+exports.Authorization = (role) => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (req.header("Authorization")) {
             const token = req.header("Authorization") || "";
-            const data = yield handleToken(token);
-            if (data) {
-                req.userId = data._id;
-                req.walletId = data.walletId;
-                req.role = data.role;
-                req.token = token.split(" ")[1];
-                next();
+            if (role == user_interface_1.ERoles.ADMIN) {
+                const data = yield handleAdminToken(token);
+                if (data) {
+                    req.userId = data._id;
+                    req.role = user_interface_1.ERoles.ADMIN;
+                    req.token = token.split(" ")[1];
+                    next();
+                }
+            }
+            else {
+                const data = yield handleToken(token);
+                if (data) {
+                    req.userId = data._id;
+                    req.walletId = data.walletId;
+                    req.role = data.role;
+                    req.token = token.split(" ")[1];
+                    next();
+                }
             }
         }
         else if (req.header("escapeAuth")) {
@@ -69,6 +83,27 @@ exports.RoleAuthorization = (role) => (req, res, next) => __awaiter(void 0, void
     catch (e) {
         e = new httpErrors_1.HTTP401Error(e.message);
         next(e);
+    }
+});
+const handleAdminToken = (token) => __awaiter(void 0, void 0, void 0, function* () {
+    if (token) {
+        token = token.split(" ")[1];
+        const userData = (yield jsonwebtoken_1.default.verify(token, config_1.commonConfig.jwtSecretKey)) || { user: {} };
+        const userDetails = userData;
+        const data = yield mongoose_1.model("AdminUser").findOne({
+            _id: userDetails.id,
+        });
+        if (data) {
+            return data;
+        }
+        else {
+            // tslint:disable-next-line: no-string-throw
+            throw "You are not authorized user.........";
+        }
+    }
+    else {
+        // tslint:disable-next-line: no-string-throw
+        throw "You are not authorized user";
     }
 });
 const handleToken = (token) => __awaiter(void 0, void 0, void 0, function* () {

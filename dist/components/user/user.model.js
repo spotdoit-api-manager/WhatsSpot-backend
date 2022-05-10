@@ -82,6 +82,12 @@ class UserModel {
             return user;
         });
     }
+    fetchUserMetrics() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const totalUsers = yield user_schema_1.User.countDocuments();
+            return { totalUsers };
+        });
+    }
     fetch(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield user_schema_1.User.aggregate([

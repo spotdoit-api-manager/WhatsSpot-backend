@@ -16,13 +16,13 @@ exports.applyRoutes = (routes, router) => {
             router[method](path, handler);
         }
         else if (role) {
-            router[method](path, [auth_middleware_1.Authorization, auth_middleware_1.RoleAuthorization(role), ...handler]);
+            router[method](path, [auth_middleware_1.Authorization(role), auth_middleware_1.RoleAuthorization(role), ...handler]);
         }
         else if (adminOnly) {
-            router[method](path, [auth_middleware_1.Authorization, auth_middleware_1.AdminAuthorization, ...handler]);
+            router[method](path, [auth_middleware_1.Authorization(role), auth_middleware_1.AdminAuthorization, ...handler]);
         }
         else {
-            router[method](path, [auth_middleware_1.Authorization, ...handler]);
+            router[method](path, [auth_middleware_1.Authorization(role), ...handler]);
         }
     }
     return router;

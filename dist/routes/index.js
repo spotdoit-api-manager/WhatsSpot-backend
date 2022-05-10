@@ -10,6 +10,7 @@ const razorpay_1 = __importDefault(require("../components/razorpay"));
 const messages_1 = __importDefault(require("../components/messages"));
 const plans_1 = __importDefault(require("../components/plans"));
 const contact_1 = __importDefault(require("../components/contact"));
+const admin_1 = __importDefault(require("../components/admin"));
 exports.default = [
     ...user_1.default,
     ...contact_1.default,
@@ -17,6 +18,7 @@ exports.default = [
     ...messages_1.default,
     ...wallet_1.default,
     ...razorpay_1.default,
-    ...plans_1.default
+    ...plans_1.default,
+    ...admin_1.default
 ];
 //# sourceMappingURL=index.js.map
