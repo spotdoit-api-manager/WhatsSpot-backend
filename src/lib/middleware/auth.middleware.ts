@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
+/* eslint-disable @typescript-eslint/interface-name-prefix */
 import {HTTP401Error} from "../utils/httpErrors";
 import jwt from "jsonwebtoken";
 import {NextFunction, Request, Response} from "express";
 import {model} from "mongoose";
 import {commonConfig} from "../../config";
 import {IUserModel} from "../../components/user/user.schema";
+import { ERoles } from "../../components/user/user.interface";
+import { IAdminUserModel } from "../../components/admin/admin.schema";
 
 interface IUserToken {
   user?: object;
@@ -16,18 +20,32 @@ interface IUserTokenDetails {
   name?: string;
   age?: number;
 }
-export const Authorization = async (req: Request, res: Response, next: NextFunction) => {
+
+
+export const Authorization =(role: ERoles|string)=> async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (req.header("Authorization")) {
+      
       const token: string = req.header("Authorization") || "";
-      const data: IUserModel = await handleToken(token);
-      if (data) {        
-        req.userId = data._id;
-        req.walletId = data.walletId;
-        req.role = data.role;
-        req.token = token.split(" ")[1];
-        next();
+      if(role==ERoles.ADMIN){
+        const data: IAdminUserModel = await handleAdminToken(token);
+        if (data) {        
+          req.userId = data._id;
+          req.role = ERoles.ADMIN;
+          req.token = token.split(" ")[1];
+          next();
+        }
+      }else{
+        const data: IUserModel = await handleToken(token);
+        if (data) {        
+          req.userId = data._id;
+          req.walletId = data.walletId;
+          req.role = data.role;
+          req.token = token.split(" ")[1];
+          next();
+        }
       }
+     
     } else if (req.header("escapeAuth")) {
       next();
     } else {
@@ -66,6 +84,30 @@ export const RoleAuthorization = (role: string) =>  async (req: Request, res: Re
     next(e);
   }
 };
+
+const handleAdminToken = async (token: string) => {
+  if (token) {
+      token = token.split(" ")[1];
+    const userData: IUserToken = await jwt.verify(token, commonConfig.jwtSecretKey) as object || {user: {}};
+
+      const userDetails: IUserTokenDetails = userData as object;
+    const data: IAdminUserModel | null = await model<IAdminUserModel>("AdminUser").findOne({
+      _id: userDetails.id,
+    //   tokens: {$in: [token]}
+    });
+
+    if (data) {
+      return data;
+    } else {
+      // tslint:disable-next-line: no-string-throw
+      throw "You are not authorized user.........";
+    }
+  } else {
+    // tslint:disable-next-line: no-string-throw
+    throw "You are not authorized user";
+  }
+};
+
 
 const handleToken = async (token: string) => {
   if (token) {
