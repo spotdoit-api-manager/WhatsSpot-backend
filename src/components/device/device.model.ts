@@ -94,7 +94,12 @@ export class DeviceModel {
         return result[0] || null;
     }
 
-
+    public async fetchDevicesMetrics(){
+        const totalDevices = await Device.countDocuments();
+        const activeDevices = await Device.countDocuments({authState:true});
+        const deletedDevices = await Device.countDocuments({authState:true});
+        return {totalDevices ,activeDevices,deletedDevices};
+    }
 
 
 

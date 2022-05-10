@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/interface-name-prefix */
 import {NextFunction, Request, Response, Router} from "express";
+import { ERoles } from "../../components/user/user.interface";
 import {AdminAuthorization, Authorization, RoleAuthorization} from "../middleware/auth.middleware";
 
 type Wrapper = ((router: Router) => void);
@@ -25,7 +27,7 @@ type Handler = (
 export interface IRoute {
   path: string | string[];
   method: string;
-  role?: string;
+  role?: ERoles | string;
   escapeAuth?: boolean;
   adminOnly?: boolean;
   handler: Handler[];
@@ -38,11 +40,11 @@ export const applyRoutes = (routes: IRoute[], router: Router) => {
     if (escapeAuth) {
       (router as any)[method](path, handler);
     } else if (role) {
-      (router as any)[method](path, [Authorization, RoleAuthorization(role), ...handler]);
+      (router as any)[method](path, [Authorization(role), RoleAuthorization(role), ...handler]);
     } else if (adminOnly) {
-      (router as any)[method](path, [Authorization, AdminAuthorization, ...handler]);
+      (router as any)[method](path, [Authorization(role), AdminAuthorization, ...handler]);
     } else {
-      (router as any)[method](path, [Authorization, ...handler]);
+      (router as any)[method](path, [Authorization(role), ...handler]);
     }
   }
   return router;
