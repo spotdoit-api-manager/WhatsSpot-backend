@@ -16,12 +16,25 @@ import walletModel from "../wallet/wallet.model";
 const logFileName = "[AdminModel] : ";
 export class AdminModel {
 
+    public async fetch(id: string) {
+       return await AdminUser.findById(id);
+      }
+    
     public async metrics(){
         const devicesMetrics = await deviceModel.fetchDevicesMetrics();
         const usersMetrics = await userModel.fetchUserMetrics();
         const walletBalance = await walletModel.getTotalWalletBalance();
         return {devicesMetrics, usersMetrics,walletBalance};
     }
+
+    public async fetchUsersBaseList(){
+        return await userModel.fetchUsersBaseList();
+    }
+
+    public async userDetailedAccountMetrics(userId: string){
+        return await userModel.userDetailedAccountMetrics(userId);
+    }
+
     public async addNewAdmin(body: IAdminUser) {
         body.isSuperAdmin = false;
         const newAdminUser = new AdminUser(body);

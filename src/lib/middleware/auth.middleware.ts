@@ -8,6 +8,7 @@ import {commonConfig} from "../../config";
 import {IUserModel} from "../../components/user/user.schema";
 import { ERoles } from "../../components/user/user.interface";
 import { IAdminUserModel } from "../../components/admin/admin.schema";
+import logger from "../utils/logger";
 
 interface IUserToken {
   user?: object;
@@ -25,7 +26,6 @@ interface IUserTokenDetails {
 export const Authorization =(role: ERoles|string)=> async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (req.header("Authorization")) {
-      
       const token: string = req.header("Authorization") || "";
       if(role==ERoles.ADMIN){
         const data: IAdminUserModel = await handleAdminToken(token);
@@ -89,7 +89,6 @@ const handleAdminToken = async (token: string) => {
   if (token) {
       token = token.split(" ")[1];
     const userData: IUserToken = await jwt.verify(token, commonConfig.jwtSecretKey) as object || {user: {}};
-
       const userDetails: IUserTokenDetails = userData as object;
     const data: IAdminUserModel | null = await model<IAdminUserModel>("AdminUser").findOne({
       _id: userDetails.id,

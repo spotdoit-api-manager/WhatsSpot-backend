@@ -17,6 +17,7 @@ import { HTTP400Error, HTTP401Error } from "../../lib/utils/httpErrors";
 import walletModel, { WalletModel } from "../wallet/wallet.model";
 import plansModel from "../plans/plans.model";
 import logger from "../../core/logger";
+import { EPlanStatus } from "../plans/plans.interface";
 
 const logFileName = "[UserModal] : ";
 export class UserModel {
@@ -26,36 +27,35 @@ export class UserModel {
 
     return data;
   }
-  
-  private async findUserById(userId: string){
+
+  private async findUserById(userId: string) {
     const user = await User.findById(userId);
     return user;
   }
 
-  public async fetchUserMetrics(){
+  public async fetchUserMetrics() {
     const totalUsers = await User.countDocuments();
-    return {totalUsers};
+    return { totalUsers };
   }
 
- public async fetch(id: string) {
+  public async fetch(id: string) {
     const data = await User.aggregate([
-      {$match:{_id:new ObjectID(id)}},
+      { $match: { _id: new ObjectID(id) } },
       {
-        $lookup:{
-          from:"wallets",
+        $lookup: {
+          from: "wallets",
           localField: "walletId",
           foreignField: "_id",
-          as:"wallet"
+          as: "wallet"
         },
-         
+
       }
-     ,{
-      $unwind:{
-        path:"$wallet"
+      , {
+        $unwind: {
+          path: "$wallet"
         }
-     }
+      }
     ]);
-    console.info(logFileName,"Logged User Data is :",data[0]);
     return data[0];
   }
 
@@ -67,17 +67,17 @@ export class UserModel {
 
     return data;
   }
-  public async fetchUserActivePlan(userId: string){
+  public async fetchUserActivePlan(userId: string) {
     const userPlan = await User.aggregate([
-      {$match:{_id:new ObjectID(userId)}},
+      { $match: { _id: new ObjectID(userId) } },
       {
         $lookup: {
           from: "userplans",
           localField: "activePlan.planRef",
           foreignField: "_id",
           as: "activePlan"
-      },
-     
+        },
+
       },
       {
         $unwind: {
@@ -90,7 +90,7 @@ export class UserModel {
           localField: "activePlan.planId",
           foreignField: "planId",
           as: "planInfo"
-      },
+        },
       },
       {
         $unwind: {
@@ -98,30 +98,30 @@ export class UserModel {
         }
       },
       {
-        $project:{
-          _id:0,
-          userId:"$_id",
-          activePlanInfo:"$activePlan",
-          planInfo:1
+        $project: {
+          _id: 0,
+          userId: "$_id",
+          activePlanInfo: "$activePlan",
+          planInfo: 1
         }
       }
-    ]);    
+    ]);
     return userPlan[0]?.activePlan || null;
   }
 
-  public async addPlanToUser(userId: string,activePlanName: string,activePlanId: string){
-    const planRef: IPlanRef = {planName:activePlanName,planRef:activePlanId};
-    const result = await User.findByIdAndUpdate(userId,{activePlan:planRef});
-  }
-  
-
- 
-
-  public async expireUserPlan(userId: string){
-    const result = await User.findByIdAndUpdate(userId,{$unset:{activePlan:1}});
+  public async addPlanToUser(userId: string, activePlanName: string, activePlanId: string) {
+    const planRef: IPlanRef = { planName: activePlanName, planRef: activePlanId };
+    const result = await User.findByIdAndUpdate(userId, { activePlan: planRef });
   }
 
-  
+
+
+
+  public async expireUserPlan(userId: string) {
+    const result = await User.findByIdAndUpdate(userId, { $unset: { activePlan: 1 } });
+  }
+
+
 
   public async delete(id: string) {
     await User.deleteOne({ _id: id });
@@ -137,39 +137,39 @@ export class UserModel {
     return { _id: data._id };
   }
 
-  async createNewUser(body: IUser){
-try{
-  body.role="user";
-  const existingUser = await this.isUserExistByPhone(body.phone);
-  let data: IUserModel;
-  if (!existingUser) {
-    const wallet: IWalletModel = await walletModel.createWallet();
-    body.walletId = wallet._id;
-    const newUser: IUserModel = new User(body);
-    data = await newUser.addNewUser();
-    if (!data) throw new HTTP400Error("SOME_ERROR_OCCURED");
-    await walletModel.addUserToWallet(data.walletId,data._id);
-    return data;
-  }
-  return existingUser;
-}catch(err){
-  throw new HTTP400Error(err.message);
-}
+  async createNewUser(body: IUser) {
+    try {
+      body.role = "user";
+      const existingUser = await this.isUserExistByPhone(body.phone);
+      let data: IUserModel;
+      if (!existingUser) {
+        const wallet: IWalletModel = await walletModel.createWallet();
+        body.walletId = wallet._id;
+        const newUser: IUserModel = new User(body);
+        data = await newUser.addNewUser();
+        if (!data) throw new HTTP400Error("SOME_ERROR_OCCURED");
+        await walletModel.addUserToWallet(data.walletId, data._id);
+        return data;
+      }
+      return existingUser;
+    } catch (err) {
+      throw new HTTP400Error(err.message);
+    }
   }
 
   async registerWithPhone(body: IUser) {
     try {
       const userExist = await this.findUserByPhone(body.phone);;
-      if(userExist) throw new HTTP401Error("USER_ALREADY_EXIST");
-     const user: IUserModel = await this.createNewUser(body);
+      if (userExist) throw new HTTP401Error("USER_ALREADY_EXIST");
+      const user: IUserModel = await this.createNewUser(body);
       const otp = this.updateOtp(user._id);
       const otpData = await this.sendOtpToMobile(otp, body.phone);
       if (otpData.proceed) {
-        return { phone: body.phone, _id: user.id};
+        return { phone: body.phone, _id: user.id };
       }
       throw new HTTP400Error("OTP_NOT_SENT");
     } catch (e) {
-      logger.error(logFileName,e);
+      logger.error(logFileName, e);
       if (e.code == 11000) {
         throw new HTTP400Error(e.keyPattern.email ? "EMAIL_ALREADY_REGISTERED" : "PHONE_ALREADY_REGISTERED");
       }
@@ -177,28 +177,28 @@ try{
     }
   }
 
-  public async loginWithPhone(body: IUser){
+  public async loginWithPhone(body: IUser) {
     const user: IUserModel = await this.findUserByPhone(body.phone);
-    if(!user) throw new HTTP401Error("USER_NOT_FOUND");
+    if (!user) throw new HTTP401Error("USER_NOT_FOUND");
     const otp = this.updateOtp(user._id);
     const otpData = await this.sendOtpToMobile(otp, body.phone);
     if (otpData.proceed) {
-      return { phone: body.phone, _id: user.id};
+      return { phone: body.phone, _id: user.id };
     }
   }
 
-  public async resendOTP(id: string,body: any){
-    const user: IUserModel = await User.findOne({_id:new ObjectID(id),phone:sanatizeMobile(body.phoneNumber)});
-    if(!user) throw new HTTP401Error("USER_NOT_FOUND");
+  public async resendOTP(id: string, body: any) {
+    const user: IUserModel = await User.findOne({ _id: new ObjectID(id), phone: sanatizeMobile(body.phoneNumber) });
+    if (!user) throw new HTTP401Error("USER_NOT_FOUND");
     const otp = this.updateOtp(user._id);
     const otpData = await this.sendOtpToMobile(otp, body.phone);
     if (otpData.proceed) {
-      return { phone: body.phone, _id: user.id};
+      return { phone: body.phone, _id: user.id };
     }
   }
 
-  private async findUserByPhone(phone: string){
-    return await User.findOne({phone});
+  private async findUserByPhone(phone: string) {
+    return await User.findOne({ phone });
   }
 
   public async signUp(body: IUserModel) {
@@ -206,7 +206,7 @@ try{
       await this.isUserExist(body);
       body.role = "user";
       const data = await this.add(body);
-    
+
       const userData = await this.addNewToken(data._id);
 
       return userData;
@@ -393,20 +393,20 @@ try{
     return otp;
   }
 
-  public async updateDeviceCode(userId: string,phone: string){
+  public async updateDeviceCode(userId: string, phone: string) {
     const code = otpGenerator();
-    const key =`deviceCodes.${phone}`;
-    const data = await User.findByIdAndUpdate(userId,{[key]:code});
+    const key = `deviceCodes.${phone}`;
+    const data = await User.findByIdAndUpdate(userId, { [key]: code });
     return code;
   }
 
-  public async validateDeviceCode(userId: string,devicePhone: string,code: number){
+  public async validateDeviceCode(userId: string, devicePhone: string, code: number) {
     const key = `deviceCodes.${devicePhone}`;
-    const data = await User.findOne({"_id":new ObjectID(userId),[key]:code});
-    if(!data) throw new HTTP400Error("INVALID_CODE","The code you have entered is invalid");
+    const data = await User.findOne({ "_id": new ObjectID(userId), [key]: code });
+    if (!data) throw new HTTP400Error("INVALID_CODE", "The code you have entered is invalid");
   }
   async sendOtpToMobile(otp: number, phone: string) {
-    logger.debug(logFileName,`send this ${otp} to ${phone}`);
+    logger.debug(logFileName, `send this ${otp} to ${phone}`);
     const message = `Your SpotDoit Services login OTP is ${otp}.`;
     return await sendMessage(phone, message);
   }
@@ -461,17 +461,17 @@ try{
         throw new HTTP400Error("OTP not entered");
       }
       const otpData = await this.fetchOnOtp(id, otp);
-      
-      if(otp==Number(process.env.STATIC_OTP)){
+
+      if (otp == Number(process.env.STATIC_OTP)) {
 
       }
       else if (!otpData) {
         throw new HTTP400Error("WRONG_OTP");
       }
-        this.updateOtp(id);
+      this.updateOtp(id);
       const wallet = await walletModel.fetchWalletByUserId(id);
-      const data = await User.findOneAndUpdate({ _id: new ObjectID(id) }, { $set: { isVerified: true,walletId:wallet._id, } }, { new: true });
-      const dataToStore: IDataStoredInToken = {id,walletId:wallet._id};
+      const data = await User.findOneAndUpdate({ _id: new ObjectID(id) }, { $set: { isVerified: true, walletId: wallet._id, } }, { new: true });
+      const dataToStore: IDataStoredInToken = { id, walletId: wallet._id };
       const tokenData = await this.addNewToken(dataToStore);
       const cookie = this.createCookie(tokenData);
 
@@ -628,7 +628,7 @@ try{
 
       const otp = await this.updateOtp(id);
 
-     const  otpData = await this.sendOtpToMobile(otp, phone);
+      const otpData = await this.sendOtpToMobile(otp, phone);
       console.log(otpData);
       if (otpData.proceed) {
         return { _id: user._id, isExisted: true };
@@ -650,154 +650,536 @@ try{
 
     return { proceed: false };
   };
-  public async getAccountMetrics(userId: string){
-    console.log("user id is ",userId);
-    
+  public async getAccountMetrics(userId: string) {
+    console.log("user id is ", userId);
+
     const result = await User.aggregate([
-      { $match: {_id:new ObjectID(userId)} },
+      { $match: { _id: new ObjectID(userId) } },
       { $set: { _id: { $toObjectId: "$_id" } } },
       {
-          $project: {
-              _id: 1
-          }
+        $project: {
+          _id: 1
+        }
       },
       {
         $lookup: {
-            from: "devices",
-            // localField: "_id",
-            // foreignField: "userId",
-            let:{userId:"$_id"},
-            pipeline: [
-              {
-                  $match: {
-                      "isDeleted.status":false,
-                      $expr: {
-                       $eq: [ "$userId",  "$$userId" ] ,
-                  }
+          from: "devices",
+          // localField: "_id",
+          // foreignField: "userId",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                "isDeleted.status": false,
+                $expr: {
+                  $eq: ["$userId", "$$userId"],
                 }
               }
+            }
           ],
-            as: "devices"
+          as: "devices"
         },
 
-    },
-    {
-      $unwind: {
+      },
+      {
+        $unwind: {
           path: "$devices"
-              }
-  },
-  {$project:{
-    deviceId:"$devices._id",
-    authState:"$devices.authState"
-  }},
-  { $set: { deviceId: { $toString: "$deviceId" } } },
-  {
-          $lookup: {
-              from: "fastmessages",
-              localField: "deviceId",
-              foreignField: "deviceId",
-              as: "fastMessages"
-          },
+        }
       },
       {
-          $lookup: {
-              from: "messagequeues",
-              localField: "deviceId",
-              foreignField: "deviceId",
-              as: "queueMessages"
-          },
+        $project: {
+          deviceId: "$devices._id",
+          authState: "$devices.authState"
+        }
+      },
+      { $set: { deviceId: { $toString: "$deviceId" } } },
+      {
+        $lookup: {
+          from: "fastmessages",
+          localField: "deviceId",
+          foreignField: "deviceId",
+          as: "fastMessages"
+        },
+      },
+      {
+        $lookup: {
+          from: "messagequeues",
+          localField: "deviceId",
+          foreignField: "deviceId",
+          as: "queueMessages"
+        },
 
       },
       {
-          $project: {
+        $project: {
 
-            deviceId:"$deviceId",
-            authState:"$authState",
-              metrics: {
-                  totalFastError: {
-                      $size: {
-                          $filter: {
-                              input: "$fastMessages",
-                              as: "fastMessage",
-                              cond: { "$eq": ["$$fastMessage.status", EMessageStatus.ERROR] }
-                          }
-                      }
-                  },
-                  totalFastSuccess: {
-                      $size: {
-                          $filter: {
-                              input: "$fastMessages",
-                              as: "fastMessage",
-                              cond: { "$eq": ["$$fastMessage.status", EMessageStatus.SENT] }
-                          }
-                      }
-                  },
-                  totalQueueSuccess: {
-                      $size: {
-                          $filter: {
-                              input: "$queueMessages",
-                              as: "queueMessage",
-                              cond: { "$eq": ["$$queueMessage.status", EMessageStatus.SENT] }
-                          }
-                      }
-                  },
-                  totalQueueError: {
-                      $size: {
-                          $filter: {
-                              input: "$queueMessages",
-                              as: "queueMessage",
-                              cond: { "$eq": ["$$queueMessage.status", EMessageStatus.ERROR] }
-                          }
-                      }
-                  },
-                  totalQueuePending: {
-                      $size: {
-                          $filter: {
-                              input: "$queueMessages",
-                              as: "queueMessage",
-                              cond: { "$eq": ["$$queueMessage.status", EMessageStatus.PENDING] }
-                          }
-                      }
-                  }
+          deviceId: "$deviceId",
+          authState: "$authState",
+          metrics: {
+            totalFastError: {
+              $size: {
+                $filter: {
+                  input: "$fastMessages",
+                  as: "fastMessage",
+                  cond: { "$eq": ["$$fastMessage.status", EMessageStatus.ERROR] }
+                }
               }
+            },
+            totalFastSuccess: {
+              $size: {
+                $filter: {
+                  input: "$fastMessages",
+                  as: "fastMessage",
+                  cond: { "$eq": ["$$fastMessage.status", EMessageStatus.SENT] }
+                }
+              }
+            },
+            totalQueueSuccess: {
+              $size: {
+                $filter: {
+                  input: "$queueMessages",
+                  as: "queueMessage",
+                  cond: { "$eq": ["$$queueMessage.status", EMessageStatus.SENT] }
+                }
+              }
+            },
+            totalQueueError: {
+              $size: {
+                $filter: {
+                  input: "$queueMessages",
+                  as: "queueMessage",
+                  cond: { "$eq": ["$$queueMessage.status", EMessageStatus.ERROR] }
+                }
+              }
+            },
+            totalQueuePending: {
+              $size: {
+                $filter: {
+                  input: "$queueMessages",
+                  as: "queueMessage",
+                  cond: { "$eq": ["$$queueMessage.status", EMessageStatus.PENDING] }
+                }
+              }
+            }
           }
+        }
       },
-     
+
       {
         $group: {
-          _id:"$_id",
-             totalDevices : {$sum: 1},
-             activeDevices:  {"$sum": {
+          _id: "$_id",
+          totalDevices: { $sum: 1 },
+          activeDevices: {
+            "$sum": {
               "$cond": [
-                  { "$eq": ["$authState", true]},
-                  1, 
-                  0
+                { "$eq": ["$authState", true] },
+                1,
+                0
               ]
-          }},
-            totalFastSuccess:{$sum :"$metrics.totalFastSuccess"},
-            totalFastError:{$sum :"$metrics.totalFastError"},
-            totalQueueSuccess:{$sum :"$metrics.totalQueueSuccess"},
-            totalQueueError:{$sum :"$metrics.totalQueueError"}
-          
-    }},
-    {
-      $project:{ 
-        _id:0,
-        userId:"$_id",  
-        metrics:{
-          activeDevices:"$activeDevices",   
-          totalDevices:"$totalDevices",
-          totalFastSuccess:"$totalFastSuccess",
-          totalFastError:"$totalFastError",
-          totalQueueSuccess:"$totalQueueSuccess",
-          totalQueueError:"$totalQueueError"
-        } 
-      }
-    }
-  ]);
+            }
+          },
+          totalFastSuccess: { $sum: "$metrics.totalFastSuccess" },
+          totalFastError: { $sum: "$metrics.totalFastError" },
+          totalQueueSuccess: { $sum: "$metrics.totalQueueSuccess" },
+          totalQueueError: { $sum: "$metrics.totalQueueError" }
 
-  console.log("metrics result ",result);
-  return result[0]||null;
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: "$_id",
+          metrics: {
+            activeDevices: "$activeDevices",
+            totalDevices: "$totalDevices",
+            totalFastSuccess: "$totalFastSuccess",
+            totalFastError: "$totalFastError",
+            totalQueueSuccess: "$totalQueueSuccess",
+            totalQueueError: "$totalQueueError"
+          }
+        }
+      }
+    ]);
+
+    console.log("metrics result ", result);
+    return result[0] || null;
+  }
+
+  public async fetchUsersBaseList() {
+    return await User.aggregate([
+      { $match: {} },
+      {
+        $lookup: {
+          from: "devices",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$userId", "$$userId"],
+                }
+              }
+            }
+          ],
+          as: "totalDevices"
+        },
+      },
+      {
+        $lookup: {
+          from: "userplans",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$userId", "$$userId"],
+                }
+              }
+            }
+          ],
+          as: "plans"
+        },
+      },
+    
+      {
+        $lookup: {
+          from: "devices",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                "isDeleted.status": true,
+                $expr: {
+                  $eq: ["$userId", "$$userId"],
+                }
+              }
+            }
+          ],
+          as: "deletedDevices"
+        },
+      },
+      {
+        $lookup: {
+          from: "devices",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                authState: true,
+                $expr: {
+                  $eq: ["$userId", "$$userId"],
+                }
+              }
+            }
+          ],
+          as: "activeDevices"
+        },
+      },
+      {
+        $lookup: {
+          from: "devices",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                authState: false,
+                $expr: {
+                  $eq: ["$userId", "$$userId"],
+                }
+              }
+            }
+          ],
+          as: "inactiveDevices"
+        },
+      },
+      
+      { $addFields: {totalDevices: { $size: "$totalDevices", }  },},
+      { $addFields: {deletedDevices: { $size: "$deletedDevices", }  }},
+      { $addFields: {activeDevices: { $size: "$activeDevices", }  }},
+      { $addFields: {inactiveDevices: { $size: "$inactiveDevices", }  }},
+      {
+        $project:{
+          phone:1,
+          email:1,
+          totalDevices:1,
+          deletedDevices:1,
+          activeDevices:1,
+          inactiveDevices:1,
+          createdAt:1,
+          isVerified:1,
+          deactivation:1,
+          walletId:1,
+          hasActivePlan: {
+            $size: {
+              $filter: {
+                input: "$plans",
+                as: "plans",
+                cond: { "$eq": ["$$plans.planStatus", EPlanStatus.ACTIVE] }
+              }
+            }
+          },
+        }
+      }
+    ]);
+  };
+
+  public async userDetailedAccountMetrics(userId: string) {
+    return await User.aggregate([
+     
+      { $match: { _id: new ObjectID(userId) } },
+      { $set: { _id: { $toObjectId: "$_id" } } },
+      {
+        $project: {
+          _id: 1,
+        }
+      },
+      {
+        $lookup: {
+          from: "devices",
+          // localField: "_id",
+          // foreignField: "userId",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                "isDeleted.status": false,
+                $expr: {
+                  $eq: ["$userId", "$$userId"],
+                }
+              }
+            }
+          ],
+          as: "devices"
+        },
+
+      },
+      {
+        $unwind: {
+          path: "$devices"
+        }
+      },
+      {
+        $project: {
+          deviceId: "$devices._id",
+          authState: "$devices.authState"
+        }
+      },
+      { $set: { deviceId: { $toString: "$deviceId" } } },
+      {
+        $lookup: {
+          from: "fastmessages",
+          localField: "deviceId",
+          foreignField: "deviceId",
+          as: "fastMessages"
+        },
+      },
+      {
+        $lookup: {
+          from: "messagequeues",
+          localField: "deviceId",
+          foreignField: "deviceId",
+          as: "queueMessages"
+        },
+
+      },
+      {
+        $project: {
+
+          deviceId: "$deviceId",
+          authState: "$authState",
+          metrics: {
+            fastError: {
+             
+                $filter: {
+                  input: "$fastMessages",
+                  as: "fastMessage",
+                  cond: { "$eq": ["$$fastMessage.status", EMessageStatus.ERROR] }
+                }
+              
+            },
+            fastSuccess: {
+                $filter: {
+                  input: "$fastMessages",
+                  as: "fastMessage",
+                  cond: { "$eq": ["$$fastMessage.status", EMessageStatus.SENT] }
+                }
+              
+            },
+            queueSuccess: {
+                $filter: {
+                  input: "$queueMessages",
+                  as: "queueMessage",
+                  cond: { "$eq": ["$$queueMessage.status", EMessageStatus.SENT] }
+                }
+              
+            },
+            totalQueueError: {
+                $filter: {
+                  input: "$queueMessages",
+                  as: "queueMessage",
+                  cond: { "$eq": ["$$queueMessage.status", EMessageStatus.ERROR] }
+                }
+              
+            },
+            totalQueuePending: {
+                $filter: {
+                  input: "$queueMessages",
+                  as: "queueMessage",
+                  cond: { "$eq": ["$$queueMessage.status", EMessageStatus.PENDING] }
+                
+              }
+            }
+          }
+        }
+      },
+
+      // {
+      //   $group: {
+      //     _id: "$_id",
+      //     totalDevices: { $sum: 1 },
+      //     activeDevices: {
+      //       "$sum": {
+      //         "$cond": [
+      //           { "$eq": ["$authState", true] },
+      //           1,
+      //           0
+      //         ]
+      //       }
+      //     },
+      //     deletedDevices: {
+      //       "$sum": {
+      //         "$cond": [
+      //           { "$eq": ["$isDeleted.status", true] },
+      //           1,
+      //           0
+      //         ]
+      //       }
+      //     },
+      //     inactiveDevices: {
+      //       "$sum": {
+      //         "$cond": [
+      //           { "$eq": ["$authState", false] },
+      //           1,
+      //           0
+      //         ]
+      //       }
+      //     },
+      //     // metrics:"$metrics"
+      //     // totalFastSuccess:"$metrics.totalFastSuccess" ,
+      //     // totalFastError: "$metrics.totalFastError" ,
+      //     // totalQueueSuccess:"$metrics.totalQueueSuccess" ,
+      //     // totalQueueError: "$metrics.totalQueueError" 
+
+      //   }
+      // },
+      {
+        $project: {
+          _id: 0,
+          userId: "$_id",
+          phone:1,
+          email:1,
+          isVerified:1,
+          deactivation:1,
+          walletId:1,
+
+          metrics: 1
+        }
+      },
+
+
+
+
+
+      // {
+      //   $lookup: {
+      //     from: "devices",
+      //     let: { userId: "$userId" },
+      //     pipeline: [
+      //       {
+      //         $match: {
+      //           $expr: {
+      //             $eq: ["$userId", "$$userId"],
+      //           }
+      //         }
+      //       }
+      //     ],
+      //     as: "allDevices"
+      //   },
+      // },
+
+
+      {
+        $lookup: {
+          from: "devices",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                "isDeleted.status": true,
+                $expr: {
+                  $eq: ["$userId", "$$userId"],
+                }
+              }
+            }
+          ],
+          as: "deletedDevices"
+        },
+      },
+      {
+        $lookup: {
+          from: "devices",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                authState: true,
+                $expr: {
+                  $eq: ["$userId", "$$userId"],
+                }
+              }
+            }
+          ],
+          as: "activeDevices"
+        },
+      },
+      {
+        $lookup: {
+          from: "devices",
+          let: { userId: "$userId" },
+          pipeline: [
+            {
+              $match: {
+                authState: false,
+                $expr: {
+                  $eq: ["$userId", "$$userId"],
+                }
+              }
+            }
+          ],
+          as: "inactiveDevices"
+        },
+      },
+      
+      // { $addFields: {totalDevices: { $size: "$totalDevices", }  },},
+      // { $addFields: {deletedDevices: { $size: "$deletedDevices", }  }},
+      // { $addFields: {activeDevices: { $size: "$activeDevices", }  }},
+      // { $addFields: {inactiveDevices: { $size: "$inactiveDevices", }  }},
+      {
+        $project:{
+          phone:1,
+          email:1,
+          allDevices:1,
+          deletedDevices:1,
+          activeDevices:1,
+          inactiveDevices:1,
+          createdAt:1,
+          isVerified:1,
+          deactivation:1,
+          walletId:1,
+          metrics:1
+        }
+      }
+    ]);
   }
 }
 
