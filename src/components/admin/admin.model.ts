@@ -19,6 +19,10 @@ export class AdminModel {
     public async fetch(id: string) {
        return await AdminUser.findById(id);
       }
+
+      public updateUserWalletBalance(walletId: string, balance: number) {
+        return walletModel.updateWalletBalance(walletId, balance);
+      }
     
     public async metrics(){
         const devicesMetrics = await deviceModel.fetchDevicesMetrics();

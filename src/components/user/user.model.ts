@@ -892,11 +892,32 @@ export class UserModel {
           as: "inactiveDevices"
         },
       },
-      
+      {
+        $lookup: {
+          from: "wallets",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$userId", "$$userId"],
+                }
+              }
+            },
+            {
+              $project:{
+                balance:1,
+              }
+            }
+          ],
+          as: "wallet"
+        },
+      },
       { $addFields: {totalDevices: { $size: "$totalDevices", }  },},
       { $addFields: {deletedDevices: { $size: "$deletedDevices", }  }},
       { $addFields: {activeDevices: { $size: "$activeDevices", }  }},
       { $addFields: {inactiveDevices: { $size: "$inactiveDevices", }  }},
+      { $addFields: {wallet:{ $arrayElemAt: [ "$wallet", 0 ] } }},
       {
         $project:{
           phone:1,
@@ -909,6 +930,7 @@ export class UserModel {
           isVerified:1,
           deactivation:1,
           walletId:1,
+          walletBalance:"$wallet.balance",
           hasActivePlan: {
             $size: {
               $filter: {

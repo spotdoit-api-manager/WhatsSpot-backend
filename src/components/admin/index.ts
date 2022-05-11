@@ -43,4 +43,10 @@ export default [
         role:"admin",
         handler: [adminController.userDetailedAccountMetrics]
       },
+      {
+        path: "/admin/wallet/update/:walletId",
+        method: "post",
+        role:"admin",
+        handler: [adminController.updateUserWalletBalance]
+      },
 ];
