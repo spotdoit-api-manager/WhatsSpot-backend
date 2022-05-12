@@ -335,11 +335,7 @@ export class DeviceModel {
             let result = await Device.aggregate([
                 { $match: condition },
                 { $set: { _id: { $toObjectId: "$_id" } } },
-                {
-                    $project: {
-                        _id: 1
-                    }
-                },
+               
                 {
                     $lookup: {
                         from: "fastmessages",
@@ -360,6 +356,7 @@ export class DeviceModel {
                 },
                 {
                     $project: {
+                        _id:0,
                         messageMetrics: {
                             totalFastError: {
                                 $size: {
@@ -406,6 +403,22 @@ export class DeviceModel {
                                     }
                                 }
                             }
+                        },
+                        messages:{
+                            fastMessages:"$fastMessages",
+                            queueMessages:"$queueMessages",
+                        },
+
+                        deviceInfo:{
+                            deviceId:"$_id",
+                            isDeleted:"$isDeleted",
+                            phone:"$phone",
+                            name:"$name",
+                            userId:"$userId",
+                            createdAt:"$createdAt",
+                            updatedAt:"$updatedAt",
+                            authState:"$authState",
+                            reason:"$reason"
                         }
                     }
                 },

@@ -72,10 +72,33 @@ export class AdminController{
           next(responseHandler.sendError(e));
         }
       };
+
+      
+      public getDeviceData = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("DEVICE_DATA_FETCHED", await adminModel.getDeviceData(req.params.deviceId)).send();
+        } catch (e) {
+            console.log(e);
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
       public updateUserWalletBalance = async (req: Request, res: Response, next: NextFunction) => {
         const responseHandler = new ResponseHandler();
         try {
           responseHandler.reqRes(req, res).onFetch("WALLET_UPDATED", await adminModel.updateUserWalletBalance(req.params.walletId,req.body.balance)).send();
+        } catch (e) {
+            console.log(e);
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
+
+      public walletTransactions = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("TRANSACTIONS_FETCHED", await adminModel.walletTransactions(req.params.walletId)).send();
         } catch (e) {
             console.log(e);
           // send error with next function.

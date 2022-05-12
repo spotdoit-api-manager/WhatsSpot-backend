@@ -20,9 +20,13 @@ export class AdminModel {
        return await AdminUser.findById(id);
       }
 
-      public updateUserWalletBalance(walletId: string, balance: number) {
-        return walletModel.updateWalletBalance(walletId, balance);
+      public async updateUserWalletBalance(walletId: string, balance: number) {
+        return await walletModel.updateWalletBalance(walletId, balance);
       }
+
+      public async walletTransactions(walletId: string) {
+        return await walletModel.fetchTransactions(null,walletId);
+      } 
     
     public async metrics(){
         const devicesMetrics = await deviceModel.fetchDevicesMetrics();
@@ -37,6 +41,10 @@ export class AdminModel {
 
     public async userDetailedAccountMetrics(userId: string){
         return await userModel.userDetailedAccountMetrics(userId);
+    }
+
+    public async getDeviceData(deviceId: string){
+        return await deviceModel.fetchDeviceMetrics(deviceId);
     }
 
     public async addNewAdmin(body: IAdminUser) {

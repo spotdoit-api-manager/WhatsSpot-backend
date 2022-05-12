@@ -1008,7 +1008,7 @@ export class UserModel {
             {
               $project:{
                 _id:0,
-                walletId:"$userId",
+                walletId:"$_id",
                 balance:1,
                 createdAt:1,
                 updatedAt:1,

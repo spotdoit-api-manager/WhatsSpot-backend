@@ -49,4 +49,16 @@ export default [
         role:"admin",
         handler: [adminController.updateUserWalletBalance]
       },
+      {
+        path: "/admin/wallet/transactions/:walletId",
+        method: "get",
+        role:"admin",
+        handler: [adminController.walletTransactions]
+      },
+      {
+        path: "/admin/device/:deviceId",
+        method: "get",
+        role:"admin",
+        handler: [adminController.getDeviceData]
+      },
 ];

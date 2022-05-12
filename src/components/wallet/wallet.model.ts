@@ -37,8 +37,8 @@ export class WalletModel {
     }
 
     public async fetchTransactions(userId: string, walletId: string) {
-        console.log("fetch wallet transaciton ", userId, walletId);
         const transactions = await transactionModel.fetchTransactions(walletId);
+        console.log("transactions",transactions);
         return transactions;
     }
 
