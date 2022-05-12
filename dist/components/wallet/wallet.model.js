@@ -44,6 +44,11 @@ class WalletModel {
             return totalBalance[0].amount;
         });
     }
+    updateWalletBalance(walletId, balance) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield wallet_schema_1.Wallet.findByIdAndUpdate(walletId, { balance: balance }, { new: true });
+        });
+    }
     fetchTransactions(userId, walletId) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("fetch wallet transaciton ", userId, walletId);

@@ -123,6 +123,8 @@ export declare class UserModel {
         phone?: undefined;
     }>;
     getAccountMetrics(userId: string): Promise<any>;
+    fetchUsersBaseList(): Promise<any[]>;
+    userDetailedAccountMetrics(userId: string): Promise<any[]>;
 }
 declare const _default: UserModel;
 export default _default;

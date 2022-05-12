@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RazorPayService = void 0;
+/* eslint-disable @typescript-eslint/camelcase */
 const index_1 = require("./../../config/index");
 const razorpay_1 = __importDefault(require("razorpay"));
 class RazorPayService {

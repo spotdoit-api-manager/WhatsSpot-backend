@@ -45,6 +45,7 @@ const config_1 = require("../../config");
 const httpErrors_1 = require("../../lib/utils/httpErrors");
 const wallet_model_1 = __importDefault(require("../wallet/wallet.model"));
 const logger_1 = __importDefault(require("../../core/logger"));
+const plans_interface_1 = require("../plans/plans.interface");
 const logFileName = "[UserModal] : ";
 class UserModel {
     constructor() {
@@ -106,7 +107,6 @@ class UserModel {
                     }
                 }
             ]);
-            console.info(logFileName, "Logged User Data is :", data[0]);
             return data[0];
         });
     }
@@ -196,7 +196,7 @@ class UserModel {
                 const existingUser = yield this.isUserExistByPhone(body.phone);
                 let data;
                 if (!existingUser) {
-                    const wallet = yield wallet_model_1.default.createWallet();
+                    const wallet = yield wallet_model_1.default.createWallet(parseInt(process.env.INITIAL_WALLET_BALANCE));
                     body.walletId = wallet._id;
                     const newUser = new user_schema_1.User(body);
                     data = yield newUser.addNewUser();
@@ -733,10 +733,12 @@ class UserModel {
                         path: "$devices"
                     }
                 },
-                { $project: {
+                {
+                    $project: {
                         deviceId: "$devices._id",
                         authState: "$devices.authState"
-                    } },
+                    }
+                },
                 { $set: { deviceId: { $toString: "$deviceId" } } },
                 {
                     $lookup: {
@@ -811,13 +813,15 @@ class UserModel {
                     $group: {
                         _id: "$_id",
                         totalDevices: { $sum: 1 },
-                        activeDevices: { "$sum": {
+                        activeDevices: {
+                            "$sum": {
                                 "$cond": [
                                     { "$eq": ["$authState", true] },
                                     1,
                                     0
                                 ]
-                            } },
+                            }
+                        },
                         totalFastSuccess: { $sum: "$metrics.totalFastSuccess" },
                         totalFastError: { $sum: "$metrics.totalFastError" },
                         totalQueueSuccess: { $sum: "$metrics.totalQueueSuccess" },
@@ -841,6 +845,210 @@ class UserModel {
             ]);
             console.log("metrics result ", result);
             return result[0] || null;
+        });
+    }
+    fetchUsersBaseList() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield user_schema_1.User.aggregate([
+                { $match: {} },
+                {
+                    $lookup: {
+                        from: "devices",
+                        let: { userId: "$_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $eq: ["$userId", "$$userId"],
+                                    }
+                                }
+                            }
+                        ],
+                        as: "totalDevices"
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "userplans",
+                        let: { userId: "$_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $eq: ["$userId", "$$userId"],
+                                    }
+                                }
+                            }
+                        ],
+                        as: "plans"
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "devices",
+                        let: { userId: "$_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    "isDeleted.status": true,
+                                    $expr: {
+                                        $eq: ["$userId", "$$userId"],
+                                    }
+                                }
+                            }
+                        ],
+                        as: "deletedDevices"
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "devices",
+                        let: { userId: "$_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    authState: true,
+                                    $expr: {
+                                        $eq: ["$userId", "$$userId"],
+                                    }
+                                }
+                            }
+                        ],
+                        as: "activeDevices"
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "devices",
+                        let: { userId: "$_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    authState: false,
+                                    $expr: {
+                                        $eq: ["$userId", "$$userId"],
+                                    }
+                                }
+                            }
+                        ],
+                        as: "inactiveDevices"
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "wallets",
+                        let: { userId: "$_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $eq: ["$userId", "$$userId"],
+                                    }
+                                }
+                            },
+                            {
+                                $project: {
+                                    balance: 1,
+                                }
+                            }
+                        ],
+                        as: "wallet"
+                    },
+                },
+                { $addFields: { totalDevices: { $size: "$totalDevices", } }, },
+                { $addFields: { deletedDevices: { $size: "$deletedDevices", } } },
+                { $addFields: { activeDevices: { $size: "$activeDevices", } } },
+                { $addFields: { inactiveDevices: { $size: "$inactiveDevices", } } },
+                { $addFields: { wallet: { $arrayElemAt: ["$wallet", 0] } } },
+                {
+                    $project: {
+                        phone: 1,
+                        email: 1,
+                        totalDevices: 1,
+                        deletedDevices: 1,
+                        activeDevices: 1,
+                        inactiveDevices: 1,
+                        createdAt: 1,
+                        isVerified: 1,
+                        deactivation: 1,
+                        walletId: 1,
+                        walletBalance: "$wallet.balance",
+                        hasActivePlan: {
+                            $size: {
+                                $filter: {
+                                    input: "$plans",
+                                    as: "plans",
+                                    cond: { "$eq": ["$$plans.planStatus", plans_interface_1.EPlanStatus.ACTIVE] }
+                                }
+                            }
+                        },
+                    }
+                }
+            ]);
+        });
+    }
+    ;
+    userDetailedAccountMetrics(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield user_schema_1.User.aggregate([
+                { $match: { _id: new bson_1.ObjectID(userId) } },
+                { $set: { _id: { $toObjectId: "$_id" } } },
+                {
+                    $project: {
+                        _id: 1,
+                        phone: 1,
+                        email: 1,
+                        createdAt: 1,
+                        isVerified: 1,
+                        deactivation: 1,
+                        walletId: 1,
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "devices",
+                        let: { userId: "$_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    // "isDeleted.status": false,
+                                    $expr: {
+                                        $eq: ["$userId", "$$userId"],
+                                    }
+                                }
+                            }
+                        ],
+                        as: "devices"
+                    },
+                },
+                {
+                    $unwind: {
+                        path: "$devices"
+                    }
+                },
+                {
+                    $project: {
+                        deviceId: "$devices._id",
+                        authState: "$devices.authState"
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "fastmessages",
+                        localField: "deviceId",
+                        foreignField: "deviceId",
+                        as: "fastMessages"
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "messagequeues",
+                        localField: "deviceId",
+                        foreignField: "deviceId",
+                        as: "queueMessages"
+                    },
+                },
+            ]);
         });
     }
 }

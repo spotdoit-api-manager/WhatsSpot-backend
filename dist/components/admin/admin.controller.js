@@ -34,6 +34,7 @@ class AdminController {
                 responseHandler.reqRes(req, res).onFetch("OTP_SENT", yield admin_model_1.default.loginWithPhone(req.body.phoneNumber)).send();
             }
             catch (e) {
+                console.log(e);
                 // send error with next function.
                 next(responseHandler.sendError(e));
             }
@@ -62,6 +63,50 @@ class AdminController {
                 console.log(e);
                 // send error with next function.
                 next(responseHandler.sendError(e));
+            }
+        });
+        this.fetchUsersBaseList = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("USERS_BASE_LIST_FETCHED", yield admin_model_1.default.fetchUsersBaseList()).send();
+            }
+            catch (e) {
+                console.log(e);
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.userDetailedAccountMetrics = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("USER_DATA_FETCHED", yield admin_model_1.default.userDetailedAccountMetrics(req.params.userId)).send();
+            }
+            catch (e) {
+                console.log(e);
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.updateUserWalletBalance = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("WALLET_UPDATED", yield admin_model_1.default.updateUserWalletBalance(req.params.walletId, req.body.balance)).send();
+            }
+            catch (e) {
+                console.log(e);
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.getLoggedUser = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("getting logged admin user", req.userId);
+                const user = yield admin_model_1.default.fetch(req.userId);
+                responseHandler.reqRes(req, res).onFetch("Admin User Data", user).send();
+            }
+            catch (e) {
+                responseHandler.sendError(e);
             }
         });
     }

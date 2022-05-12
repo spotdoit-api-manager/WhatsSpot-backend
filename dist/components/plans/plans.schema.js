@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserPlan = exports.Plan = void 0;
+/* eslint-disable @typescript-eslint/interface-name-prefix */
 const mongoose_1 = require("mongoose");
 const planSchema = new mongoose_1.Schema({
     planId: {

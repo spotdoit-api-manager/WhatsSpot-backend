@@ -2,6 +2,8 @@ import { IAdminUser, IDataStoredInAdminToken } from "./admin.interface";
 import { IAdminUserModel } from "./admin.schema";
 import { ITokenData } from "../user/user.interface";
 export declare class AdminModel {
+    fetch(id: string): Promise<IAdminUserModel>;
+    updateUserWalletBalance(walletId: string, balance: number): Promise<import("../wallet/wallet.schema").IWalletModel>;
     metrics(): Promise<{
         devicesMetrics: {
             totalDevices: number;
@@ -13,6 +15,8 @@ export declare class AdminModel {
         };
         walletBalance: any;
     }>;
+    fetchUsersBaseList(): Promise<any[]>;
+    userDetailedAccountMetrics(userId: string): Promise<any[]>;
     addNewAdmin(body: IAdminUser): Promise<IAdminUserModel>;
     private findAdminUserByPhone;
     loginWithPhone(phoneNumber: string): Promise<{

@@ -33,12 +33,30 @@ class AdminModel {
             });
         };
     }
+    fetch(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield admin_schema_1.AdminUser.findById(id);
+        });
+    }
+    updateUserWalletBalance(walletId, balance) {
+        return wallet_model_1.default.updateWalletBalance(walletId, balance);
+    }
     metrics() {
         return __awaiter(this, void 0, void 0, function* () {
             const devicesMetrics = yield device_model_1.default.fetchDevicesMetrics();
             const usersMetrics = yield user_model_1.default.fetchUserMetrics();
             const walletBalance = yield wallet_model_1.default.getTotalWalletBalance();
             return { devicesMetrics, usersMetrics, walletBalance };
+        });
+    }
+    fetchUsersBaseList() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield user_model_1.default.fetchUsersBaseList();
+        });
+    }
+    userDetailedAccountMetrics(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield user_model_1.default.userDetailedAccountMetrics(userId);
         });
     }
     addNewAdmin(body) {
@@ -111,7 +129,7 @@ class AdminModel {
     sendOtpToMobile(otp, phone) {
         return __awaiter(this, void 0, void 0, function* () {
             logger_1.default.debug(logFileName, `send this ${otp} to ${phone}`);
-            const message = `Your SpotDoit Services login OTP is ${otp}.`;
+            const message = `Your WhatsSpot Admin login OTP is ${otp}.`;
             return yield otp_handler_1.sendMessage(phone, message);
         });
     }

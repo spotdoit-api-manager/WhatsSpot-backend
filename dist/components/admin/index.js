@@ -12,6 +12,12 @@ exports.default = [
         handler: [admin_controller_1.default.loginWithPhone]
     },
     {
+        path: "/admin/loggedUser",
+        method: "get",
+        role: "admin",
+        handler: [admin_controller_1.default.getLoggedUser]
+    },
+    {
         path: "/admin/add",
         method: "post",
         role: "admin",
@@ -28,6 +34,24 @@ exports.default = [
         method: "get",
         role: "admin",
         handler: [admin_controller_1.default.metrics]
+    },
+    {
+        path: "/admin/users/base-list",
+        method: "get",
+        role: "admin",
+        handler: [admin_controller_1.default.fetchUsersBaseList]
+    },
+    {
+        path: "/admin/user/:userId",
+        method: "get",
+        role: "admin",
+        handler: [admin_controller_1.default.userDetailedAccountMetrics]
+    },
+    {
+        path: "/admin/wallet/update/:walletId",
+        method: "post",
+        role: "admin",
+        handler: [admin_controller_1.default.updateUserWalletBalance]
     },
 ];
 //# sourceMappingURL=index.js.map

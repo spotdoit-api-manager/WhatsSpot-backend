@@ -143,7 +143,7 @@ class DeviceModel {
         return __awaiter(this, void 0, void 0, function* () {
             const totalDevices = yield device_shema_1.Device.countDocuments();
             const activeDevices = yield device_shema_1.Device.countDocuments({ authState: true });
-            const deletedDevices = yield device_shema_1.Device.countDocuments({ authState: true });
+            const deletedDevices = yield device_shema_1.Device.countDocuments({ "isDeleted.status": true });
             return { totalDevices, activeDevices, deletedDevices };
         });
     }
