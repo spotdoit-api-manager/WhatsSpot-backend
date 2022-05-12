@@ -20,6 +20,30 @@ export default [
         handler: [adminController.addNewAdmin]
       },
       {
+        path: "/admin/superAdmin/:adminId",
+        method: "patch",
+        role:"admin",
+        handler: [adminController.convertToSuperAdmin]
+      },
+      {
+        path: "/admin/normalAdmin/:adminId",
+        method: "patch",
+        role:"admin",
+        handler: [adminController.convertToNormalAdmin]
+      },
+      {
+        path: "/admin/fetch",
+        method: "get",
+        role:"admin",
+        handler: [adminController.fetchAdmins]
+      },
+      {
+        path: "/admin/remove/:adminId",
+        method: "post",
+        role:"admin",
+        handler: [adminController.removeAdmin]
+      },
+      {
         path: "/admin/verifyOtp/:id",
         method: "post",
         escapeAuth:true,

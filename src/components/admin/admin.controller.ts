@@ -6,7 +6,47 @@ export class AdminController{
     public addNewAdmin = async (req: Request, res: Response, next: NextFunction) => {
         const responseHandler = new ResponseHandler();
         try {
-          responseHandler.reqRes(req, res).onFetch("ADDED", await adminModel.addNewAdmin(req.body)).send();
+          responseHandler.reqRes(req, res).onFetch("ADDED", await adminModel.addNewAdmin(req.userId,req.body)).send();
+        } catch (e) {
+            console.log(e);
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
+      public convertToSuperAdmin = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("CONVERTED", await adminModel.convertToSuperAdmin(req.userId,req.params.adminId)).send();
+        } catch (e) {
+            console.log(e);
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
+      public convertToNormalAdmin = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("CONVERTED", await adminModel.convertToNormalAdmin(req.userId,req.params.adminId)).send();
+        } catch (e) {
+            console.log(e);
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      }
+      public fetchAdmins = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("FETCHED", await adminModel.fetchAdmins()).send();
+        } catch (e) {
+            console.log(e);
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
+      public removeAdmin = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("ADDED", await adminModel.removeAdmin(req.userId,req.params.adminId)).send();
         } catch (e) {
             console.log(e);
           // send error with next function.

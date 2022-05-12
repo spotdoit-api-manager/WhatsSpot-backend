@@ -46,11 +46,37 @@ export class AdminModel {
     public async getDeviceData(deviceId: string){
         return await deviceModel.fetchDeviceMetrics(deviceId);
     }
+    public async isSuperAdmin(adminId: string): Promise<boolean> {
+        const adminUser = await AdminUser.findById(adminId);
+        if(adminUser.isSuperAdmin){
+            return true;
+        }
+        return false;
+    }
 
-    public async addNewAdmin(body: IAdminUser) {
+    public async addNewAdmin(adminId: string,body: IAdminUser) {
+       if(!await this.isSuperAdmin(adminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED","new admin can only added by super admins");
         body.isSuperAdmin = false;
         const newAdminUser = new AdminUser(body);
         return await newAdminUser.save();
+    }
+    public async fetchAdmins(){
+        return AdminUser.find({});
+    }
+
+    public async convertToSuperAdmin(superAdminId: string,adminId: string){
+        if(!await this.isSuperAdmin(superAdminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED","Only Super Admins can make Admin User Super Admin");
+        return await AdminUser.findByIdAndUpdate(adminId,{isSuperAdmin:true});
+    }
+
+    public async convertToNormalAdmin(superAdminId: string,adminId: string){
+        if(!await this.isSuperAdmin(superAdminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED","Only Super Admins can make Admin User Normal Admin");
+        return await AdminUser.findByIdAndUpdate(adminId,{isSuperAdmin:false});
+    }
+
+    public async removeAdmin(superAdminId: string,adminId: string) {
+        if(!await this.isSuperAdmin(superAdminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED","Admins can only be removed by super admins");
+        return await AdminUser.findByIdAndDelete(adminId);
     }
     private findAdminUserByPhone(phone: string) {
         return AdminUser.findOne({ phoneNumber: phone });
