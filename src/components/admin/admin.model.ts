@@ -16,12 +16,29 @@ import walletModel from "../wallet/wallet.model";
 const logFileName = "[AdminModel] : ";
 export class AdminModel {
 
+    public async fetch(id: string) {
+       return await AdminUser.findById(id);
+      }
+
+      public updateUserWalletBalance(walletId: string, balance: number) {
+        return walletModel.updateWalletBalance(walletId, balance);
+      }
+    
     public async metrics(){
         const devicesMetrics = await deviceModel.fetchDevicesMetrics();
         const usersMetrics = await userModel.fetchUserMetrics();
         const walletBalance = await walletModel.getTotalWalletBalance();
         return {devicesMetrics, usersMetrics,walletBalance};
     }
+
+    public async fetchUsersBaseList(){
+        return await userModel.fetchUsersBaseList();
+    }
+
+    public async userDetailedAccountMetrics(userId: string){
+        return await userModel.userDetailedAccountMetrics(userId);
+    }
+
     public async addNewAdmin(body: IAdminUser) {
         body.isSuperAdmin = false;
         const newAdminUser = new AdminUser(body);
@@ -98,7 +115,7 @@ export class AdminModel {
 
     async sendOtpToMobile(otp: number, phone: string) {
         logger.debug(logFileName, `send this ${otp} to ${phone}`);
-        const message = `Your SpotDoit Services login OTP is ${otp}.`;
+        const message = `Your WhatsSpot Admin login OTP is ${otp}.`;
         return await sendMessage(phone, message);
     }
 

@@ -1,0 +1,79 @@
+{
+    "status": 1,
+    "statusCode": 200,
+    "message": "USER_DATA_FETCHED",
+    "payload": [
+        {
+            "metrics": {
+                "activeDevices": 0,
+                "totalDevices": 2
+            },
+            "deletedDevices": [],
+            "activeDevices": [],
+            "inactiveDevices": [
+                {
+                    "_id": "6272bf072241fa5d3889bee8",
+                    "isDeleted": {
+                        "status": false
+                    },
+                    "phone": "917984545163",
+                    "name": "Ranjit",
+                    "userId": "6272bedf2241fa5d3889bee7",
+                    "apiKeys": [
+                        {
+                            "_id": "6277f56ac663fd05942425c5",
+                            "name": "test",
+                            "createdOn": "2022-05-08T16:52:58.447Z",
+                            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRJZCI6IjYyNzJiZWRmMjI0MWZhNWQzODg5YmVlNiIsInVzZXJJZCI6IjYyNzJiZWRmMjI0MWZhNWQzODg5YmVlNyIsImRldmljZUlkIjoiNjI3MmJmMDcyMjQxZmE1ZDM4ODliZWU4IiwiaWF0IjoxNjUyMDI4Nzc4fQ.wf06dMOci4TcS871yeGKAfBK93rbp5DHsiK7iiU5SaM",
+                            "expiresOn": "2022-05-08T16:52:58.443Z",
+                            "status": {
+                                "status": "ACTIVE",
+                                "reason": null
+                            }
+                        },
+                        {
+                            "_id": "627819a64d682f50f8f3279c",
+                            "name": "dfas",
+                            "createdOn": "2022-05-08T19:27:34.669Z",
+                            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRJZCI6IjYyNzJiZWRmMjI0MWZhNWQzODg5YmVlNiIsInVzZXJJZCI6IjYyNzJiZWRmMjI0MWZhNWQzODg5YmVlNyIsImRldmljZUlkIjoiNjI3MmJmMDcyMjQxZmE1ZDM4ODliZWU4IiwiaWF0IjoxNjUyMDM4MDU0fQ.zXewC--2megqEtIrlfxfAz-3B3XIiyXySchyMnCnBV0",
+                            "expiresOn": "2022-05-08T19:27:34.663Z",
+                            "status": {
+                                "status": "ACTIVE",
+                                "reason": null
+                            }
+                        }
+                    ],
+                    "createdAt": "2022-05-04T17:59:35.683Z",
+                    "updatedAt": "2022-05-08T19:27:34.671Z",
+                    "__v": 0,
+                    "authState": false,
+                    "reason": {
+                        "statusCode": 401,
+                        "error": "Unauthorized",
+                        "message": "Connection Failure"
+                    },
+                    "deviceStatus": "IDLE"
+                },
+                {
+                    "_id": "6274c1e3325c9661c054f3a8",
+                    "isDeleted": {
+                        "status": false
+                    },
+                    "phone": "919099858434",
+                    "name": "Main",
+                    "userId": "6272bedf2241fa5d3889bee7",
+                    "apiKeys": [],
+                    "createdAt": "2022-05-06T06:36:19.391Z",
+                    "updatedAt": "2022-05-07T07:21:10.123Z",
+                    "__v": 0,
+                    "authState": false,
+                    "reason": {
+                        "statusCode": 401,
+                        "error": "Unauthorized",
+                        "message": "Stream Errored"
+                    }
+                }
+            ]
+        }
+    ]
+}

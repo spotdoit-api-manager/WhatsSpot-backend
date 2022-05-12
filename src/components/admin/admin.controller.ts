@@ -18,6 +18,8 @@ export class AdminController{
         try {
           responseHandler.reqRes(req, res).onFetch("OTP_SENT", await adminModel.loginWithPhone(req.body.phoneNumber)).send();
         } catch (e) {
+          console.log(e);
+          
           // send error with next function.
           next(responseHandler.sendError(e));
         }
@@ -46,6 +48,50 @@ export class AdminController{
             console.log(e);
           // send error with next function.
           next(responseHandler.sendError(e));
+        }
+      };
+
+      public fetchUsersBaseList = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("USERS_BASE_LIST_FETCHED", await adminModel.fetchUsersBaseList()).send();
+        } catch (e) {
+            console.log(e);
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
+
+      public userDetailedAccountMetrics = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("USER_DATA_FETCHED", await adminModel.userDetailedAccountMetrics(req.params.userId)).send();
+        } catch (e) {
+            console.log(e);
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
+      public updateUserWalletBalance = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("WALLET_UPDATED", await adminModel.updateUserWalletBalance(req.params.walletId,req.body.balance)).send();
+        } catch (e) {
+            console.log(e);
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
+      public getLoggedUser = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          console.log("getting logged admin user",req.userId);
+          
+          const user = await adminModel.fetch(req.userId);
+    
+          responseHandler.reqRes(req, res).onFetch("Admin User Data", user).send();
+        } catch (e) {
+          responseHandler.sendError(e);
         }
       };
 }

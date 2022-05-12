@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { razorPaySecrets } from "./../../config/index";
 import { ICreateOrder } from "./razorpay.interface";
 import Razorpay from "razorpay";
@@ -5,7 +6,7 @@ import Razorpay from "razorpay";
 export class RazorPayService{
     
     private readonly razorPyaInstance = new Razorpay({ key_id: razorPaySecrets.key, key_secret: razorPaySecrets.secret })
-
+    
         public createOrder = (userId: string,createOrder: ICreateOrder)=>{
             return new Promise((resolve)=>{
                 try{
@@ -39,3 +40,4 @@ export class RazorPayService{
 }
 
 export default new RazorPayService();
+
