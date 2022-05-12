@@ -97,7 +97,7 @@ export class DeviceModel {
     public async fetchDevicesMetrics(){
         const totalDevices = await Device.countDocuments();
         const activeDevices = await Device.countDocuments({authState:true});
-        const deletedDevices = await Device.countDocuments({authState:true});
+        const deletedDevices = await Device.countDocuments({"isDeleted.status":true});
         return {totalDevices ,activeDevices,deletedDevices};
     }
 

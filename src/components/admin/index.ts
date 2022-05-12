@@ -8,6 +8,12 @@ export default [
         handler: [adminController.loginWithPhone]
       },
       {
+        path: "/admin/loggedUser",
+        method: "get",
+        role:"admin",
+        handler: [adminController.getLoggedUser]
+      },
+      {
         path: "/admin/add",
         method: "post",
         role:"admin",
@@ -24,5 +30,23 @@ export default [
         method: "get",
         role:"admin",
         handler: [adminController.metrics]
+      },
+      {
+        path: "/admin/users/base-list",
+        method: "get",
+        role:"admin",
+        handler: [adminController.fetchUsersBaseList]
+      },
+      {
+        path: "/admin/user/:userId",
+        method: "get",
+        role:"admin",
+        handler: [adminController.userDetailedAccountMetrics]
+      },
+      {
+        path: "/admin/wallet/update/:walletId",
+        method: "post",
+        role:"admin",
+        handler: [adminController.updateUserWalletBalance]
       },
 ];
