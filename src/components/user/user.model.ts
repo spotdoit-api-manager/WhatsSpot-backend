@@ -953,18 +953,23 @@ export class UserModel {
       {
         $project: {
           _id: 1,
+            phone:1,
+            email:1,
+            createdAt:1,
+            isVerified:1,
+            deactivation:1,
+            walletId:1,
         }
+    
       },
       {
         $lookup: {
           from: "devices",
-          // localField: "_id",
-          // foreignField: "userId",
           let: { userId: "$_id" },
           pipeline: [
             {
               $match: {
-                "isDeleted.status": false,
+                // "isDeleted.status": false,
                 $expr: {
                   $eq: ["$userId", "$$userId"],
                 }
@@ -986,7 +991,6 @@ export class UserModel {
           authState: "$devices.authState"
         }
       },
-      { $set: { deviceId: { $toString: "$deviceId" } } },
       {
         $lookup: {
           from: "fastmessages",
@@ -1004,114 +1008,135 @@ export class UserModel {
         },
 
       },
-      {
-        $project: {
+      // {
+      //   $project: {
 
-          deviceId: "$deviceId",
-          authState: "$authState",
-          metrics: {
-            fastError: {
+      //     deviceId: "$deviceId",
+      
+  
+      //     // authState: "$authState",
+      //     metrics: {
+      //       fastError: {
              
-                $filter: {
-                  input: "$fastMessages",
-                  as: "fastMessage",
-                  cond: { "$eq": ["$$fastMessage.status", EMessageStatus.ERROR] }
-                }
+      //           $filter: {
+      //             input: "$fastMessages",
+      //             as: "fastMessage",
+      //             cond: { "$eq": ["$$fastMessage.status", EMessageStatus.ERROR] }
+      //           }
               
-            },
-            fastSuccess: {
-                $filter: {
-                  input: "$fastMessages",
-                  as: "fastMessage",
-                  cond: { "$eq": ["$$fastMessage.status", EMessageStatus.SENT] }
-                }
+      //       },
+      //       fastSuccess: {
+      //           $filter: {
+      //             input: "$fastMessages",
+      //             as: "fastMessage",
+      //             cond: { "$eq": ["$$fastMessage.status", EMessageStatus.SENT] }
+      //           }
               
-            },
-            queueSuccess: {
-                $filter: {
-                  input: "$queueMessages",
-                  as: "queueMessage",
-                  cond: { "$eq": ["$$queueMessage.status", EMessageStatus.SENT] }
-                }
-              
-            },
-            totalQueueError: {
-                $filter: {
-                  input: "$queueMessages",
-                  as: "queueMessage",
-                  cond: { "$eq": ["$$queueMessage.status", EMessageStatus.ERROR] }
-                }
-              
-            },
-            totalQueuePending: {
-                $filter: {
-                  input: "$queueMessages",
-                  as: "queueMessage",
-                  cond: { "$eq": ["$$queueMessage.status", EMessageStatus.PENDING] }
-                
-              }
-            }
-          }
-        }
-      },
+      //       },
+      //       queueSuccess: {
 
+      //           $filter: {
+      //             input: "$queueMessages",
+      //             as: "queueMessage",
+      //             cond: { "$eq": ["$$queueMessage.status", EMessageStatus.SENT] }
+      //           }
+              
+      //       },
+      //       totalQueueError: {
+      //           $filter: {
+      //             input: "$queueMessages",
+      //             as: "queueMessage",
+      //             cond: { "$eq": ["$$queueMessage.status", EMessageStatus.ERROR] }
+      //           }
+              
+      //       },
+      //       totalQueuePending: {
+      //           $filter: {
+      //             input: "$queueMessages",
+      //             as: "queueMessage",
+      //             cond: { "$eq": ["$$queueMessage.status", EMessageStatus.PENDING] }
+                
+      //         }
+      //       }
+      //     }
+      //   }
+      // },
+     
       // {
       //   $group: {
-      //     _id: "$_id",
-      //     totalDevices: { $sum: 1 },
-      //     activeDevices: {
-      //       "$sum": {
-      //         "$cond": [
-      //           { "$eq": ["$authState", true] },
-      //           1,
-      //           0
-      //         ]
-      //       }
+      //     _id: "$deviceId",
+       
+      //     // totalDevices: { $sum: 1 },
+      //     metrics:{
+      //       $push: "$metrics"
       //     },
-      //     deletedDevices: {
-      //       "$sum": {
-      //         "$cond": [
-      //           { "$eq": ["$isDeleted.status", true] },
-      //           1,
-      //           0
-      //         ]
-      //       }
-      //     },
-      //     inactiveDevices: {
-      //       "$sum": {
-      //         "$cond": [
-      //           { "$eq": ["$authState", false] },
-      //           1,
-      //           0
-      //         ]
-      //       }
-      //     },
-      //     // metrics:"$metrics"
-      //     // totalFastSuccess:"$metrics.totalFastSuccess" ,
-      //     // totalFastError: "$metrics.totalFastError" ,
-      //     // totalQueueSuccess:"$metrics.totalQueueSuccess" ,
-      //     // totalQueueError: "$metrics.totalQueueError" 
+      //     // activeDevices: {
+      //     //   "$sum": {
+      //     //     "$cond": [
+      //     //       { "$eq": ["$authState", true] },
+      //     //       1,
+      //     //       0
+      //     //     ]
+      //     //   }
+      //     // },
+      //     // totalFastSuccess: { $sum: "$metrics.totalFastSuccess" },
+      //     // totalFastError: { $sum: "$metrics.totalFastError" },
+      //     // totalQueueSuccess: { $sum: "$metrics.totalQueueSuccess" },
+      //     // totalQueueError: { $sum: "$metrics.totalQueueError" }
 
       //   }
       // },
-      {
-        $project: {
-          _id: 0,
-          userId: "$_id",
-          phone:1,
-          email:1,
-          isVerified:1,
-          deactivation:1,
-          walletId:1,
 
-          metrics: 1
-        }
-      },
+      // {
+      //   $project: {
+      //     _id: 0,
+      //     userId: "$_id",
+      //     phone:1,
+      //     email:1,
+      //     isVerified:1,
+      //     deactivation:1,
+      //     walletId:1,
 
-
-
+      //     metrics: 1
+      //   }
+      // },
 
 
+
+      // {
+      //   $lookup: {
+      //     from: "devices",
+      //     let: { userId: "$_id" },
+      //     pipeline: [
+      //       {
+      //         $match: {
+      //           "isDeleted.status": true,
+      //           $expr: {
+      //             $eq: ["$userId", "$$userId"],
+      //           }
+      //         }
+      //       }
+      //     ],
+      //     as: "deletedDevices"
+      //   },
+      // },
+      // {
+      //   $lookup: {
+      //     from: "devices",
+      //     let: { userId: "$_id" },
+      //     pipeline: [
+      //       {
+      //         $match: {
+      //           authState: true,
+      //           $expr: {
+      //             $eq: ["$userId", "$$userId"],
+      //           }
+      //         }
+      //       }
+      //     ],
+      //     as: "activeDevices"
+      //   },
+      // },
       // {
       //   $lookup: {
       //     from: "devices",
@@ -1119,88 +1144,36 @@ export class UserModel {
       //     pipeline: [
       //       {
       //         $match: {
+      //           authState: false,
       //           $expr: {
       //             $eq: ["$userId", "$$userId"],
       //           }
       //         }
       //       }
       //     ],
-      //     as: "allDevices"
+      //     as: "inactiveDevices"
       //   },
       // },
-
-
-      {
-        $lookup: {
-          from: "devices",
-          let: { userId: "$_id" },
-          pipeline: [
-            {
-              $match: {
-                "isDeleted.status": true,
-                $expr: {
-                  $eq: ["$userId", "$$userId"],
-                }
-              }
-            }
-          ],
-          as: "deletedDevices"
-        },
-      },
-      {
-        $lookup: {
-          from: "devices",
-          let: { userId: "$_id" },
-          pipeline: [
-            {
-              $match: {
-                authState: true,
-                $expr: {
-                  $eq: ["$userId", "$$userId"],
-                }
-              }
-            }
-          ],
-          as: "activeDevices"
-        },
-      },
-      {
-        $lookup: {
-          from: "devices",
-          let: { userId: "$userId" },
-          pipeline: [
-            {
-              $match: {
-                authState: false,
-                $expr: {
-                  $eq: ["$userId", "$$userId"],
-                }
-              }
-            }
-          ],
-          as: "inactiveDevices"
-        },
-      },
       
       // { $addFields: {totalDevices: { $size: "$totalDevices", }  },},
       // { $addFields: {deletedDevices: { $size: "$deletedDevices", }  }},
       // { $addFields: {activeDevices: { $size: "$activeDevices", }  }},
       // { $addFields: {inactiveDevices: { $size: "$inactiveDevices", }  }},
-      {
-        $project:{
-          phone:1,
-          email:1,
-          allDevices:1,
-          deletedDevices:1,
-          activeDevices:1,
-          inactiveDevices:1,
-          createdAt:1,
-          isVerified:1,
-          deactivation:1,
-          walletId:1,
-          metrics:1
-        }
-      }
+      // {
+      //   $project:{
+      //     phone:1,
+      //     email:1,
+      //     allDevices:1,
+      //     deletedDevices:1,
+      //     activeDevices:1,
+      //     inactiveDevices:1,
+      //     createdAt:1,
+      //     isVerified:1,
+      //     deactivation:1,
+      //     walletId:1,
+      //     metrics:1
+      //   }
+      // }
     ]);
   }
 }

@@ -12,24 +12,25 @@ export const useHelmet = (router: Router) => {
   router.use(helmet());
 };
 
-export const allowCors = (router: Router) => {
+// export const allowCors = (router: Router) => {
 
-  router.use(cors({
-    origin(origin, callback) {
-      if (!origin) {
-        return callback(null, true);
-      }
-      if (configCors.allowOrigin.indexOf(origin) === -1) {
-        const msg = "The CORS policy for this site does not allow access from the specified Origin.";
-        return callback(new Error(msg), false);
-      }
-      return callback(null, true);
-    },
-    exposedHeaders: configCors.exposedHeaders,
-    // To enable HTTP cookies over CORS
-    // credentials: true,
-  }));
-};
+//   router.use(cors({
+//     origin(origin, callback) {
+//       // if (!origin) {
+//       //   return callback(null, true);
+//       // }
+//       console.log(`Origin: ${origin}`,router);
+//       if (configCors.allowOrigin.indexOf(origin) === -1) {
+//         const msg = "The CORS policy for this site does not allow access from the specified Origin.";
+//         return callback(new Error(msg), false);
+//       }
+//       return callback(null, true);
+//     },
+//     exposedHeaders: configCors.exposedHeaders,
+//     // To enable HTTP cookies over CORS
+//     // credentials: true,
+//   }));
+// };
 
 /* here all middleware come. Don't need to do anything in app.js*/
 export const handleBodyRequestParsing = (router: Router) => {
