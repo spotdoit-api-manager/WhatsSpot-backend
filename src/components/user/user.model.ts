@@ -143,7 +143,7 @@ export class UserModel {
       const existingUser = await this.isUserExistByPhone(body.phone);
       let data: IUserModel;
       if (!existingUser) {
-        const wallet: IWalletModel = await walletModel.createWallet();
+        const wallet: IWalletModel = await walletModel.createWallet(parseInt(process.env.INITIAL_WALLET_BALANCE));
         body.walletId = wallet._id;
         const newUser: IUserModel = new User(body);
         data = await newUser.addNewUser();
