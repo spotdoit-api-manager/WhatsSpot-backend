@@ -2,14 +2,11 @@
 // import { Interface } from "readline";
 
 export interface IUser {
-    firstName?: string;
-    lastName?: string;
-    username?: string;
+    userName?: string;
     password?: string;
     email?: string;
     role: string;
     phone: string;
-    facebookId?: string;
     otp?: number;
     isVerified: boolean;
     dateOfBirth?: Date;
@@ -18,9 +15,10 @@ export interface IUser {
     avatar?: Buffer;
     deactivation: boolean;
     walletId?: string;
-    activePlan: IPlanRef;
-    previousPlans: IPlanRef[];
-    deviceCodes: {[key: string]: string};
+    activePlan?: IPlanRef;
+    previousPlans?: IPlanRef[];
+    deviceCodes?: {[key: string]: string};
+    country: string;
 }
 
 export interface IPlanRef{

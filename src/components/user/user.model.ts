@@ -1,4 +1,5 @@
-import { sanatizeMobile } from "./../../lib/utils/index";
+import { parsePhone } from "./../../lib/utils/phone.handler";
+import { sanatizeMobile, validateEmail } from "./../../lib/utils/index";
 import { IWallet } from "../wallet/wallet.interface";
 import { IWalletModel } from "../wallet/wallet.schema";
 import { EMessageStatus } from "./../messages/message.interface";
@@ -18,6 +19,7 @@ import walletModel, { WalletModel } from "../wallet/wallet.model";
 import plansModel from "../plans/plans.model";
 import logger from "../../core/logger";
 import { EPlanStatus } from "../plans/plans.interface";
+import { CountryCode } from "libphonenumber-js";
 
 const logFileName = "[UserModal] : ";
 export class UserModel {
@@ -137,14 +139,16 @@ export class UserModel {
     return { _id: data._id };
   }
 
-  async createNewUser(body: IUser) {
+  async createNewUser(phone: string,email: string,userName: string,country: CountryCode) {
+    let walletId=null;
     try {
-      body.role = "user";
+      const body: IUser = {phone,email,userName,country,isVerified:false,deactivation:false,role:"user",};
       const existingUser = await this.isUserExistByPhone(body.phone);
       let data: IUserModel;
       if (!existingUser) {
         const wallet: IWalletModel = await walletModel.createWallet(parseInt(process.env.INITIAL_WALLET_BALANCE));
         body.walletId = wallet._id;
+        walletId = wallet._id;
         const newUser: IUserModel = new User(body);
         data = await newUser.addNewUser();
         if (!data) throw new HTTP400Error("SOME_ERROR_OCCURED");
@@ -153,19 +157,24 @@ export class UserModel {
       }
       return existingUser;
     } catch (err) {
+      walletModel.deleteWallet(walletId);
       throw new HTTP400Error(err.message);
     }
   }
 
-  async registerWithPhone(body: IUser) {
+  async registerWithPhone(phone: string,email: string,userName: string,country: CountryCode) {
     try {
-      const userExist = await this.findUserByPhone(body.phone);;
+      if(!phone || !email || !userName || !country) throw new HTTP400Error("Fields missing or empty { phone,email,userName,country} are required fields");
+      if(!validateEmail(email)) throw new HTTP400Error("INVALID_EMAIL","Please enter valid email id");
+      const phoneInfo = parsePhone(phone,country);
+      logger.info("Phone Info is ",{countryCallingCode:phoneInfo.countryCallingCode,nationalNumber:phoneInfo.nationalNumber,number:phoneInfo.number});
+      const userExist = await this.findUserByPhone(phoneInfo.number);;
       if (userExist) throw new HTTP401Error("USER_ALREADY_EXIST");
-      const user: IUserModel = await this.createNewUser(body);
+      const user: IUserModel = await this.createNewUser(phoneInfo.number,email,userName,"IN");
       const otp = this.updateOtp(user._id);
-      const otpData = await this.sendOtpToMobile(otp, body.phone);
+      const otpData = await this.sendOtpToMobile(otp, phone);
       if (otpData.proceed) {
-        return { phone: body.phone, _id: user.id };
+        return { phone:phoneInfo.number, _id: user.id };
       }
       throw new HTTP400Error("OTP_NOT_SENT");
     } catch (e) {
@@ -219,17 +228,17 @@ export class UserModel {
 
   public async isUserExist(body: any) {
     try {
-      const { username, password } = body;
+      const { userName, password } = body;
 
       // 1>  check email and password exist
-      if (!username || !password) {
-        throw new HTTP400Error("Please provide username or password");
+      if (!userName || !password) {
+        throw new HTTP400Error("Please provide userName or password");
       }
       // 2> check if user exist and password is correct
-      const user = await User.findOne({ username: username }).select("+password");
+      const user = await User.findOne({ userName: userName }).select("+password");
 
       if (user) {
-        throw new HTTP400Error("Invalid username or password");
+        throw new HTTP400Error("Invalid userName or password");
       }
     } catch (e) {
       throw new HTTP400Error(e.message);
@@ -238,14 +247,14 @@ export class UserModel {
 
   public async login(body: any) {
     try {
-      const { username, password } = body;
+      const { userName, password } = body;
 
       // 1>  check email and password exist
-      if (!username || !password) {
-        throw new HTTP400Error("Please provide username or password");
+      if (!userName || !password) {
+        throw new HTTP400Error("Please provide userName or password");
       }
       // 2> check if user exist and password is correct
-      const user = await User.findOne({ username: username }).select("+password");
+      const user = await User.findOne({ userName: userName }).select("+password");
 
       if (!user || !(await user.correctPassword(password, user.password))) {
         throw new HTTP400Error("Invalid email or password");
@@ -305,12 +314,12 @@ export class UserModel {
 
       if (!response.isExisted) {
         let u;
-        const userName = await this.generateValidUsername(user.given_name);
+        const userName = await this.generateValiduserName(user.given_name);
         if (body.authProvider === "facebook") {
           u = {
             role: "user",
             firstName: `${user.given_name}`,
-            username: userName,
+            userName: userName,
             lastName: `${user.family_name}`,
             phone: body.phone,
             facebookId: user.id
@@ -320,7 +329,7 @@ export class UserModel {
           u = {
             role: "user",
             firstName: `${user.given_name}`,
-            username: userName,
+            userName: userName,
             lastName: `${user.family_name}`,
             phone: body.phone,
             email: user.email,
@@ -415,7 +424,7 @@ export class UserModel {
 
 
 
-  // private async generateValidUsername(firstName: string, id: string | null = null) {
+  // private async generateValiduserName(firstName: string, id: string | null = null) {
   //   let s = this.randomString(6);
   //   let userName = `${firstName}_${s}`
   //   if (id == null) {
@@ -485,7 +494,7 @@ export class UserModel {
   public createCookie(tokenData: ITokenData): string {
     return `Authorization=${tokenData.token}; HttpOnly; Max-Age=${tokenData.expiresIn};`;
   }
-  private async generateValidUsername(firstName: string, id: string | null = null) {
+  private async generateValiduserName(firstName: string, id: string | null = null) {
     let s = this.randomString(6);
     let userName = `${firstName}_${s}`;
     if (id == null) {
@@ -555,12 +564,12 @@ export class UserModel {
           }
         } else { // If we are adding a completely new user
           let u;
-          const userName = await this.generateValidUsername(user.given_name);
+          const userName = await this.generateValiduserName(user.given_name);
           if (body.authProvider === "facebook") {
             u = {
               role: "user",
               firstName: `${user.given_name}`,
-              username: userName,
+              userName: userName,
               lastName: `${user.family_name}`,
               phone: body.phone,
               facebookId: user.id
@@ -570,7 +579,7 @@ export class UserModel {
             u = {
               role: "user",
               firstName: `${user.given_name}`,
-              username: userName,
+              userName: userName,
               lastName: `${user.family_name}`,
               phone: body.phone,
               email: user.email,

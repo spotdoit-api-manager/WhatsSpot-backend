@@ -59,6 +59,7 @@
         "http": "0.0.1-security",
         "instance-manager": "^1.1.5",
         "jsonwebtoken": "^8.5.1",
+        "libphonenumber-js": "^1.9.53",
         "link-preview-js": "^2.1.13",
         "lodash": "^4.17.19",
         "moment-timezone": "^0.5.32",

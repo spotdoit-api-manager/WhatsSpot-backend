@@ -22,7 +22,7 @@ class UserController {
   public registerWithPhone = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-      responseHandler.reqRes(req, res).onFetch("OTP_SENT", await userModel.registerWithPhone(req.body)).send();
+      responseHandler.reqRes(req, res).onFetch("OTP_SENT", await userModel.registerWithPhone(req.body.phone,req.body.email,req.body.userName,req.body.country)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));

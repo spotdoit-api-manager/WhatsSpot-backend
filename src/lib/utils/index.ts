@@ -89,3 +89,12 @@ export const deSanatizeMobile=(phone: string)=>{
   if(phone.length==12) return phone.slice(2);
   return phone;
 };
+
+export const validateEmail = (email: string = "")=> {
+  if (!email.length) return false;
+  return String(email)
+    .toLowerCase()
+    .match(
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    );
+};

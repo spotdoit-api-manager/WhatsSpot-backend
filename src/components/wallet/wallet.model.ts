@@ -18,6 +18,10 @@ export class WalletModel {
         return newWalletData;
     }
 
+    public async deleteWallet(walletId: string){
+        Wallet.findByIdAndDelete(walletId);
+    }
+
   
     public async fetchWalletBalance(userId: string, walletId: string) {
         console.log("fetch wallet balance ", userId, walletId);

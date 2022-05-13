@@ -25,18 +25,10 @@ const planRef: Schema = new Schema({
 
 export const UserSchema: Schema = new Schema(
   {
-    firstName: {
+   
+    userName: {
       type: String,
-      minlength: 2,
-    },
-    lastName: {
-      type: String,
-      minlength: 2,
-    },
-    username: {
-      type: String,
-      unique: true,
-      sparse:true
+      unique: false,
     },
     password: {
       type: String,
@@ -62,9 +54,7 @@ export const UserSchema: Schema = new Schema(
       enum: ["user", "admin"],
       required: true
     },
-    facebookId: {
-      type:String
-    },
+    
     phone: {
       type: String,
       minlength: 3,
@@ -95,6 +85,10 @@ export const UserSchema: Schema = new Schema(
     },
     avatar:{
       type:String
+    },
+    country:{
+      type:String,
+      required:true
     }
   },
   {
