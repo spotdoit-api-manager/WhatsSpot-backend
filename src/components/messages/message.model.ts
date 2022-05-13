@@ -57,7 +57,7 @@ export class MessageModel {
             numbers.push(body.numbers);
         } else {
             body.numbers.forEach((contact: IContact) => {
-                numbers.push(contact.phoneNumber);
+                numbers.push({phoneNumber:contact.phoneNumber,country:contact.country});
             });
         }
 

@@ -167,7 +167,7 @@ export class UserModel {
       if(!phone || !email || !userName || !country) throw new HTTP400Error("Fields missing or empty { phone,email,userName,country} are required fields");
       if(!validateEmail(email)) throw new HTTP400Error("INVALID_EMAIL","Please enter valid email id");
       const phoneInfo = parsePhone(phone,country);
-      logger.info("Phone Info is ",{countryCallingCode:phoneInfo.countryCallingCode,nationalNumber:phoneInfo.nationalNumber,number:phoneInfo.number});
+      logger.info("Phone Info is ",phoneInfo);
       const userExist = await this.findUserByPhone(phoneInfo.number);;
       if (userExist) throw new HTTP401Error("USER_ALREADY_EXIST");
       const user: IUserModel = await this.createNewUser(phoneInfo.number,email,userName,"IN");

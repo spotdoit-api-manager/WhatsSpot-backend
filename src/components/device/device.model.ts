@@ -15,7 +15,6 @@ import { ObjectID } from "bson";
 import jwt from "jsonwebtoken";
 import dayjs from "dayjs";
 
-import { sanatizeMobile, validateMobile } from "../../lib/utils";
 import * as otpHandler from "../../lib/services/otp-handler";
 import userModel from "../user/user.model";
 import apiBlockListModel from "../api-blocklist/api-blocklist.model";
