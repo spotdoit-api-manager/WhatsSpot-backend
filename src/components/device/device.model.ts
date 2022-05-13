@@ -19,15 +19,18 @@ import * as otpHandler from "../../lib/services/otp-handler";
 import userModel from "../user/user.model";
 import apiBlockListModel from "../api-blocklist/api-blocklist.model";
 import spotSchedular from "../../lib/services/schedular";
+import { parsePhoneWithCountry } from "../../lib/utils/phone.handler";
 
 const logFileName = "[DeviceModal] : ";
 export class DeviceModel {
     public async newDevice(userId: string, walletId: string, body: IDevice, newDeviceCode: string) {
         body.userId = userId;
-        const device = await this.findDeviceByPhone(body.phone);
+        const parsedPhone = parsePhoneWithCountry(body.phone,body.country).number;
+        const device = await this.findDeviceByPhone(parsedPhone);
         this.validateDeviceAdd(userId, device);
-        await userModel.validateDeviceCode(userId, body.phone, parseInt(newDeviceCode));
-        logger.info(logFileName, `Device ${body.phone} verified`);
+        await userModel.validateDeviceCode(userId, parsedPhone, parseInt(newDeviceCode));
+        logger.info(logFileName, `Device ${parsedPhone} verified`);
+        body.phone =parsedPhone;
         const newDevice = new Device(body);
         const newDeviceData: IDeviceModel = await newDevice.saveDevice();
         if (!newDeviceData) throw new HTTP400Error("UNKNOWN_ERROR");
@@ -39,10 +42,11 @@ export class DeviceModel {
 
 
     public async newDeviceCode(userId: string, walletId: string, newDeviceBody: INewDevice) {
-        const device = await this.findDeviceByPhone(newDeviceBody.phone);
+        const parsedPhone = parsePhoneWithCountry(newDeviceBody.phone, newDeviceBody.country).number;
+        const device = await this.findDeviceByPhone(parsedPhone);
         this.validateDeviceAdd(userId, device);
-        const code = await userModel.updateDeviceCode(userId, newDeviceBody.phone);
-        const result = await otpHandler.sendNewDeviceCode(newDeviceBody.phone, code);
+        const code = await userModel.updateDeviceCode(userId, parsedPhone);
+        const result = await otpHandler.sendNewDeviceCode(parsedPhone, code);
         return result;
     }
 

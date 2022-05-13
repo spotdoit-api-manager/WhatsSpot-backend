@@ -1,16 +1,16 @@
+import { parsePhoneWithCountry } from "./../../lib/utils/phone.handler";
 import { MessageQueue } from "./../messages/message.schema";
 import { ObjectID } from "bson";
 import { IContact, IContactsGroup } from "./contact.interface";
 import { IContactModel,Contact, ContactGroup, IContactGroupModel } from "./contact.schema";
 import logger from "../../core/logger";
+import { parsePhone } from "../../lib/utils/phone.handler";
 const logFileName = "[ContactsModel]";
 export class ContactModal{
 
         public async addNewContacts(userId: string,contacts: IContact[]){        
-            console.log("New Contact ",contacts);
             
             const newContacts: IContactModel[]= this.createNewContact(contacts,userId);
-            console.log("new contacts ",newContacts);            
                     const result = await Contact.insertMany(newContacts,{ordered:false});
                     return result;
    
@@ -20,6 +20,7 @@ export class ContactModal{
             const newContacts: IContactModel[]=[];
             for (let i = 0; i < contacts.length; i++) {
                 const contact: any = contacts[i];
+                 contact.phoneNumber = parsePhone(contacts[i].phoneNumber).number;
                 contact.userId = userId;
                 newContacts.push(contact);
             }
@@ -60,14 +61,19 @@ export class ContactModal{
         }
 
         public async addContactsToGroup(userId: string,groupId: string,contacts: IContact[]){
-            console.log("add contact ",contacts);
+            const results =[];
             for (let i = 0; i < contacts.length; i++) {
                 const contact = contacts[i];
-                const result = await ContactGroup.findByIdAndUpdate(groupId,{$push:{contacts:{name:contact.name,phoneNumber:contact.phoneNumber}}},{ upsert: true, new : true},
-                    );
+                contact.phoneNumber = parsePhoneWithCountry(contact.phoneNumber,contact.country).number; 
+            }
+            for (let i = 0; i < contacts.length; i++) {
+                const contact = contacts[i];
+                const result = await ContactGroup.findByIdAndUpdate(groupId,{$push:{contacts:{name:contact.name,phoneNumber:contact.phoneNumber}}},{ upsert: true, new : true}).lean();
+                results.push(result);
+
             }
                 
-            return [];
+            return results;
         }
 
         public async fetchGroups(userId: string){

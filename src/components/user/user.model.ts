@@ -1,22 +1,19 @@
-import { parsePhone } from "./../../lib/utils/phone.handler";
-import { sanatizeMobile, validateEmail } from "./../../lib/utils/index";
-import { IWallet } from "../wallet/wallet.interface";
+import {  parsePhoneWithCountry } from "./../../lib/utils/phone.handler";
+import { validateEmail } from "./../../lib/utils/index";
 import { IWalletModel } from "../wallet/wallet.schema";
 import { EMessageStatus } from "./../messages/message.interface";
-import { generateToken, imageUrl, isValidMongoId, otpGenerator } from "../../lib/helpers";
-import { User, UserSchema } from "./user.schema";
+import {  otpGenerator } from "../../lib/helpers";
+import { User } from "./user.schema";
 import { IUser, ITokenData, IDataStoredInToken, IPlanRef } from "./user.interface";
 import { IUserModel } from "./user.schema";
 import socialAuth from "./../../lib/middleware/socialAuth";
 import * as  bcrypt from "bcryptjs";
-import axios from "axios";
 import { sendMessage } from "../../lib/services/otp-handler";
 import jwt from "jsonwebtoken";
 import { ObjectID } from "bson";
 import { commonConfig } from "../../config";
 import { HTTP400Error, HTTP401Error } from "../../lib/utils/httpErrors";
-import walletModel, { WalletModel } from "../wallet/wallet.model";
-import plansModel from "../plans/plans.model";
+import walletModel from "../wallet/wallet.model";
 import logger from "../../core/logger";
 import { EPlanStatus } from "../plans/plans.interface";
 import { CountryCode } from "libphonenumber-js";
@@ -166,7 +163,7 @@ export class UserModel {
     try {
       if(!phone || !email || !userName || !country) throw new HTTP400Error("Fields missing or empty { phone,email,userName,country} are required fields");
       if(!validateEmail(email)) throw new HTTP400Error("INVALID_EMAIL","Please enter valid email id");
-      const phoneInfo = parsePhone(phone,country);
+      const phoneInfo = parsePhoneWithCountry(phone,country);
       logger.info("Phone Info is ",phoneInfo);
       const userExist = await this.findUserByPhone(phoneInfo.number);;
       if (userExist) throw new HTTP401Error("USER_ALREADY_EXIST");
@@ -186,18 +183,20 @@ export class UserModel {
     }
   }
 
-  public async loginWithPhone(body: IUser) {
-    const user: IUserModel = await this.findUserByPhone(body.phone);
+  public async loginWithPhone(phone: string,country: CountryCode) {
+    const parsedPhone = parsePhoneWithCountry(phone,country).number;
+    const user: IUserModel = await this.findUserByPhone(parsedPhone);
     if (!user) throw new HTTP401Error("USER_NOT_FOUND");
     const otp = this.updateOtp(user._id);
-    const otpData = await this.sendOtpToMobile(otp, body.phone);
+    const otpData = await this.sendOtpToMobile(otp, parsedPhone);
     if (otpData.proceed) {
-      return { phone: body.phone, _id: user.id };
+      return { phone: parsedPhone, _id: user.id };
     }
   }
 
   public async resendOTP(id: string, body: any) {
-    const user: IUserModel = await User.findOne({ _id: new ObjectID(id), phone: sanatizeMobile(body.phoneNumber) });
+    const parsedPhone = parsePhoneWithCountry(body.phoneNumber,body.country);
+    const user: IUserModel = await User.findOne({ _id: new ObjectID(id), phone: parsedPhone });
     if (!user) throw new HTTP401Error("USER_NOT_FOUND");
     const otp = this.updateOtp(user._id);
     const otpData = await this.sendOtpToMobile(otp, body.phone);

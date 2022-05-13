@@ -29,7 +29,7 @@ export class OTPMessagesService {
       message: message,
       language: "english",
       flash: 0,
-      numbers: deSanatizeMobile(number),
+      numbers: number,
     };
     try {
       const result = await axios.post(fast2SmsConfig.url, body, {

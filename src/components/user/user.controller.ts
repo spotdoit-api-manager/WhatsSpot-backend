@@ -32,7 +32,7 @@ class UserController {
   public loginWithPhone = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-      responseHandler.reqRes(req, res).onFetch("OTP_SENT", await userModel.loginWithPhone(req.body)).send();
+      responseHandler.reqRes(req, res).onFetch("OTP_SENT", await userModel.loginWithPhone(req.body.phone,req.body.country)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -162,7 +162,7 @@ class UserController {
   public verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-      const data = await userModel.verifyOtp(req.params.id, req.query.otp);
+      const data = await userModel.verifyOtp(req.params.id, req.body.otp);
       res.setHeader("Set-Cookie", data.cookie);
 
       // res.set('X-Auth', data.token);

@@ -108,7 +108,7 @@ export default [
   // },
   {
     path: "/user/:id/verifyOtp",
-    method: "get",
+    method: "post",
     escapeAuth: true,
     handler: [userController.verifyOtp]
   },

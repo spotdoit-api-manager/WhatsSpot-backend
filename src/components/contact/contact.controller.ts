@@ -8,7 +8,7 @@ export class ContactControler{
         const responseHandler = new ResponseHandler();
         try {    
             console.log("New Contact Add Request");
-          responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await contactModel.addNewContacts(req.userId,req.body.contacts)).send();
+          responseHandler.reqRes(req, res).onFetch("CONTACTS_ADDED", await contactModel.addNewContacts(req.userId,req.body)).send();
         } catch (e) {
             console.log(e);
             
@@ -44,7 +44,7 @@ public async addContactsToGroup(req: Request,res: Response,next: NextFunction){
   const responseHandler = new ResponseHandler();
   try {    
       console.log("Add Contact to Group  Request",req.params.groupId);
-    responseHandler.reqRes(req, res).onFetch("CONTACTS_ADDED_FETCHED", await contactModel.addContactsToGroup(req.userId,req.params.groupId,req.body.contacts)).send();
+    responseHandler.reqRes(req, res).onFetch("CONTACTS_ADDED_FETCHED", await contactModel.addContactsToGroup(req.userId,req.params.groupId,req.body)).send();
   } catch (e) {
       console.log(e);
               next(responseHandler.sendError(e));
