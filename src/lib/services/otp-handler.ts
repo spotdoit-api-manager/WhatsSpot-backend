@@ -12,7 +12,7 @@ export const sendMessage = async (to: string, message: string) => {
   const env = process.env.NODE_ENV;
   const phone: any = parseNumber(to);
   OTPMessagesService.sendWhatsappMessage(to,message);
-  // if(env=="development") return {proceed:true};
+  if(env=="development") return {proceed:true};
   if(phone.country=="IN"){
     return await OTPMessagesService.sendFast2Sms(sanatizeMobile(phone.phone),message);
   }else{
@@ -28,7 +28,7 @@ export const sendNewDeviceCode = async (to: string,otp: number) => {
   OTPMessagesService.sendWhatsappMessage(sanatizeMobile(to),message);
   const phone: any = parseNumber(to);
   console.log(phone);
-  // if(env=="development") return {proceed:true};
+  if(env=="development") return {proceed:true};
   if(phone.country=="IN"){
     return await OTPMessagesService.sendFast2Sms(sanatizeMobile(phone.phone),message);
   }else{
