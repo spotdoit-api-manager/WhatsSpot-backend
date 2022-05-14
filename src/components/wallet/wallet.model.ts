@@ -40,8 +40,8 @@ export class WalletModel {
         return await Wallet.findByIdAndUpdate(walletId,{balance: balance},{new:true});
     }
 
-    public async fetchTransactions(userId: string, walletId: string) {
-        const transactions = await transactionModel.fetchTransactions(walletId);
+    public async fetchTransactions(userId: string, walletId: string,page: number=1) {
+        const transactions = await transactionModel.fetchTransactions(walletId,page);
         return transactions;
     }
 

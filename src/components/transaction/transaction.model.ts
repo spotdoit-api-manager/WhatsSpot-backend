@@ -4,6 +4,7 @@ import { Transaction, ITransactionModel } from "./transaction.schema";
 import { ETransactionStatus, ETransactionTypes, ITransaction } from "./transaction.interface";
 import { any } from "async";
 import logger from "../../core/logger";
+import { getSkipLimit } from "../../lib/utils";
 const logFileName = "[TransactionModel] : ";
 export class TransactionModel {
 
@@ -11,8 +12,8 @@ public fetchTransactionById(walletId,transactionId){
         return Transaction.findOne({walletId:new ObjectID(walletId),_id:new ObjectID(transactionId)});
 }
 
-    public async fetchTransactions(walletId: string) {
-        logger.info(logFileName,`Fetching Transactions for Wallet ${walletId}`);
+    public async fetchTransactions(walletId: string,page: number) {
+        const {skip,limit} = getSkipLimit(page);
         const result = await Transaction.aggregate([
             { $match: { walletId: new ObjectID(walletId) } },
             { $sort: { createdAt: -1 } },
@@ -25,8 +26,10 @@ public fetchTransactionById(walletId,transactionId){
                     description:1,
                     
                 }
-            }
-           
+            },
+
+           {$skip:skip},
+           {$limit:limit},
         ]);
         return result;
     }
