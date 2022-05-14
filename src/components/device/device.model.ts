@@ -463,6 +463,13 @@ export class DeviceModel {
         const result = await Device.findByIdAndUpdate(deviceId, { isDeleted: { status: true, deletedAt: new Date() } });
     }
 
+    public async getDeviceStatus(userId: string,deviceId: string){
+        const device = await Device.findOne({userId:userId,_id:deviceId,isDeleted:{status:false}});
+        if(!device)throw new HTTP400Error("DEVICE_NOT_FOUND");
+
+        return whatsappClientService.getClientStatus(device.phone);
+    }
+
     public fetchDevicesList(){
         return Device.find({}).select(deviceProjection).lean();
     }

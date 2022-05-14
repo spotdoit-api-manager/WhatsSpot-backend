@@ -10,6 +10,7 @@ import makeWASocket, {
   useSingleFileAuthState,
   AuthenticationState,
   SocketConfig,
+  CommonSocketConfig,
 } from "@adiwajshing/baileys";
 
 import deviceModel from "./../../../components/device/device.model";
@@ -42,14 +43,14 @@ export default class Whatsapp extends EventEmitter {
     // if(!this.qrRequested) return;
     try {
       const sock = makeWASocket({
-        logger: P({ level: "info" }),
+        logger: P({ level: "info" }), //silent
         printQRInTerminal: false,
         auth: this.state,
         // version: [2,2204,13],
       });
       this.client = sock;
       this.startBasicEventListners();
-      // await this.client.waitForSocketOpen();
+      await this.client.waitForSocketOpen();
       return { error: false };
     } catch (err) {
       return { error: true, message: err.message };
@@ -172,6 +173,20 @@ export default class Whatsapp extends EventEmitter {
 
   private destroyClient(){
     return;
+  }
+
+  public async getDeviceStatus(){
+    try{ 
+       await this.client.sendPresenceUpdate("available", getSerializedPhone("919099858434"));
+       return {status:true};
+    }catch(e){
+      console.log(e.message);
+      await deviceModel.updateDevice(this.deviceId, {
+        authState: false, reason:"unknown"
+      });
+      return {status:false};
+    }
+
   }
   private async handleConnectionOpen(){
      logger.info(logFileName,"CONNECTION_OPENED");

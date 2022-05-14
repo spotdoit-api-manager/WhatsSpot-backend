@@ -33,6 +33,12 @@ export class WhatsappClient {
         return clientInstance;
     }
 
+    public getClientStatus(phone: string){
+        const client = this.getClientInstanceByPhone(phone);
+        if(!client) return {error:false,message:"CLIENT_NOT_AUTHENTICATED"};
+        return client.getDeviceStatus();
+    }
+
     public getClientInstanceByPhone(phone: string){
         return this.getClientInstanceByInstanceId(this.clients[phone]);
     }
