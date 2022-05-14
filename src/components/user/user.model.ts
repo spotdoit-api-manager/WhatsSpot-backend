@@ -109,7 +109,10 @@ export class UserModel {
     
     ]);  
     console.log(userPlan);  
-    return userPlan[0] || null;
+    if(userPlan[0] && userPlan[0].activePlanInfo){
+      return userPlan[0];
+    }
+    return  null;
   }
   public async fetchUserActivePlan(userId: string) {
     const userPlan = await User.aggregate([
