@@ -1,3 +1,4 @@
+import { HTTP400Error } from "./httpErrors";
 import {
     parsePhoneNumberWithError, CountryCode ,PhoneNumber, parsePhoneNumber
   } from "libphonenumber-js/max";
@@ -13,19 +14,17 @@ const logFileName = "[PhoneHandler] : ";
             return {number: parsedPhone.number};
         }catch(e){
             logger.error(logFileName,e.message);
-            throw new Error(e.message);
+            throw new HTTP400Error(e.message);
         }
   };
 
   export const parsePhone = (phone: string)=>{
     try{
-        const parsedPhone: PhoneNumber =  parsePhoneNumber(phone);
-        console.log("parsed phone is  ",parsedPhone);
-        
+        const parsedPhone: PhoneNumber =  parsePhoneNumber(phone);        
         if(!parsedPhone.isValid()) throw new Error(`Phone ${phone} is invalid`);
         return {number: parsedPhone.number};
     }catch(e){
         logger.error(logFileName,e.message +`at ${phone}`);
-        throw new Error(e.message+` at ${phone}`);
+        throw new HTTP400Error(e.message+` at ${phone}`);
     }
   };

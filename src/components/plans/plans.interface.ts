@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/interface-name-prefix */
 export interface IPLAN{
     planId: string;
 planName: string;
@@ -29,5 +30,6 @@ export interface IUserPlan{
 
 export enum EPlanStatus{
     ACTIVE="ACTIVE",
-    EXPIRED="EXPIRED"
+    EXPIRED="EXPIRED",
+    EXHAUSTED="EXHAUSTED",
 }

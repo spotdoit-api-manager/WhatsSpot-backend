@@ -1,5 +1,5 @@
 import logger from "../../lib/utils/logger";
-import { IApiKeyModal } from "../device/device.shema";
+import { IApiKeyModal } from "../device/device.schema";
 import { IApiBlock } from "./api-blocklist.interface";
 import { ApiBlockList } from "./api-blocklist.schema";
 

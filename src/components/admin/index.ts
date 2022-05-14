@@ -39,7 +39,7 @@ export default [
       },
       {
         path: "/admin/remove/:adminId",
-        method: "post",
+        method: "delete",
         role:"admin",
         handler: [adminController.removeAdmin]
       },
@@ -48,6 +48,12 @@ export default [
         method: "post",
         escapeAuth:true,
         handler: [adminController.verifyOtp]
+      },
+      {
+        path: "/admin/devices",
+        method: "get",
+        role:"admin",
+        handler: [adminController.devicesList]
       },
       {
         path: "/admin/metrics",

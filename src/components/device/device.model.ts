@@ -1,12 +1,11 @@
+import { mongoDBProjectFields } from "./../../lib/utils/index";
 import logger from "../../core/logger";
 import { EDeviceStatus, IDeviceTokenData, INewDevice } from "../device/device.interface";
-import { MessageQueue } from "./../messages/message.schema";
 import { deviceKeyConfig } from "./../../config/index";
-import { IImageMessage } from "./../../lib/services/whatsapp/whatsapp.interface";
-import { EMessageStatus, ESendType, IMessage } from "./../messages/message.interface";
+import { EMessageStatus, } from "./../messages/message.interface";
 import { HTTP400Error, HTTP401Error } from "./../../lib/utils/httpErrors";
-import { EApiKeyStatus, IApiKey, IDevice, TextMessage } from "./device.interface";
-import { Device, IApiKeyModal, IDeviceModel } from "./device.shema";
+import { EApiKeyStatus, IApiKey, IDevice } from "./device.interface";
+import { Device, IApiKeyModal, IDeviceModel } from "./device.schema";
 import whatsappClientService from "../../lib/services/whatsapp/whatsapp-client.service";
 import fileManagement from "../../lib/helpers/file.management";
 import messageModel from "../messages/message.model";
@@ -20,6 +19,7 @@ import userModel from "../user/user.model";
 import apiBlockListModel from "../api-blocklist/api-blocklist.model";
 import spotSchedular from "../../lib/services/schedular";
 import { parsePhoneWithCountry } from "../../lib/utils/phone.handler";
+import { deviceProjection } from "../../lib/values/projection.values";
 
 const logFileName = "[DeviceModal] : ";
 export class DeviceModel {
@@ -462,6 +462,10 @@ export class DeviceModel {
     public async removeDevice(userId: string, deviceId: string) {
         await this.logoutDevice(userId, deviceId);
         const result = await Device.findByIdAndUpdate(deviceId, { isDeleted: { status: true, deletedAt: new Date() } });
+    }
+
+    public fetchDevicesList(){
+        return Device.find({}).select(deviceProjection).lean();
     }
 }
 

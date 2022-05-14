@@ -1,7 +1,7 @@
 import * as scheduler from "node-schedule";
 import deviceModel from ".../../../components/device/device.model";
 import { IApiKey } from "../../components/device/device.interface";
-import { IApiKeyModal } from "../../components/device/device.shema";
+import { IApiKeyModal } from "../../components/device/device.schema";
 import logger from "../../core/logger";
 const logFileName ="[SpotSchedular]"; 
 

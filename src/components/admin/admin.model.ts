@@ -35,6 +35,10 @@ export class AdminModel {
         return {devicesMetrics, usersMetrics,walletBalance};
     }
 
+    public async devicesList(adminId: string) {
+        return await deviceModel.fetchDevicesList();
+    }
+
     public async fetchUsersBaseList(){
         return await userModel.fetchUsersBaseList();
     }

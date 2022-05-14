@@ -1,6 +1,6 @@
 import { IDeviceTokenData } from "../../components/device/device.interface";
 import { deviceKeyConfig } from "../../config/index";
-import { IDeviceModel } from "../../components/device/device.shema";
+import { IDeviceModel } from "../../components/device/device.schema";
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import deviceModel from "../../components/device/device.model";

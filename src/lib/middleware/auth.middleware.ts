@@ -52,6 +52,7 @@ export const Authorization =(role: ERoles|string)=> async (req: Request, res: Re
       throw new HTTP401Error("You are not authorized", "You may have not passed the authorization key in header");
     }
   } catch (e) {
+    console.log(e);
     e = new HTTP401Error(e.message, "You may have not passed the authorization key in header");
     next(e);
   }
@@ -99,11 +100,11 @@ const handleAdminToken = async (token: string) => {
       return data;
     } else {
       // tslint:disable-next-line: no-string-throw
-      throw "You are not authorized user.........";
+      throw new Error("You are not authorized user.........");
     }
   } else {
     // tslint:disable-next-line: no-string-throw
-    throw "You are not authorized user";
+    throw new Error("You are not authorized user........");
   }
 };
 
