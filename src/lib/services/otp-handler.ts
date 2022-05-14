@@ -1,11 +1,7 @@
-import { parsePhone } from "./../utils/phone.handler";
 import { sanatizeMobile } from "../utils/index";
-import axios from "axios";
-import {textLocalConfig} from "../../config";
 import  OTPMessagesService  from "./otp-message.service";
-import { otpGenerator } from "../helpers";
 import logger from "../../core/logger";
-import { parseNumber, PhoneNumber } from "libphonenumber-js";
+import { parseNumber } from "libphonenumber-js";
 
 const logFileName = "[OTPHandler] : ";
 export const sendMessage = async (to: string, message: string) => {

@@ -22,6 +22,19 @@ const planRef: Schema = new Schema({
     }
 },{timestamps:true});
 
+const UserSettingsSchema = new Schema({
+  notifications:{
+    device:{
+      type:Boolean,
+      default:true
+    },
+    plan:{
+      type:Boolean,
+      default:true
+
+    }
+  }
+},{timestamps:false});
 
 export const UserSchema: Schema = new Schema(
   {
@@ -89,7 +102,8 @@ export const UserSchema: Schema = new Schema(
     country:{
       type:String,
       required:true
-    }
+    },
+    settings:UserSettingsSchema
   },
   {
     timestamps: true

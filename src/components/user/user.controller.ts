@@ -193,7 +193,7 @@ class UserController {
     try {
       // console.log("getting user active plan");
       
-      const activePlan = await userModel.fetchUserActivePlan(req.userId);
+      const activePlan = await userModel.fetchUserDetailedActivePlan(req.userId);
 
       responseHandler.reqRes(req, res).onFetch("ACTIVE_PLAN", activePlan).send();
     } catch (e) {

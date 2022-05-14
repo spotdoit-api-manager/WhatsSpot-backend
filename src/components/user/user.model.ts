@@ -67,6 +67,50 @@ export class UserModel {
 
     return data;
   }
+
+  public async fetchUserDetailedActivePlan(userId: string){
+    const userPlan = await User.aggregate([
+      {$match:{_id:new ObjectID(userId)}},
+      {
+        $project:{
+          activePlan: { $arrayElemAt: [ "$activePlans", 0 ] } 
+        }
+      },
+      {
+        $lookup: {
+          from: "userplans",
+          localField: "activePlan.planRef",
+          foreignField: "_id",
+          as: "activePlanInfo"
+      },
+     
+      },
+     
+      {
+        $project:{
+          activePlanInfo: { $arrayElemAt: [ "$activePlanInfo", 0 ] } 
+        }
+      },
+      {
+        $lookup: {
+          from: "plans",
+          localField: "activePlanInfo.planId",
+          foreignField: "planId",
+          as: "planInfo"
+      },
+      },
+     {
+       $project:{
+        planInfo: { $arrayElemAt: [ "$planInfo", 0 ] } ,
+        activePlanInfo: 1
+       }
+     },
+     
+    
+    ]);  
+    console.log(userPlan);  
+    return userPlan[0] || null;
+  }
   public async fetchUserActivePlan(userId: string) {
     const userPlan = await User.aggregate([
       { $match: { _id: new ObjectID(userId) } },
@@ -100,7 +144,6 @@ export class UserModel {
       },
       
     ]);
-    console.log(userPlan);
     return userPlan[0].activePlan[0] || null;
   }
 

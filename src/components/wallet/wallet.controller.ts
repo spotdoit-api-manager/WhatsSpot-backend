@@ -16,9 +16,7 @@ export class WalletController{
       }
 
       public fetchTransactions = async (req: Request, res: Response, next: NextFunction) => {
-        const responseHandler = new ResponseHandler();
-        console.log("fetch wallet balance");
-        
+        const responseHandler = new ResponseHandler();        
         try {
          const result =  await walletModel.fetchTransactions(req.userId,req.walletId);
           responseHandler.reqRes(req, res).onCreate("TRANSACTION_FETCHED",result).send();

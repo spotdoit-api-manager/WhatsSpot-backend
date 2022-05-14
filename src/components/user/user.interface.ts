@@ -19,11 +19,19 @@ export interface IUser {
     previousPlans?: IPlanRef[];
     deviceCodes?: {[key: string]: string};
     country: string;
+    settings?: IUserSettings;
 }
 
 export interface IPlanRef{
     planName: string;
     planRef: string;
+}
+
+export interface IUserSettings{
+    notifications: {
+        device: boolean;
+        plan: boolean;
+    };
 }
 
 export interface ITokenData {
