@@ -9,7 +9,6 @@ import logger from "../../core/logger";
 const logFileName = "[PhoneHandler] : ";
   export const parsePhoneWithCountry = (phone: string,country: CountryCode)=>{
         try{
-          phone = deSanatizeMobile(phone);
             const parsedPhone: PhoneNumber =  parsePhoneNumberWithError(phone,country);
             if(!parsedPhone.isValid()) throw new Error("INVALID_PHONE");
             return {number: parsedPhone.number};
