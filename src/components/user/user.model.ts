@@ -144,8 +144,10 @@ export class UserModel {
       },
       
     ]);
-    return userPlan[0].activePlan[0] || null;
+    console.log(userPlan);
+    return userPlan[0]?.activePlan[0] || null;
   }
+  
 
   public async addPlanToUser(userId: string, activePlanName: string, activePlanId: string) {
     const planRef: IPlanRef = { planName: activePlanName, planRef: activePlanId };

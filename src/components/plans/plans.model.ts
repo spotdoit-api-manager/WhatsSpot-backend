@@ -36,7 +36,7 @@ public async updatePlan(adminId: string,planId: string,planUpdate: any){
     const result = await Plan.findByIdAndUpdate(planId,planUpdate,{upsert:false,new:true});
 }
 
-public async activateUserPlan(adminId: string,userId: string,planId: string){//by admin
+public async activateUserPlan(adminId: string,userId: string,planId: string,reason: string="Admin Activated "){//by admin
     if(planId == EPLANS.PAYG)throw new HTTP401Error("PAYG_PLAN_NOT_ALLOWED");
     await adminModel.isSuperAdmin(adminId);
     const userActivePlan = await userModel.fetchUserActivePlan(userId);
@@ -47,7 +47,7 @@ public async activateUserPlan(adminId: string,userId: string,planId: string){//b
     }
     const user = await userModel.fetch(userId);
     const plan: IPLAN = await this.fetchPlanByPlanId(planId);
-    const transactionMessage = plan.planId == "PAYG" ?"Adding money to wallet":`Buying plan -> ${plan.planName}`;
+    const transactionMessage = `${reason}-> ${plan.planName}`;
     const transaction: ITransactionModel = await transactionModel.createTransactionForRazorPay(plan.planId,`ADMIN_${adminId}`,userId,user.walletId,ETransactionTypes.CREDIT,plan.planAmount,transactionMessage);
     const activePlan: IUserPlan = await this.activatePlan(userId,planId,transaction._id);
     const updatedTransaction: ITransactionModel  = await transactionModel.updateTransactionStatus(transaction._id,ETransactionStatus.SUCCESS);

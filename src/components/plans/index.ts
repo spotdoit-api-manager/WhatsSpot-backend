@@ -15,7 +15,7 @@ export default [
     },
     {
         path:"/admin/plan/activate/:userId/:planId",
-        method:"get",
+        method:"post",
         role:"admin",
         handler: [plansController.activateUserPlan]
     },
