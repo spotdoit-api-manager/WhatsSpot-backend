@@ -166,7 +166,7 @@ export class MessageModel {
             const result = await this.sendTypeMessage(messageType,message,device.phone,to);
             if(result.error) throw Error(result.message);
             if (hasActivePlan) {
-                await plansModel.increamentMessageCount(activePlanInfo._id);
+                 plansModel.increamentMessageCount(activePlanInfo._id);
                 return { error: false, creditUsed: 0, message: result.message };
             } else {
                 const paymentMetaData = { deviceId: deviceId, to: to };

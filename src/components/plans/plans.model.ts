@@ -8,6 +8,7 @@ import userModel from "../user/user.model";
 import planManagerService from "../../lib/services/plan.manager.service";
 import transactionModel from "../transaction/transaction.model";
 import adminModel from "../admin/admin.model";
+import logger from "../../lib/utils/logger";
 export class PlansModel{
 
 public async fetchPlanById(planId: string){
@@ -86,9 +87,19 @@ public validatePlanExpiry(planData: IUserPlan){
     return true;
 }
 
+private async exhaustActivePlan(userPlanId: string){
+    logger.info(`Exhausting active plan ${userPlanId}`);
+    const activePlanStats = await UserPlan.findByIdAndUpdate(userPlanId,{planStatus:EPlanStatus.EXHAUSTED},{new:true}).select("sentMessageCount planStatus planId");
+    return activePlanStats;
+}
+
 public async increamentMessageCount(activePlanId: string){
-    const result = await UserPlan.findByIdAndUpdate(activePlanId,{$inc:{sentMessageCount:1}});
-    return result;
+    const activePlanStats = await UserPlan.findByIdAndUpdate(activePlanId,{$inc:{sentMessageCount:1}},{new:true}).select("sentMessageCount planId");
+    const planInfo = await Plan.find(activePlanStats.planId).select("planMaxMessage").lean();
+    if(Number(activePlanStats.sentMessageCount)>=Number(planInfo.planMaxMessage)){
+        await this.exhaustActivePlan(activePlanId);
+    }
+    return activePlanStats;
 }
 
 
