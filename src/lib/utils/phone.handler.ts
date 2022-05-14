@@ -1,3 +1,4 @@
+import { deSanatizeMobile } from "./index";
 import { HTTP400Error } from "./httpErrors";
 import {
     parsePhoneNumberWithError, CountryCode ,PhoneNumber, parsePhoneNumber
@@ -8,6 +9,7 @@ import logger from "../../core/logger";
 const logFileName = "[PhoneHandler] : ";
   export const parsePhoneWithCountry = (phone: string,country: CountryCode)=>{
         try{
+          phone = deSanatizeMobile(phone);
             const parsedPhone: PhoneNumber =  parsePhoneNumberWithError(phone,country);
             if(!parsedPhone.isValid()) throw new Error("INVALID_PHONE");
             return {number: parsedPhone.number};
@@ -19,7 +21,8 @@ const logFileName = "[PhoneHandler] : ";
 
   export const parsePhone = (phone: string)=>{
     try{
-        const parsedPhone: PhoneNumber =  parsePhoneNumber(phone);        
+      phone = deSanatizeMobile(phone);
+        const parsedPhone: PhoneNumber =  parsePhoneNumber(deSanatizeMobile(phone));        
         if(!parsedPhone.isValid()) throw new Error(`Phone ${phone} is invalid`);
         return {number: parsedPhone.number};
     }catch(e){

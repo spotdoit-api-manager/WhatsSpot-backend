@@ -78,9 +78,8 @@ export const sanatizeMobile=(phone: string)=>{
 };
 
 export const deSanatizeMobile=(phone: string)=>{
-  phone.replace("+","");
-  if(phone.length==12) return phone.slice(2);
-  return phone;
+ 
+  return `+${sanatizeMobile(phone)}`;
 };
 
 export const validateEmail = (email: string = "")=> {
