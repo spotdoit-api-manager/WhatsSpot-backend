@@ -144,7 +144,6 @@ export class UserModel {
       },
       
     ]);
-    console.log(userPlan);
     return userPlan[0]?.activePlan[0] || null;
   }
   

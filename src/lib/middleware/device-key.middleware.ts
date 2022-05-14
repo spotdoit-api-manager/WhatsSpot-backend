@@ -22,7 +22,6 @@ const handleToken = async (token: string) => {
 
 export const DeviceKeyValidator = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        logger.info(logFileName,`Header is ${req.headers.authorization}`);
         if (req?.headers?.authorization) {
             const token: string = req.headers.authorization.split(" ")[1];
             const tokenData: IDeviceTokenData = await handleToken(token);            

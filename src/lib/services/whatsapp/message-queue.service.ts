@@ -120,6 +120,7 @@ export class MessageQueueService {
                 try {
                     // const walletId = await walletModel.getWalletIdAndValidateTransactionAmount(message.userId,parseFloat(process.env.TEXT_MESSAGE_RATE));
                     const walletId = await walletModel.getWalletIdByUserId(message.userId);
+                    logger.info("got wallet id ",walletId);
                     const result: any = await messageModel.sendMessage(message.userId,message.to,message.message,message.messageType,message.deviceId,walletId);
 
                     // const result: any = await whatsappClientService.sendTextMessage(message.phone, message.to as string, message.message);

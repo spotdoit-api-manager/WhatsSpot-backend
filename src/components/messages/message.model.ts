@@ -112,7 +112,7 @@ export class MessageModel {
         const userCurrentPlan: IUserPlanModel|null = await userModel.fetchUserActivePlan(userId);
         if (userCurrentPlan) {
             const isMessageOver = userCurrentPlan.planStatus==EPlanStatus.EXHAUSTED;
-            return { hasActivePlan: true, isMessageOver:userCurrentPlan.planStatus, activePlanInfo: userCurrentPlan};
+            return { hasActivePlan: true, isMessageOver:isMessageOver, activePlanInfo: userCurrentPlan};
         }
         return { hasActivePlan: false };
     }
@@ -157,7 +157,7 @@ export class MessageModel {
             if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
             const { hasActivePlan, isMessageOver, activePlanInfo } = await this.hasActivePlan(userId);
             if (isMessageOver) throw new HTTP400Error("MESSAGES_EXHAUSTED", "message exhausted for your active plan");
-            logger.info(logFileName, `User ${userId} hasPlanActive: ${hasActivePlan}`);
+            // logger.info(logFileName, `User ${userId} hasPlanActive: ${hasActivePlan}`);
             if (!hasActivePlan) {
                 const { isValidAmount, balance } = await walletModel.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
                 // logger.debug(logFileName, `validAMount ${isValidAmount}`);
@@ -200,7 +200,6 @@ export class MessageModel {
     }
 
     public async sendTypeMessage(messageType: EWhatsappMessageTypes,message: IWhatsappMessage,from: string,to: string){
-        console.log("sending type message ",messageType);
         
         switch(messageType){
             case EWhatsappMessageTypes.TEXT_MESSAGE:

@@ -97,7 +97,7 @@ private async exhaustActivePlan(userPlanId: string){
 
 public async increamentMessageCount(activePlanId: string){
     const activePlanStats = await UserPlan.findByIdAndUpdate(activePlanId,{$inc:{sentMessageCount:1}},{new:true}).select("sentMessageCount planId");
-    const planInfo = await Plan.find(activePlanStats.planId).select("planMaxMessage").lean();
+    const planInfo = await Plan.findOne({planId:activePlanStats.planId}).select("planMaxMessage").lean();
     if(Number(activePlanStats.sentMessageCount)>=Number(planInfo.planMaxMessage)){
         await this.exhaustActivePlan(activePlanId);
     }

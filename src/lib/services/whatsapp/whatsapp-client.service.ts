@@ -27,6 +27,7 @@ export class WhatsappClient {
     public addClient = (deviceId: string,phone: string) => {
         const clientInstance = new Whatsapp(deviceId,phone);
         const instaceId = instanceProvider.getInstanceId(clientInstance); 
+        logger.info(logFileName,`Adding client ${phone}`);
         clients[phone] = instaceId;    
         console.info(logFileName,`Number of instance present = ${Object.keys(this.clients).length}`);
         return clientInstance;
@@ -41,6 +42,7 @@ export class WhatsappClient {
             const instance = instanceProvider.getClassInstance(Whatsapp, instanceId); 
             return instance;
         }catch(e){
+            console.error(e);
             throw new Error("CLIENT_NOT_AUTHENTICATED");
         }
     }
@@ -105,7 +107,7 @@ export class WhatsappClient {
 
     public sendTextMessage = async (from: string, to: string, message: IWhatsappTextMessage) => {
         try {
-            logger.info(logFileName,`Sending Text Message to ${to}`);
+            logger.info(logFileName,`Sending Text Message to ${to} | from: ${from}`);
             const clientInstance = this.getClientInstanceByPhone(from);
             if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };

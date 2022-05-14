@@ -1,9 +1,8 @@
 import { User } from "./../../components/user/user.schema";
-import logger from "../utils/logger";
 import  OTPMessagesService  from "./otp-message.service";
 import { IReason } from "./whatsapp/whatsapp.interface";
 import { Device } from "../../components/device/device.schema";
-
+import logger from "../../core/logger";
 const deviceIdPhoneMap: {[key: string]: {devicePhone: string;email: string; phone: string}} = {};
 
 export class NotifyService{
@@ -30,7 +29,7 @@ export class NotifyService{
 
     public async deviceAuthorized(deviceId: string){
         try{
-            logger.info(`Sending DEVICE_UNAUTHORIZED notification for device ${deviceId}`);
+            logger.info(`Sending DEVICE_AUTHORIZED notification for device ${deviceId}`);
             if(!deviceIdPhoneMap[deviceId]){
                 const device = (await Device.findById(deviceId).select("userId").lean());
                 const userData = (await User.findById(device.userId).select("phone").lean());
@@ -39,7 +38,7 @@ export class NotifyService{
             this.sendNotificationMessage(`Device with phone ${deviceIdPhoneMap[deviceId].devicePhone} Authorized successfully`,deviceIdPhoneMap[deviceId].phone,deviceIdPhoneMap[deviceId].email);
    
         }catch(e){
-            logger.error(`Error sending DEVICE_UNAUTHORIZED notification for device ${deviceId}`,e.message);
+            logger.error(`Error sending DEVICE_AUTHORIZED notification for device ${deviceId}`,e.message);
         }
     }
     public async deviceConnectionClosed(deviceId: string,reason: IReason){

@@ -24,6 +24,7 @@ export class MessageController{
       responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE", await messageModel.addMessageToQueue(req.userId,req.body, req.deviceId)).send();
     } catch (e) {
       // send error with next function.
+     console.log(e);
       next(responseHandler.sendError(e));
     }
   }
@@ -141,6 +142,7 @@ export class MessageController{
           responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await testMessageModel.sendRawMessage(req.body.to,req.body.message)).send();
         } catch (e) {
           // send error with next function.
+          console.log(e);
           next(responseHandler.sendError(e));
         }
       };
