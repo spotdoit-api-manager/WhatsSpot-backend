@@ -4,7 +4,7 @@ import { CountryCode } from "libphonenumber-js";
 export interface IContact{
     name: string;
     phoneNumber: string;
-    country: CountryCode;
+    country?: CountryCode;
 }
 
 

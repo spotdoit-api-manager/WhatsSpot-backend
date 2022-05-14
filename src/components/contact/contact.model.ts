@@ -16,12 +16,19 @@ export class ContactModal{
    
         }
 
-        private createNewContact(contacts: IContact[],userId: string){
+        private createNewContact(contacts: IContact[],userId: string|null=null){
             const newContacts: IContactModel[]=[];
             for (let i = 0; i < contacts.length; i++) {
                 const contact: any = contacts[i];
-                 contact.phoneNumber = parsePhone(contacts[i].phoneNumber).number;
-                contact.userId = userId;
+                if(contact.country && contact.country.length>0){
+                contact.phoneNumber = parsePhoneWithCountry(contact.phoneNumber,contact.country).number;
+                }else{
+                    contact.phoneNumber = parsePhone(contacts[i].phoneNumber).number;
+                }
+                if(userId){
+                    contact.userId = userId;
+                }
+
                 newContacts.push(contact);
             }
             return newContacts;
@@ -61,19 +68,9 @@ export class ContactModal{
         }
 
         public async addContactsToGroup(userId: string,groupId: string,contacts: IContact[]){
-            const results =[];
-            for (let i = 0; i < contacts.length; i++) {
-                const contact = contacts[i];
-                contact.phoneNumber = parsePhoneWithCountry(contact.phoneNumber,contact.country).number; 
-            }
-            for (let i = 0; i < contacts.length; i++) {
-                const contact = contacts[i];
-                const result = await ContactGroup.findByIdAndUpdate(groupId,{$push:{contacts:{name:contact.name,phoneNumber:contact.phoneNumber}}},{ upsert: true, new : true}).lean();
-                results.push(result);
-
-            }
-                
-            return results;
+            const newContacts = this.createNewContact(contacts);
+            const result = await ContactGroup.findByIdAndUpdate(groupId,{$push:{contacts:{$each:newContacts}}},{ upsert: true, new : true}).lean();
+            return result;
         }
 
         public async fetchGroups(userId: string){
