@@ -24,8 +24,8 @@ export class WhatsappClient {
     clients: IWhatsappClient = clients;
 
 
-    public addClient = (phone: string) => {
-        const clientInstance = new Whatsapp(phone);
+    public addClient = (deviceId: string,phone: string) => {
+        const clientInstance = new Whatsapp(deviceId,phone);
         const instaceId = instanceProvider.getInstanceId(clientInstance); 
         clients[phone] = instaceId;    
         console.info(logFileName,`Number of instance present = ${Object.keys(this.clients).length}`);
@@ -62,9 +62,9 @@ export class WhatsappClient {
     }
 
   
-    public getClientQr = async (phone: string) => {
+    public getClientQr = async (deviceId: string,phone: string) => {
         this.removeClientInstanceByPhone(phone);
-        const client = this.addClient(phone);
+        const client = this.addClient(deviceId,phone);
         client.on("qr", (qrData) => {
             console.debug(logFileName,"got qr ", qrData.qr);
             socketManager.sendQrCode(phone, qrData);
@@ -195,7 +195,7 @@ export class WhatsappClient {
         for (let i = 0; i < devices.length; i++) {
             const device = devices[i];
             console.debug(logFileName,`client${i}:${device.phone}`);
-            const client =  this.addClient(device.phone);
+            const client =  this.addClient(device._id,device.phone);
             await client.initiClient();
         }
         

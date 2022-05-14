@@ -16,10 +16,12 @@ import deviceModel from "./../../../components/device/device.model";
 import path from "path";
 import instanceProvider from "./instance.provider";
 import logger from "../../../core/logger";
+import notifyService from "../notifiy.srvice";
 const logFileName = "[WhatsappService] : ";
 export default class Whatsapp extends EventEmitter {
   client: any;
   phone: string;
+  deviceId: string;
   state: AuthenticationState;
   saveState: any;
   public authState = false;
@@ -27,12 +29,13 @@ export default class Whatsapp extends EventEmitter {
   qrRequested = false;
   public _instanceId: number;
   private retryCount =0;
-  constructor(phone: string) {
+  constructor(deviceId: string,phone: string) {
     super();
     this._instanceId = instanceProvider.addInstance(this);
     this.state = useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
     this.saveState = useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
     this.phone = phone;
+    this.deviceId = deviceId;
   }
   // start a connection
   public initiClient = async () => {
@@ -150,9 +153,11 @@ export default class Whatsapp extends EventEmitter {
     if(this.isMaxRetryReached()){
       this.retryCount = 0;
       logger.warn(logFileName,`[${this.phone}] Max Connection Retry Reached....`);
+      notifyService.deviceMaxRetryReached(this.deviceId);
       // this.destroyClient();
       return;
     }
+
     this.client.ev.removeAllListeners();
     await this.initiClient();
   }
@@ -172,11 +177,13 @@ export default class Whatsapp extends EventEmitter {
      logger.info(logFileName,"CONNECTION_OPENED");
     this.qrRequested = true;
     this.qrInProcess = false;
-    await deviceModel.updateDevice(this.phone, {
+    this.emit("authenticated", { phone: this.phone });
+     deviceModel.updateDevice(this.deviceId, {
       authState: true, reason: null
     });
-    this.emit("authenticated", { phone: this.phone });
-    return this.authState = true;
+
+    notifyService.deviceAuthorized(this.deviceId);
+     this.authState = true;
   }
 
   private async handleConnectionClose(lastDisconnect){
@@ -187,9 +194,11 @@ export default class Whatsapp extends EventEmitter {
     }
     else {
       const reason = this.getDisconnectReason(lastDisconnect);
-      await deviceModel.updateDevice(this.phone, {
+      await deviceModel.updateDevice(this.deviceId, {
         authState: false, reason
       });
+      notifyService.deviceConnectionClosed(this.deviceId,reason);
+
       this.qrInProcess = false;
       this.qrRequested = false;
       logger.warn(logFileName,"CONNECTION_CLOSED (LOGGEDOUT)", reason, this.phone);

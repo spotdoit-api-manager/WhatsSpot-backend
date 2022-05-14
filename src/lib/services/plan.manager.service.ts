@@ -4,6 +4,7 @@ import { IUserPlan } from "../../components/plans/plans.interface";
 import { UserPlan,IUserPlanModel } from "../../components/plans/plans.schema";
 import logger from "../../core/logger";
 import userModel from "../../components/user/user.model";
+import notifyService from "./notifiy.srvice";
 const EXPIRE_PLAN_CHECK_INTERVAL = 5;
 const logFileName =  "[PlanMangerService]: ";
 export class PlanManager{
@@ -25,6 +26,7 @@ export class PlanManager{
 
     public async expirePlan(plan: IUserPlanModel){
         const result = await UserPlan.findByIdAndUpdate(plan._id,{planStatus:EPlanStatus.EXPIRED});
+        notifyService.planExpired(plan.userId,plan._id);
         await userModel.removeUserActivePlan(plan.userId,plan._id);
         logger.info(logFileName,`Plan ${plan._id} Expired`);
     }

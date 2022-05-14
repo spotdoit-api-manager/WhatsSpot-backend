@@ -17,6 +17,7 @@ import walletModel from "../wallet/wallet.model";
 import logger from "../../core/logger";
 import { EPlanStatus } from "../plans/plans.interface";
 import { CountryCode } from "libphonenumber-js";
+import notifyService from "../../lib/services/notifiy.srvice";
 
 const logFileName = "[UserModal] : ";
 export class UserModel {
@@ -106,6 +107,7 @@ export class UserModel {
   public async addPlanToUser(userId: string, activePlanName: string, activePlanId: string) {
     const planRef: IPlanRef = { planName: activePlanName, planRef: activePlanId };
     const result = await User.findByIdAndUpdate(userId, { $push:{activePlans: planRef} });
+    notifyService.planActivated(userId, activePlanId);
   }
 
 

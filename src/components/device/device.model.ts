@@ -64,7 +64,7 @@ export class DeviceModel {
         // if (!device.authState && device.reason && device.reason.statusCode === DisconnectReason.loggedOut) {
         //     return { message: "DEVICE_LOGGED_OUT" };
         // }
-        const data = whatsappClientService.getClientQr(device.phone);
+        const data = whatsappClientService.getClientQr(deviceId,device.phone);
         return { message: "QR_REQUESTED" };
     };
 
@@ -287,11 +287,10 @@ export class DeviceModel {
         ]);
         return result[0].count;
     }
-    public async updateDevice(phone: string, clientData: any) {
-        if (!phone) return { error: true, message: "phone not provided in client update" };
+    public async updateDevice(deviceId: string, clientData: any) {
         const options = { upsert: true, new: true, setDefaultsOnInsert: true };
-        const client = await Device.findOneAndUpdate({ phone: phone }, { ...clientData }, options);
-        if (!client) return { error: true, message: "some error occured" };
+        const client = await Device.findByIdAndUpdate(deviceId, { ...clientData }, options);
+        if (!client) return { error: true, message: "some error occurred" };
         return { error: false };
     }
 

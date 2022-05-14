@@ -1,3 +1,4 @@
+import notifyService from "./../../lib/services/notifiy.srvice";
 import { ETransactionTypes,ETransactionStatus } from "./../transaction/transaction.interface";
 import { ITransactionModel } from "./../transaction/transaction.schema";
 import {  IPlanModel, IUserPlanModel, Plan, UserPlan } from "./plans.schema";
@@ -89,7 +90,8 @@ public validatePlanExpiry(planData: IUserPlan){
 
 private async exhaustActivePlan(userPlanId: string){
     logger.info(`Exhausting active plan ${userPlanId}`);
-    const activePlanStats = await UserPlan.findByIdAndUpdate(userPlanId,{planStatus:EPlanStatus.EXHAUSTED},{new:true}).select("sentMessageCount planStatus planId");
+    const activePlanStats = await UserPlan.findByIdAndUpdate(userPlanId,{planStatus:EPlanStatus.EXHAUSTED},{new:true}).select("sentMessageCount planStatus userId planId");
+    notifyService.planExhausted(activePlanStats.userId,userPlanId);
     return activePlanStats;
 }
 
