@@ -84,7 +84,7 @@ public fetchTransactionById(walletId,transactionId){
 
 
     public async updateTransactionStatus(transactionId: string, status: ETransactionStatus) {
-        const updatedTransaction = await Transaction.findByIdAndUpdate(transactionId, { $set: { status: status } },{new:true});
+        const updatedTransaction = await Transaction.findByIdAndUpdate(transactionId, { $set: { status: status } },{new:true}).lean();
         if (!updatedTransaction) throw new HTTP401Error("ERROR_UPDATING_TRANSACTION_STATUS");
         return updatedTransaction;
     }

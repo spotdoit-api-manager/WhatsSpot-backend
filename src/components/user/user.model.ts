@@ -110,14 +110,15 @@ export class UserModel {
 
   public async addPlanToUser(userId: string, activePlanName: string, activePlanId: string) {
     const planRef: IPlanRef = { planName: activePlanName, planRef: activePlanId };
-    const result = await User.findByIdAndUpdate(userId, { activePlan: planRef });
+    const result = await User.findByIdAndUpdate(userId, { $push:{activePlan: planRef} });
   }
 
 
 
 
-  public async expireUserPlan(userId: string) {
-    const result = await User.findByIdAndUpdate(userId, { $unset: { activePlan: 1 } });
+  public async removeUserActivePlan(userId: string,planRef: string) {
+    logger.info(logFileName, `removeUserActivePlan : ${userId} PlanRef: ${planRef}`);
+    const result = await User.findByIdAndUpdate(userId, { $pull: { activePlan: {planRef:new ObjectID(planRef)} } });
   }
 
 

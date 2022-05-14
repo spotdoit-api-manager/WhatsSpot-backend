@@ -14,6 +14,12 @@ export default [
         handler: [plansController.updatePlan]
     },
     {
+        path:"/admin/plan/activate/:userId/:planId",
+        method:"get",
+        role:"admin",
+        handler: [plansController.activateUserPlan]
+    },
+    {
         path:"/admin/plans/deletePlan/:planId",
         method:"delete",
         role:"admin",

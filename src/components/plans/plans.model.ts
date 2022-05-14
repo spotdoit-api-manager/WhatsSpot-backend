@@ -1,9 +1,13 @@
+import { ETransactionTypes,ETransactionStatus } from "./../transaction/transaction.interface";
+import { ITransactionModel } from "./../transaction/transaction.schema";
 import {  IPlanModel, IUserPlanModel, Plan, UserPlan } from "./plans.schema";
 import { EPLANS, EPlanStatus, IPLAN, IUserPlan } from "./plans.interface";
 import { HTTP401Error } from "../../lib/utils/httpErrors";
 import dayjs from "dayjs";
 import userModel from "../user/user.model";
 import planManagerService from "../../lib/services/plan.manager.service";
+import transactionModel from "../transaction/transaction.model";
+import adminModel from "../admin/admin.model";
 export class PlansModel{
 
 public async fetchPlanById(planId: string){
@@ -30,6 +34,18 @@ public async updatePlan(adminId: string,planId: string,planUpdate: any){
     const result = await Plan.findByIdAndUpdate(planId,planUpdate,{upsert:false,new:true});
 }
 
+public async activateUserPlan(adminId: string,userId: string,planId: string){
+    if(planId == EPLANS.PAYG)throw new HTTP401Error("PAYG_PLAN_NOT_ALLOWED");
+    await adminModel.isSuperAdmin(adminId);
+    const user = await userModel.fetch(userId);
+    const plan: IPLAN = await this.fetchPlanByPlanId(planId);
+    const transactionMessage = plan.planId == "PAYG" ?"Adding money to wallet":`Buying plan -> ${plan.planName}`;
+    const transaction: ITransactionModel = await transactionModel.createTransactionForRazorPay(plan.planId,`ADMIN_${adminId}`,userId,user.walletId,ETransactionTypes.CREDIT,plan.planAmount,transactionMessage);
+    const activePlan: IUserPlan = await this.activatePlan(userId,planId,transaction._id);
+    const updatedTransaction: ITransactionModel  = await transactionModel.updateTransactionStatus(transaction._id,ETransactionStatus.SUCCESS);
+    return activePlan;
+}
+
 
 public async deletePlan(planId: string){
   return await planManagerService.deletePlan(planId);
@@ -48,12 +64,14 @@ public async activatePlan(userId: string,planId: string,planTransactionId: strin
 }
 
 private async calculatePlanEndDate(plan: IPLAN){
-   const endDate =dayjs(new Date());
+    console.log(plan);
+   let endDate = dayjs(new Date());
    if(plan.planId==EPLANS.PAYG){
        return endDate.toDate();
     }
-    else if(plan.planId == EPLANS.MEMBERSHIP || plan.planId==EPLANS.MONTHLY){
-       endDate.add(plan.planPeriod,plan.planPeriodUnit);
+    else{
+       endDate = endDate.add(plan.planPeriod,plan.planPeriodUnit);
+       console.log(`End Date: ${endDate.toDate()}`);
        return endDate.toDate();
    }
 }

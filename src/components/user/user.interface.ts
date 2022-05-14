@@ -15,7 +15,7 @@ export interface IUser {
     avatar?: Buffer;
     deactivation: boolean;
     walletId?: string;
-    activePlan?: IPlanRef;
+    activePlan?: IPlanRef[];
     previousPlans?: IPlanRef[];
     deviceCodes?: {[key: string]: string};
     country: string;

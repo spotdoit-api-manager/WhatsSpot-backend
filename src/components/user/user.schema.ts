@@ -41,7 +41,7 @@ export const UserSchema: Schema = new Schema(
       unique:false,
       required:true
     },
-    activePlan:planRef,
+    activePlan:[planRef],
     previousPlans:[planRef],
     walletId:{
       type:SchemaTypes.ObjectId,

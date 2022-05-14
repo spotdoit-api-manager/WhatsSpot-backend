@@ -15,9 +15,13 @@ export interface IDevice {
     authState: boolean;
     reason: IReason;
     userId: string;
+    isDeleted: IDeviceDeleted;
     apiKeys: IApiKey[];
 }
 
+export interface IDeviceDeleted {
+    status: boolean;
+}
 export interface IApiKey {
     token: string;
     expiresOn: Date;
