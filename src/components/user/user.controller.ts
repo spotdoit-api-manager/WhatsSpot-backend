@@ -203,31 +203,6 @@ class UserController {
     }
   };
 
-
-  public addFollower = async (req: Request, res: Response, next: NextFunction) => {
-    const responseHandler = new ResponseHandler();
-    try {
-      const data = await userModel.addFollower(req.params.id, req.body.user.id);
-
-      responseHandler.reqRes(req, res).onCreate(msg.UPDATED, data).send();
-    } catch (e) {
-      responseHandler.sendError(e);
-    }
-  };
-
-  public addFollowing = async (req: Request, res: Response, next: NextFunction) => {
-    const responseHandler = new ResponseHandler();
-    try {
-      req.body.userId = req.userId;
-      console.log(req.userId);
-      const data = await userModel.addFollowing(req.params.id, req.body.userId);
-
-      responseHandler.reqRes(req, res).onCreate(msg.UPDATED, data).send();
-    } catch (e) {
-      responseHandler.sendError(e);
-    }
-  };
-
   public signUp = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
 
@@ -240,26 +215,6 @@ class UserController {
     }
   };
 
-  // private createSendToken = async (req: Request, res: Response, next: NextFunction, user: any) => {
-  //   const responseHandler = new ResponseHandler();
-  //   let ikcbalance = await userModel.fetchWalletBalance(user._id);
-  //   const token = this.signToken(user._id);
-  //   // console.log(ikcbalance);
-  //   // user.ikcbalance = ikcbalance;
-  //   console.log(user);
-  //   const data = {
-  //     token,
-  //     user,
-  //     ikcbalance
-  //   };
-  //   responseHandler.reqRes(req, res).onCreate(msg.CREATED, data).send();
-  // };
-
-  // private signToken = (id: string) => {
-  //   return jwt.sign({ id }, commonConfig.jwtSecretKey, {
-  //     expiresIn: process.env.JWT_EXPIRES_IN,
-  //   });
-  // };
 
   public logIn = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
@@ -271,32 +226,8 @@ class UserController {
     }
   };
 
-  public addFolowRequest = async (req: Request, res: Response, next: NextFunction) => {
-    const responseHandler = new ResponseHandler();
-    try {
+ 
 
-      if (req.userId) {
-        const data = await userModel.addFollowRequest(req.params.id, req.userId);
-
-        responseHandler.reqRes(req, res).onCreate(msg.UPDATED, data).send();
-      }
-    } catch (e) {
-      responseHandler.sendError(e);
-    }
-  };
-
-  public acceptFollowRequest = async (req: Request, res: Response, next: NextFunction) => {
-    const responseHandler = new ResponseHandler();
-    try {
-      if (req.userId) {
-        const data = await userModel.acceptFollowRequest(req.params.id, req.userId);
-
-        responseHandler.reqRes(req, res).onCreate(msg.UPDATED, data).send();
-      }
-    } catch (e) {
-      responseHandler.sendError(e);
-    }
-  };
 
   public isVerified = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();

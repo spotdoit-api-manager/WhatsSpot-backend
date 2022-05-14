@@ -1,3 +1,4 @@
+import { EPlanStatus } from "./../plans/plans.interface";
 
 import { EWhatsappMessageTypes } from "./../../lib/services/whatsapp/whatsapp.enum";
 import { ObjectID } from "bson";
@@ -108,12 +109,10 @@ export class MessageModel {
     }
 
     private async hasActivePlan(userId: string) {
-        const userCurrentPlan: { activePlanInfo: IUserPlanModel; planInfo: IPlanModel } = await userModel.fetchUserActivePlan(userId);
-        if (userCurrentPlan && userCurrentPlan.activePlanInfo) {
-            const isMessageOver = !Boolean(userCurrentPlan.planInfo.planMaxMessage - userCurrentPlan.activePlanInfo.sentMessageCount);
-            console.log(`isMessageOver is ${isMessageOver}`);
-
-            return { hasActivePlan: true, isMessageOver, activePlanInfo: userCurrentPlan.activePlanInfo, planInfo: userCurrentPlan.planInfo };
+        const userCurrentPlan: IUserPlanModel|null = await userModel.fetchUserActivePlan(userId);
+        if (userCurrentPlan) {
+            const isMessageOver = userCurrentPlan.planStatus==EPlanStatus.EXHAUSTED;
+            return { hasActivePlan: true, isMessageOver:userCurrentPlan.planStatus, activePlanInfo: userCurrentPlan};
         }
         return { hasActivePlan: false };
     }
@@ -156,7 +155,7 @@ export class MessageModel {
         try {
             const device = await deviceModel.findDeviceById(userId,deviceId);
             if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-            const { hasActivePlan, isMessageOver, activePlanInfo, planInfo } = await this.hasActivePlan(userId);
+            const { hasActivePlan, isMessageOver, activePlanInfo } = await this.hasActivePlan(userId);
             if (isMessageOver) throw new HTTP400Error("MESSAGES_EXHAUSTED", "message exhausted for your active plan");
             logger.info(logFileName, `User ${userId} hasPlanActive: ${hasActivePlan}`);
             if (!hasActivePlan) {

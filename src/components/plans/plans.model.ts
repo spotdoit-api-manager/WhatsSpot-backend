@@ -34,9 +34,15 @@ public async updatePlan(adminId: string,planId: string,planUpdate: any){
     const result = await Plan.findByIdAndUpdate(planId,planUpdate,{upsert:false,new:true});
 }
 
-public async activateUserPlan(adminId: string,userId: string,planId: string){
+public async activateUserPlan(adminId: string,userId: string,planId: string){//by admin
     if(planId == EPLANS.PAYG)throw new HTTP401Error("PAYG_PLAN_NOT_ALLOWED");
     await adminModel.isSuperAdmin(adminId);
+    const userActivePlan = await userModel.fetchUserActivePlan(userId);
+    if(userActivePlan && userActivePlan.planStatus === EPlanStatus.ACTIVE){
+        throw new HTTP401Error("ALREADY_HAS_ACTIVE_PLAN","User already has an active plan");
+    }else if(userActivePlan && userActivePlan.planStatus === EPlanStatus.EXHAUSTED){
+        await userModel.removeUserActivePlan(userId,userActivePlan._id);
+    }
     const user = await userModel.fetch(userId);
     const plan: IPLAN = await this.fetchPlanByPlanId(planId);
     const transactionMessage = plan.planId == "PAYG" ?"Adding money to wallet":`Buying plan -> ${plan.planName}`;

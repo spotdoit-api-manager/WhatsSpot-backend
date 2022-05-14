@@ -69,48 +69,43 @@ export class UserModel {
   public async fetchUserActivePlan(userId: string) {
     const userPlan = await User.aggregate([
       { $match: { _id: new ObjectID(userId) } },
+      {$project:{
+        _id:1,
+        activePlans:1
+      }},
+      {
+        $unwind: {
+          path: "$activePlans"
+        }
+      },
+
       {
         $lookup: {
           from: "userplans",
-          localField: "activePlan.planRef",
-          foreignField: "_id",
+          let: { planRef: "$activePlans.planRef" },
+          pipeline: [
+            {
+              $match: {
+                planStatus:{$in:[ EPlanStatus.ACTIVE,EPlanStatus.EXHAUSTED]},
+                $expr: {
+                  $eq: ["$_id", "$$planRef"],
+                }
+              }
+            }
+          ],
           as: "activePlan"
         },
 
       },
-      {
-        $unwind: {
-          path: "$activePlan"
-        }
-      },
-      {
-        $lookup: {
-          from: "plans",
-          localField: "activePlan.planId",
-          foreignField: "planId",
-          as: "planInfo"
-        },
-      },
-      {
-        $unwind: {
-          path: "$planInfo"
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          userId: "$_id",
-          activePlanInfo: "$activePlan",
-          planInfo: 1
-        }
-      }
+      
     ]);
-    return userPlan[0]?.activePlan || null;
+    console.log(userPlan);
+    return userPlan[0].activePlan[0] || null;
   }
 
   public async addPlanToUser(userId: string, activePlanName: string, activePlanId: string) {
     const planRef: IPlanRef = { planName: activePlanName, planRef: activePlanId };
-    const result = await User.findByIdAndUpdate(userId, { $push:{activePlan: planRef} });
+    const result = await User.findByIdAndUpdate(userId, { $push:{activePlans: planRef} });
   }
 
 
@@ -118,10 +113,10 @@ export class UserModel {
 
   public async removeUserActivePlan(userId: string,planRef: string) {
     logger.info(logFileName, `removeUserActivePlan : ${userId} PlanRef: ${planRef}`);
-    const result = await User.findByIdAndUpdate(userId, { $pull: { activePlan: {planRef:new ObjectID(planRef)} } });
+    const result = await User.findByIdAndUpdate(userId, { $pull: { activePlans: {planRef:new ObjectID(planRef)} } });
   }
 
-
+ 
 
   public async delete(id: string) {
     await User.deleteOne({ _id: id });
@@ -348,53 +343,7 @@ export class UserModel {
     }
   }
 
-  public async addFollower(id: string, userId: string) {
 
-    const data = User.findOneAndUpdate({ id: userId }, {
-      $push: { "followers": id }
-    });
-
-    return data;
-  };
-
-
-
-
-
-  public async addFollowing(id: string, userId: string) {
-    const data = User.findOneAndUpdate({ _id: userId }, {
-      $push: { "following": id }
-    });
-
-    return data;
-  };
-
-
-  public async addFollowRequest(id: string, userId: string) {
-    const data = User.findOneAndUpdate({ id: userId }, {
-      $push: { "followRequest": id }
-    });
-
-    return data;
-  };
-
-  public async acceptFollowRequest(id: string, userId: string) {
-    const data = await User.findOneAndUpdate({ id: userId }, {
-      $pull: { "followRequest": id }
-    });
-
-    if (data) {
-      await User.findOneAndUpdate({ id: userId }, {
-        $push: { "followRequest": id }
-      });
-
-      await User.findOneAndUpdate({ id }, {
-        $push: { "following": userId }
-      });
-    }
-
-    return data;
-  };
 
   updateOtp(id: string): number {
     const otp = otpGenerator();
@@ -423,23 +372,6 @@ export class UserModel {
 
 
 
-
-  // private async generateValiduserName(firstName: string, id: string | null = null) {
-  //   let s = this.randomString(6);
-  //   let userName = `${firstName}_${s}`
-  //   if (id == null) {
-  //     while ((await User.findOne({ "userName": userName }).count()) > 0) {
-  //       s = this.randomString(6);
-  //       userName = `${firstName}_${s}`
-  //     }
-  //   } else {
-  //     while ((await User.findOne({ _id: { $ne: id }, "userName": userName }).count()) > 0) {
-  //       s = this.randomString(6);
-  //       userName = `${firstName}_${s}`
-  //     }
-  //   }
-  //   return userName;
-  // }
 
   public signToken = (dataToStore: IDataStoredInToken) => {
     return jwt.sign(dataToStore, commonConfig.jwtSecretKey, {
