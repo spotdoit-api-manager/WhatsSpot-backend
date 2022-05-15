@@ -72,7 +72,7 @@ public fetchTransactionById(walletId,transactionId){
                 amount,
                 metaData,
                 description,
-                status: ETransactionStatus.SUCCESS
+                status: ETransactionStatus.PENDING
             };
             
             const newTransaction: ITransactionModel = new Transaction(transactionBody);

@@ -151,19 +151,16 @@ export class MessageModel {
         else{
             throw new HTTP400Error("INVALID_NUMBER_TYPE");
         }
-        logger.info(logFileName,results);
         return results;
     }
-    public async sendMessage(userId: string, to: string, message: IWhatsappTextMessage,messageType: EWhatsappMessageTypes, deviceId: string, walletId: string) {
+    public async sendMessage(userId: string, to: string, message: IWhatsappTextMessage,messageType: EWhatsappMessageTypes, deviceId: string, walletId: string,transactionId: string=null) {
         try {
             const device = await deviceModel.findDeviceById(userId,deviceId);
             if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
             const { hasActivePlan, isMessageOver, activePlanInfo } = await this.hasActivePlan(userId);
             if (isMessageOver) throw new HTTP400Error("MESSAGES_EXHAUSTED", "message exhausted for your active plan");
-            // logger.info(logFileName, `User ${userId} hasPlanActive: ${hasActivePlan}`);
             if (!hasActivePlan) {
                 const { isValidAmount, balance } = await walletModel.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
-                // logger.debug(logFileName, `validAMount ${isValidAmount}`);
                 if (!isValidAmount) throw new Error("NOT_ENOUGH_BALANCE");
             }
             const result = await this.sendTypeMessage(messageType,message,device.phone,to);
