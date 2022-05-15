@@ -1,4 +1,4 @@
-import notifyService from "./../../lib/services/notifiy.srvice";
+import notifyService from "../../lib/services/notifiy.service";
 import { ETransactionTypes,ETransactionStatus } from "./../transaction/transaction.interface";
 import { ITransactionModel } from "./../transaction/transaction.schema";
 import {  IPlanModel, IUserPlanModel, Plan, UserPlan } from "./plans.schema";

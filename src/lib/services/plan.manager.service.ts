@@ -4,7 +4,7 @@ import { IUserPlan } from "../../components/plans/plans.interface";
 import { UserPlan,IUserPlanModel } from "../../components/plans/plans.schema";
 import logger from "../../core/logger";
 import userModel from "../../components/user/user.model";
-import notifyService from "./notifiy.srvice";
+import notifyService from "./notifiy.service";
 const EXPIRE_PLAN_CHECK_INTERVAL = 5;
 const logFileName =  "[PlanMangerService]: ";
 export class PlanManager{

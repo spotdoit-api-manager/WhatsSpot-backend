@@ -17,7 +17,7 @@ import walletModel from "../wallet/wallet.model";
 import logger from "../../core/logger";
 import { EPlanStatus } from "../plans/plans.interface";
 import { CountryCode } from "libphonenumber-js";
-import notifyService from "../../lib/services/notifiy.srvice";
+import notifyService from "../../lib/services/notifiy.service";
 
 const logFileName = "[UserModal] : ";
 export class UserModel {

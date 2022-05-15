@@ -63,6 +63,12 @@ export const textLocalConfig = {
   apiKey: process.env.TEXTLOCAL_KEY
 };
 
+export const mailazyConfig = {
+  accessKey: process.env.MAILAZY_KEY,
+  accessSecret:process.env.MAILAZY_SECRET
+};
+
+
 export const s3Config = {
   accessKey: process.env.S3_ACCEESS_ID || "",
   secretKey: process.env.S3_SECRET_KEY || "",

@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { deSanatizeMobile } from "./../utils/index";
-import { WhatsappConfig } from "./../interfaces/providers.interface";
-import { pilvoConfig, fast2SmsConfig } from "./../../config/index";
+import { deSanatizeMobile } from "../utils/index";
+import { WhatsappConfig } from "../interfaces/providers.interface";
+import { pilvoConfig, fast2SmsConfig } from "../../config/index";
 import axios from "axios";
 import messageModel from "../../components/messages/message.model";
 import { EWhatsappMessageTypes } from "./whatsapp/whatsapp.enum";
-import logger from "../../lib/utils/logger";
+import logger from "../utils/logger";
 // const plivo = require("plivo");
 const logFileName = "[OTPService] : ";
 export class OTPMessagesService {

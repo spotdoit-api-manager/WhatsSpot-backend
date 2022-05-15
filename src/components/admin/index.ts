@@ -17,6 +17,7 @@ export default [
         path: "/add",
         method: "post",
         role:"admin",
+        // escapeAuth:true,
         handler: [adminController.addNewAdmin]
       },
       {

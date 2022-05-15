@@ -1,5 +1,5 @@
 import { sanatizeMobile } from "../utils/index";
-import  OTPMessagesService  from "./otp-message.service";
+import  OTPMessagesService  from "./message.service";
 import logger from "../../core/logger";
 import { parseNumber } from "libphonenumber-js";
 

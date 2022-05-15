@@ -1,0 +1,24 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const  MailazyClient = require("mailazy-node");
+import logger from "../../core/logger";
+import { mailazyConfig } from "../../config";
+
+const logFileName="[EmailService]: ";
+
+const client = new MailazyClient({ accessKey: mailazyConfig.accessKey, accessSecret: mailazyConfig.accessSecret });
+
+
+export const sendNotificationMail = async(to: string,subject: string,text: string,html: string="")=>{
+    try {
+        const res = await client.send({
+            to,
+            from: process.env.NOTIFICATION_EMAIL, 
+            subject,
+            text,
+            html
+        });
+        logger.info(logFileName,`Email to ${to} sent successfully`,res);
+    } catch (e) {
+       logger.error(logFileName,`Error in sending mail to ${to}`,e);
+    }
+};
