@@ -1,8 +1,9 @@
 import * as scheduler from "node-schedule";
 import deviceModel from ".../../../components/device/device.model";
-import { IApiKey } from "../../components/device/device.interface";
+import { EApiKeyStatus, IApiKey } from "../../components/device/device.interface";
 import { Device, IApiKeyModal } from "../../components/device/device.schema";
 import logger from "../../core/logger";
+import { ObjectID } from "bson";
 const logFileName ="[SpotSchedular]"; 
 
 export class SpotSchedular{
@@ -29,8 +30,20 @@ export class SpotSchedular{
     public async scheduleApiExpiration(deviceId: string,apiKeyData: IApiKeyModal){
         logger.info(logFileName,`Scheduling api key expiration api key id: ${apiKeyData._id} at ${apiKeyData.expiresOn}`);
         const job = scheduler.scheduleJob(apiKeyData.expiresOn, async() => {
-            //  deviceModel.expireApiKey(deviceId,apiKeyData);
+            await  this.expireApiKey(deviceId,apiKeyData);
         });
+    }
+
+    public async expireApiKey(deviceId: string, apiKey: IApiKeyModal) {
+        logger.info(logFileName, `Expiring api key ${apiKey._id}`);
+        const result = await Device.findOneAndUpdate({
+            _id: new ObjectID(deviceId),
+            "apiKeys._id": new ObjectID(apiKey._id),
+        },
+            { $set: { "apiKeys.$.status.status": EApiKeyStatus.EXPIRED } },
+            {
+                new: true
+            }).lean();
     }
 }
 

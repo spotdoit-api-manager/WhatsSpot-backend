@@ -219,7 +219,10 @@ export class DeviceModel {
         try {
             const result = await Device.findOneAndUpdate({ _id: new ObjectID(deviceId) }, { $pull: { apiKeys: { _id: new ObjectID(keyId) } } }, { upsert: false, new: false }).lean();
             const apiData = result.apiKeys.find((x: IApiKeyModal) => x._id.toString() === keyId);
-            await apiBlockListModel.addApiToBlockList(deviceId, apiData);
+            if(apiData.status !==EApiKeyStatus.EXPIRED){
+                await apiBlockListModel.addApiToBlockList(deviceId, apiData);
+            }
+
         } catch (err) {
             throw new HTTP400Error(err.message);
         }
@@ -247,17 +250,7 @@ export class DeviceModel {
         return token;
     }
 
-    public async expireApiKey(deviceId: string, apiKey: IApiKeyModal) {
-        logger.info(logFileName, `Expiring api key ${apiKey._id}`);
-        const result = await Device.findOneAndUpdate({
-            _id: new ObjectID(deviceId),
-            "apiKeys._id": new ObjectID(apiKey._id),
-        },
-            { $set: { "apiKeys.$.status.status": EApiKeyStatus.EXPIRED } },
-            {
-                new: true
-            }).lean();
-    }
+ 
 
     public signDeviceToken = (apiKeyData: IDeviceTokenData, expiresIn: string) => {
         if (!expiresIn) {
@@ -462,6 +455,8 @@ export class DeviceModel {
 
         return whatsappClientService.getClientStatus(device.phone);
     }
+
+ 
 
     public fetchDevicesList(){
         return Device.find({}).select(deviceProjection).lean();
