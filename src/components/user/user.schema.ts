@@ -41,7 +41,7 @@ export const UserSchema: Schema = new Schema(
    
     userName: {
       type: String,
-      unique: false,
+      required: true
     },
     password: {
       type: String,
@@ -51,12 +51,13 @@ export const UserSchema: Schema = new Schema(
     },
     email : {
       type:String,
-      unique:false,
+      unique:true,
       required:true
     },
     activePlans:[planRef],
     previousPlans:[planRef],
     walletId:{
+      required:true,
       type:SchemaTypes.ObjectId,
       ref:"wallet",
       immutable: true 
@@ -65,7 +66,8 @@ export const UserSchema: Schema = new Schema(
     role: {
       type: String,
       enum: ["user", "admin"],
-      required: true
+      required: true,
+      description:"user"
     },
     
     phone: {

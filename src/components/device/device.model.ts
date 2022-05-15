@@ -165,12 +165,13 @@ export class DeviceModel {
 
 
     public async deleteAuth(userId: string, deviceId: string) {
+        console.log("params ",userId,deviceId);
         const device = await this.findDeviceById(userId, deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
         const res: any = await fileManagement.deleteFile(authFilePath);
         if (res.error) throw new HTTP401Error(res.message);
-        await this.updateDevice(device.phone, { reason: null });
+        await this.updateDevice(device._id, { reason: null });
         return { message: "DEVICE_LOGGEDOUT" };
     };
 
@@ -182,15 +183,7 @@ export class DeviceModel {
         await fileManagement.deleteFile(authFilePath);
         const data = await whatsappClientService.logoutClient(device.phone);
         if (data.error) throw new HTTP400Error(data.message);
-        // const updateDeviceData ={
-        //     authState: false,
-        //     reason: {
-        //       statusCode: 401,
-        //       error: 'Unauthorized',
-        //       message: 'Connection Failure'
-        //     }
-        //   }
-        // await this.updateDevice(device.phone,updateDeviceData);
+
         return { message: "DEVICE_LOGGED_OUT", device: device };
     }
 

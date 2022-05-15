@@ -117,7 +117,7 @@ export class WhatsappClient {
             const clientInstance = this.getClientInstanceByPhone(from);
             if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-            const data = await clientInstance.sendTextMessage(sanatizeMobile(to), message);
+            const data = await clientInstance.sendAnyMessage(sanatizeMobile(to), message);
             return data;
         } catch (e) {
             return { error: true, message: e.message };
@@ -130,7 +130,7 @@ export class WhatsappClient {
             const clientInstance = this.getClientInstanceByPhone(from);
             if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-            const data = await clientInstance.sendListMessage(sanatizeMobile(to), message);
+            const data = await clientInstance.sendAnyMessage(sanatizeMobile(to), message);
             return data;
         } catch (e) {
             return { error: true, message: e.message };
@@ -143,7 +143,7 @@ export class WhatsappClient {
             const clientInstance = this.getClientInstanceByPhone(from);
             if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-            const data = await clientInstance.sendButtonMessage(sanatizeMobile(to), message);
+            const data = await clientInstance.sendAnyMessage(sanatizeMobile(to), message);
             return data;
         } catch (e) {
             return { error: true, message: e.message };
@@ -156,7 +156,7 @@ export class WhatsappClient {
             const clientInstance = this.getClientInstanceByPhone(from);
             if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-            const data = await clientInstance.sendTemplateMessage(sanatizeMobile(to), message);
+            const data = await clientInstance.sendAnyMessage(sanatizeMobile(to), message);
             return data;
         } catch (e) {
             return { error: true, message: e.message };
@@ -169,7 +169,7 @@ export class WhatsappClient {
             const clientInstance = this.getClientInstanceByPhone(phone);
             if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-            const data = await clientInstance.sendRawMessage(sanatizeMobile(to), message);
+            const data = await clientInstance.sendAnyMessage(sanatizeMobile(to), message);
             return data;
         } catch (e) {
             return { error: true, message: e.message };
@@ -183,7 +183,7 @@ export class WhatsappClient {
             if (!client) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!client.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
 
-            const data = await client.sendImageMessage(to, msg);
+            const data = await client.sendAnyMessage(to, msg);
             console.log("image sent data is ", data);
 
             return data;

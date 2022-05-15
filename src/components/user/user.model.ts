@@ -210,13 +210,23 @@ export class UserModel {
       const phoneInfo = parsePhoneWithCountry(phone,country);
       logger.info("Phone Info is ",phoneInfo);
       const userExist = await this.findUserByPhone(phoneInfo.number);;
-      if (userExist) throw new HTTP401Error("USER_ALREADY_EXIST");
-      const user: IUserModel = await this.createNewUser(phoneInfo.number,email,userName,"IN");
-      const otp = this.updateOtp(user._id);
-      const otpData = await this.sendOtpToMobile(otp, phone);
-      if (otpData.proceed) {
-        return { phone:phoneInfo.number, _id: user.id };
+      if (userExist && userExist.isVerified) throw new HTTP401Error("USER_ALREADY_EXIST");
+
+      if(userExist && !userExist.isVerified){
+        const otp = this.updateOtp(userExist._id);
+        const otpData = await this.sendOtpToMobile(otp, phone);
+        if (otpData.proceed) {
+          return { phone:phoneInfo.number, _id: userExist.id };
+        }
+      }else{
+        const user: IUserModel = await this.createNewUser(phoneInfo.number,email,userName,"IN");
+        const otp = this.updateOtp(user._id);
+        const otpData = await this.sendOtpToMobile(otp, phone);
+        if (otpData.proceed) {
+          return { phone:phoneInfo.number, _id: user.id };
+        }
       }
+     
       throw new HTTP400Error("OTP_NOT_SENT");
     } catch (e) {
       logger.error(logFileName, e);
@@ -789,8 +799,6 @@ export class UserModel {
         }
       }
     ]);
-
-    console.log("metrics result ", result);
     return result[0] || null;
   }
 
