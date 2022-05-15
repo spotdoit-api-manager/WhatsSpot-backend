@@ -7,8 +7,6 @@ const logFileName="[ApiBlocklistModel]";
 export class ApiBlockListModel{
     public async addApiToBlockList(deviceId: string,apiDetails: IApiKeyModal){
         try{
-            logger.debug("api details is ",apiDetails);
-            
             const newApiBlockBody: IApiBlock = {token:apiDetails.token,deviceId,expiresOn:apiDetails.expiresOn,createdOn:apiDetails.createdOn,blockedOn:new Date()};
             const newApiBlock = new ApiBlockList(newApiBlockBody);
             await newApiBlock.addToList();
