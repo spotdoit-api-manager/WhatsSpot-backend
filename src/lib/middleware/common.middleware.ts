@@ -12,14 +12,23 @@ export const useHelmet = (router: Router) => {
   router.use(helmet());
 };
 
+function isSkipCors(pred, middleware) {
+  return (req, res, next) => {
+      if (pred(req)) {
+          next(); // Skip this middleware.
+      }
+      else {
+          middleware(req, res, next); // Allow this middleware.
+      }
+  };
+}
 export const allowCors = (router: Router) => {
 
-  router.use(cors({
+  router.use(isSkipCors(req => req.method === "PUT",cors({
     origin(origin, callback) {
-      if (!origin) {
+      if(process.env.NODE_ENV=="development" && !origin){
+          return callback(null, true);
       }
-      return callback(null, true);
-      console.log(`Origin: ${origin}`,router);
       if (configCors.allowOrigin.indexOf(origin) === -1) {
         const msg = "The CORS policy for this site does not allow access from the specified Origin.";
         return callback(new Error(msg), false);
@@ -29,7 +38,7 @@ export const allowCors = (router: Router) => {
     exposedHeaders: configCors.exposedHeaders,
     // To enable HTTP cookies over CORS
     // credentials: true,
-  }));
+  })));
 };
 
 /* here all middleware come. Don't need to do anything in app.js*/
@@ -48,17 +57,17 @@ export const handleCompression = (router: Router) => {
   router.use(compression());
 };
 
-// export const requestLimiter = (router: Router) => {
-//   const limiter = new rateLimit({
-//     windowMs: +rateLimitConfig.inTime, // 1 minutes
-//     max: +rateLimitConfig.maxRequest, // limit each IP to 12 requests per windowMs,
-//     message: {
-//       status: 0,
-//       error: "Too Many Requests",
-//       statusCode: 429,
-//       message: "Oh boy! You look in hurry, take it easy",
-//       description: "You have crossed maximum number of requests. please wait and try again."
-//     }
-//   });
-//   router.use(limiter);
-// };
+export const requestLimiter = (router: Router) => {
+  const limiter =  rateLimit({
+    windowMs: +rateLimitConfig.inTime, // 1 minutes
+    max: +rateLimitConfig.maxRequest, // limit each IP to 12 requests per windowMs,
+    message: {
+      status: 0,
+      error: "TOO_MANY_REQUESTS",
+      statusCode: 429,
+      message: "Oh ! You look in hurry, take it easy",
+      description: "You have crossed maximum number of requests. please wait and try again."
+    }
+  });
+  router.use(limiter);
+};

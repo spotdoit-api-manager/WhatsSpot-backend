@@ -11,7 +11,7 @@ export default [
     ...user,
     ...contact,
     ...Device,
-    ...Messages,
+    // ...Messages,
     ...Wallet,
     ...Razorpay,
     ...Plans,

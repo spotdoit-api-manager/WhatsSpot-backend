@@ -36,7 +36,7 @@ export const configCors = {
 
 export const rateLimitConfig = {
   inTime: process.env.REQUEST_TIME || 60 * 1000,
-  maxRequest: process.env.MAX_REQUEST || 60
+  maxRequest: process.env.MAX_REQUEST || 4
 };
 
 export const commonConfig = {
