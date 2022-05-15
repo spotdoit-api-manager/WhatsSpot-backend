@@ -10,6 +10,7 @@ config({ path: "./config.env" });
 import { app } from "./app";
 import whatsappClientService from "./lib/services/whatsapp/whatsapp-client.service";
 import socketManager from "./lib/services/socket";
+import spotSchedular from "./lib/services/schedular";
 
 // Set PORT in .env or use 3000 by default  
 const Port: number = process.env.PORT ? + process.env.PORT : 8000;
@@ -21,7 +22,11 @@ socketManager.socketServer(server);
 
 server.listen(Port, () => {
     console.log(`Listening to port ${Port}`);
-    whatsappClientService.initializeAllClients();
+    if(process.env.NODE_ENV === "production") {
+        whatsappClientService.initializeAllClients();
+    }
+        spotSchedular.reScheduleAllApiExpiration();
+
     // dash.monitor({server: server});
 });
 
