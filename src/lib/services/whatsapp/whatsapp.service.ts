@@ -120,11 +120,11 @@ export default class Whatsapp extends EventEmitter {
       try {
         const msg = m.messages[0];
         if (!msg.key.fromMe) {
-          logger.debug(logFileName,`received msg :${msg.message?.conversation}`);
-          logger.debug(logFileName,`From: ${msg.key.remoteJid}`);
+          logger.info(logFileName,`received msg :${msg.message?.conversation}`);
+          logger.info(logFileName,`From: ${msg.key.remoteJid}`);
         } else {
-          logger.log(logFileName,`sent msg :${JSON.stringify(msg.message)}`);
-          logger.log(logFileName,`to: ${msg.key.remoteJid}`);
+          logger.info(logFileName,`sent msg :${JSON.stringify(msg.message)}`);
+          logger.info(logFileName,`to: ${msg.key.remoteJid}`);
         }
        
       } catch (err) {

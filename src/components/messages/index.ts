@@ -8,7 +8,7 @@ export default [
     {
         path:"/message/text",
         method: "post",
-        skipCors:true,
+        
         escapeAuth: true,
         handler: [DeviceKeyValidator,validateTextMessage, messageController.queueTextMessage]
     },
@@ -16,21 +16,21 @@ export default [
         path:"/message/list",
         method: "post",
         escapeAuth: true,
-        skipCors:true,
+        
         handler: [DeviceKeyValidator,validateListMessage, messageController.queueListMessage]
     },
     {
         path:"/message/button",
         method: "post",
         escapeAuth: true,
-        skipCors:true,
+        
         handler: [DeviceKeyValidator,validateBtnMessage, messageController.queueBtnMessage]
     },
     {
         path:"/message/template",
         method: "post",
         escapeAuth: true,
-        skipCors:true,
+        
         handler: [DeviceKeyValidator,validateTemplateMessage, messageController.queueTemplateMessage]
     },
     // fast messages
@@ -38,13 +38,13 @@ export default [
         path:"/message/fast/text",
         method: "post",
         escapeAuth: true,
-        skipCors:true,
+        
         handler: [DeviceKeyValidator,validateTextMessage, messageController.fastText]
     },
     {
         path:"/message/fast/list",
         method: "post",
-        skipCors:true,
+        
         escapeAuth: true,
         handler: [DeviceKeyValidator,validateListMessage, messageController.fastList]
     },
@@ -52,14 +52,14 @@ export default [
         path:"/message/fast/button",
         method: "post",
         escapeAuth: true,
-        skipCors:true,
+        
         handler: [DeviceKeyValidator,validateBtnMessage, messageController.fastBtn]
     },
     {
         path:"/message/fast/template",
         method: "post",
         escapeAuth: true,
-        skipCors:true,
+        
         handler: [DeviceKeyValidator,validateTemplateMessage, messageController.fastTemplate]
     },
    
@@ -67,14 +67,14 @@ export default [
         path:"/message/testMessage",
         method: "post",
         escapeAuth: true,
-        skipCors:true,
+        
         handler: [validateTestMessageRequest,messageController.sendTestMessage]
     },
     {
         path:"/message/rawMessage",
         method: "post",
         escapeAuth: true,
-        skipCors:true,
+        
         handler: [messageController.sendRawMessage]
     }
 ];

@@ -2,55 +2,55 @@ import adminController from "./admin.controller";
 
 export default [
     {
-        path: "/admin/loginWithPhone",
+        path: "/loginWithPhone",
         method: "post",
         escapeAuth: true,
         handler: [adminController.loginWithPhone]
       },
       {
-        path: "/admin/loggedUser",
+        path: "/loggedUser",
         method: "get",
         role:"admin",
         handler: [adminController.getLoggedUser]
       },
       {
-        path: "/admin/add",
+        path: "/add",
         method: "post",
         role:"admin",
         handler: [adminController.addNewAdmin]
       },
       {
-        path: "/admin/superAdmin/:adminId",
+        path: "/superAdmin/:adminId",
         method: "patch",
         role:"admin",
         handler: [adminController.convertToSuperAdmin]
       },
       {
-        path: "/admin/normalAdmin/:adminId",
+        path: "/normalAdmin/:adminId",
         method: "patch",
         role:"admin",
         handler: [adminController.convertToNormalAdmin]
       },
       {
-        path: "/admin/fetch",
+        path: "/fetch",
         method: "get",
         role:"admin",
         handler: [adminController.fetchAdmins]
       },
       {
-        path: "/admin/remove/:adminId",
+        path: "/remove/:adminId",
         method: "delete",
         role:"admin",
         handler: [adminController.removeAdmin]
       },
       {
-        path: "/admin/verifyOtp/:id",
+        path: "/verifyOtp/:id",
         method: "post",
         escapeAuth:true,
         handler: [adminController.verifyOtp]
       },
       {
-        path: "/admin/devices",
+        path: "/devices",
         method: "get",
         role:"admin",
         handler: [adminController.devicesList]
@@ -62,31 +62,31 @@ export default [
         handler: [adminController.metrics]
       },
       {
-        path: "/admin/users/base-list",
+        path: "/users/base-list",
         method: "get",
         role:"admin",
         handler: [adminController.fetchUsersBaseList]
       },
       {
-        path: "/admin/user/:userId",
+        path: "/user/:userId",
         method: "get",
         role:"admin",
         handler: [adminController.userDetailedAccountMetrics]
       },
       {
-        path: "/admin/wallet/update/:walletId",
+        path: "/wallet/update/:walletId",
         method: "post",
         role:"admin",
         handler: [adminController.updateUserWalletBalance]
       },
       {
-        path: "/admin/wallet/transactions/:walletId",
+        path: "/wallet/transactions/:walletId",
         method: "get",
         role:"admin",
         handler: [adminController.walletTransactions]
       },
       {
-        path: "/admin/device/:deviceId",
+        path: "/device/:deviceId",
         method: "get",
         role:"admin",
         handler: [adminController.getDeviceData]

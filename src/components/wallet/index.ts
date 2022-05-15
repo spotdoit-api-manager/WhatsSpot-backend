@@ -14,10 +14,5 @@ export default [
         escapeAuth: false,
         handler: [walletController.fetchTransactions]
     },
-    {
-        path: "/wallet/balance",
-        method: "get",
-        escapeAuth: true,
-        handler: [DeviceKeyValidator,walletController.fetchBalance]
-    },
+   
 ];

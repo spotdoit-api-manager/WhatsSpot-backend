@@ -12,19 +12,10 @@ export const useHelmet = (router: Router) => {
   router.use(helmet());
 };
 
-function isSkipCors(pred, middleware) {
-  return (req, res, next) => {
-      if (pred(req)) {
-          next(); // Skip this middleware.
-      }
-      else {
-          middleware(req, res, next); // Allow this middleware.
-      }
-  };
-}
+
 export const allowCors = (router: Router) => {
 
-  router.use(isSkipCors(req => req.method === "PUT",cors({
+  router.use(cors({
     origin(origin, callback) {
       if(process.env.NODE_ENV=="development" && !origin){
           return callback(null, true);
@@ -38,8 +29,28 @@ export const allowCors = (router: Router) => {
     exposedHeaders: configCors.exposedHeaders,
     // To enable HTTP cookies over CORS
     // credentials: true,
-  })));
+  }));
 };
+
+export const allowCorsAdmin = (router: Router) => {
+
+  router.use(cors({
+    origin(origin, callback) {
+      if(process.env.NODE_ENV=="development" && !origin){
+          return callback(null, true);
+      }
+      if (configCors.adminAllowOrigin.indexOf(origin) === -1) {
+        const msg = "The CORS policy for this site does not allow access from the specified Origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    exposedHeaders: configCors.exposedHeaders,
+    // To enable HTTP cookies over CORS
+    // credentials: true,
+  }));
+};
+
 
 /* here all middleware come. Don't need to do anything in app.js*/
 export const handleBodyRequestParsing = (router: Router) => {

@@ -18,6 +18,15 @@ export const mongoUrl = (): string => {
 
 export const configCors = {
   // Allow your domains to restrict ill apis.
+  adminAllowOrigin:[
+    "http://localhost:3000",
+    "http://localhost:52636",
+
+    "http://127.0.0.1:5500",
+    "http://localhost:4200",
+ 
+    "https://admin.whatsspot.in",
+  ],
   allowOrigin: [
     "http://localhost:3000",
     "http://localhost:52636",
@@ -36,7 +45,7 @@ export const configCors = {
 
 export const rateLimitConfig = {
   inTime: process.env.REQUEST_TIME || 60 * 1000,
-  maxRequest: process.env.MAX_REQUEST || 4
+  maxRequest: process.env.MAX_REQUEST || 60
 };
 
 export const commonConfig = {
