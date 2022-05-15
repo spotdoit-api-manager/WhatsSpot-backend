@@ -1,3 +1,4 @@
+import { ETransactionStatus } from "./../transaction/transaction.interface";
 import { HTTP401Error } from "../../lib/utils/httpErrors";
 import { ObjectID } from "bson";
 import { NextFunction } from "express";
@@ -112,11 +113,12 @@ export class WalletModel {
             }
     
         public async makePaymentFromWallet(walletId: string,userId: string,amount: number,description: string,metaData: Record<string, any>={}){            
-            const transaction = transactionModel.createTransactionForWallet(walletId,userId,ETransactionTypes.DEBIT,amount,description,metaData);
+            const transaction = await transactionModel.createTransactionForWallet(walletId,userId,ETransactionTypes.DEBIT,amount,description,metaData);
             const wallet = await this.removeCreditFromWallet(walletId,amount);
+            transactionModel.updateTransactionStatus(transaction._id,ETransactionStatus.SUCCESS);
             return {error:false,transaction,wallet};
         }
-   
+
 
 }
 
