@@ -69,7 +69,7 @@ export class ContactModal{
 
         public async addContactsToGroup(userId: string,groupId: string,contacts: IContact[]){
             const newContacts = this.createNewContact(contacts);
-            const result = await ContactGroup.findByIdAndUpdate(groupId,{$push:{contacts:{$each:newContacts}}},{ upsert: true, new : true}).lean();
+            const result = await ContactGroup.findByIdAndUpdate(groupId,{$addToSet:{contacts:{$each:newContacts}}},{ upsert: false, new : true}).lean();
             return result;
         }
 
@@ -119,14 +119,7 @@ export class ContactModal{
         }
 
         public async deleteContacts(userId: string,contactsId: string[]){
-            // const finalResult =[];
             return await Contact.deleteMany({_id:{$in:contactsId}});
-            // for (let i = 0; i < contactsId.length; i++) {
-            //     const cId = contactsId[i];
-            //     const result = await Contact.findByIdAndDelete(cId);
-            //     finalResult.push(result);
-            // }
-            
         }
 
         public async deleteGroupContacts(userId: string,groupId: string,contactsId: string[]){
@@ -139,11 +132,7 @@ export class ContactModal{
             return finalResult;
         }
 
-       
-
-        public addGroupContacts(userId: string,groupId: string,contacts: IContact[]){
-                logger.info("add group contacts ",contacts);
-        }
+      
 }
 
 export default new ContactModal();

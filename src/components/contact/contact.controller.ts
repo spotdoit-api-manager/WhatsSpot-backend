@@ -44,7 +44,7 @@ public async addContactsToGroup(req: Request,res: Response,next: NextFunction){
   const responseHandler = new ResponseHandler();
   try {    
       console.log("Add Contact to Group  Request",req.params.groupId);
-    responseHandler.reqRes(req, res).onFetch("CONTACTS_ADDED_FETCHED", await contactModel.addContactsToGroup(req.userId,req.params.groupId,req.body)).send();
+    responseHandler.reqRes(req, res).onFetch("CONTACTS_ADDED", await contactModel.addContactsToGroup(req.userId,req.params.groupId,req.body)).send();
   } catch (e) {
       console.log(e);
               next(responseHandler.sendError(e));
@@ -129,17 +129,7 @@ public async deleteGroupContacts(req: Request,res: Response,next: NextFunction){
   }
 }  
 
-
-public async addGroupContacts(req: Request,res: Response,next: NextFunction){
-  const responseHandler = new ResponseHandler();
-  try {    
-      console.log("Group add Contact  Request");
-    responseHandler.reqRes(req, res).onFetch("GROUP_CONTACT_ADDED", await contactModel.addGroupContacts(req.userId,req.params.groupId,req.body.contacts)).send();
-  } catch (e) {
-      console.log(e);
-              next(responseHandler.sendError(e));
-  }
-}  
+ 
 
 }
 

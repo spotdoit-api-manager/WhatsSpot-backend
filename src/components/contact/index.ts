@@ -59,9 +59,5 @@ export default [
     method:"delete",
     handler:[contactController.deleteGroup]
 },
-{
-    path:"/contact/group/:groupId/add",
-    method:"post",
-    handler:[contactController.addGroupContacts]
-}
+
 ];
