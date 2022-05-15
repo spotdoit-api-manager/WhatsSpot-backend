@@ -108,11 +108,10 @@ export class UserModel {
      
     
     ]);  
-    console.log(userPlan);  
     if(userPlan[0] && userPlan[0].activePlanInfo){
       return userPlan[0];
     }
-    return  null;
+     throw new HTTP401Error("NO_ACTIVE_PLAN","You don't have any active plan to show");
   }
   public async fetchUserActivePlan(userId: string) {
     const userPlan = await User.aggregate([

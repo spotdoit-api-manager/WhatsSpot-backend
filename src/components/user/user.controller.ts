@@ -184,7 +184,7 @@ class UserController {
 
       responseHandler.reqRes(req, res).onFetch("User Data", user).send();
     } catch (e) {
-      responseHandler.sendError(e);
+      next(responseHandler.sendError(e));
     }
   };
 
@@ -197,9 +197,8 @@ class UserController {
 
       responseHandler.reqRes(req, res).onFetch("ACTIVE_PLAN", activePlan).send();
     } catch (e) {
-      console.log(e);
-      
-      responseHandler.sendError(e);
+      console.log("error is ",e);
+      next(responseHandler.sendError(e));
     }
   };
 
