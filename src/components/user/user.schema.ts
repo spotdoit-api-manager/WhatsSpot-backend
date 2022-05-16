@@ -25,12 +25,32 @@ const planRef: Schema = new Schema({
 const UserSettingsSchema = new Schema({
   notifications:{
     device:{
+     email:{
+       type:Boolean,
+       default:true
+     },
+     whatsapp:{
       type:Boolean,
       default:true
+     },
+      sms:{
+        type:Boolean,
+        default:true
+      }
     },
     plan:{
-      type:Boolean,
-      default:true
+      email:{
+        type:Boolean,
+        default:true
+      },
+      whatsapp:{
+       type:Boolean,
+       default:true
+      },
+       sms:{
+         type:Boolean,
+         default:true
+       }
 
     }
   }

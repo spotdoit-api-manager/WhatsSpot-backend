@@ -28,10 +28,23 @@ export interface IPlanRef{
 }
 
 export interface IUserSettings{
-    notifications: {
-        device: boolean;
-        plan: boolean;
-    };
+    notifications: IUserNotificationSettings;
+}
+
+export interface IUserNotificationSettings{
+    
+        device: {
+            email: boolean;
+            sms: boolean;
+            whatsapp: boolean;
+        };
+        plan: {
+            email: boolean;
+            sms: boolean;
+            whatsapp: boolean;
+            
+        };
+
 }
 
 export interface ITokenData {
