@@ -10,6 +10,8 @@ import planManagerService from "../../lib/services/plan.manager.service";
 import transactionModel from "../transaction/transaction.model";
 import adminModel from "../admin/admin.model";
 import logger from "../../lib/utils/logger";
+
+const logFileName ="[PlanModel] : ";
 export class PlansModel{
 
 public async fetchPlanById(planId: string){
@@ -93,6 +95,13 @@ private async exhaustActivePlan(userPlanId: string){
     const activePlanStats = await UserPlan.findByIdAndUpdate(userPlanId,{planStatus:EPlanStatus.EXHAUSTED},{new:true}).select("sentMessageCount planStatus userId planId");
     notifyService.planExhausted(activePlanStats.userId,userPlanId);
     return activePlanStats;
+}
+public async expirePlan(plan: IUserPlanModel){
+    logger.info(logFileName,`Expiring user plan ${plan._id}`);
+    const result = await UserPlan.findByIdAndUpdate(plan._id,{planStatus:EPlanStatus.EXPIRED});
+    notifyService.planExpired(plan.userId,plan._id);
+    await userModel.removeUserActivePlan(plan.userId,plan._id);
+    logger.info(logFileName,`Plan ${plan._id} Expired`);
 }
 
 public async increamentMessageCount(activePlanId: string){
