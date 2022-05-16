@@ -161,7 +161,9 @@ export class UserModel {
 
   public async removeUserActivePlan(userId: string,planRef: string) {
     logger.info(logFileName, `removeUserActivePlan : ${userId} PlanRef: ${planRef}`);
-    const result = await User.findByIdAndUpdate(userId, { $pull: { activePlans: {planRef:new ObjectID(planRef)} } });
+    const userData = await User.findByIdAndUpdate(userId, { $pull: { activePlans: {planRef:new ObjectID(planRef)} } },{new:false}).lean();
+    const activePlan = userData.activePlans.find(plan => plan.planRef.toString() === planRef);
+    await User.findByIdAndUpdate(userId, { $push: {previousPlans:activePlan } });
   }
 
  
