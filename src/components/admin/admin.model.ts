@@ -1,3 +1,4 @@
+import { IStripePrice, IStripeProduct } from "./../stripe/stripe.interface";
 import { commonConfig } from "./../../config/index";
 import { HTTP400Error } from "./../../lib/utils/httpErrors";
 import { sendMessage } from "../../lib/services/otp-handler";
@@ -12,6 +13,7 @@ import jwt from "jsonwebtoken";
 import deviceModel from "../device/device.model";
 import userModel from "../user/user.model";
 import walletModel from "../wallet/wallet.model";
+import stripeModel from "../stripe/stripe.model";
 
 const logFileName = "[AdminModel] : ";
 export class AdminModel {
@@ -157,6 +159,26 @@ export class AdminModel {
         const message = `Your WhatsSpot Admin login OTP is ${otp}.`;
         return await sendMessage(phone, message);
     }
+
+
+    // !! STRIPE
+
+    public async addProduct(adminId: string,productBody: IStripeProduct){
+        if(!await this.isSuperAdmin(adminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED","Only Super Admins can add new Stripe Product");
+        return await stripeModel.addProduct(productBody);
+    }
+
+    public getProducts(userId: string,limit: number){
+    return stripeModel.getProducts(userId,limit);  
+    }
+
+    public async createPrice(userId: string,priceBody: IStripePrice){
+        return await stripeModel.createPrice(userId,priceBody);  
+        }
+
+        public async getPrices(userId: string,limit: number){
+            return await stripeModel.getPrices(userId,limit);  
+            }
 
 }
 export default new AdminModel();

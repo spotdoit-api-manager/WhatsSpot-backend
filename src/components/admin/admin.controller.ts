@@ -167,6 +167,49 @@ export class AdminController{
           responseHandler.sendError(e);
         }
       };
+
+
+      // strip
+
+      public addProduct = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("PRODUCT_ADDED", await adminModel.addProduct(req.userId,req.body)).send();
+        } catch (e) {
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
+
+      public getProducts = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("PRODUCTS_FETCHED", await adminModel.getProducts(req.userId,req.query.limit)).send();
+        } catch (e) {
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
+
+      public createPrice = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("PRICE_CREATED", await adminModel.createPrice(req.userId,req.body)).send();
+        } catch (e) {
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
+
+      public getPrices = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("PRICES_FETCHED", await adminModel.getPrices(req.userId,req.query.limit)).send();
+        } catch (e) {
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
 }
 
 

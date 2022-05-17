@@ -79,6 +79,7 @@
         "razorpay": "^2.8.0",
         "socket.io": "^4.2.0",
         "socket.io-client": "^4.2.0",
+        "stripe": "^9.1.0",
         "tsc-watch": "^4.2.9",
         "typescript": "^4.0.5",
         "winston": "^3.2.1",

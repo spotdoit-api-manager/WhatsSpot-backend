@@ -6,6 +6,7 @@ import Messages from "../components/messages";
 import Plans from "../components/plans";
 import contact  from "../components/contact";
 import Admin from "../components/admin";
+import Stripe from "../components/stripe";
 
 export default [
     ...user,
@@ -15,5 +16,6 @@ export default [
     ...Wallet,
     ...Razorpay,
     ...Plans,
-    ...Admin
+    ...Admin,
+    ...Stripe
 ];

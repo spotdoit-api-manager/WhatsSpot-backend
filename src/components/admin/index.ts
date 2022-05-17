@@ -92,4 +92,28 @@ export default [
         role:"admin",
         handler: [adminController.getDeviceData]
       },
+      {
+        path: "/stripe/product/add",
+        method: "post",
+        role:"admin",
+        handler: [adminController.addProduct]
+      },
+      {
+        path: "/stripe/product/fetchAll",
+        method: "get",
+        role:"admin",
+        handler: [adminController.getProducts]
+      },
+      {
+        path: "/stripe/price/create",
+        method: "post",
+        role:"admin",
+        handler: [adminController.createPrice]
+      },
+      {
+        path: "/stripe/price/fetchAll",
+        method: "get",
+        role:"admin",
+        handler: [adminController.getPrices]
+      }
 ];

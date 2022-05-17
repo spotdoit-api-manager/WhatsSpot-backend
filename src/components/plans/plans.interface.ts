@@ -8,6 +8,7 @@ planPeriodUnit: string;
 planInfo: string[];
 planMaxMessage: number|null;
 isBest: boolean;
+stripePriceId: string;
 }
 
 export enum EPLANS{

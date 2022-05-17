@@ -51,6 +51,7 @@ export const rateLimitConfig = {
 export const commonConfig = {
   jwtSecretKey: process.env.SECRET_KEY || "some-secret-key",
   pageSizeLimit: 15,
+  domain: process.env.NODE_ENV === "production"?"https://dashboard.whatsspot.in":"http://localhost:4200"
 };
 
 export const deviceKeyConfig = {
@@ -68,6 +69,13 @@ export const mailazyConfig = {
   accessSecret:process.env.MAILAZY_SECRET
 };
 
+
+export const stripeConfig = {
+  secretKey: process.env.STRIPE_SECRET_KEY,
+  publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+  API:process.env.STRIPE_API
+
+};
 
 export const s3Config = {
   accessKey: process.env.S3_ACCEESS_ID || "",
