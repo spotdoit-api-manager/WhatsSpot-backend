@@ -225,6 +225,17 @@ class UserController {
     }
   };
 
+  public updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+
+    try {
+
+      responseHandler.reqRes(req, res).onCreate("PROFILE_UPDATED", await userModel.updateProfile(req.userId,req.body)).send();
+    } catch (e) {
+      next(responseHandler.sendError(e));
+    }
+  };
+
   public logIn = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
@@ -275,6 +286,27 @@ class UserController {
     }
   }
 
+  public sendEmailVerification = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      const data = await userModel.sendEmailVerification(req.userId);
+
+      responseHandler.reqRes(req, res).onCreate("EMAIL_OTP_SENT", data).send();
+    } catch (e) {
+      next(responseHandler.sendError(e));
+    }
+  }
+
+  public verifyEmaliOtp = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      const data = await userModel.verifyEmaliOtp(req.userId,req.body.otp);
+
+      responseHandler.reqRes(req, res).onCreate("EMAIL_VERIFIED", data).send();
+    } catch (e) {
+      next(responseHandler.sendError(e));
+    }
+  }
   public verifyUser = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {

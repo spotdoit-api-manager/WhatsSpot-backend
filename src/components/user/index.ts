@@ -65,6 +65,24 @@ export default [
     escapeAuth: false,
     handler: [userController.updateNotificationSettings]
   },
+  {
+    path: "/user/settings/profile",
+    method: "post",
+    escapeAuth: false,
+    handler: [userController.updateProfile]
+  },
+  {
+    path: "/user/email/otp",
+    method: "post",
+    escapeAuth: false,
+    handler: [userController.sendEmailVerification]
+  },
+  {
+    path: "/user/email/verify",
+    method: "post",
+    escapeAuth: false,
+    handler: [userController.verifyEmaliOtp]
+  },
   
 ];
 

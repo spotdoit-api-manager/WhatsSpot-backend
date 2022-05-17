@@ -22,3 +22,18 @@ export const sendNotificationMail = async(to: string,subject: string,text: strin
        logger.error(logFileName,`Error in sending mail to ${to}`,e);
     }
 };
+
+
+
+export const sendVerificationMail = async(to: string,subject: string,text: string,html: string="")=>{
+        const res = await client.send({
+            to,
+            from: process.env.NOTIFICATION_EMAIL, 
+            subject,
+            text,
+            html
+        });
+        logger.info(logFileName,`Email to ${to} sent successfully`,res);
+        return res;
+  
+};

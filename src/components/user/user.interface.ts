@@ -8,6 +8,7 @@ export interface IUser {
     role: string;
     phone: string;
     otp?: number;
+    emailOtp?: number;
     isVerified: boolean;
     dateOfBirth?: Date;
     followers?: Array<string>;
@@ -20,6 +21,12 @@ export interface IUser {
     deviceCodes?: {[key: string]: string};
     country: string;
     settings?: IUserSettings;
+    emailVerified: boolean;
+}
+
+export interface IUserProfile{
+    userName?: string;
+    country?: string;    
 }
 
 export interface IPlanRef{

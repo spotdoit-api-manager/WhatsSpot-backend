@@ -4,7 +4,7 @@ import { IWalletModel } from "../wallet/wallet.schema";
 import { EMessageStatus } from "./../messages/message.interface";
 import {  otpGenerator } from "../../lib/helpers";
 import { User } from "./user.schema";
-import { IUser, ITokenData, IDataStoredInToken, IPlanRef, IUserNotificationSettings } from "./user.interface";
+import { IUser, ITokenData, IDataStoredInToken, IPlanRef, IUserNotificationSettings, IUserProfile } from "./user.interface";
 import { IUserModel } from "./user.schema";
 import socialAuth from "./../../lib/middleware/socialAuth";
 import * as  bcrypt from "bcryptjs";
@@ -18,6 +18,7 @@ import logger from "../../core/logger";
 import { EPlanStatus } from "../plans/plans.interface";
 import { CountryCode } from "libphonenumber-js";
 import notifyService from "../../lib/services/notifiy.service";
+import * as emailService from "../../lib/services/email.service";
 
 const logFileName = "[UserModal] : ";
 export class UserModel {
@@ -185,7 +186,7 @@ export class UserModel {
   async createNewUser(phone: string,email: string,userName: string,country: CountryCode) {
     let walletId=null;
     try {
-      const body: IUser = {phone,email,userName,country,isVerified:false,deactivation:false,role:"user",};
+      const body: IUser = {phone,email,userName,country,emailVerified:false,isVerified:false,deactivation:false,role:"user",};
       const existingUser = await this.isUserExistByPhone(body.phone);
       let data: IUserModel;
       if (!existingUser) {
@@ -1052,6 +1053,34 @@ public async updateNotificationSettings(userId: string, notificationSetting: IUs
     };
   return await User.findOneAndUpdate({_id:new ObjectID(userId)},{$set:{"settings.notifications":newSettings}},{new:true}).select("settings.notifications").lean();
 }
+
+public async updateProfile(userId: string,profileBody: IUserProfile){
+  if(!profileBody.country || !profileBody.userName) throw new HTTP400Error("Invalid request","country and userName are required");
+  return await User.findByIdAndUpdate(userId,{country:profileBody.country,userName:profileBody.userName});
+}
+
+public async sendEmailVerification(userId: string){
+    const user: IUserModel = await this.findUserById(userId);
+    if(user.emailVerified) throw new HTTP401Error("EMAIL_ALREADY_VERIFIED","Your email id is already verifeid");
+    if(!user) throw new HTTP400Error("USER_NOT_FOUND","User not found");
+    const email = user.email;
+    if(!email) throw new HTTP400Error("USER_EMAIL_FOUND","User do not have email");
+    const otp = otpGenerator();
+    logger.info(logFileName,`Sending Email OTP ${otp} to ${email}`);
+    await User.findByIdAndUpdate(userId,{$set:{emailOtp:otp}});
+    const res = await emailService.sendVerificationMail(email,"Email Verification",`Dear ${user.userName}, Your OTP for email verification is`,`<b><h2>${otp}</h2></h2></b>`);
+    if(!res) throw new HTTP400Error("EMAIL_SEND_FAILED","Email send failed");
+}
+
+public async verifyEmaliOtp(userId: string,otp: string){
+  const user: IUserModel = await this.findUserById(userId);
+  if(!user) throw new HTTP400Error("USER_NOT_FOUND","User not found");
+  // if(user.emailVerified) throw new HTTP400Error("EMAIL_ALREADY_VERIFIED","Your email id is already verifeid");
+  if(!user.emailOtp) throw new HTTP400Error("EMAIL_OTP_NOT_FOUND","Email OTP not found");
+  if(user.emailOtp !== parseInt(otp)) throw new HTTP400Error("INVALID_OTP","The entered OTP is invalid");
+  return await User.findByIdAndUpdate(userId,{$set:{emailVerified:true}}).lean();
+}
+
 
 
 }

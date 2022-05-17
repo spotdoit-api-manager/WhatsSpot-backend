@@ -96,6 +96,7 @@ export const UserSchema: Schema = new Schema(
       enum: ["male", "female", "other"],
     },
     otp: Number,
+    emailOtp:Number,
     deviceCodes:{
       type:SchemaTypes.Mixed,
       required:false,
@@ -119,6 +120,11 @@ export const UserSchema: Schema = new Schema(
     country:{
       type:String,
       required:true
+    },
+    emailVerified:{
+      type:Boolean,
+      required:true,
+      default:false
     },
     settings:{
       type:UserSettingsSchema,
