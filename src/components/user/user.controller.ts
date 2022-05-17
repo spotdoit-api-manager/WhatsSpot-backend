@@ -214,6 +214,16 @@ class UserController {
     }
   };
 
+  public updateNotificationSettings = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+
+    try {
+
+      responseHandler.reqRes(req, res).onCreate("Phone Number Added", await userModel.updateNotificationSettings(req.userId,req.body)).send();
+    } catch (e) {
+      next(responseHandler.sendError(e));
+    }
+  };
 
   public logIn = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();

@@ -33,18 +33,16 @@ export interface IUserSettings{
 
 export interface IUserNotificationSettings{
     
-        device: {
-            email: boolean;
-            sms: boolean;
-            whatsapp: boolean;
-        };
-        plan: {
-            email: boolean;
-            sms: boolean;
-            whatsapp: boolean;
-            
-        };
+        device: IUserNotificationChannels;
+        plan: IUserNotificationChannels;
 
+}
+
+
+export interface IUserNotificationChannels{
+    email: boolean;
+    sms: boolean;
+    whatsapp: boolean;
 }
 
 export interface ITokenData {

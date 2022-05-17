@@ -4,7 +4,7 @@ import { IWalletModel } from "../wallet/wallet.schema";
 import { EMessageStatus } from "./../messages/message.interface";
 import {  otpGenerator } from "../../lib/helpers";
 import { User } from "./user.schema";
-import { IUser, ITokenData, IDataStoredInToken, IPlanRef } from "./user.interface";
+import { IUser, ITokenData, IDataStoredInToken, IPlanRef, IUserNotificationSettings } from "./user.interface";
 import { IUserModel } from "./user.schema";
 import socialAuth from "./../../lib/middleware/socialAuth";
 import * as  bcrypt from "bcryptjs";
@@ -1040,6 +1040,20 @@ export class UserModel {
      
     ]);
   }
+
+public async updateNotificationSettings(userId: string, notificationSetting: IUserNotificationSettings) {
+    const newSettings = { 
+      device:{
+        ...notificationSetting.device,
+      },
+      plan:{
+        ...notificationSetting.plan,
+      }
+    };
+  return await User.findOneAndUpdate({_id:new ObjectID(userId)},{$set:{"settings.notifications":newSettings}},{new:true}).select("settings.notifications").lean();
+}
+
+
 }
 
 export default new UserModel();

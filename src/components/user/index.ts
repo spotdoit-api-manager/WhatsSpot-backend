@@ -59,6 +59,12 @@ export default [
     escapeAuth: true,
     handler: [userController.verifyOtp]
   },
+  {
+    path: "/user/settings/notifications",
+    method: "post",
+    escapeAuth: false,
+    handler: [userController.updateNotificationSettings]
+  },
   
 ];
 
