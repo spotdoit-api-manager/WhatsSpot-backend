@@ -22,39 +22,34 @@ const planRef: Schema = new Schema({
     }
 },{timestamps:true});
 
+
+const NotificationChannels = new Schema({
+  email:{
+    type:Boolean,
+    default:true
+  },
+  whatsapp:{
+   type:Boolean,
+   default:true
+  },
+   sms:{
+     type:Boolean,
+     default:true
+   }
+},{timestamps: false,_id:false});
+
 const UserSettingsSchema = new Schema({
   notifications:{
     device:{
-     email:{
-       type:Boolean,
-       default:true
-     },
-     whatsapp:{
-      type:Boolean,
-      default:true
-     },
-      sms:{
-        type:Boolean,
-        default:true
-      }
+      type:NotificationChannels,
+      required:true
     },
     plan:{
-      email:{
-        type:Boolean,
-        default:true
-      },
-      whatsapp:{
-       type:Boolean,
-       default:true
-      },
-       sms:{
-         type:Boolean,
-         default:true
-       }
-
-    }
+      type:NotificationChannels,
+      required:true
+    },
   }
-},{timestamps:false});
+},{timestamps:false,_id:false});
 
 export const UserSchema: Schema = new Schema(
   {
@@ -125,7 +120,24 @@ export const UserSchema: Schema = new Schema(
       type:String,
       required:true
     },
-    settings:UserSettingsSchema
+    settings:{
+      type:UserSettingsSchema,
+      required:true,
+      default:{
+        notifications:{
+          device:{
+            email:true,
+            whatsapp:true,
+            sms:true
+          },
+          plan:{
+            email:true,
+            whatsapp:true,
+            sms:true,
+          }
+        }
+      },
+    }
   },
   {
     timestamps: true
