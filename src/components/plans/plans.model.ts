@@ -50,7 +50,7 @@ public async activateUserPlan(adminId: string,userId: string,planId: string,reas
     const user = await userModel.fetch(userId);
     const plan: IPLAN = await this.fetchPlanByPlanId(planId);
     const transactionMessage = `${reason}-> ${plan.planName}`;
-    const transaction: ITransactionModel = await transactionModel.createTransactionForRazorPay(plan.planId,`ADMIN_${adminId}`,userId,user.walletId,ETransactionTypes.CREDIT,plan.planAmount,transactionMessage);
+    const transaction: ITransactionModel = await transactionModel.createTransactionForPlan(plan.planId,`ADMIN_${adminId}`,userId,user.walletId,ETransactionTypes.CREDIT,plan.planAmount,transactionMessage);
     const activePlan: IUserPlan = await this.activatePlan(userId,planId,transaction._id);
     const updatedTransaction: ITransactionModel  = await transactionModel.updateTransactionStatus(transaction._id,ETransactionStatus.SUCCESS);
     return activePlan;

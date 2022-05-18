@@ -9,7 +9,7 @@ const logFileName = "[TransactionModel] : ";
 export class TransactionModel {
 
 public fetchTransactionById(walletId,transactionId){
-        return Transaction.findOne({walletId:new ObjectID(walletId),_id:new ObjectID(transactionId)});
+        return Transaction.findOne({walletId:new ObjectID(walletId),_id:new ObjectID(transactionId)}).lean();
 }
 
     public async fetchTransactions(walletId: string,page: number) {
@@ -36,7 +36,7 @@ public fetchTransactionById(walletId,transactionId){
 
     
 
-    public async createTransactionForRazorPay(planId: string,orderId: string, userId: string, walletId: string, type: ETransactionTypes, amount: number, description: string) {
+    public async createTransactionForPlan(planId: string,orderId: string, userId: string, walletId: string, type: ETransactionTypes, amount: number, description: string) {
         try {
 
             const transactionBody: ITransaction= {

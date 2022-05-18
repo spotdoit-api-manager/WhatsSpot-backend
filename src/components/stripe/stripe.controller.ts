@@ -8,7 +8,16 @@ export class StripePaymentController{
         try {
           responseHandler.reqRes(req, res).onFetch("SESSION_CREATED", await stripePaymentModel.createNewSession(req.userId,req.walletId,req.body.planId)).send();
         } catch (e) {
-            console.log(e);
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      }
+
+      public validateSession = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("SESSION_VALIDATED", await stripePaymentModel.validateSession(req.userId,req.walletId,req.body.sessionId)).send();
+        } catch (e) {
           // send error with next function.
           next(responseHandler.sendError(e));
         }

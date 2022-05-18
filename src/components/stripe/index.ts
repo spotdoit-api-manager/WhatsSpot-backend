@@ -7,6 +7,11 @@ export default [
         handler: [stripeController.createNewSession]
     },
     {
+        path: "/stripe/sessions/validate",
+        method: "post",
+        handler: [stripeController.validateSession]
+    },
+    {
         path: "/stripe/sessions/fetch",
         method: "get",
         handler: [stripeController.fetchSession]

@@ -167,6 +167,14 @@ export class UserModel {
     await User.findByIdAndUpdate(userId, { $push: {previousPlans:activePlan } });
   }
 
+  public async checkIfUserCanActivatePlan(userId: string, planId: string) {
+    const userActivePlan = await this.fetchUserActivePlan(userId);
+    if(userActivePlan && userActivePlan.planStatus === EPlanStatus.ACTIVE){
+        throw new HTTP401Error("ALREADY_HAS_ACTIVE_PLAN","User already has an active plan");
+    }else if(userActivePlan && userActivePlan.planStatus === EPlanStatus.EXHAUSTED){
+        await this.removeUserActivePlan(userId,userActivePlan._id);
+    }   
+  }
  
 
   public async delete(id: string) {
@@ -1056,7 +1064,7 @@ public async updateNotificationSettings(userId: string, notificationSetting: IUs
 
 public async updateProfile(userId: string,profileBody: IUserProfile){
   if(!profileBody.country || !profileBody.userName) throw new HTTP400Error("Invalid request","country and userName are required");
-  return await User.findByIdAndUpdate(userId,{country:profileBody.country,userName:profileBody.userName});
+  return await User.findByIdAndUpdate(userId,{country:profileBody.country,userName:profileBody.userName},{new:true}).lean();
 }
 
 public async sendEmailVerification(userId: string){

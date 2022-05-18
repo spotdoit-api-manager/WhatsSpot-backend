@@ -29,7 +29,7 @@ export class RazorPayModel {
             if (!order) throw new HTTP401Error("UNKNOWN_ERROR");
             if (order.error) throw new HTTP401Error(order.message);
             const transactionMessage = plan.planId == "PAYG" ?"Adding money to wallet":`Buying plan -> ${plan.planName}`;
-            const transaction: ITransactionModel = await transactionModel.createTransactionForRazorPay(plan.planId,order.order.id,userId,walletId,ETransactionTypes.CREDIT,amount,transactionMessage);
+            const transaction: ITransactionModel = await transactionModel.createTransactionForPlan(plan.planId,order.order.id,userId,walletId,ETransactionTypes.CREDIT,amount,transactionMessage);
             if(!transaction) throw new HTTP401Error("UNKNOWN_ERROR");
             order.order.transactionId = transaction._id;
             order.order.planId = plan.planId;
@@ -48,14 +48,16 @@ export class RazorPayModel {
            
             const response = { signatureIsValid: false };
         if (expectedSignature === body.razorpay_signature) {
-            const updatedTransaction: ITransactionModel  = await transactionModel.updateTransactionStatus(body.transactionId,ETransactionStatus.SUCCESS);
+            const transaction: ITransactionModel  = await transactionModel.updateTransactionStatus(body.transactionId,ETransactionStatus.SUCCESS);
         
-            if(updatedTransaction?.metaData && updatedTransaction?.metaData.get("planId") != EPLANS.PAYG){
-                await plansModel.activatePlan(userId,updatedTransaction.metaData.get("planId"),updatedTransaction._id);                
+            if(transaction?.metaData && transaction?.metaData.get("planId") != EPLANS.PAYG){
+                await plansModel.activatePlan(userId,transaction.metaData.get("planId"),transaction._id);
+                 await transactionModel.updateTransactionStatus(body.transactionId,ETransactionStatus.SUCCESS);
+                
             }
             else
             {                
-               await walletModel.addCreditToWallet(walletId,updatedTransaction.amount);
+               await walletModel.addCreditToWallet(walletId,transaction.amount);
             }
             
             response.signatureIsValid = true;

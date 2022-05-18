@@ -30,7 +30,7 @@ export const configCors = {
   allowOrigin: [
     "http://localhost:3000",
     "http://localhost:52636",
-
+    "https://securegw.paytm.in",
     "http://127.0.0.1:5500",
     "http://localhost:4200",
     "https://spotdoit.in",
@@ -51,7 +51,8 @@ export const rateLimitConfig = {
 export const commonConfig = {
   jwtSecretKey: process.env.SECRET_KEY || "some-secret-key",
   pageSizeLimit: 15,
-  domain: process.env.NODE_ENV === "production"?"https://dashboard.whatsspot.in":"http://localhost:4200"
+  domain: process.env.NODE_ENV === "production"?"https://dashboard.whatsspot.in":"http://localhost:4200",
+  backendUrl: process.env.NODE_ENV === "production"?"https://backend.whatsspot.in":"http://localhost:4250"
 };
 
 export const deviceKeyConfig = {
