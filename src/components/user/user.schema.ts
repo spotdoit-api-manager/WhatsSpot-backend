@@ -26,7 +26,7 @@ const planRef: Schema = new Schema({
 const NotificationChannels = new Schema({
   email:{
     type:Boolean,
-    default:true
+    default:false
   },
   whatsapp:{
    type:Boolean,
