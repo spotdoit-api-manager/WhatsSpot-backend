@@ -132,12 +132,12 @@ export const UserSchema: Schema = new Schema(
       default:{
         notifications:{
           device:{
-            email:true,
+            email:false,
             whatsapp:true,
             sms:true
           },
           plan:{
-            email:true,
+            email:false,
             whatsapp:true,
             sms:true,
           }
