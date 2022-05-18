@@ -1075,7 +1075,7 @@ public async sendEmailVerification(userId: string){
 public async verifyEmaliOtp(userId: string,otp: string){
   const user: IUserModel = await this.findUserById(userId);
   if(!user) throw new HTTP400Error("USER_NOT_FOUND","User not found");
-  // if(user.emailVerified) throw new HTTP400Error("EMAIL_ALREADY_VERIFIED","Your email id is already verifeid");
+  if(user.emailVerified) throw new HTTP400Error("EMAIL_ALREADY_VERIFIED","Your email id is already verifeid");
   if(!user.emailOtp) throw new HTTP400Error("EMAIL_OTP_NOT_FOUND","Email OTP not found");
   if(user.emailOtp !== parseInt(otp)) throw new HTTP400Error("INVALID_OTP","The entered OTP is invalid");
   return await User.findByIdAndUpdate(userId,{$set:{emailVerified:true}}).lean();

@@ -2,6 +2,7 @@
 const  MailazyClient = require("mailazy-node");
 import logger from "../../core/logger";
 import { mailazyConfig } from "../../config";
+import { HTTP400Error } from "../utils/httpErrors";
 
 const logFileName="[EmailService]: ";
 
@@ -26,13 +27,16 @@ export const sendNotificationMail = async(to: string,subject: string,text: strin
 
 
 export const sendVerificationMail = async(to: string,subject: string,text: string,html: string="")=>{
-        const res = await client.send({
+        let res = await client.send({
             to,
             from: process.env.NOTIFICATION_EMAIL, 
             subject,
             text,
             html
         });
+        res= JSON.parse(res);
+        if(res.error) throw new HTTP400Error("Email Error",res.message);
+
         logger.info(logFileName,`Email to ${to} sent successfully`,res);
         return res;
   
