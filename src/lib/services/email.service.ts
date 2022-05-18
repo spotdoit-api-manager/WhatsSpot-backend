@@ -26,9 +26,9 @@ export const sendNotificationMail = async(to: string,subject: string,text: strin
 
 
 
-export const sendVerificationMail = async(to: string,subject: string,text: string,html: string="")=>{
+export const sendVerificationMail = async(to: string,subject: string,text: string="",html: string)=>{
     const client = new MailazyClient({ accessKey: mailazyConfig.accessKey, accessSecret: mailazyConfig.accessSecret });
-
+    logger.info(logFileName,`Sending verification mail to ${to},html: ${html}`);
         let res = await client.send({
             to,
             from: process.env.NOTIFICATION_EMAIL, 
