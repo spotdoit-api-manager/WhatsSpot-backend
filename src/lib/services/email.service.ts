@@ -6,11 +6,11 @@ import { HTTP400Error } from "../utils/httpErrors";
 
 const logFileName="[EmailService]: ";
 
-const client = new MailazyClient({ accessKey: mailazyConfig.accessKey, accessSecret: mailazyConfig.accessSecret });
 
 
 export const sendNotificationMail = async(to: string,subject: string,text: string,html: string="")=>{
     try {
+        const client = new MailazyClient({ accessKey: mailazyConfig.accessKey, accessSecret: mailazyConfig.accessSecret });
         const res = await client.send({
             to,
             from: process.env.NOTIFICATION_EMAIL, 
@@ -27,6 +27,8 @@ export const sendNotificationMail = async(to: string,subject: string,text: strin
 
 
 export const sendVerificationMail = async(to: string,subject: string,text: string,html: string="")=>{
+    const client = new MailazyClient({ accessKey: mailazyConfig.accessKey, accessSecret: mailazyConfig.accessSecret });
+
         let res = await client.send({
             to,
             from: process.env.NOTIFICATION_EMAIL, 
