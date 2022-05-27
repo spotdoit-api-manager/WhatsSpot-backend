@@ -18,12 +18,10 @@ export class RazorPayModel {
         try {
             logger.info(logFileName,planId,amount);
             const plan: IPLAN = await plansModel.fetchPlanByPlanId(planId);
-            const userActivePlan = await userModel.fetchUserActivePlan(userId);
-            if(userActivePlan && userActivePlan.planStatus === EPlanStatus.ACTIVE){
-                throw new HTTP401Error("ALREADY_HAS_ACTIVE_PLAN","User already has an active plan");
-            }else if(userActivePlan && userActivePlan.planStatus === EPlanStatus.EXHAUSTED){
-                await userModel.removeUserActivePlan(userId,userActivePlan._id);
-            }            
+            if(planId!==EPLANS.PAYG){
+                await userModel.checkIfUserCanActivatePlan(userId,planId);
+            }
+
             if(!plan) throw new HTTP401Error("INVALID_PLAN");
             const order: any = await razorPayService.createOrder(userId, {planId,amount});
             if (!order) throw new HTTP401Error("UNKNOWN_ERROR");
