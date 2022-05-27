@@ -24,6 +24,9 @@
   "appService.zipIgnorePattern": [".vscode{,/**}"],
   "appService.deploySubpath": "",
   "cSpell.words": [
+    "EPLANS",
+    "PAYG",
+    "Paytm",
     "sanatize"
   ]
 }

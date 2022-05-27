@@ -1,3 +1,4 @@
+import { EPLANS } from "./../plans/plans.interface";
 import { ITransactionModel } from "./../transaction/transaction.schema";
 import { ETransactionStatus, ETransactionTypes } from "./../transaction/transaction.interface";
 /* eslint-disable @typescript-eslint/camelcase */
@@ -34,18 +35,18 @@ export class StripePaymentModel {
   }
 
 
-  public async createNewSession(userId: string, walletId: string, planId: string) {
+  public async createNewSession(userId: string, walletId: string,amount: number, planId: string) {
     const plan: IPlanModel = await plansModel.fetchPlanByPlanId(planId);
     if(!plan)throw new HTTP401Error("INVALID_PLAN","The plan you have request doesnt exists");
     const transaction: ITransactionModel = await transactionModel.createTransactionForPlan(planId,"STRIPE",userId,walletId,ETransactionTypes.CREDIT,plan.planAmount,plan.planName);
-    if(!transaction) throw new HTTP401Error("UNKNOW_ERROR","Unable to create transaction");
-    console.log(transaction._id.valueOf());
-    return await stripe.checkout.sessions.create({
+    if(!transaction) throw new HTTP401Error("UNKNOWN_ERROR","Unable to create transaction");
+    
+    const  session = await stripe.checkout.sessions.create({
       line_items: [
         {
           // Provide the exact Price ID (for example, pr_1234) of the product you want to sell
           price: plan.stripePriceId,
-          quantity: 1,
+          quantity: planId==EPLANS.PAYG?amount:1,
         },
       ],
       mode: "payment",
@@ -54,11 +55,11 @@ export class StripePaymentModel {
         planId:planId.toString(),
         transactionId:transaction._id.toString()
       },
-      success_url: `${commonConfig.domain}/success`,
-      cancel_url: `${commonConfig.domain}/cancel`,
+      success_url: `${commonConfig.domain}/user/wallet`,
+      cancel_url: `${commonConfig.domain}/user/wallet`,
     });
+    return {sessionId:session.id,sessionUrl:session.url,amount:session.amount_total,expiresAt:session.expires_at};
   }
-
 
   public async validateSession(userId: string,walletId: string,sessionId: string){
   const session =   await stripe.checkout.sessions.retrieve(
@@ -78,6 +79,10 @@ export class StripePaymentModel {
 
   public async expireSession(userId: string,sessionId: string){
     return await stripe.checkout.sessions.expire(sessionId);
+  }
+
+  public stripeEvent(body: any){
+    console.log("stripe event",body);
   }
 
 }

@@ -10,7 +10,7 @@ import { IUserNotificationSettings } from "../../components/user/user.interface"
 
 const CACHE_CLEAR_INTERVAL = 20;
 let deviceIdPhoneMap: { [key: string]: { notificationSettings: IUserNotificationSettings; devicePhone: string; email: string; phone: string } } = {};
-const logFileName = "[NotifySeervice] : ";
+const logFileName = "[NotifyService] : ";
 export class NotifyService {
 
     constructor() {
@@ -18,7 +18,7 @@ export class NotifyService {
     }
 
     private clearDeviceCache() {
-        logger.info(logFileName, `Started interval to clear device cache every ${CACHE_CLEAR_INTERVAL} minutes`);
+        logger.info(logFileName, `Started interval to clear device data cache every ${CACHE_CLEAR_INTERVAL} minutes`);
         const interval = setInterval(() => {
             deviceIdPhoneMap = {};
         }, CACHE_CLEAR_INTERVAL * 1000);

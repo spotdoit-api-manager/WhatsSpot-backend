@@ -31,6 +31,7 @@ export class RazorPayModel {
             if(!transaction) throw new HTTP401Error("UNKNOWN_ERROR");
             order.order.transactionId = transaction._id;
             order.order.planId = plan.planId;
+            razorPayService.checkTransactionStatusIn(order.order.id,transaction._id);
             return {order};
         } catch (err) {
             throw new HTTP401Error(err.message);
@@ -48,8 +49,8 @@ export class RazorPayModel {
         if (expectedSignature === body.razorpay_signature) {
             const transaction: ITransactionModel  = await transactionModel.updateTransactionStatus(body.transactionId,ETransactionStatus.SUCCESS);
         
-            if(transaction?.metaData && transaction?.metaData.get("planId") != EPLANS.PAYG){
-                await plansModel.activatePlan(userId,transaction.metaData.get("planId"),transaction._id);
+            if(transaction?.metaData && transaction?.metaData?.planId != EPLANS.PAYG){
+                await plansModel.activatePlan(userId,transaction.metaData.planId,transaction._id);
                  await transactionModel.updateTransactionStatus(body.transactionId,ETransactionStatus.SUCCESS);
                 
             }
@@ -63,6 +64,7 @@ export class RazorPayModel {
         }        
         return response;
     }catch(err){
+        console.log(err.message);
         throw new HTTP401Error(err.message);
     }
 }

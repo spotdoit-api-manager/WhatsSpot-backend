@@ -12,6 +12,12 @@ export default [
         handler: [stripeController.validateSession]
     },
     {
+        path: "/stripe/sessions/event",
+        method: "post",
+        escapeAuth:true,
+        handler: [stripeController.stripeEvent]
+    },
+    {
         path: "/stripe/sessions/fetch",
         method: "get",
         handler: [stripeController.fetchSession]

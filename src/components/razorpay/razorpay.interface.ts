@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/interface-name-prefix */
 export interface ICreateOrder{
     amount: number;
     planId: string;
@@ -8,4 +9,10 @@ export interface IVerifyPayment{
     paymentId: string;
     transactionId: string;
     razorpay_signature: string;
+}
+
+export enum ERazorPayOrderStatus{
+CREATED="created",
+ATTEMPTED="attempted",
+PAID="paid",
 }

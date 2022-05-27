@@ -14,5 +14,10 @@ export default [
         escapeAuth: false,
         handler: [walletController.fetchTransactions]
     },
-   
+    {
+        path: "/wallet/rate",
+        method: "get",
+        escapeAuth: false,
+        handler: [walletController.getRate]
+    },
 ];
