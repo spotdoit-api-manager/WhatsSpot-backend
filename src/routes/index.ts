@@ -7,6 +7,7 @@ import Plans from "../components/plans";
 import contact  from "../components/contact";
 import Admin from "../components/admin";
 import Stripe from "../components/stripe";
+import paypal from "../components/paypal";
 
 export default [
     ...user,
@@ -17,5 +18,6 @@ export default [
     ...Razorpay,
     ...Plans,
     ...Admin,
-    ...Stripe
+    ...Stripe,
+    ...paypal
 ];

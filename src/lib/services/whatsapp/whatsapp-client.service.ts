@@ -115,8 +115,14 @@ export class WhatsappClient {
         try {
             logger.info(logFileName,`Sending Text Message to ${to} | from: ${from}`);
             const clientInstance = this.getClientInstanceByPhone(from);
-            if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-            if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+            if (!clientInstance){
+                logger.error(logFileName,`Client not found ${from}`);
+                return { error: true, message: "CLIENT_NOT_FOUND" };
+            };
+            if (!clientInstance.authState) {
+                logger.error(logFileName,`Client not authenticated ${from}`);
+                return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+            };
             const data = await clientInstance.sendAnyMessage(sanatizeMobile(to), message);
             return data;
         } catch (e) {

@@ -1,4 +1,4 @@
-import logger from "../utils/logger";
+import logger from "../../core/logger";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const CC = require("currency-converter-lt");
@@ -34,3 +34,15 @@ export const startExchangeRateService = async(): Promise<void> => {
    });
 };
 
+export const convertCurrency = async(from: string="INR",to: string,amount: number=1): Promise<number> => {
+    logger.info(logFileName, "Converting ", amount, " ", from, " to ", to);
+    const cc = new CC({from, to, amount:1, });
+    if(rates[from] && rates[to]){
+        return amount*rates[to]/rates[from];
+    }
+    return  cc.convert(amount);
+};
+
+convertCurrency("INR","USD",1).then((res)=>{
+    console.log(res);
+});

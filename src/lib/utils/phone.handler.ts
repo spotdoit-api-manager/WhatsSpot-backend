@@ -20,6 +20,7 @@ const logFileName = "[PhoneHandler] : ";
 
   export const parsePhone = (phone: string)=>{
     try{
+      // console.log("parsing phone",phone);
       phone = deSanatizeMobile(phone);
         const parsedPhone: PhoneNumber =  parsePhoneNumber(deSanatizeMobile(phone));        
         if(!parsedPhone.isValid()) throw new Error(`Phone ${phone} is invalid`);

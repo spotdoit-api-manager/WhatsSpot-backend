@@ -15,7 +15,7 @@ import { commonConfig } from "../../config";
 import { HTTP400Error, HTTP401Error } from "../../lib/utils/httpErrors";
 import walletModel from "../wallet/wallet.model";
 import logger from "../../core/logger";
-import { EPlanStatus } from "../plans/plans.interface";
+import { EPLANS, EPlanStatus } from "../plans/plans.interface";
 import { CountryCode } from "libphonenumber-js";
 import notifyService from "../../lib/services/notifiy.service";
 import * as emailService from "../../lib/services/email.service";
@@ -168,9 +168,12 @@ export class UserModel {
   }
 
   public async checkIfUserCanActivatePlan(userId: string, planId: string) {
+    if(planId==EPLANS.PAYG){
+      return true;
+    }
     const userActivePlan = await this.fetchUserActivePlan(userId);
     if(userActivePlan && userActivePlan.planStatus === EPlanStatus.ACTIVE){
-        throw new HTTP401Error("ALREADY_HAS_ACTIVE_PLAN","User already has an active plan");
+        throw new HTTP400Error("ALREADY_HAS_ACTIVE_PLAN","User already has an active plan");
     }else if(userActivePlan && userActivePlan.planStatus === EPlanStatus.EXHAUSTED){
         await this.removeUserActivePlan(userId,userActivePlan._id);
     }   
@@ -225,12 +228,12 @@ export class UserModel {
 
       if(userExist && !userExist.isVerified){
         const otp = this.updateOtp(userExist._id);
-        const otpData = await this.sendOtpToMobile(otp, phone);
+        const otpData = await this.sendOtpToMobile(otp, phoneInfo.number);
         if (otpData.proceed) {
           return { phone:phoneInfo.number, _id: userExist.id };
         }
       }else{
-        const user: IUserModel = await this.createNewUser(phoneInfo.number,email,userName,"IN");
+        const user: IUserModel = await this.createNewUser(phoneInfo.number,email,userName,country);
         const otp = this.updateOtp(user._id);
         const otpData = await this.sendOtpToMobile(otp, phone);
         if (otpData.proceed) {

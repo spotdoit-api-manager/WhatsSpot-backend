@@ -8,7 +8,7 @@ import { getSkipLimit } from "../../lib/utils";
 const logFileName = "[TransactionModel] : ";
 export class TransactionModel {
 
-public fetchTransactionById(walletId,transactionId){
+public fetchTransactionById(walletId: string,transactionId: string){
         return Transaction.findOne({walletId:new ObjectID(walletId),_id:new ObjectID(transactionId)}).lean();
 }
 

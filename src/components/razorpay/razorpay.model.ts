@@ -18,10 +18,8 @@ export class RazorPayModel {
         try {
             logger.info(logFileName,planId,amount);
             const plan: IPLAN = await plansModel.fetchPlanByPlanId(planId);
-            if(planId!==EPLANS.PAYG){
-                await userModel.checkIfUserCanActivatePlan(userId,planId);
-            }
-
+            await userModel.checkIfUserCanActivatePlan(userId,planId);
+            
             if(!plan) throw new HTTP401Error("INVALID_PLAN");
             const order: any = await razorPayService.createOrder(userId, {planId,amount});
             if (!order) throw new HTTP401Error("UNKNOWN_ERROR");
@@ -48,11 +46,9 @@ export class RazorPayModel {
             const response = { signatureIsValid: false };
         if (expectedSignature === body.razorpay_signature) {
             const transaction: ITransactionModel  = await transactionModel.updateTransactionStatus(body.transactionId,ETransactionStatus.SUCCESS);
-        
+
             if(transaction?.metaData && transaction?.metaData?.planId != EPLANS.PAYG){
-                await plansModel.activatePlan(userId,transaction.metaData.planId,transaction._id);
-                 await transactionModel.updateTransactionStatus(body.transactionId,ETransactionStatus.SUCCESS);
-                
+                await plansModel.activatePlan(userId,transaction.metaData.planId,transaction._id);                
             }
             else
             {                

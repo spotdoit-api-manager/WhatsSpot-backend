@@ -26,8 +26,8 @@ socketManager.socketServer(server);
 server.listen(Port, async() => {
     logger.info(`Listening to port ${Port}`);
     await startExchangeRateService();
+    whatsappClientService.initializeAllClients();
     if(process.env.NODE_ENV === "production") {
-        whatsappClientService.initializeAllClients();
         spotSchedular.reScheduleAllApiExpiration();
         spotSchedular.reScheduleAllUserPlanExpiration();
     }else{
