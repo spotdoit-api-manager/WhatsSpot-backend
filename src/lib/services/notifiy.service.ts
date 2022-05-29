@@ -66,14 +66,12 @@ export class NotifyService {
                 const userData = (await User.findById(device.userId).select("phone email userName").lean());
                 deviceIdPhoneMap[deviceId] = { notificationSettings: userData.settings.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
             }
-
+                logger.info("device cacheche is ",deviceIdPhoneMap);
             if (this.checkNotificationSettings(deviceIdPhoneMap[deviceId].notificationSettings, ENotificationMainTypes.DEVICE, ENotificationChannel.WHATSAPP)) {
-
                 messageService.sendWhatsappMessage(deviceIdPhoneMap[deviceId].phone, `Device with phone ${deviceIdPhoneMap[deviceId].devicePhone} Authorized successfully`);
             }
 
             if (this.checkNotificationSettings(deviceIdPhoneMap[deviceId].notificationSettings, ENotificationMainTypes.DEVICE, ENotificationChannel.EMAIL)) {
-
                 emailService.sendNotificationMail(deviceIdPhoneMap[deviceId].email, "DEVICE AUTHORIZED", `Device with phone ${deviceIdPhoneMap[deviceId].devicePhone} Authorized successfully`);
             }
 
