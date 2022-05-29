@@ -30,8 +30,6 @@ export class PaytmModel {
             finalAmount=   (await convertCurrency("INR",currency,plan.planAmount)).toString(); 
             indianAmount = plan.planAmount;
             } 
-
-        logger.warn("final amount is ",amount);
         const transactionMessage = planId==EPLANS.PAYG? "Adding money to wallet" : `Buying ${plan.planName} subscription`;
 
         const payload = {
@@ -75,7 +73,6 @@ export class PaytmModel {
 
     public async createPaypalOrder(order: any): Promise<any> {
         const token = await this.getPaypalToken();
-        logger.info(logFileName, "got paypal acess token", token);
         const url = `${process.env.PAYPAL_API_URL}/v2/checkout/orders`;
         const options = {
             headers: {
@@ -112,8 +109,6 @@ export class PaytmModel {
             }
         };
         const res = await axios.get(url, options);
-        logger.info(logFileName);
-        console.log(res.data);
         return res.data;
     }catch(e){
         logger.error(logFileName,e);
@@ -125,7 +120,6 @@ export class PaytmModel {
     public async verifyOrder(userId: string,walletId: string,orderId: string,transactionId: string){
         const order = await this.getOrderDetails(orderId);
         const transaction = await transactionModel.fetchTransactionById(walletId,transactionId);
-        console.log("order details fetched",order);
         if(!order)throw new HTTP400Error("ORDER_NOT_FOUND");
         if(!transaction) throw new HTTP400Error("UNKNOWN_ORDER");
         if(order.status!=="COMPLETED")throw new HTTP400Error("ORDER_NOT_COMPLETED");
