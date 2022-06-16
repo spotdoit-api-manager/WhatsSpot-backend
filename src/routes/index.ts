@@ -8,6 +8,7 @@ import contact  from "../components/contact";
 import Admin from "../components/admin";
 import Stripe from "../components/stripe";
 import paypal from "../components/paypal";
+import qrPay from "../components/qrpay";
 
 export default [
     ...user,
@@ -19,5 +20,6 @@ export default [
     ...Plans,
     ...Admin,
     ...Stripe,
-    ...paypal
+    ...paypal,
+    ...qrPay
 ];
