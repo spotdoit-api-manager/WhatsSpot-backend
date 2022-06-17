@@ -9,17 +9,18 @@ import { getSkipLimit } from "../../lib/utils";
 const logFileName = "[TransactionModel] : ";
 export class TransactionModel {
 
-public fetchTransactionById(walletId: string,transactionId: string){
-        return Transaction.findOne({walletId:new ObjectID(walletId),_id:new ObjectID(transactionId)}).lean();
+public fetchTransactionById(walletId: string="",transactionId: string){
+        return Transaction.findById(transactionId).lean();
 }
 
-public async fetchTransactionByMethod(userId: string,method: EPayWith,status: ETransactionStatus|null,page: number=1){
-        const {skip,limit} = getSkipLimit(page);
-        let condition;
+public async fetchTransactionByMethod(method: EPayWith,status: ETransactionStatus|null,page: number=1){
+    console.log("fetchTransactionByMethod",status);
+        // const {skip,limit} = getSkipLimit(page);
+        let condition: {method: EPayWith;status?: ETransactionStatus};
         if(status){
-             condition  = { userId: new ObjectID(userId),method:method,status:status };
+             condition  = {method:method,status:status };
         }else{
-            condition  = { userId: new ObjectID(userId),method:method };
+            condition  = { method:method };
         }
       
         const result = await Transaction.aggregate([
@@ -28,6 +29,7 @@ public async fetchTransactionByMethod(userId: string,method: EPayWith,status: ET
             // { $skip: skip },
             // { $limit: limit }
         ]);
+        console.group("result is ",result);
         return result;
 }
 

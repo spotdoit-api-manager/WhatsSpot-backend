@@ -8,3 +8,4 @@ export enum EPayWith {
     WALLET="WALLET"
   }
   
+  export const EPayWithMongoEnum = ["STRIPE", "RAZORPAY", "PAYPAL", "QR_PAY", "PAYTM", "ADMIN","WALLET"];

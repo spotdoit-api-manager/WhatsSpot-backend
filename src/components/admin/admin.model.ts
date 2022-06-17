@@ -1,3 +1,4 @@
+import { ITransaction } from "./../transaction/transaction.interface";
 import { IStripePrice, IStripeProduct } from "./../stripe/stripe.interface";
 import { commonConfig } from "./../../config/index";
 import { HTTP400Error } from "./../../lib/utils/httpErrors";
@@ -17,6 +18,7 @@ import stripeModel from "../stripe/stripe.model";
 import transactionModel from "../transaction/transaction.model";
 import { EPayWith } from "../../core/enums/pay-with.enum";
 import { ETransactionStatus } from "../transaction/transaction.interface";
+import qrPayModel from "../qrpay/qr-pay.model";
 
 const logFileName = "[AdminModel] : ";
 export class AdminModel {
@@ -183,8 +185,13 @@ export class AdminModel {
         return await stripeModel.getPrices(userId, limit);
     }
 
-    public async fetchPaymentsRequests(userId: string, page: number) {
-        return transactionModel.fetchTransactionByMethod(userId,EPayWith.QR_PAY,ETransactionStatus.PENDING,page);
+    public async fetchPaymentsRequests(userId: string, status: ETransactionStatus,page: number) {
+        console.log("status",status);
+        return await transactionModel.fetchTransactionByMethod(EPayWith.QR_PAY,status,page);
+    }
+
+    public async approvePayment(userId: string,paymentId: string){
+        return qrPayModel.approvePayment(userId,paymentId);
     }
 
 }

@@ -189,6 +189,22 @@ export class NotifyService {
             logger.error(`Error sending PLAN_ACTIVATED notification for user ${userId}  for  plan ${planId}`, e.message);
         }
     }
+    public async paymentApprove(userId: string, planId: EPLANS,transactionId: string) {
+        try {
+            logger.info(`Sending PAYMENT_APPROVED notification for user ${userId} and plan ${planId}`);
+            const userData = (await User.findById(userId).select("phone email userName").lean());
+            // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
+                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n Payment Approved for your transactionId: ${transactionId}.`);
+            // }
+            // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
+                emailService.sendNotificationMail(userData.email, "PAYMENT APPROVED", `Dear ${userData.userName}, \n  Payment Approved for your transactionId  ${transactionId}.`);
+            // }
+
+        } catch (e) {
+            logger.error(`Error sending PLAN_ACTIVATED notification for user ${userId}  for  plan ${planId}`, e.message);
+        }
+    }
+
 }
 
 export default new NotifyService();

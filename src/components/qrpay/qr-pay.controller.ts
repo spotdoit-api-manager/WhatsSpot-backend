@@ -8,6 +8,7 @@ export class QrPayController{
         try {    
           responseHandler.reqRes(req, res).onFetch("ORDER_CREATED", await qrPayModel.createOrder(req.userId,req.walletId,req.body.transactionId,req.body.planId,req.body.amount)).send();
         } catch (e) {
+          console.log(e);
           // send error with next function.
           next(responseHandler.sendError(e));
         }

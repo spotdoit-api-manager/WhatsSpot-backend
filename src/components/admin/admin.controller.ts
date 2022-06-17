@@ -1,3 +1,4 @@
+import { ETransactionStatus } from "./../transaction/transaction.interface";
 import { NextFunction, Request, Response } from "express";
 import ResponseHandler from "../../lib/helpers/responseHandler";
 import adminModel from "./admin.model";
@@ -214,7 +215,17 @@ export class AdminController{
       public fetchPaymentRequests = async (req: Request, res: Response, next: NextFunction) => {
         const responseHandler = new ResponseHandler();
         try {
-          responseHandler.reqRes(req, res).onFetch("PAYMENTS_FETCHED", await adminModel.fetchPaymentsRequests(req.userId,req.query.page)).send();
+          responseHandler.reqRes(req, res).onFetch("PAYMENTS_FETCHED", await adminModel.fetchPaymentsRequests(req.userId,req.params.status as ETransactionStatus,req.query.page)).send();
+        } catch (e) {
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
+
+      public approvePayment = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("PAYMENT APPROVED", await adminModel.approvePayment(req.userId,req.params.paymentId)).send();
         } catch (e) {
           // send error with next function.
           next(responseHandler.sendError(e));

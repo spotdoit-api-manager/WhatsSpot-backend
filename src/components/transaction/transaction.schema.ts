@@ -1,3 +1,4 @@
+import { EPayWithMongoEnum } from "./../../core/enums/pay-with.enum";
 /* eslint-disable @typescript-eslint/interface-name-prefix */
 import { ITransaction } from "./transaction.interface";
 import { Document, model, Model, Mongoose, Schema, SchemaTypes } from "mongoose";
@@ -45,6 +46,10 @@ const TransactionSchema = new Schema({
   
     description:{
         type:String
+    },
+    method:{
+        type:String,
+        enum:EPayWithMongoEnum
     }
 
 }, {
@@ -54,6 +59,5 @@ const TransactionSchema = new Schema({
   TransactionSchema.methods.addTransaction = async function () {
     return this.save();
 };
-
 
   export const Transaction: Model<ITransactionModel> = model<ITransactionModel>("transaction", TransactionSchema);

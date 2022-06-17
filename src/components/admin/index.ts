@@ -117,9 +117,15 @@ export default [
         handler: [adminController.getPrices]
       },
       {
-        path:"/payment/request",
+        path:"/payments/:status",
         method:"get",
         role:"admin",
         handler:[adminController.fetchPaymentRequests]
+      },
+      {
+        path:"/payments/:paymentId/approve",
+        method:"post",
+        role:"admin",
+        handler:[adminController.approvePayment]
       }
 ];
