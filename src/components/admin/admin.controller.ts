@@ -210,6 +210,16 @@ export class AdminController{
           next(responseHandler.sendError(e));
         }
       };
+
+      public fetchPaymentRequests = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("PAYMENTS_FETCHED", await adminModel.fetchPaymentsRequests(req.userId,req.query.page)).send();
+        } catch (e) {
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
 }
 
 

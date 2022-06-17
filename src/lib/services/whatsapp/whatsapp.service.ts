@@ -17,7 +17,7 @@ import deviceModel from "./../../../components/device/device.model";
 import path from "path";
 import instanceProvider from "./instance.provider";
 import logger from "../../../core/logger";
-import notifyService from "../notifiy.service";
+import notifyService from "../notify.service";
 import fileManagement from "../../../lib/helpers/file.management";
 import { EWhatsappMessageTypes } from "./whatsapp.enum";
 

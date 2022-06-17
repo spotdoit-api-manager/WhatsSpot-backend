@@ -1,3 +1,4 @@
+import { EPayWith } from "./../../core/enums/pay-with.enum";
 import { EPLANS } from "./../plans/plans.interface";
 import { ITransactionModel } from "./../transaction/transaction.schema";
 import { ETransactionStatus, ETransactionTypes } from "./../transaction/transaction.interface";
@@ -38,7 +39,7 @@ export class StripePaymentModel {
   public async createNewSession(userId: string, walletId: string,amount: number, planId: string) {
     const plan: IPlanModel = await plansModel.fetchPlanByPlanId(planId);
     if(!plan)throw new HTTP401Error("INVALID_PLAN","The plan you have request doesnt exists");
-    const transaction: ITransactionModel = await transactionModel.createTransactionForPlan(planId,"STRIPE",userId,walletId,ETransactionTypes.CREDIT,plan.planAmount,plan.planName);
+    const transaction: ITransactionModel = await transactionModel.createTransactionForPlan(planId,"STRIPE",userId,walletId,ETransactionTypes.CREDIT,plan.planAmount,plan.planName,EPayWith.STRIPE);
     if(!transaction) throw new HTTP401Error("UNKNOWN_ERROR","Unable to create transaction");
     
     const  session = await stripe.checkout.sessions.create({

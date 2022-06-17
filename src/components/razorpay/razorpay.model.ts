@@ -1,10 +1,10 @@
-import { EPlanStatus } from "./../plans/plans.interface";
+import { EPayWith } from "./../../core/enums/pay-with.enum";
 import { ITransactionModel } from "./../transaction/transaction.schema";
 import { ETransactionStatus, ETransactionTypes } from "../transaction/transaction.interface";
 import transactionModel from "../transaction/transaction.model";
 import { razorPaySecrets } from "./../../config/index";
 import { HTTP401Error } from "./../../lib/utils/httpErrors";
-import { ICreateOrder, IVerifyPayment } from "./razorpay.interface";
+import { IVerifyPayment } from "./razorpay.interface";
 import razorPayService from "./razorpay.service";
 import walletModel from "../wallet/wallet.model";
 import crypto from "crypto";
@@ -25,7 +25,7 @@ export class RazorPayModel {
             if (!order) throw new HTTP401Error("UNKNOWN_ERROR");
             if (order.error) throw new HTTP401Error(order.message);
             const transactionMessage = plan.planId == "PAYG" ?"Adding money to wallet":`Buying plan -> ${plan.planName}`;
-            const transaction: ITransactionModel = await transactionModel.createTransactionForPlan(plan.planId,order.order.id,userId,walletId,ETransactionTypes.CREDIT,amount,transactionMessage);
+            const transaction: ITransactionModel = await transactionModel.createTransactionForPlan(plan.planId,order.order.id,userId,walletId,ETransactionTypes.CREDIT,amount,transactionMessage,EPayWith.RAZORPAY);
             if(!transaction) throw new HTTP401Error("UNKNOWN_ERROR");
             order.order.transactionId = transaction._id;
             order.order.planId = plan.planId;

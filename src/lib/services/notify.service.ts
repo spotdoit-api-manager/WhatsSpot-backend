@@ -1,4 +1,5 @@
-import { ENotificationMainTypes } from "./../interfaces/notification.interface";
+import { EPLANS } from "../../components/plans/plans.interface";
+import { ENotificationMainTypes } from "../interfaces/notification.interface";
 import { User } from "../../components/user/user.schema";
 import messageService from "./message.service";
 import { IReason } from "./whatsapp/whatsapp.interface";
@@ -169,14 +170,25 @@ export class NotifyService {
                 emailService.sendNotificationMail(userData.email, "PLAN ACTIVATED", `Dear ${userData.userName}, \n You plan has been activated.`);
             }
 
-            
-
-
         } catch (e) {
             logger.error(`Error sending PLAN_ACTIVATED notification for user ${userId}  for  plan ${userPlanId}`, e.message);
         }
     }
+    public async paymentApproveRequest(userId: string, planId: EPLANS,transactionId: string) {
+        try {
+            logger.info(`Sending PAYMENT_APPROVAL notification for user ${userId} and plan ${planId}`);
+            const userData = (await User.findById(userId).select("phone email userName").lean());
+            // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
+                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n We have received your payment request approval for transactionId ${transactionId}.`);
+            // }
+            // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
+                emailService.sendNotificationMail(userData.email, "PAYMENT APPROVAL REQUEST", `Dear ${userData.userName}, \n We have received your payment request approval for transactionId ${transactionId}.`);
+            // }
 
+        } catch (e) {
+            logger.error(`Error sending PLAN_ACTIVATED notification for user ${userId}  for  plan ${planId}`, e.message);
+        }
+    }
 }
 
 export default new NotifyService();

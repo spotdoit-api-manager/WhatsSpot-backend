@@ -10,6 +10,7 @@ import transactionModel from "../transaction/transaction.model";
 import plansModel from "../plans/plans.model";
 import walletModel from "../wallet/wallet.model";
 import userModel from "../user/user.model";
+import { EPayWith } from "../../core/enums/pay-with.enum";
 const logFileName = "PaypalModel";
 export class PaytmModel {
 
@@ -64,7 +65,7 @@ export class PaytmModel {
             }]
         };
         const order = await this.createPaypalOrder(payload);
-        const transaction: ITransactionModel = await transactionModel.createTransactionForPlan(plan.planId,order.id,userId,walletId,ETransactionTypes.CREDIT,indianAmount,transactionMessage);
+        const transaction: ITransactionModel = await transactionModel.createTransactionForPlan(plan.planId,order.id,userId,walletId,ETransactionTypes.CREDIT,indianAmount,transactionMessage,EPayWith.PAYPAL);
         return transaction;
       }catch(e){
         return {error:true,message:e.message};

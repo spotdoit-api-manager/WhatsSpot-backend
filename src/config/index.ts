@@ -21,6 +21,7 @@ export const configCors = {
   adminAllowOrigin:[
     "http://localhost:3000",
     "http://localhost:52636",
+    "http://localhost:60032",
 
     "http://127.0.0.1:5500",
     "http://localhost:4200",
@@ -28,14 +29,16 @@ export const configCors = {
     "https://admin.whatsspot.in",
   ],
   allowOrigin: [
+    "http://localhost:4200",
     "http://localhost:3000",
     "http://localhost:52636",
-    "https://securegw.paytm.in",
     "http://127.0.0.1:5500",
-    "http://localhost:4200",
+    "https://securegw.paytm.in",
     "https://spotdoit.in",
     "https://dashboard.whatsspot.in",
-    "https://whatsspot.in"
+    "https://whatsspot.in",
+    "http://localhost:60032",
+
 
     //add your origin
   ],

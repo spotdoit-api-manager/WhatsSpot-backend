@@ -14,75 +14,78 @@ import deviceModel from "../device/device.model";
 import userModel from "../user/user.model";
 import walletModel from "../wallet/wallet.model";
 import stripeModel from "../stripe/stripe.model";
+import transactionModel from "../transaction/transaction.model";
+import { EPayWith } from "../../core/enums/pay-with.enum";
+import { ETransactionStatus } from "../transaction/transaction.interface";
 
 const logFileName = "[AdminModel] : ";
 export class AdminModel {
 
     public async fetch(id: string) {
-       return await AdminUser.findById(id);
-      }
+        return await AdminUser.findById(id);
+    }
 
-      public async updateUserWalletBalance(walletId: string, balance: number) {
+    public async updateUserWalletBalance(walletId: string, balance: number) {
         return await walletModel.updateWalletBalance(walletId, balance);
-      }
+    }
 
-      public async walletTransactions(walletId: string) {
-        return await walletModel.fetchTransactions(null,walletId);
-      } 
-    
-    public async metrics(){
+    public async walletTransactions(walletId: string) {
+        return await walletModel.fetchTransactions(null, walletId);
+    }
+
+    public async metrics() {
         const devicesMetrics = await deviceModel.fetchDevicesMetrics();
         const usersMetrics = await userModel.fetchUserMetrics();
         const walletBalance = await walletModel.getTotalWalletBalance();
-        return {devicesMetrics, usersMetrics,walletBalance};
+        return { devicesMetrics, usersMetrics, walletBalance };
     }
 
     public async devicesList(adminId: string) {
         return await deviceModel.fetchDevicesList();
     }
 
-    public async fetchUsersBaseList(){
+    public async fetchUsersBaseList() {
         return await userModel.fetchUsersBaseList();
     }
 
-    public async userDetailedAccountMetrics(userId: string){
+    public async userDetailedAccountMetrics(userId: string) {
         return await userModel.userDetailedAccountMetrics(userId);
     }
 
-    public async getDeviceData(deviceId: string){
+    public async getDeviceData(deviceId: string) {
         return await deviceModel.fetchDeviceMetrics(deviceId);
     }
     public async isSuperAdmin(adminId: string): Promise<boolean> {
         const adminUser = await AdminUser.findById(adminId);
-        if(!adminUser) throw new HTTP401Error("OPERATION_NOT_ALLOWED","Only Super Admins can make Admin User Super Admin");
-        if(adminUser.isSuperAdmin){
+        if (!adminUser) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can make Admin User Super Admin");
+        if (adminUser.isSuperAdmin) {
             return true;
         }
         return false;
     }
 
-    public async addNewAdmin(adminId: string,body: IAdminUser) {
-       if(!await this.isSuperAdmin(adminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED","new admin can only added by super admins");
+    public async addNewAdmin(adminId: string, body: IAdminUser) {
+        if (!await this.isSuperAdmin(adminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "new admin can only added by super admins");
         body.isSuperAdmin = false;
         const newAdminUser = new AdminUser(body);
         return await newAdminUser.save();
     }
-    public async fetchAdmins(){
+    public async fetchAdmins() {
         return AdminUser.find({});
     }
 
-    public async convertToSuperAdmin(superAdminId: string,adminId: string){
-        if(!await this.isSuperAdmin(superAdminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED","Only Super Admins can make Admin User Super Admin");
-        return await AdminUser.findByIdAndUpdate(adminId,{isSuperAdmin:true});
+    public async convertToSuperAdmin(superAdminId: string, adminId: string) {
+        if (!await this.isSuperAdmin(superAdminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can make Admin User Super Admin");
+        return await AdminUser.findByIdAndUpdate(adminId, { isSuperAdmin: true });
     }
 
-    public async convertToNormalAdmin(superAdminId: string,adminId: string){
-        if(!await this.isSuperAdmin(superAdminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED","Only Super Admins can make Admin User Normal Admin");
-        return await AdminUser.findByIdAndUpdate(adminId,{isSuperAdmin:false});
+    public async convertToNormalAdmin(superAdminId: string, adminId: string) {
+        if (!await this.isSuperAdmin(superAdminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can make Admin User Normal Admin");
+        return await AdminUser.findByIdAndUpdate(adminId, { isSuperAdmin: false });
     }
 
-    public async removeAdmin(superAdminId: string,adminId: string) {
-        if(!await this.isSuperAdmin(superAdminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED","Admins can only be removed by super admins");
+    public async removeAdmin(superAdminId: string, adminId: string) {
+        if (!await this.isSuperAdmin(superAdminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Admins can only be removed by super admins");
         return await AdminUser.findByIdAndDelete(adminId);
     }
     private findAdminUserByPhone(phone: string) {
@@ -90,7 +93,7 @@ export class AdminModel {
     }
     public async loginWithPhone(phoneNumber: string) {
         const adminUser: IAdminUserModel = await this.findAdminUserByPhone(phoneNumber);
-        if (!adminUser) throw new HTTP401Error("ADMIN_USER_NOT_FOUND","Contact Super Admin to add you as admin");
+        if (!adminUser) throw new HTTP401Error("ADMIN_USER_NOT_FOUND", "Contact Super Admin to add you as admin");
         const otp = this.updateOtp(adminUser._id);
         const otpData = await this.sendOtpToMobile(otp, phoneNumber);
         if (otpData.proceed) {
@@ -163,22 +166,26 @@ export class AdminModel {
 
     // !! STRIPE
 
-    public async addProduct(adminId: string,productBody: IStripeProduct){
-        if(!await this.isSuperAdmin(adminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED","Only Super Admins can add new Stripe Product");
+    public async addProduct(adminId: string, productBody: IStripeProduct) {
+        if (!await this.isSuperAdmin(adminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can add new Stripe Product");
         return await stripeModel.addProduct(productBody);
     }
 
-    public getProducts(userId: string,limit: number){
-    return stripeModel.getProducts(userId,limit);  
+    public getProducts(userId: string, limit: number) {
+        return stripeModel.getProducts(userId, limit);
     }
 
-    public async createPrice(userId: string,priceBody: IStripePrice){
-        return await stripeModel.createPrice(userId,priceBody);  
-        }
+    public async createPrice(userId: string, priceBody: IStripePrice) {
+        return await stripeModel.createPrice(userId, priceBody);
+    }
 
-        public async getPrices(userId: string,limit: number){
-            return await stripeModel.getPrices(userId,limit);  
-            }
+    public async getPrices(userId: string, limit: number) {
+        return await stripeModel.getPrices(userId, limit);
+    }
+
+    public async fetchPaymentsRequests(userId: string, page: number) {
+        return transactionModel.fetchTransactionByMethod(userId,EPayWith.QR_PAY,ETransactionStatus.PENDING,page);
+    }
 
 }
 export default new AdminModel();

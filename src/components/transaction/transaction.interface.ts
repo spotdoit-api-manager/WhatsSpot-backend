@@ -1,3 +1,4 @@
+import { EPayWith } from "./../../core/enums/pay-with.enum";
 /* eslint-disable @typescript-eslint/interface-name-prefix */
 export interface ITransaction{
     amount: number;
@@ -7,6 +8,7 @@ export interface ITransaction{
     orderId: string;
     description?: string;
     status: ETransactionStatus;
+    method: EPayWith;
     metaData: any;
 }
 

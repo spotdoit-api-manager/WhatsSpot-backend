@@ -115,5 +115,11 @@ export default [
         method: "get",
         role:"admin",
         handler: [adminController.getPrices]
+      },
+      {
+        path:"/payment/request",
+        method:"get",
+        role:"admin",
+        handler:[adminController.fetchPaymentRequests]
       }
 ];

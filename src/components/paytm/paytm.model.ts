@@ -14,6 +14,7 @@ import transactionModel from "../transaction/transaction.model";
 import logger from "../../core/logger";
 import { IPlanModel } from "../plans/plans.schema";
 import { ETransactionTypes } from "../transaction/transaction.interface";
+import { EPayWith } from "../../core/enums/pay-with.enum";
 const logFileName = "[PaytmModel] : ";
 
 class PaytmModel {
@@ -80,7 +81,7 @@ class PaytmModel {
         await userModel.checkIfUserCanActivatePlan(userId, planId);
         if(planId!=EPLANS.PAYG)amount=plan.planAmount;
         const transactionMessage = plan.planId == EPLANS.PAYG ? "Adding money to wallet" : `Buying plan -> ${plan.planName}`;
-        const transaction: ITransactionModel = await transactionModel.createTransactionForPlan(plan.planId, "PAYTM", userId, walletId, ETransactionTypes.CREDIT, amount, transactionMessage);
+        const transaction: ITransactionModel = await transactionModel.createTransactionForPlan(plan.planId, "PAYTM", userId, walletId, ETransactionTypes.CREDIT, amount, transactionMessage,EPayWith.PAYTM);
 
         return await this.payWithPaytm(userId,walletId, transaction._id,planId, amount);
 

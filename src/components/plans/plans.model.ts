@@ -1,4 +1,4 @@
-import notifyService from "../../lib/services/notifiy.service";
+import notifyService from "../../lib/services/notify.service";
 import { ETransactionTypes,ETransactionStatus } from "./../transaction/transaction.interface";
 import { ITransactionModel } from "./../transaction/transaction.schema";
 import {  IPlanModel, IUserPlanModel, Plan, UserPlan } from "./plans.schema";
@@ -10,6 +10,7 @@ import planManagerService from "../../lib/services/plan.manager.service";
 import transactionModel from "../transaction/transaction.model";
 import adminModel from "../admin/admin.model";
 import logger from "../../lib/utils/logger";
+import { EPayWith } from "../../core/enums/pay-with.enum";
 
 const logFileName ="[PlanModel] : ";
 export class PlansModel{
@@ -50,7 +51,7 @@ public async activateUserPlan(adminId: string,userId: string,planId: string,reas
     const user = await userModel.fetch(userId);
     const plan: IPLAN = await this.fetchPlanByPlanId(planId);
     const transactionMessage = `${reason}-> ${plan.planName}`;
-    const transaction: ITransactionModel = await transactionModel.createTransactionForPlan(plan.planId,`ADMIN_${adminId}`,userId,user.walletId,ETransactionTypes.CREDIT,plan.planAmount,transactionMessage);
+    const transaction: ITransactionModel = await transactionModel.createTransactionForPlan(plan.planId,`ADMIN_${adminId}`,userId,user.walletId,ETransactionTypes.CREDIT,plan.planAmount,transactionMessage,EPayWith.ADMIN);
     const activePlan: IUserPlan = await this.activatePlan(userId,planId,transaction._id);
     const updatedTransaction: ITransactionModel  = await transactionModel.updateTransactionStatus(transaction._id,ETransactionStatus.SUCCESS);
     return activePlan;
