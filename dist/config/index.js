@@ -27,7 +27,7 @@ exports.configCors = {
     ],
     allowOrigin: [
         "http://localhost:56335",
-        "http://localhost:4200",
+        // "http://localhost:4200",
         "http://localhost:3000",
         "http://localhost:52636",
         "http://127.0.0.1:5500",
@@ -36,6 +36,7 @@ exports.configCors = {
         "https://dashboard.whatsspot.in",
         "https://whatsspot.in",
         "http://localhost:60032",
+        "https://admin.whatsspot.in",
     ],
     // Expose additional which are restricted.
     exposedHeaders: ["X-Auth", "Set-Cookie"]

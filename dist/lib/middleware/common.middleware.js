@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.requestLimiter = exports.handleCompression = exports.reqConsoleLogger = exports.handleBodyRequestParsing = exports.allowCorsAdmin = exports.allowCors = exports.useHelmet = void 0;
+exports.requestLimiter = exports.handleCompression = exports.reqConsoleLogger = exports.handleBodyRequestParsing = exports.allowCorsAdmin = exports.allowCorsApi = exports.allowCors = exports.useHelmet = void 0;
 const express_1 = require("express");
 const cors_1 = __importDefault(require("cors"));
 const compression_1 = __importDefault(require("compression"));
@@ -22,9 +22,24 @@ exports.allowCors = (router) => {
                 return callback(null, true);
             }
             if (config_1.configCors.allowOrigin.indexOf(origin) === -1) {
-                const msg = "The CORS policy for this site does not allow access from the specified Origin.";
+                const msg = "The CORS policy for this site does not allow access from the specified Origin to WhatsSpot.";
                 return callback(new Error(msg), false);
             }
+            return callback(null, true);
+        },
+        exposedHeaders: config_1.configCors.exposedHeaders,
+    }));
+};
+exports.allowCorsApi = (router) => {
+    router.use(cors_1.default({
+        origin(origin, callback) {
+            if (!origin) {
+                return callback(null, true);
+            }
+            // if (configCors.allowOrigin.indexOf(origin) === -1) {
+            //   const msg = "The CORS policy for this site does not allow access from the specified Origin to whatsspot api.";
+            //   return callback(new Error(msg), false);
+            // }
             return callback(null, true);
         },
         exposedHeaders: config_1.configCors.exposedHeaders,
@@ -37,7 +52,7 @@ exports.allowCorsAdmin = (router) => {
                 return callback(null, true);
             }
             if (config_1.configCors.adminAllowOrigin.indexOf(origin) === -1) {
-                const msg = "The CORS policy for this site does not allow access from the specified Origin.";
+                const msg = "The CORS policy for this site does not allow access from the specified Origin to WhatsSpot Admin.";
                 return callback(new Error(msg), false);
             }
             return callback(null, true);

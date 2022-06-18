@@ -30,7 +30,7 @@ export const configCors = {
   ],
   allowOrigin: [
     "http://localhost:56335",
-    "http://localhost:4200",
+    // "http://localhost:4200",
     "http://localhost:3000",
     "http://localhost:52636",
     "http://127.0.0.1:5500",
@@ -39,7 +39,7 @@ export const configCors = {
     "https://dashboard.whatsspot.in",
     "https://whatsspot.in",
     "http://localhost:60032",
-
+    "https://admin.whatsspot.in",
 
     //add your origin
   ],

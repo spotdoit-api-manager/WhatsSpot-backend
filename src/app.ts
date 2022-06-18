@@ -12,7 +12,7 @@ import dbConnection from "./lib/helpers/dbConnection";
 
 import { schedule } from "node-cron";
 import logger from "./core/logger";
-import { allowCors, allowCorsAdmin } from "./lib/middleware/common.middleware";
+import { allowCors, allowCorsAdmin, allowCorsApi } from "./lib/middleware/common.middleware";
 const logFileName = "[App]";
 
 
@@ -43,13 +43,16 @@ dbConnection.mongoConnection();
 | API VERSIONS CONFIGURATION [START]
 |---------------------------------------*/
 // Different router required to initialize different apis call.
+const userApiRouter = express.Router();
+applyMiddleware([allowCorsApi],userApiRouter); //apply cors to only base endpoints
+
+app.use("/api", applyRoutes(apiRoutes, userApiRouter)); // users api
+
 const baseAppRouter = express.Router();
 applyMiddleware([allowCors],baseAppRouter); //apply cors to only base endpoints
 app.use("/", applyRoutes(routes, baseAppRouter)); // base app api
 
 
-const userApiRouter = express.Router();
-app.use("/api", applyRoutes(apiRoutes, userApiRouter)); // users api
 
 
 const adminRouter = express.Router();
