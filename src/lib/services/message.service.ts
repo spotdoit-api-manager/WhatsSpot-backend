@@ -78,7 +78,7 @@ public  sendWhatsappMessage(to: string,message: string){
   try{
     messageModel.sendTypeMessage(EWhatsappMessageTypes.TEXT_MESSAGE,{text:message},process.env.TEST_MESSAGE_DEVICE_NUMBER,to);
   }catch(e){
-    logger.info(logFileName,`Error sending whatsapp OTP to ${to}`);
+    logger.info(logFileName,`Error sending whatsapp message to ${to}`);
   }
 }
 

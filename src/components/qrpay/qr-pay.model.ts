@@ -24,15 +24,15 @@ export class QrPayModel {
 
 
     public async approvePayment(userId: string, paymentId: string) {
-        const payment = await transactionModel.fetchTransactionById(null, paymentId);
+        const payment: ITransactionModel = await transactionModel.fetchTransactionById(null, paymentId);
         if (!payment) throw new HTTP401Error("INVALID PAYMENT ID", "Entered payment id is invalid");
         if (payment.status == ETransactionStatus.SUCCESS) throw new HTTP401Error("PAYMENT ALREADY APPROVED", "Entered payment id is already approved");
         if (payment.metaData.planId == "PAYG") {
-            await walletModel.addBalanceToWallet(payment.walletId, payment.amount);
+            await walletModel.addBalanceToWallet(payment.userId,payment.walletId, payment.amount);
         } else {
             await plansModel.activateUserPlan(userId, payment.userId, payment.metaData.planId, "Payment Request Approved");
         }
-        notifyService.paymentApprove(payment.userId, payment.planId, payment._id);
+        notifyService.paymentApprove(payment.userId, payment.metaData.planId, payment._id);
         return transactionModel.updateTransactionStatus(paymentId, ETransactionStatus.SUCCESS);
     }
 

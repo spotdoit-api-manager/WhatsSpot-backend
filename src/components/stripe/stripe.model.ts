@@ -116,7 +116,7 @@ export class StripePaymentModel {
     console.log("transaction is ", transaction);
     if (transaction.status !== ETransactionStatus.PENDING) throw new HTTP401Error("INVALID_SESSION", "The session you are trying to validate is already validated");
     if (transaction.metaData.planId === EPLANS.PAYG) {
-      await walletModel.addBalanceToWallet(transaction.walletId, transaction.amount);
+      await walletModel.addBalanceToWallet(transaction.userId,transaction.walletId, transaction.amount);
     } else {
       await plansModel.activatePlan(session.metadata.userId, session.metadata.planId, transaction._id);
     }

@@ -7,6 +7,8 @@ import makeWASocket, {
   DisconnectReason,
   AnyMessageContent,
   delay,
+
+  WABrowserDescription,
   useSingleFileAuthState,
   AuthenticationState,
   SocketConfig,
@@ -33,6 +35,8 @@ export default class Whatsapp extends EventEmitter {
   qrRequested = false;
   public _instanceId: number;
   private retryCount =0;
+  private removed =false;
+
   constructor(deviceId: string,phone: string) {
     super();
     this._instanceId = instanceProvider.addInstance(this);
@@ -49,6 +53,7 @@ export default class Whatsapp extends EventEmitter {
         logger: P({ level: "info" }), //silent
         printQRInTerminal: false,
         auth: this.state,
+        browser:["Mac OS", "Chrome", "10.15.3"]
         // version: [2,2204,13],
       });
       this.client = sock;
@@ -108,6 +113,10 @@ export default class Whatsapp extends EventEmitter {
         else{
           const reason: IReason = this.getDisconnectReason(lastDisconnect);
           logger.debug(logFileName,"connection update (not open| not close)", update, reason);
+          if(update.qr){
+            this.updateDeviceStatus(false,reason);
+          }
+
           this.qrInProcess = true;
         }
       } catch (err) {
@@ -224,28 +233,36 @@ export default class Whatsapp extends EventEmitter {
     }
   }
 
+  private async updateDeviceStatus(authState: boolean,reason: IReason){
+    if(!this.removed){
+
+      return await deviceModel.updateDevice(this.deviceId, {
+        authState, reason
+      });
+    }else{
+     logger.info(logFileName,"tried to update Device Status but device is removed",authState,reason);
+    }
+  }
   
   public sendAnyMessage = async (
     to: string,
     msg: IWhatsappTextMessage,
-    msgType: EWhatsappMessageTypes
   ) => {
     try {
       const jid = getSerializedPhone(to);
-      logger.info(logFileName,`Sending ${msgType} to ${jid}`);
       await this.client.presenceSubscribe(jid);
       await delay(500);
       const result = await this.client.sendMessage(jid, {
         ...msg, detectLinks: true,
       });
-      logger.debug(logFileName,`Sent ${msgType} Result client ${this.phone} :`,result);
+      logger.debug(logFileName,`Sent  Result client ${this.phone} :`,result);
 
       if (result.status != 1) {
         return { error: true };
       }
       return { error: false };
     } catch (e) {
-      logger.error(logFileName,`Sent ${msgType} Error client ${this.phone} :`,e);
+      logger.error(logFileName,`Sent Error client ${this.phone} :`,e);
 
       return { error: true, message: e.message };
     }
@@ -254,7 +271,9 @@ export default class Whatsapp extends EventEmitter {
 
   public endClient() {
     // this.client.
+    this.removed=true;
     this.client.end();
+  
 
   }
 

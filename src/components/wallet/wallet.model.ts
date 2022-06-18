@@ -9,6 +9,7 @@ import transactionModel from "../transaction/transaction.model";
 import { ETransactionTypes } from "../transaction/transaction.interface";
 import logger from "../../core/logger";
 import { EPayWith } from "../../core/enums/pay-with.enum";
+import notifyService from "../../lib/services/notify.service";
 const logFileName = "[WalletModel] : ";
 export class WalletModel {
 
@@ -42,8 +43,10 @@ export class WalletModel {
         return await Wallet.findByIdAndUpdate(walletId,{balance: balance},{new:true});
     }
 
-    public async addBalanceToWallet(walletId: string,amount: number){
-        return await Wallet.findByIdAndUpdate(walletId,{$inc:{balance: Number(amount)}},{new:true});
+    public async addBalanceToWallet(userId: string,walletId: string,amount: number,currency: string="INR"){
+        const newBalance =  await Wallet.findByIdAndUpdate(walletId,{$inc:{balance: Number(amount)}},{new:true});
+        notifyService.walletBalanceAdded(userId,amount,newBalance.balance,currency);
+        return newBalance;
     }
 
     public async fetchTransactions(userId: string, walletId: string,page: number=1) {
