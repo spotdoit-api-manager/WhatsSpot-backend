@@ -40,11 +40,11 @@ dbConnection_1.default.mongoConnection();
 // Different router required to initialize different apis call.
 const baseAppRouter = express_1.default.Router();
 utils_1.applyMiddleware([common_middleware_1.allowCors], baseAppRouter); //apply cors to only base endpoints
+app.use("/", utils_1.applyRoutes(routes_1.default, baseAppRouter)); // base app api
 const userApiRouter = express_1.default.Router();
+app.use("/api", utils_1.applyRoutes(api_routes_1.default, userApiRouter)); // users api
 const adminRouter = express_1.default.Router();
 utils_1.applyMiddleware([common_middleware_1.allowCorsAdmin], adminRouter); //apply cors to admin api
-app.use("/", utils_1.applyRoutes(routes_1.default, baseAppRouter)); // base app api
-app.use("/api", utils_1.applyRoutes(api_routes_1.default, userApiRouter)); // users api
 app.use("/admin", utils_1.applyRoutes(admin_routes_1.default, adminRouter)); // admin api
 app.all("*", (req, res, next) => {
     next(new httpErrors_1.HTTP400Error(`Can't found ${req.originalUrl} on WhatsSpot server`));
