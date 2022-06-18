@@ -14,12 +14,34 @@ const bson_1 = require("bson");
 const httpErrors_1 = require("./../../lib/utils/httpErrors");
 const transaction_schema_1 = require("./transaction.schema");
 const transaction_interface_1 = require("./transaction.interface");
+const utils_1 = require("../../lib/utils");
+const logFileName = "[TransactionModel] : ";
 class TransactionModel {
-    fetchTransactionById(walletId, transactionId) {
-        return transaction_schema_1.Transaction.findOne({ walletId: new bson_1.ObjectID(walletId), _id: new bson_1.ObjectID(transactionId) });
+    fetchTransactionById(walletId = "", transactionId) {
+        return transaction_schema_1.Transaction.findById(transactionId).lean();
     }
-    fetchTransactions(walletId) {
+    fetchTransactionByMethod(method, status, page = 1) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log("fetchTransactionByMethod", status);
+            // const {skip,limit} = getSkipLimit(page);
+            let condition;
+            if (status) {
+                condition = { method: method, status: status };
+            }
+            else {
+                condition = { method: method };
+            }
+            const result = yield transaction_schema_1.Transaction.aggregate([
+                { $match: condition },
+                { $sort: { createdAt: -1 } },
+            ]);
+            console.group("result is ", result);
+            return result;
+        });
+    }
+    fetchTransactions(walletId, page) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { skip, limit } = utils_1.getSkipLimit(page);
             const result = yield transaction_schema_1.Transaction.aggregate([
                 { $match: { walletId: new bson_1.ObjectID(walletId) } },
                 { $sort: { createdAt: -1 } },
@@ -31,12 +53,14 @@ class TransactionModel {
                         dateTime: "$createdAt",
                         description: 1,
                     }
-                }
+                },
+                { $skip: skip },
+                { $limit: limit },
             ]);
             return result;
         });
     }
-    createTransactionForRazorPay(planId, orderId, userId, walletId, type, amount, description) {
+    createTransactionForPlan(planId, orderId, userId, walletId, type, amount, description, method) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const transactionBody = {
@@ -46,6 +70,7 @@ class TransactionModel {
                     type,
                     amount,
                     description,
+                    method,
                     metaData: {
                         planId
                     },
@@ -62,7 +87,7 @@ class TransactionModel {
             }
         });
     }
-    createTransactionForWallet(walletId, userId, type, amount, description, metaData = {}) {
+    createTransactionForWallet(walletId, userId, type, amount, description, metaData = {}, method) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const orderId = new bson_1.ObjectID();
@@ -73,8 +98,9 @@ class TransactionModel {
                     type,
                     amount,
                     metaData,
+                    method,
                     description,
-                    status: transaction_interface_1.ETransactionStatus.SUCCESS
+                    status: transaction_interface_1.ETransactionStatus.PENDING
                 };
                 const newTransaction = new transaction_schema_1.Transaction(transactionBody);
                 const transaction = yield newTransaction.addTransaction();
@@ -89,11 +115,14 @@ class TransactionModel {
     }
     updateTransactionStatus(transactionId, status) {
         return __awaiter(this, void 0, void 0, function* () {
-            const updatedTransaction = yield transaction_schema_1.Transaction.findByIdAndUpdate(transactionId, { $set: { status: status } }, { new: true });
+            const updatedTransaction = yield transaction_schema_1.Transaction.findByIdAndUpdate(transactionId, { $set: { status: status } }, { new: true }).lean();
             if (!updatedTransaction)
                 throw new httpErrors_1.HTTP401Error("ERROR_UPDATING_TRANSACTION_STATUS");
             return updatedTransaction;
         });
+    }
+    fetchTransactionByOrderId(orderId) {
+        return transaction_schema_1.Transaction.findOne({ orderId: orderId }).lean();
     }
 }
 exports.TransactionModel = TransactionModel;

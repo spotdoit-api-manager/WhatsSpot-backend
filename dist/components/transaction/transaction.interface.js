@@ -11,5 +11,7 @@ var ETransactionStatus;
     ETransactionStatus["ERROR"] = "ERROR";
     ETransactionStatus["PENDING"] = "PENDING";
     ETransactionStatus["SUCCESS"] = "SUCCESS";
+    ETransactionStatus["EXPIRED"] = "EXPIRED";
+    ETransactionStatus["CANCELLED"] = "CANCELLED";
 })(ETransactionStatus = exports.ETransactionStatus || (exports.ETransactionStatus = {}));
 //# sourceMappingURL=transaction.interface.js.map

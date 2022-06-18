@@ -27,7 +27,7 @@ declare class ResponseHandler implements IErrorResponse {
      * changes and etc. Please feel free to enhance the way.
      */
     send(): void;
-    sendError(e: ICustomError): HTTP400Error | HTTP401Error | HTTP403Error | HTTP404Error | HTTP409Error | ICustomError;
+    sendError(e: ICustomError): ICustomError | HTTP400Error | HTTP401Error | HTTP403Error | HTTP404Error | HTTP409Error;
     end(): void;
 }
 export default ResponseHandler;

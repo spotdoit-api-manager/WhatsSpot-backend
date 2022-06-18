@@ -25,6 +25,7 @@ const user_model_1 = __importDefault(require("../user/user.model"));
 const transaction_model_1 = __importDefault(require("../transaction/transaction.model"));
 const logger_1 = __importDefault(require("../../core/logger"));
 const transaction_interface_1 = require("../transaction/transaction.interface");
+const pay_with_enum_1 = require("../../core/enums/pay-with.enum");
 const logFileName = "[PaytmModel] : ";
 class PaytmModel {
     updateTransactionInformation(transaction) {
@@ -93,7 +94,7 @@ class PaytmModel {
             if (planId != plans_interface_1.EPLANS.PAYG)
                 amount = plan.planAmount;
             const transactionMessage = plan.planId == plans_interface_1.EPLANS.PAYG ? "Adding money to wallet" : `Buying plan -> ${plan.planName}`;
-            const transaction = yield transaction_model_1.default.createTransactionForPlan(plan.planId, "PAYTM", userId, walletId, transaction_interface_1.ETransactionTypes.CREDIT, amount, transactionMessage);
+            const transaction = yield transaction_model_1.default.createTransactionForPlan(plan.planId, "PAYTM", userId, walletId, transaction_interface_1.ETransactionTypes.CREDIT, amount, transactionMessage, pay_with_enum_1.EPayWith.PAYTM);
             return yield this.payWithPaytm(userId, walletId, transaction._id, planId, amount);
         });
     }

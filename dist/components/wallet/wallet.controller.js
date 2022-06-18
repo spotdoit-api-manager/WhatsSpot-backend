@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WalletController = void 0;
+const exchange_rate_service_1 = require("../../lib/services/exchange-rate.service");
 const responseHandler_1 = __importDefault(require("../../lib/helpers/responseHandler"));
 const wallet_model_1 = __importDefault(require("./wallet.model"));
 class WalletController {
@@ -30,9 +31,18 @@ class WalletController {
         });
         this.fetchTransactions = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
-            console.log("fetch wallet balance");
             try {
-                const result = yield wallet_model_1.default.fetchTransactions(req.userId, req.walletId);
+                const result = yield wallet_model_1.default.fetchTransactions(req.userId, req.walletId, req.query.page);
+                responseHandler.reqRes(req, res).onCreate("TRANSACTION_FETCHED", result).send();
+            }
+            catch (e) {
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.getRate = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                const result = yield exchange_rate_service_1.getRate();
                 responseHandler.reqRes(req, res).onCreate("TRANSACTION_FETCHED", result).send();
             }
             catch (e) {

@@ -13,12 +13,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WalletModel = void 0;
+const transaction_interface_1 = require("./../transaction/transaction.interface");
 const httpErrors_1 = require("../../lib/utils/httpErrors");
 const bson_1 = require("bson");
 const wallet_schema_1 = require("./wallet.schema");
 const transaction_model_1 = __importDefault(require("../transaction/transaction.model"));
-const transaction_interface_1 = require("../transaction/transaction.interface");
+const transaction_interface_2 = require("../transaction/transaction.interface");
 const logger_1 = __importDefault(require("../../core/logger"));
+const pay_with_enum_1 = require("../../core/enums/pay-with.enum");
+const notify_service_1 = __importDefault(require("../../lib/services/notify.service"));
 const logFileName = "[WalletModel] : ";
 class WalletModel {
     createWallet(balance = 0) {
@@ -27,6 +30,11 @@ class WalletModel {
             const newWalletData = yield newWallet.save();
             logger_1.default.info(logFileName, `New Wallet Created ${newWalletData._id}`);
             return newWalletData;
+        });
+    }
+    deleteWallet(walletId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            wallet_schema_1.Wallet.findByIdAndDelete(walletId);
         });
     }
     fetchWalletBalance(userId, walletId) {
@@ -49,10 +57,16 @@ class WalletModel {
             return yield wallet_schema_1.Wallet.findByIdAndUpdate(walletId, { balance: balance }, { new: true });
         });
     }
-    fetchTransactions(userId, walletId) {
+    addBalanceToWallet(userId, walletId, amount, currency = "INR") {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("fetch wallet transaciton ", userId, walletId);
-            const transactions = yield transaction_model_1.default.fetchTransactions(walletId);
+            const newBalance = yield wallet_schema_1.Wallet.findByIdAndUpdate(walletId, { $inc: { balance: Number(amount) } }, { new: true });
+            notify_service_1.default.walletBalanceAdded(userId, amount, newBalance.balance, currency);
+            return newBalance;
+        });
+    }
+    fetchTransactions(userId, walletId, page = 1) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const transactions = yield transaction_model_1.default.fetchTransactions(walletId, page);
             return transactions;
         });
     }
@@ -135,8 +149,9 @@ class WalletModel {
     }
     makePaymentFromWallet(walletId, userId, amount, description, metaData = {}) {
         return __awaiter(this, void 0, void 0, function* () {
-            const transaction = transaction_model_1.default.createTransactionForWallet(walletId, userId, transaction_interface_1.ETransactionTypes.DEBIT, amount, description, metaData);
+            const transaction = yield transaction_model_1.default.createTransactionForWallet(walletId, userId, transaction_interface_2.ETransactionTypes.DEBIT, amount, description, metaData, pay_with_enum_1.EPayWith.WALLET);
             const wallet = yield this.removeCreditFromWallet(walletId, amount);
+            transaction_model_1.default.updateTransactionStatus(transaction._id, transaction_interface_1.ETransactionStatus.SUCCESS);
             return { error: false, transaction, wallet };
         });
     }

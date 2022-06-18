@@ -13,12 +13,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PlansModel = void 0;
+const notify_service_1 = __importDefault(require("../../lib/services/notify.service"));
+const transaction_interface_1 = require("./../transaction/transaction.interface");
 const plans_schema_1 = require("./plans.schema");
 const plans_interface_1 = require("./plans.interface");
 const httpErrors_1 = require("../../lib/utils/httpErrors");
 const dayjs_1 = __importDefault(require("dayjs"));
 const user_model_1 = __importDefault(require("../user/user.model"));
 const plan_manager_service_1 = __importDefault(require("../../lib/services/plan.manager.service"));
+const transaction_model_1 = __importDefault(require("../transaction/transaction.model"));
+const admin_model_1 = __importDefault(require("../admin/admin.model"));
+const logger_1 = __importDefault(require("../../lib/utils/logger"));
+const pay_with_enum_1 = require("../../core/enums/pay-with.enum");
+const logFileName = "[PlanModel] : ";
 class PlansModel {
     fetchPlanById(planId) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -49,6 +56,27 @@ class PlansModel {
             const result = yield plans_schema_1.Plan.findByIdAndUpdate(planId, planUpdate, { upsert: false, new: true });
         });
     }
+    activateUserPlan(adminId, userId, planId, reason = "Admin Activated ") {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (planId == plans_interface_1.EPLANS.PAYG)
+                throw new httpErrors_1.HTTP401Error("PAYG_PLAN_NOT_ALLOWED");
+            yield admin_model_1.default.isSuperAdmin(adminId);
+            const userActivePlan = yield user_model_1.default.fetchUserActivePlan(userId);
+            if (userActivePlan && userActivePlan.planStatus === plans_interface_1.EPlanStatus.ACTIVE) {
+                throw new httpErrors_1.HTTP401Error("ALREADY_HAS_ACTIVE_PLAN", "User already has an active plan");
+            }
+            else if (userActivePlan && userActivePlan.planStatus === plans_interface_1.EPlanStatus.EXHAUSTED) {
+                yield user_model_1.default.removeUserActivePlan(userId, userActivePlan._id);
+            }
+            const user = yield user_model_1.default.fetch(userId);
+            const plan = yield this.fetchPlanByPlanId(planId);
+            const transactionMessage = `${reason}-> ${plan.planName}`;
+            const transaction = yield transaction_model_1.default.createTransactionForPlan(plan.planId, `ADMIN_${adminId}`, userId, user.walletId, transaction_interface_1.ETransactionTypes.CREDIT, plan.planAmount, transactionMessage, pay_with_enum_1.EPayWith.ADMIN);
+            const activePlan = yield this.activatePlan(userId, planId, transaction._id);
+            const updatedTransaction = yield transaction_model_1.default.updateTransactionStatus(transaction._id, transaction_interface_1.ETransactionStatus.SUCCESS);
+            return activePlan;
+        });
+    }
     deletePlan(planId) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield plan_manager_service_1.default.deletePlan(planId);
@@ -70,12 +98,14 @@ class PlansModel {
     }
     calculatePlanEndDate(plan) {
         return __awaiter(this, void 0, void 0, function* () {
-            const endDate = dayjs_1.default(new Date());
+            console.log(plan);
+            let endDate = dayjs_1.default(new Date());
             if (plan.planId == plans_interface_1.EPLANS.PAYG) {
                 return endDate.toDate();
             }
-            else if (plan.planId == plans_interface_1.EPLANS.MEMBERSHIP || plan.planId == plans_interface_1.EPLANS.MONTHLY) {
-                endDate.add(plan.planPeriod, plan.planPeriodUnit);
+            else {
+                endDate = endDate.add(plan.planPeriod, plan.planPeriodUnit);
+                console.log(`End Date: ${endDate.toDate()}`);
                 return endDate.toDate();
             }
         });
@@ -83,10 +113,31 @@ class PlansModel {
     validatePlanExpiry(planData) {
         return true;
     }
+    exhaustActivePlan(userPlanId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            logger_1.default.info(`Exhausting active plan ${userPlanId}`);
+            const activePlanStats = yield plans_schema_1.UserPlan.findByIdAndUpdate(userPlanId, { planStatus: plans_interface_1.EPlanStatus.EXHAUSTED }, { new: true }).select("sentMessageCount planStatus userId planId");
+            notify_service_1.default.planExhausted(activePlanStats.userId, userPlanId);
+            return activePlanStats;
+        });
+    }
+    expirePlan(plan) {
+        return __awaiter(this, void 0, void 0, function* () {
+            logger_1.default.info(logFileName, `Expiring user plan ${plan._id}`);
+            const result = yield plans_schema_1.UserPlan.findByIdAndUpdate(plan._id, { planStatus: plans_interface_1.EPlanStatus.EXPIRED });
+            notify_service_1.default.planExpired(plan.userId, plan._id);
+            yield user_model_1.default.removeUserActivePlan(plan.userId, plan._id);
+            logger_1.default.info(logFileName, `Plan ${plan._id} Expired`);
+        });
+    }
     increamentMessageCount(activePlanId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield plans_schema_1.UserPlan.findByIdAndUpdate(activePlanId, { $inc: { sentMessageCount: 1 } });
-            return result;
+            const activePlanStats = yield plans_schema_1.UserPlan.findByIdAndUpdate(activePlanId, { $inc: { sentMessageCount: 1 } }, { new: true }).select("sentMessageCount planId");
+            const planInfo = yield plans_schema_1.Plan.findOne({ planId: activePlanStats.planId }).select("planMaxMessage").lean();
+            if (Number(planInfo.planMaxMessage) && Number(activePlanStats.sentMessageCount) >= Number(planInfo.planMaxMessage)) {
+                yield this.exhaustActivePlan(activePlanId);
+            }
+            return activePlanStats;
         });
     }
 }

@@ -20,7 +20,6 @@ class ApiBlockListModel {
     addApiToBlockList(deviceId, apiDetails) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                logger_1.default.debug("api details is ", apiDetails);
                 const newApiBlockBody = { token: apiDetails.token, deviceId, expiresOn: apiDetails.expiresOn, createdOn: apiDetails.createdOn, blockedOn: new Date() };
                 const newApiBlock = new api_blocklist_schema_1.ApiBlockList(newApiBlockBody);
                 yield newApiBlock.addToList();

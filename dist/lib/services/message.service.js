@@ -89,7 +89,7 @@ class OTPMessagesService {
             message_model_1.default.sendTypeMessage(whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, { text: message }, process.env.TEST_MESSAGE_DEVICE_NUMBER, to);
         }
         catch (e) {
-            logger_1.default.info(logFileName, `Error sending whatsapp OTP to ${to}`);
+            logger_1.default.info(logFileName, `Error sending whatsapp message to ${to}`);
         }
     }
 }

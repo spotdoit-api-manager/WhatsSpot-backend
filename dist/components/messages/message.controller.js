@@ -39,6 +39,7 @@ class MessageController {
             }
             catch (e) {
                 // send error with next function.
+                console.log(e);
                 next(responseHandler.sendError(e));
             }
         });
@@ -149,6 +150,7 @@ class MessageController {
             }
             catch (e) {
                 // send error with next function.
+                console.log(e);
                 next(responseHandler.sendError(e));
             }
         });

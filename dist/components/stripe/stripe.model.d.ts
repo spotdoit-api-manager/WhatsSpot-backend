@@ -13,7 +13,12 @@ export declare class StripePaymentModel {
     validateSession(userId: string, walletId: string, sessionId: string): Promise<void>;
     fetchSession(userId: string, sessionId: string): Promise<any>;
     expireSession(userId: string, sessionId: string): Promise<any>;
-    stripeEvent(body: any): void;
+    stripeEvent(event: any): void;
+    private sessionSucceed;
+    private sessionFailed;
+    private sessionCancelled;
+    private sessionExpired;
+    validateSignature(body: any, sig: any, secret: string): any;
 }
 declare const _default: StripePaymentModel;
 export default _default;

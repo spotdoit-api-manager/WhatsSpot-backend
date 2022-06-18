@@ -8,30 +8,34 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContactModal = void 0;
+const phone_handler_1 = require("./../../lib/utils/phone.handler");
 const bson_1 = require("bson");
 const contact_schema_1 = require("./contact.schema");
-const logger_1 = __importDefault(require("../../core/logger"));
+const phone_handler_2 = require("../../lib/utils/phone.handler");
 const logFileName = "[ContactsModel]";
 class ContactModal {
     addNewContacts(userId, contacts) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("New Contact ", contacts);
             const newContacts = this.createNewContact(contacts, userId);
-            console.log("new contacts ", newContacts);
             const result = yield contact_schema_1.Contact.insertMany(newContacts, { ordered: false });
             return result;
         });
     }
-    createNewContact(contacts, userId) {
+    createNewContact(contacts, userId = null) {
         const newContacts = [];
         for (let i = 0; i < contacts.length; i++) {
             const contact = contacts[i];
-            contact.userId = userId;
+            if (contact.country && contact.country.length > 0) {
+                contact.phoneNumber = phone_handler_1.parsePhoneWithCountry(contact.phoneNumber, contact.country).number;
+            }
+            else {
+                contact.phoneNumber = phone_handler_2.parsePhone(contacts[i].phoneNumber).number;
+            }
+            if (userId) {
+                contact.userId = userId;
+            }
             newContacts.push(contact);
         }
         return newContacts;
@@ -71,12 +75,9 @@ class ContactModal {
     }
     addContactsToGroup(userId, groupId, contacts) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("add contact ", contacts);
-            for (let i = 0; i < contacts.length; i++) {
-                const contact = contacts[i];
-                const result = yield contact_schema_1.ContactGroup.findByIdAndUpdate(groupId, { $push: { contacts: { name: contact.name, phoneNumber: contact.phoneNumber } } }, { upsert: true, new: true });
-            }
-            return [];
+            const newContacts = this.createNewContact(contacts);
+            const result = yield contact_schema_1.ContactGroup.findByIdAndUpdate(groupId, { $addToSet: { contacts: { $each: newContacts } } }, { upsert: false, new: true }).lean();
+            return result;
         });
     }
     fetchGroups(userId) {
@@ -129,14 +130,7 @@ class ContactModal {
     }
     deleteContacts(userId, contactsId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const finalResult = [];
-            // await Contact.deleteMany({_id:{$in:contactsId}});
-            for (let i = 0; i < contactsId.length; i++) {
-                const cId = contactsId[i];
-                const result = yield contact_schema_1.Contact.findByIdAndDelete(cId);
-                finalResult.push(result);
-            }
-            return finalResult;
+            return yield contact_schema_1.Contact.deleteMany({ _id: { $in: contactsId } });
         });
     }
     deleteGroupContacts(userId, groupId, contactsId) {
@@ -149,9 +143,6 @@ class ContactModal {
             }
             return finalResult;
         });
-    }
-    addGroupContacts(userId, groupId, contacts) {
-        logger_1.default.info("add group contacts ", contacts);
     }
 }
 exports.ContactModal = ContactModal;

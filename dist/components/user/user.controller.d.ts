@@ -14,15 +14,15 @@ declare class UserController {
     verifyOtp: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     getLoggedUser: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     getActivePlan: (req: Request, res: Response, next: NextFunction) => Promise<void>;
-    addFollower: (req: Request, res: Response, next: NextFunction) => Promise<void>;
-    addFollowing: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     signUp: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    updateNotificationSettings: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    updateProfile: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     logIn: (req: Request, res: Response, next: NextFunction) => Promise<void>;
-    addFolowRequest: (req: Request, res: Response, next: NextFunction) => Promise<void>;
-    acceptFollowRequest: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     isVerified: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     generateOTP: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     addPhoneNumber: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    sendEmailVerification: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    verifyEmaliOtp: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     verifyUser: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 }
 declare const _default: UserController;

@@ -3,11 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handleCompression = exports.reqConsoleLogger = exports.handleBodyRequestParsing = exports.allowCors = exports.useHelmet = void 0;
+exports.requestLimiter = exports.handleCompression = exports.reqConsoleLogger = exports.handleBodyRequestParsing = exports.allowCorsAdmin = exports.allowCors = exports.useHelmet = void 0;
 const express_1 = require("express");
 const cors_1 = __importDefault(require("cors"));
 const compression_1 = __importDefault(require("compression"));
 const helmet_1 = __importDefault(require("helmet"));
+const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 /* Custom imports */
 const config_1 = require("../../config");
 const requestLogger_1 = require("./requestLogger");
@@ -17,11 +18,25 @@ exports.useHelmet = (router) => {
 exports.allowCors = (router) => {
     router.use(cors_1.default({
         origin(origin, callback) {
-            if (!origin) {
+            if (process.env.NODE_ENV == "development" && !origin) {
+                return callback(null, true);
+            }
+            if (config_1.configCors.allowOrigin.indexOf(origin) === -1) {
+                const msg = "The CORS policy for this site does not allow access from the specified Origin.";
+                return callback(new Error(msg), false);
             }
             return callback(null, true);
-            console.log(`Origin: ${origin}`, router);
-            if (config_1.configCors.allowOrigin.indexOf(origin) === -1) {
+        },
+        exposedHeaders: config_1.configCors.exposedHeaders,
+    }));
+};
+exports.allowCorsAdmin = (router) => {
+    router.use(cors_1.default({
+        origin(origin, callback) {
+            if (process.env.NODE_ENV == "development" && !origin) {
+                return callback(null, true);
+            }
+            if (config_1.configCors.adminAllowOrigin.indexOf(origin) === -1) {
                 const msg = "The CORS policy for this site does not allow access from the specified Origin.";
                 return callback(new Error(msg), false);
             }
@@ -43,18 +58,18 @@ exports.reqConsoleLogger = (router) => {
 exports.handleCompression = (router) => {
     router.use(compression_1.default());
 };
-// export const requestLimiter = (router: Router) => {
-//   const limiter = new rateLimit({
-//     windowMs: +rateLimitConfig.inTime, // 1 minutes
-//     max: +rateLimitConfig.maxRequest, // limit each IP to 12 requests per windowMs,
-//     message: {
-//       status: 0,
-//       error: "Too Many Requests",
-//       statusCode: 429,
-//       message: "Oh boy! You look in hurry, take it easy",
-//       description: "You have crossed maximum number of requests. please wait and try again."
-//     }
-//   });
-//   router.use(limiter);
-// };
+exports.requestLimiter = (router) => {
+    const limiter = express_rate_limit_1.default({
+        windowMs: +config_1.rateLimitConfig.inTime,
+        max: +config_1.rateLimitConfig.maxRequest,
+        message: {
+            status: 0,
+            error: "TOO_MANY_REQUESTS",
+            statusCode: 429,
+            message: "Oh ! You look in hurry, take it easy",
+            description: "You have crossed maximum number of requests. please wait and try again."
+        }
+    });
+    router.use(limiter);
+};
 //# sourceMappingURL=common.middleware.js.map

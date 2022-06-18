@@ -21,7 +21,7 @@ class ContactControler {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("New Contact Add Request");
-                responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield contact_model_1.default.addNewContacts(req.userId, req.body.contacts)).send();
+                responseHandler.reqRes(req, res).onFetch("CONTACTS_ADDED", yield contact_model_1.default.addNewContacts(req.userId, req.body)).send();
             }
             catch (e) {
                 console.log(e);
@@ -61,7 +61,7 @@ class ContactControler {
             const responseHandler = new responseHandler_1.default();
             try {
                 console.log("Add Contact to Group  Request", req.params.groupId);
-                responseHandler.reqRes(req, res).onFetch("CONTACTS_ADDED_FETCHED", yield contact_model_1.default.addContactsToGroup(req.userId, req.params.groupId, req.body.contacts)).send();
+                responseHandler.reqRes(req, res).onFetch("CONTACTS_ADDED", yield contact_model_1.default.addContactsToGroup(req.userId, req.params.groupId, req.body)).send();
             }
             catch (e) {
                 console.log(e);
@@ -154,19 +154,6 @@ class ContactControler {
             try {
                 console.log("Delete Group Contact  Request");
                 responseHandler.reqRes(req, res).onFetch("GROUP_CONTACTS_DELETED", yield contact_model_1.default.deleteGroupContacts(req.userId, req.params.groupId, req.body.contactsId)).send();
-            }
-            catch (e) {
-                console.log(e);
-                next(responseHandler.sendError(e));
-            }
-        });
-    }
-    addGroupContacts(req, res, next) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const responseHandler = new responseHandler_1.default();
-            try {
-                console.log("Group add Contact  Request");
-                responseHandler.reqRes(req, res).onFetch("GROUP_CONTACT_ADDED", yield contact_model_1.default.addGroupContacts(req.userId, req.params.groupId, req.body.contacts)).send();
             }
             catch (e) {
                 console.log(e);

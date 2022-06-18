@@ -224,6 +224,17 @@ class DeviceController {
             }
             catch (e) {
                 // send error with next function.
+                console.log(e);
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.getDeviceStatus = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("DEVICE_STATUS", yield device_model_1.default.getDeviceStatus(req.userId, req.params.deviceId)).send();
+            }
+            catch (e) {
+                // send error with next function.
                 next(responseHandler.sendError(e));
             }
         });

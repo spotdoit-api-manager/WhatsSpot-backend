@@ -1,13 +1,15 @@
+/// <reference types="mongoose" />
 import { EDeviceStatus, IDeviceTokenData, INewDevice } from "../device/device.interface";
 import { IApiKey, IDevice } from "./device.interface";
-import { IApiKeyModal, IDeviceModel } from "./device.shema";
+import { IDeviceModel } from "./device.schema";
 export declare class DeviceModel {
     newDevice(userId: string, walletId: string, body: IDevice, newDeviceCode: string): Promise<IDeviceModel>;
     newDeviceCode(userId: string, walletId: string, newDeviceBody: INewDevice): Promise<{
         proceed: boolean;
-        message: any;
+        message?: undefined;
     } | {
         proceed: boolean;
+        message: any;
     }>;
     private validateDeviceAdd;
     getQr(userId: string, deviceId: string): Promise<{
@@ -42,10 +44,9 @@ export declare class DeviceModel {
     getKeys(deviceId: string): Promise<any>;
     private addNewTokenDataToDevice;
     private generateDeviceKey;
-    expireApiKey(deviceId: string, apiKey: IApiKeyModal): Promise<void>;
     signDeviceToken: (apiKeyData: IDeviceTokenData, expiresIn: string) => string;
     private getTotalAvailableApiKeys;
-    updateDevice(phone: string, clientData: any): Promise<{
+    updateDevice(deviceId: string, clientData: any): Promise<{
         error: boolean;
         message: string;
     } | {
@@ -65,6 +66,8 @@ export declare class DeviceModel {
     }>;
     updateDeviceStatus(deviceId: string, status: EDeviceStatus): Promise<IDeviceModel>;
     removeDevice(userId: string, deviceId: string): Promise<void>;
+    getDeviceStatus(userId: string, deviceId: string): Promise<any>;
+    fetchDevicesList(): import("mongoose").Query<any>;
 }
 declare const _default: DeviceModel;
 export default _default;

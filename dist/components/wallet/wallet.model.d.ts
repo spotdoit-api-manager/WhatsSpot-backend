@@ -1,10 +1,12 @@
 import { IWalletModel } from "./wallet.schema";
 export declare class WalletModel {
     createWallet(balance?: number): Promise<IWalletModel>;
+    deleteWallet(walletId: string): Promise<void>;
     fetchWalletBalance(userId: string, walletId: string): Promise<any>;
     getTotalWalletBalance(): Promise<any>;
     updateWalletBalance(walletId: string, balance: number): Promise<IWalletModel>;
-    fetchTransactions(userId: string, walletId: string): Promise<any[]>;
+    addBalanceToWallet(userId: string, walletId: string, amount: number, currency?: string): Promise<IWalletModel>;
+    fetchTransactions(userId: string, walletId: string, page?: number): Promise<any[]>;
     private fetchWallet;
     fetchWalletByUserId(userId: string): Promise<any>;
     getWalletIdByUserId(userId: string): Promise<any>;
@@ -18,7 +20,7 @@ export declare class WalletModel {
     removeCreditFromWallet(walletId: string, removeCredit: number): Promise<IWalletModel>;
     makePaymentFromWallet(walletId: string, userId: string, amount: number, description: string, metaData?: Record<string, any>): Promise<{
         error: boolean;
-        transaction: Promise<import("../transaction/transaction.schema").ITransactionModel>;
+        transaction: import("../transaction/transaction.schema").ITransactionModel;
         wallet: IWalletModel;
     }>;
 }

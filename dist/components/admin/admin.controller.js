@@ -20,7 +20,51 @@ class AdminController {
         this.addNewAdmin = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
-                responseHandler.reqRes(req, res).onFetch("ADDED", yield admin_model_1.default.addNewAdmin(req.body)).send();
+                responseHandler.reqRes(req, res).onFetch("ADDED", yield admin_model_1.default.addNewAdmin(req.userId, req.body)).send();
+            }
+            catch (e) {
+                console.log(e);
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.convertToSuperAdmin = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("CONVERTED", yield admin_model_1.default.convertToSuperAdmin(req.userId, req.params.adminId)).send();
+            }
+            catch (e) {
+                console.log(e);
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.convertToNormalAdmin = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("CONVERTED", yield admin_model_1.default.convertToNormalAdmin(req.userId, req.params.adminId)).send();
+            }
+            catch (e) {
+                console.log(e);
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.fetchAdmins = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("FETCHED", yield admin_model_1.default.fetchAdmins()).send();
+            }
+            catch (e) {
+                console.log(e);
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.removeAdmin = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("ADDED", yield admin_model_1.default.removeAdmin(req.userId, req.params.adminId)).send();
             }
             catch (e) {
                 console.log(e);
@@ -65,6 +109,17 @@ class AdminController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.devicesList = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("DEVICES_FETCHED", yield admin_model_1.default.devicesList(req.userId)).send();
+            }
+            catch (e) {
+                console.log(e);
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
         this.fetchUsersBaseList = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
@@ -87,10 +142,32 @@ class AdminController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.getDeviceData = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("DEVICE_DATA_FETCHED", yield admin_model_1.default.getDeviceData(req.params.deviceId)).send();
+            }
+            catch (e) {
+                console.log(e);
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
         this.updateUserWalletBalance = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
                 responseHandler.reqRes(req, res).onFetch("WALLET_UPDATED", yield admin_model_1.default.updateUserWalletBalance(req.params.walletId, req.body.balance)).send();
+            }
+            catch (e) {
+                console.log(e);
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.walletTransactions = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("TRANSACTIONS_FETCHED", yield admin_model_1.default.walletTransactions(req.params.walletId)).send();
             }
             catch (e) {
                 console.log(e);
@@ -107,6 +184,67 @@ class AdminController {
             }
             catch (e) {
                 responseHandler.sendError(e);
+            }
+        });
+        // strip
+        this.addProduct = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("PRODUCT_ADDED", yield admin_model_1.default.addProduct(req.userId, req.body)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.getProducts = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("PRODUCTS_FETCHED", yield admin_model_1.default.getProducts(req.userId, req.query.limit)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.createPrice = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("PRICE_CREATED", yield admin_model_1.default.createPrice(req.userId, req.body)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.getPrices = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("PRICES_FETCHED", yield admin_model_1.default.getPrices(req.userId, req.query.limit)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.fetchPaymentRequests = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("PAYMENTS_FETCHED", yield admin_model_1.default.fetchPaymentsRequests(req.userId, req.params.status, req.query.page)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.approvePayment = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("PAYMENT APPROVED", yield admin_model_1.default.approvePayment(req.userId, req.params.paymentId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
             }
         });
     }

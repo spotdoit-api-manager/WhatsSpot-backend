@@ -8,3 +8,8 @@ export interface IVerifyPayment {
     transactionId: string;
     razorpay_signature: string;
 }
+export declare enum ERazorPayOrderStatus {
+    CREATED = "created",
+    ATTEMPTED = "attempted",
+    PAID = "paid"
+}

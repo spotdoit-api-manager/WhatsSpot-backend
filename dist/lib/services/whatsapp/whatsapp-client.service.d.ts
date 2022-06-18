@@ -9,7 +9,8 @@ interface IWhatsappClient {
 export declare const eventEmitter: EventEmitter;
 export declare class WhatsappClient {
     clients: IWhatsappClient;
-    addClient: (phone: string) => Whatsapp;
+    addClient: (deviceId: string, phone: string) => Whatsapp;
+    getClientStatus(phone: string): any;
     getClientInstanceByPhone(phone: string): any;
     getClientInstanceByInstanceId: (instanceId: number) => any;
     logoutClient(phone: string): Promise<{
@@ -19,7 +20,7 @@ export declare class WhatsappClient {
         error: boolean;
         message: any;
     }>;
-    getClientQr: (phone: string) => Promise<any>;
+    getClientQr: (deviceId: string, phone: string) => Promise<any>;
     removeClientInstanceByPhone(phone: string): {
         error: boolean;
         message: any;

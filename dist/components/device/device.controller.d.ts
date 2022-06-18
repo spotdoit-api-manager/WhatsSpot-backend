@@ -18,6 +18,7 @@ export declare class DeviceController {
     fetchPrevMessages: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     fetchDeviceMetrics: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     removeDevice: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    getDeviceStatus: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 }
 declare const _default: DeviceController;
 export default _default;

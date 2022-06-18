@@ -20,4 +20,9 @@ export declare const getPaginationInfo: (pageNo?: number) => {
 export declare const validateMobile: (phone?: string) => boolean;
 export declare const sanatizeMobile: (phone: string) => string;
 export declare const deSanatizeMobile: (phone: string) => string;
+export declare const validateEmail: (email?: string) => false | RegExpMatchArray;
+export declare const getSkipLimit: (pageNo?: number) => {
+    skip: number;
+    limit: number;
+};
 export {};

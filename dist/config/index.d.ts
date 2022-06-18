@@ -2,6 +2,7 @@ import { PlivoCredentials, Fast2SmsCredentials } from "./../lib/interfaces/provi
 import { ITestMessageConfig } from "./config.interface";
 export declare const mongoUrl: () => string;
 export declare const configCors: {
+    adminAllowOrigin: string[];
     allowOrigin: string[];
     exposedHeaders: string[];
 };
@@ -12,6 +13,8 @@ export declare const rateLimitConfig: {
 export declare const commonConfig: {
     jwtSecretKey: string;
     pageSizeLimit: number;
+    domain: string;
+    backendUrl: string;
 };
 export declare const deviceKeyConfig: {
     jwtSecretKey: string;
@@ -19,6 +22,16 @@ export declare const deviceKeyConfig: {
 };
 export declare const textLocalConfig: {
     apiKey: string;
+};
+export declare const mailazyConfig: {
+    accessKey: string;
+    accessSecret: string;
+};
+export declare const stripeConfig: {
+    secretKey: string;
+    publishableKey: string;
+    webhookSecretKey: string;
+    API: string;
 };
 export declare const s3Config: {
     accessKey: string;

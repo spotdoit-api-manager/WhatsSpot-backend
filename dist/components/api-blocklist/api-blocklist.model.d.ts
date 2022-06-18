@@ -1,4 +1,4 @@
-import { IApiKeyModal } from "../device/device.shema";
+import { IApiKeyModal } from "../device/device.schema";
 export declare class ApiBlockListModel {
     addApiToBlockList(deviceId: string, apiDetails: IApiKeyModal): Promise<void>;
 }

@@ -52,6 +52,7 @@ exports.Authorization = (role) => (req, res, next) => __awaiter(void 0, void 0, 
         }
     }
     catch (e) {
+        console.log(e);
         e = new httpErrors_1.HTTP401Error(e.message, "You may have not passed the authorization key in header");
         next(e);
     }
@@ -98,12 +99,12 @@ const handleAdminToken = (token) => __awaiter(void 0, void 0, void 0, function* 
         }
         else {
             // tslint:disable-next-line: no-string-throw
-            throw "You are not authorized user.........";
+            throw new Error("You are not authorized user.........");
         }
     }
     else {
         // tslint:disable-next-line: no-string-throw
-        throw "You are not authorized user";
+        throw new Error("You are not authorized user........");
     }
 });
 const handleToken = (token) => __awaiter(void 0, void 0, void 0, function* () {

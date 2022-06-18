@@ -136,6 +136,7 @@ class MessageQueueService {
                     try {
                         // const walletId = await walletModel.getWalletIdAndValidateTransactionAmount(message.userId,parseFloat(process.env.TEXT_MESSAGE_RATE));
                         const walletId = yield wallet_model_1.default.getWalletIdByUserId(message.userId);
+                        logger_1.default.info("got wallet id ", walletId);
                         const result = yield message_model_1.default.sendMessage(message.userId, message.to, message.message, message.messageType, message.deviceId, walletId);
                         // const result: any = await whatsappClientService.sendTextMessage(message.phone, message.to as string, message.message);
                         if (!result.error) {

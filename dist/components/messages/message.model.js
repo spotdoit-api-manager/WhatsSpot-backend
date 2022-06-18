@@ -13,10 +13,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageModel = void 0;
+const plans_interface_1 = require("./../plans/plans.interface");
 const whatsapp_enum_1 = require("./../../lib/services/whatsapp/whatsapp.enum");
 const bson_1 = require("bson");
-const index_1 = require("./../../lib/utils/index");
-const utils_1 = require("../../lib/utils");
 const httpErrors_1 = require("../../lib/utils/httpErrors");
 const device_model_1 = __importDefault(require("../device/device.model"));
 const message_interface_1 = require("./message.interface");
@@ -27,6 +26,7 @@ const message_queue_service_1 = __importDefault(require("../../lib/services/what
 const user_model_1 = __importDefault(require("../user/user.model"));
 const plans_model_1 = __importDefault(require("../plans/plans.model"));
 const logger_1 = __importDefault(require("../../core/logger"));
+const phone_handler_1 = require("../../lib/utils/phone.handler");
 const logFileName = "[MessageModel] : ";
 class MessageModel {
     constructor() {
@@ -66,14 +66,13 @@ class MessageModel {
                 numbers.push(body.numbers);
             }
             else {
-                body.numbers.forEach((contact) => {
-                    numbers.push(contact.phoneNumber);
+                body.numbers.forEach((phone) => {
+                    const parsedPhone = phone_handler_1.parsePhone(phone);
+                    numbers.push(parsedPhone.number);
                 });
             }
             for (let i = 0; i < numbers.length; i++) {
-                const to = index_1.sanatizeMobile(numbers[i]);
-                if (!utils_1.validateMobile(to))
-                    throw new httpErrors_1.HTTP400Error(`${numbers[i]} is not valid Number at index ${i}`);
+                const to = numbers[i];
                 const newBody = { phone: device.phone, userId, deviceId: deviceId, sendType: message_interface_1.ESendType.QUEUE, to, messageType: body.messageType, message: body.message, status: message_interface_1.EMessageStatus.PENDING };
                 messagesBody.push(newBody);
             }
@@ -121,10 +120,9 @@ class MessageModel {
     hasActivePlan(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const userCurrentPlan = yield user_model_1.default.fetchUserActivePlan(userId);
-            if (userCurrentPlan && userCurrentPlan.activePlanInfo) {
-                const isMessageOver = !Boolean(userCurrentPlan.planInfo.planMaxMessage - userCurrentPlan.activePlanInfo.sentMessageCount);
-                console.log(`isMessageOver is ${isMessageOver}`);
-                return { hasActivePlan: true, isMessageOver, activePlanInfo: userCurrentPlan.activePlanInfo, planInfo: userCurrentPlan.planInfo };
+            if (userCurrentPlan) {
+                const isMessageOver = userCurrentPlan.planStatus == plans_interface_1.EPlanStatus.EXHAUSTED;
+                return { hasActivePlan: true, isMessageOver: isMessageOver, activePlanInfo: userCurrentPlan };
             }
             return { hasActivePlan: false };
         });
@@ -133,54 +131,49 @@ class MessageModel {
     // }
     sendFastMessage(userId, numbers, message, messageType, deviceId, walletId) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (typeof numbers !== "string")
+                throw new httpErrors_1.HTTP401Error("FAST_LIMIT", "fast messages can be only send to 1 contacts per request");
             const device = yield device_model_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const results = [];
             if (typeof numbers == "string") {
-                const result = yield this.sendMessage(userId, numbers, message, messageType, deviceId, walletId);
-                const newBody = { phone: device.phone, userId, to: numbers, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, messageType: whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
+                const parsedNumber = phone_handler_1.parsePhone(numbers).number;
+                const result = yield this.sendMessage(userId, parsedNumber, message, messageType, deviceId, walletId);
+                const newBody = { phone: device.phone, userId, to: parsedNumber, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, messageType: whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
                 const saveResult = yield this.saveFastMessage(newBody);
                 results.push(Object.assign(Object.assign({}, result), { messageInfo: saveResult.data }));
             }
-            else if (typeof numbers == "object") {
-                numbers.forEach((number, index) => {
-                    const to = index_1.sanatizeMobile(number);
-                    if (!utils_1.validateMobile(to))
-                        throw new httpErrors_1.HTTP401Error(`Invalid number ${number} at ${index}`);
-                });
-                for (let i = 0; i < numbers.length; i++) {
-                    const to = index_1.sanatizeMobile(numbers[i]);
-                    const result = yield this.sendMessage(userId, to, message, messageType, deviceId, walletId);
-                    results.push(Object.assign(Object.assign({}, result), { messageInfo: { phone: device.phone, message, to: numbers, messageType: whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, userId, deviceId } }));
-                    const newBody = { phone: device.phone, userId, to, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, messageType: whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
-                    const saveResult = yield this.saveFastMessage(newBody);
-                    results.push(Object.assign(Object.assign({}, result), { messageInfo: saveResult.data }));
-                }
-            }
+            // else if(typeof numbers == "object"){
+            //     numbers.forEach((number: string,index: number)=>{
+            //         const to = parsePhone(number).number;
+            //     });
+            //     for(let i=0;i<numbers.length;i++){
+            //         const to = parsePhone(numbers[i]).number;
+            //         const result = await this.sendMessage(userId, to, message,messageType, deviceId, walletId);
+            //         results.push({...result,messageInfo:{phone:device.phone,message,to:numbers,messageType:EWhatsappMessageTypes.TEXT_MESSAGE,userId,deviceId}});
+            //         const newBody: IMessage = { phone: device.phone, userId, to, reason: result?.message, sendType: ESendType.FAST,messageType:EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT };
+            //     const saveResult = await this.saveFastMessage(newBody);
+            //     results.push({...result,messageInfo:saveResult.data});
+            //     }
+            // }
             else {
                 throw new httpErrors_1.HTTP400Error("INVALID_NUMBER_TYPE");
             }
-            logger_1.default.info(logFileName, results);
             return results;
         });
     }
-    sendMessage(userId, to, message, messageType, deviceId, walletId) {
+    sendMessage(userId, to, message, messageType, deviceId, walletId, transactionId = null) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                to = index_1.sanatizeMobile(to);
-                if (!utils_1.validateMobile(to))
-                    throw new httpErrors_1.HTTP401Error("INVALID_NUMBER");
                 const device = yield device_model_1.default.findDeviceById(userId, deviceId);
                 if (!device)
                     throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
-                const { hasActivePlan, isMessageOver, activePlanInfo, planInfo } = yield this.hasActivePlan(userId);
+                const { hasActivePlan, isMessageOver, activePlanInfo } = yield this.hasActivePlan(userId);
                 if (isMessageOver)
                     throw new httpErrors_1.HTTP400Error("MESSAGES_EXHAUSTED", "message exhausted for your active plan");
-                logger_1.default.info(logFileName, `User ${userId} hasPlanActive: ${hasActivePlan}`);
                 if (!hasActivePlan) {
                     const { isValidAmount, balance } = yield wallet_model_1.default.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
-                    // logger.debug(logFileName, `validAMount ${isValidAmount}`);
                     if (!isValidAmount)
                         throw new Error("NOT_ENOUGH_BALANCE");
                 }
@@ -188,7 +181,7 @@ class MessageModel {
                 if (result.error)
                     throw Error(result.message);
                 if (hasActivePlan) {
-                    yield plans_model_1.default.increamentMessageCount(activePlanInfo._id);
+                    plans_model_1.default.increamentMessageCount(activePlanInfo._id);
                     return { error: false, creditUsed: 0, message: result.message };
                 }
                 else {
@@ -208,7 +201,7 @@ class MessageModel {
             const device = yield device_model_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
-            const to = body.to;
+            const to = phone_handler_1.parsePhone(body.to).number;
             const msg = { image: body.locationUrl, caption: body.caption || "" };
             const result = yield whatsapp_client_service_1.default.sendImageMessage(device.phone, to, msg);
             // console.log(result);
@@ -226,7 +219,6 @@ class MessageModel {
     }
     sendTypeMessage(messageType, message, from, to) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("sending type message ", messageType);
             switch (messageType) {
                 case whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE:
                     return yield whatsapp_client_service_1.default.sendTextMessage(from, to, message);

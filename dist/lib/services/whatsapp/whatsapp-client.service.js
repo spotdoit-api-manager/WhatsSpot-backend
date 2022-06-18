@@ -28,9 +28,10 @@ exports.eventEmitter = new events_1.EventEmitter();
 class WhatsappClient {
     constructor() {
         this.clients = clients_data_1.default;
-        this.addClient = (phone) => {
-            const clientInstance = new whatsapp_service_1.default(phone);
+        this.addClient = (deviceId, phone) => {
+            const clientInstance = new whatsapp_service_1.default(deviceId, phone);
             const instaceId = instance_provider_1.default.getInstanceId(clientInstance);
+            logger_1.default.info(logFileName, `Adding client ${phone}`);
             clients_data_1.default[phone] = instaceId;
             console.info(logFileName, `Number of instance present = ${Object.keys(this.clients).length}`);
             return clientInstance;
@@ -41,12 +42,13 @@ class WhatsappClient {
                 return instance;
             }
             catch (e) {
+                console.error(e);
                 throw new Error("CLIENT_NOT_AUTHENTICATED");
             }
         };
-        this.getClientQr = (phone) => __awaiter(this, void 0, void 0, function* () {
+        this.getClientQr = (deviceId, phone) => __awaiter(this, void 0, void 0, function* () {
             this.removeClientInstanceByPhone(phone);
-            const client = this.addClient(phone);
+            const client = this.addClient(deviceId, phone);
             client.on("qr", (qrData) => {
                 console.debug(logFileName, "got qr ", qrData.qr);
                 socket_1.default.sendQrCode(phone, qrData);
@@ -62,13 +64,19 @@ class WhatsappClient {
         });
         this.sendTextMessage = (from, to, message) => __awaiter(this, void 0, void 0, function* () {
             try {
-                logger_1.default.info(logFileName, `Sending Text Message to ${to}`);
+                logger_1.default.info(logFileName, `Sending Text Message to ${to} | from: ${from}`);
                 const clientInstance = this.getClientInstanceByPhone(from);
-                if (!clientInstance)
+                if (!clientInstance) {
+                    logger_1.default.error(logFileName, `Client not found ${from}`);
+                    return { error: true, message: "CLIENT_NOT_FOUND" };
+                }
+                ;
+                if (!clientInstance.authState) {
+                    logger_1.default.error(logFileName, `Client not authenticated ${from}`);
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-                if (!clientInstance.authState)
-                    return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-                const data = yield clientInstance.sendTextMessage(utils_1.sanatizeMobile(to), message);
+                }
+                ;
+                const data = yield clientInstance.sendAnyMessage(utils_1.sanatizeMobile(to), message);
                 return data;
             }
             catch (e) {
@@ -83,7 +91,7 @@ class WhatsappClient {
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
                 if (!clientInstance.authState)
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-                const data = yield clientInstance.sendListMessage(utils_1.sanatizeMobile(to), message);
+                const data = yield clientInstance.sendAnyMessage(utils_1.sanatizeMobile(to), message);
                 return data;
             }
             catch (e) {
@@ -98,7 +106,7 @@ class WhatsappClient {
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
                 if (!clientInstance.authState)
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-                const data = yield clientInstance.sendButtonMessage(utils_1.sanatizeMobile(to), message);
+                const data = yield clientInstance.sendAnyMessage(utils_1.sanatizeMobile(to), message);
                 return data;
             }
             catch (e) {
@@ -113,7 +121,7 @@ class WhatsappClient {
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
                 if (!clientInstance.authState)
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-                const data = yield clientInstance.sendTemplateMessage(utils_1.sanatizeMobile(to), message);
+                const data = yield clientInstance.sendAnyMessage(utils_1.sanatizeMobile(to), message);
                 return data;
             }
             catch (e) {
@@ -128,7 +136,7 @@ class WhatsappClient {
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
                 if (!client.authState)
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-                const data = yield client.sendImageMessage(to, msg);
+                const data = yield client.sendAnyMessage(to, msg);
                 console.log("image sent data is ", data);
                 return data;
             }
@@ -136,6 +144,12 @@ class WhatsappClient {
                 return { error: true, message: e.message };
             }
         });
+    }
+    getClientStatus(phone) {
+        const client = this.getClientInstanceByPhone(phone);
+        if (!client)
+            return { error: false, message: "CLIENT_NOT_AUTHENTICATED" };
+        return client.getDeviceStatus();
     }
     getClientInstanceByPhone(phone) {
         return this.getClientInstanceByInstanceId(this.clients[phone]);
@@ -190,7 +204,7 @@ class WhatsappClient {
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
                 if (!clientInstance.authState)
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-                const data = yield clientInstance.sendRawMessage(utils_1.sanatizeMobile(to), message);
+                const data = yield clientInstance.sendAnyMessage(utils_1.sanatizeMobile(to), message);
                 return data;
             }
             catch (e) {
@@ -208,7 +222,7 @@ class WhatsappClient {
                 for (let i = 0; i < devices.length; i++) {
                     const device = devices[i];
                     console.debug(logFileName, `client${i}:${device.phone}`);
-                    const client = this.addClient(device.phone);
+                    const client = this.addClient(device._id, device.phone);
                     yield client.initiClient();
                 }
             }

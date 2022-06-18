@@ -1,3 +1,4 @@
+import { EPayWith } from "./../../core/enums/pay-with.enum";
 export interface ITransaction {
     amount: number;
     type: ETransactionTypes;
@@ -6,6 +7,7 @@ export interface ITransaction {
     orderId: string;
     description?: string;
     status: ETransactionStatus;
+    method: EPayWith;
     metaData: any;
 }
 export declare enum ETransactionTypes {
@@ -15,5 +17,7 @@ export declare enum ETransactionTypes {
 export declare enum ETransactionStatus {
     ERROR = "ERROR",
     PENDING = "PENDING",
-    SUCCESS = "SUCCESS"
+    SUCCESS = "SUCCESS",
+    EXPIRED = "EXPIRED",
+    CANCELLED = "CANCELLED"
 }

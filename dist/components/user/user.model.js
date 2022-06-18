@@ -32,6 +32,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserModel = void 0;
+const phone_handler_1 = require("./../../lib/utils/phone.handler");
 const index_1 = require("./../../lib/utils/index");
 const message_interface_1 = require("./../messages/message.interface");
 const helpers_1 = require("../../lib/helpers");
@@ -46,25 +47,11 @@ const httpErrors_1 = require("../../lib/utils/httpErrors");
 const wallet_model_1 = __importDefault(require("../wallet/wallet.model"));
 const logger_1 = __importDefault(require("../../core/logger"));
 const plans_interface_1 = require("../plans/plans.interface");
+const notify_service_1 = __importDefault(require("../../lib/services/notify.service"));
+const emailService = __importStar(require("../../lib/services/email.service"));
 const logFileName = "[UserModal] : ";
 class UserModel {
     constructor() {
-        // private async generateValidUsername(firstName: string, id: string | null = null) {
-        //   let s = this.randomString(6);
-        //   let userName = `${firstName}_${s}`
-        //   if (id == null) {
-        //     while ((await User.findOne({ "userName": userName }).count()) > 0) {
-        //       s = this.randomString(6);
-        //       userName = `${firstName}_${s}`
-        //     }
-        //   } else {
-        //     while ((await User.findOne({ _id: { $ne: id }, "userName": userName }).count()) > 0) {
-        //       s = this.randomString(6);
-        //       userName = `${firstName}_${s}`
-        //     }
-        //   }
-        //   return userName;
-        // }
         this.signToken = (dataToStore) => {
             return jsonwebtoken_1.default.sign(dataToStore, config_1.commonConfig.jwtSecretKey, {
                 expiresIn: process.env.JWT_EXPIRES_IN,
@@ -119,58 +106,111 @@ class UserModel {
             return data;
         });
     }
-    fetchUserActivePlan(userId) {
-        var _a;
+    fetchUserDetailedActivePlan(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const userPlan = yield user_schema_1.User.aggregate([
                 { $match: { _id: new bson_1.ObjectID(userId) } },
+                {
+                    $project: {
+                        activePlan: { $arrayElemAt: ["$activePlans", 0] }
+                    }
+                },
                 {
                     $lookup: {
                         from: "userplans",
                         localField: "activePlan.planRef",
                         foreignField: "_id",
-                        as: "activePlan"
+                        as: "activePlanInfo"
                     },
                 },
                 {
-                    $unwind: {
-                        path: "$activePlan"
+                    $project: {
+                        activePlanInfo: { $arrayElemAt: ["$activePlanInfo", 0] }
                     }
                 },
                 {
                     $lookup: {
                         from: "plans",
-                        localField: "activePlan.planId",
+                        localField: "activePlanInfo.planId",
                         foreignField: "planId",
                         as: "planInfo"
                     },
                 },
                 {
+                    $project: {
+                        planInfo: { $arrayElemAt: ["$planInfo", 0] },
+                        activePlanInfo: 1
+                    }
+                },
+            ]);
+            if (userPlan[0] && userPlan[0].activePlanInfo) {
+                return userPlan[0];
+            }
+            throw new httpErrors_1.HTTP401Error("NO_ACTIVE_PLAN", "You don't have any active plan to show");
+        });
+    }
+    fetchUserActivePlan(userId) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            const userPlan = yield user_schema_1.User.aggregate([
+                { $match: { _id: new bson_1.ObjectID(userId) } },
+                { $project: {
+                        _id: 1,
+                        activePlans: 1
+                    } },
+                {
                     $unwind: {
-                        path: "$planInfo"
+                        path: "$activePlans"
                     }
                 },
                 {
-                    $project: {
-                        _id: 0,
-                        userId: "$_id",
-                        activePlanInfo: "$activePlan",
-                        planInfo: 1
-                    }
-                }
+                    $lookup: {
+                        from: "userplans",
+                        let: { planRef: "$activePlans.planRef" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    planStatus: { $in: [plans_interface_1.EPlanStatus.ACTIVE, plans_interface_1.EPlanStatus.EXHAUSTED] },
+                                    $expr: {
+                                        $eq: ["$_id", "$$planRef"],
+                                    }
+                                }
+                            }
+                        ],
+                        as: "activePlan"
+                    },
+                },
             ]);
-            return ((_a = userPlan[0]) === null || _a === void 0 ? void 0 : _a.activePlan) || null;
+            return ((_a = userPlan[0]) === null || _a === void 0 ? void 0 : _a.activePlan[0]) || null;
         });
     }
     addPlanToUser(userId, activePlanName, activePlanId) {
         return __awaiter(this, void 0, void 0, function* () {
             const planRef = { planName: activePlanName, planRef: activePlanId };
-            const result = yield user_schema_1.User.findByIdAndUpdate(userId, { activePlan: planRef });
+            const result = yield user_schema_1.User.findByIdAndUpdate(userId, { $push: { activePlans: planRef } });
+            notify_service_1.default.planActivated(userId, activePlanId);
         });
     }
-    expireUserPlan(userId) {
+    removeUserActivePlan(userId, planRef) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield user_schema_1.User.findByIdAndUpdate(userId, { $unset: { activePlan: 1 } });
+            logger_1.default.info(logFileName, `removeUserActivePlan : ${userId} PlanRef: ${planRef}`);
+            const userData = yield user_schema_1.User.findByIdAndUpdate(userId, { $pull: { activePlans: { planRef: new bson_1.ObjectID(planRef) } } }, { new: false }).lean();
+            const activePlan = userData.activePlans.find(plan => plan.planRef.toString() === planRef);
+            yield user_schema_1.User.findByIdAndUpdate(userId, { $push: { previousPlans: activePlan } });
+        });
+    }
+    checkIfUserCanActivatePlan(userId, planId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (planId == plans_interface_1.EPLANS.PAYG) {
+                return true;
+            }
+            const userActivePlan = yield this.fetchUserActivePlan(userId);
+            if (userActivePlan && userActivePlan.planStatus === plans_interface_1.EPlanStatus.ACTIVE) {
+                throw new httpErrors_1.HTTP400Error("ALREADY_HAS_ACTIVE_PLAN", "User already has an active plan");
+            }
+            else if (userActivePlan && userActivePlan.planStatus === plans_interface_1.EPlanStatus.EXHAUSTED) {
+                yield this.removeUserActivePlan(userId, userActivePlan._id);
+            }
         });
     }
     delete(id) {
@@ -189,15 +229,17 @@ class UserModel {
             return { _id: data._id };
         });
     }
-    createNewUser(body) {
+    createNewUser(phone, email, userName, country) {
         return __awaiter(this, void 0, void 0, function* () {
+            let walletId = null;
             try {
-                body.role = "user";
+                const body = { phone, email, userName, country, emailVerified: false, isVerified: false, deactivation: false, role: "user", };
                 const existingUser = yield this.isUserExistByPhone(body.phone);
                 let data;
                 if (!existingUser) {
                     const wallet = yield wallet_model_1.default.createWallet(parseInt(process.env.INITIAL_WALLET_BALANCE));
                     body.walletId = wallet._id;
+                    walletId = wallet._id;
                     const newUser = new user_schema_1.User(body);
                     data = yield newUser.addNewUser();
                     if (!data)
@@ -208,22 +250,38 @@ class UserModel {
                 return existingUser;
             }
             catch (err) {
+                wallet_model_1.default.deleteWallet(walletId);
                 throw new httpErrors_1.HTTP400Error(err.message);
             }
         });
     }
-    registerWithPhone(body) {
+    registerWithPhone(phone, email, userName, country) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const userExist = yield this.findUserByPhone(body.phone);
+                if (!phone || !email || !userName || !country)
+                    throw new httpErrors_1.HTTP400Error("Fields missing or empty { phone,email,userName,country} are required fields");
+                if (!index_1.validateEmail(email))
+                    throw new httpErrors_1.HTTP400Error("INVALID_EMAIL", "Please enter valid email id");
+                const phoneInfo = phone_handler_1.parsePhoneWithCountry(phone, country);
+                logger_1.default.info("Phone Info is ", phoneInfo);
+                const userExist = yield this.findUserByPhone(phoneInfo.number);
                 ;
-                if (userExist)
+                if (userExist && userExist.isVerified)
                     throw new httpErrors_1.HTTP401Error("USER_ALREADY_EXIST");
-                const user = yield this.createNewUser(body);
-                const otp = this.updateOtp(user._id);
-                const otpData = yield this.sendOtpToMobile(otp, body.phone);
-                if (otpData.proceed) {
-                    return { phone: body.phone, _id: user.id };
+                if (userExist && !userExist.isVerified) {
+                    const otp = this.updateOtp(userExist._id);
+                    const otpData = yield this.sendOtpToMobile(otp, phoneInfo.number);
+                    if (otpData.proceed) {
+                        return { phone: phoneInfo.number, _id: userExist.id };
+                    }
+                }
+                else {
+                    const user = yield this.createNewUser(phoneInfo.number, email, userName, country);
+                    const otp = this.updateOtp(user._id);
+                    const otpData = yield this.sendOtpToMobile(otp, phone);
+                    if (otpData.proceed) {
+                        return { phone: phoneInfo.number, _id: user.id };
+                    }
                 }
                 throw new httpErrors_1.HTTP400Error("OTP_NOT_SENT");
             }
@@ -236,21 +294,23 @@ class UserModel {
             }
         });
     }
-    loginWithPhone(body) {
+    loginWithPhone(phone, country) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield this.findUserByPhone(body.phone);
+            const parsedPhone = phone_handler_1.parsePhoneWithCountry(phone, country).number;
+            const user = yield this.findUserByPhone(parsedPhone);
             if (!user)
                 throw new httpErrors_1.HTTP401Error("USER_NOT_FOUND");
             const otp = this.updateOtp(user._id);
-            const otpData = yield this.sendOtpToMobile(otp, body.phone);
+            const otpData = yield this.sendOtpToMobile(otp, parsedPhone);
             if (otpData.proceed) {
-                return { phone: body.phone, _id: user.id };
+                return { phone: parsedPhone, _id: user.id };
             }
         });
     }
     resendOTP(id, body) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield user_schema_1.User.findOne({ _id: new bson_1.ObjectID(id), phone: index_1.sanatizeMobile(body.phoneNumber) });
+            const parsedPhone = phone_handler_1.parsePhoneWithCountry(body.phoneNumber, body.country);
+            const user = yield user_schema_1.User.findOne({ _id: new bson_1.ObjectID(id), phone: parsedPhone });
             if (!user)
                 throw new httpErrors_1.HTTP401Error("USER_NOT_FOUND");
             const otp = this.updateOtp(user._id);
@@ -283,15 +343,15 @@ class UserModel {
     isUserExist(body) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { username, password } = body;
+                const { userName, password } = body;
                 // 1>  check email and password exist
-                if (!username || !password) {
-                    throw new httpErrors_1.HTTP400Error("Please provide username or password");
+                if (!userName || !password) {
+                    throw new httpErrors_1.HTTP400Error("Please provide userName or password");
                 }
                 // 2> check if user exist and password is correct
-                const user = yield user_schema_1.User.findOne({ username: username }).select("+password");
+                const user = yield user_schema_1.User.findOne({ userName: userName }).select("+password");
                 if (user) {
-                    throw new httpErrors_1.HTTP400Error("Invalid username or password");
+                    throw new httpErrors_1.HTTP400Error("Invalid userName or password");
                 }
             }
             catch (e) {
@@ -302,13 +362,13 @@ class UserModel {
     login(body) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { username, password } = body;
+                const { userName, password } = body;
                 // 1>  check email and password exist
-                if (!username || !password) {
-                    throw new httpErrors_1.HTTP400Error("Please provide username or password");
+                if (!userName || !password) {
+                    throw new httpErrors_1.HTTP400Error("Please provide userName or password");
                 }
                 // 2> check if user exist and password is correct
-                const user = yield user_schema_1.User.findOne({ username: username }).select("+password");
+                const user = yield user_schema_1.User.findOne({ userName: userName }).select("+password");
                 if (!user || !(yield user.correctPassword(password, user.password))) {
                     throw new httpErrors_1.HTTP400Error("Invalid email or password");
                 }
@@ -373,12 +433,12 @@ class UserModel {
                 const response = yield this.authenticateWithAccesToken(user);
                 if (!response.isExisted) {
                     let u;
-                    const userName = yield this.generateValidUsername(user.given_name);
+                    const userName = yield this.generateValiduserName(user.given_name);
                     if (body.authProvider === "facebook") {
                         u = {
                             role: "user",
                             firstName: `${user.given_name}`,
-                            username: userName,
+                            userName: userName,
                             lastName: `${user.family_name}`,
                             phone: body.phone,
                             facebookId: user.id
@@ -389,7 +449,7 @@ class UserModel {
                         u = {
                             role: "user",
                             firstName: `${user.given_name}`,
-                            username: userName,
+                            userName: userName,
                             lastName: `${user.family_name}`,
                             phone: body.phone,
                             email: user.email,
@@ -409,50 +469,6 @@ class UserModel {
             }
         });
     }
-    addFollower(id, userId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const data = user_schema_1.User.findOneAndUpdate({ id: userId }, {
-                $push: { "followers": id }
-            });
-            return data;
-        });
-    }
-    ;
-    addFollowing(id, userId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const data = user_schema_1.User.findOneAndUpdate({ _id: userId }, {
-                $push: { "following": id }
-            });
-            return data;
-        });
-    }
-    ;
-    addFollowRequest(id, userId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const data = user_schema_1.User.findOneAndUpdate({ id: userId }, {
-                $push: { "followRequest": id }
-            });
-            return data;
-        });
-    }
-    ;
-    acceptFollowRequest(id, userId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const data = yield user_schema_1.User.findOneAndUpdate({ id: userId }, {
-                $pull: { "followRequest": id }
-            });
-            if (data) {
-                yield user_schema_1.User.findOneAndUpdate({ id: userId }, {
-                    $push: { "followRequest": id }
-                });
-                yield user_schema_1.User.findOneAndUpdate({ id }, {
-                    $push: { "following": userId }
-                });
-            }
-            return data;
-        });
-    }
-    ;
     updateOtp(id) {
         const otp = helpers_1.otpGenerator();
         user_schema_1.User.findByIdAndUpdate(id, { otp }).then();
@@ -525,7 +541,7 @@ class UserModel {
     createCookie(tokenData) {
         return `Authorization=${tokenData.token}; HttpOnly; Max-Age=${tokenData.expiresIn};`;
     }
-    generateValidUsername(firstName, id = null) {
+    generateValiduserName(firstName, id = null) {
         return __awaiter(this, void 0, void 0, function* () {
             let s = this.randomString(6);
             let userName = `${firstName}_${s}`;
@@ -603,12 +619,12 @@ class UserModel {
                     }
                     else { // If we are adding a completely new user
                         let u;
-                        const userName = yield this.generateValidUsername(user.given_name);
+                        const userName = yield this.generateValiduserName(user.given_name);
                         if (body.authProvider === "facebook") {
                             u = {
                                 role: "user",
                                 firstName: `${user.given_name}`,
-                                username: userName,
+                                userName: userName,
                                 lastName: `${user.family_name}`,
                                 phone: body.phone,
                                 facebookId: user.id
@@ -619,7 +635,7 @@ class UserModel {
                             u = {
                                 role: "user",
                                 firstName: `${user.given_name}`,
-                                username: userName,
+                                userName: userName,
                                 lastName: `${user.family_name}`,
                                 phone: body.phone,
                                 email: user.email,
@@ -843,7 +859,6 @@ class UserModel {
                     }
                 }
             ]);
-            console.log("metrics result ", result);
             return result[0] || null;
         });
     }
@@ -994,17 +1009,6 @@ class UserModel {
                 { $match: { _id: new bson_1.ObjectID(userId) } },
                 { $set: { _id: { $toObjectId: "$_id" } } },
                 {
-                    $project: {
-                        _id: 1,
-                        phone: 1,
-                        email: 1,
-                        createdAt: 1,
-                        isVerified: 1,
-                        deactivation: 1,
-                        walletId: 1,
-                    }
-                },
-                {
                     $lookup: {
                         from: "devices",
                         let: { userId: "$_id" },
@@ -1016,39 +1020,125 @@ class UserModel {
                                         $eq: ["$userId", "$$userId"],
                                     }
                                 }
+                            },
+                            {
+                                $project: {
+                                    apiKeys: 0,
+                                }
                             }
                         ],
                         as: "devices"
                     },
                 },
                 {
-                    $unwind: {
-                        path: "$devices"
-                    }
+                    $lookup: {
+                        from: "userplans",
+                        let: { userId: "$_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $eq: ["$userId", "$$userId"],
+                                    }
+                                }
+                            }
+                        ],
+                        as: "plans"
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "wallets",
+                        let: { userId: "$_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $eq: ["$userId", "$$userId"],
+                                    }
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    walletId: "$_id",
+                                    balance: 1,
+                                    createdAt: 1,
+                                    updatedAt: 1,
+                                }
+                            }
+                        ],
+                        as: "wallet"
+                    },
                 },
                 {
                     $project: {
-                        deviceId: "$devices._id",
-                        authState: "$devices.authState"
+                        _id: 0,
+                        userInfo: {
+                            userId: "$_id",
+                            isVerified: "$isVerified",
+                            deactivation: "$deactivation",
+                            phone: "$phone",
+                            email: "$email",
+                            waletId: "$walletId",
+                            previousPlans: "$previousPlans",
+                            createdAt: "$createdAt",
+                            updatedAt: "$updatedAt",
+                        },
+                        walletInfo: { $arrayElemAt: ["$wallet", 0] },
+                        devices: 1,
+                        plans: 1
                     }
-                },
-                {
-                    $lookup: {
-                        from: "fastmessages",
-                        localField: "deviceId",
-                        foreignField: "deviceId",
-                        as: "fastMessages"
-                    },
-                },
-                {
-                    $lookup: {
-                        from: "messagequeues",
-                        localField: "deviceId",
-                        foreignField: "deviceId",
-                        as: "queueMessages"
-                    },
-                },
+                }
             ]);
+        });
+    }
+    updateNotificationSettings(userId, notificationSetting) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const newSettings = {
+                device: Object.assign({}, notificationSetting.device),
+                plan: Object.assign({}, notificationSetting.plan)
+            };
+            return yield user_schema_1.User.findOneAndUpdate({ _id: new bson_1.ObjectID(userId) }, { $set: { "settings.notifications": newSettings } }, { new: true }).select("settings.notifications").lean();
+        });
+    }
+    updateProfile(userId, profileBody) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!profileBody.country || !profileBody.userName)
+                throw new httpErrors_1.HTTP400Error("Invalid request", "country and userName are required");
+            return yield user_schema_1.User.findByIdAndUpdate(userId, { country: profileBody.country, userName: profileBody.userName }, { new: true }).lean();
+        });
+    }
+    sendEmailVerification(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield this.findUserById(userId);
+            if (user.emailVerified)
+                throw new httpErrors_1.HTTP401Error("EMAIL_ALREADY_VERIFIED", "Your email id is already verifeid");
+            if (!user)
+                throw new httpErrors_1.HTTP400Error("USER_NOT_FOUND", "User not found");
+            const email = user.email;
+            if (!email)
+                throw new httpErrors_1.HTTP400Error("USER_EMAIL_FOUND", "User do not have email");
+            const otp = helpers_1.otpGenerator();
+            logger_1.default.info(logFileName, `Sending Email OTP ${otp} to ${email}`);
+            yield user_schema_1.User.findByIdAndUpdate(userId, { $set: { emailOtp: otp } });
+            const res = yield emailService.sendVerificationMail(email, "Email Verification", `Dear ${user.userName}, Your OTP for email verification is <b><h2>${otp}</h2></h2></b>`, `Dear ${user.userName}, Your OTP for email verification is <b><h2>${otp}</h2></h2></b>`);
+            if (!res)
+                throw new httpErrors_1.HTTP400Error("EMAIL_SEND_FAILED", "Email send failed");
+        });
+    }
+    verifyEmaliOtp(userId, otp) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield this.findUserById(userId);
+            if (!user)
+                throw new httpErrors_1.HTTP400Error("USER_NOT_FOUND", "User not found");
+            if (user.emailVerified)
+                throw new httpErrors_1.HTTP400Error("EMAIL_ALREADY_VERIFIED", "Your email id is already verifeid");
+            if (!user.emailOtp)
+                throw new httpErrors_1.HTTP400Error("EMAIL_OTP_NOT_FOUND", "Email OTP not found");
+            if (user.emailOtp !== parseInt(otp))
+                throw new httpErrors_1.HTTP400Error("INVALID_OTP", "The entered OTP is invalid");
+            return yield user_schema_1.User.findByIdAndUpdate(userId, { $set: { emailVerified: true } }).lean();
         });
     }
 }

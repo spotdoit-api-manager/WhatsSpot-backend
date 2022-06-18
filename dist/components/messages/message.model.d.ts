@@ -12,7 +12,7 @@ export declare class MessageModel {
     updateMessageToGroupStatus: (id: string, contact: IContact, status: EMessageStatus, reason?: string) => Promise<void>;
     addMessageToQueue(userId: string, body: {
         groups: IGroupList[];
-        numbers: string | IContact[];
+        numbers: string | string[];
         message: IWhatsappMessage;
         isGroup: boolean;
         messageType: EWhatsappMessageTypes;
@@ -47,8 +47,8 @@ export declare class MessageModel {
     }>;
     fetchGroupMessageSentContacts(messageId: string): Promise<any[]>;
     private hasActivePlan;
-    sendFastMessage(userId: string, numbers: string | string[], message: IWhatsappTextMessage, messageType: EWhatsappMessageTypes, deviceId: string, walletId: string): Promise<any[]>;
-    sendMessage(userId: string, to: string, message: IWhatsappTextMessage, messageType: EWhatsappMessageTypes, deviceId: string, walletId: string): Promise<{
+    sendFastMessage(userId: string, numbers: string, message: IWhatsappTextMessage, messageType: EWhatsappMessageTypes, deviceId: string, walletId: string): Promise<any[]>;
+    sendMessage(userId: string, to: string, message: IWhatsappTextMessage, messageType: EWhatsappMessageTypes, deviceId: string, walletId: string, transactionId?: string): Promise<{
         error: boolean;
         creditUsed: number;
         message: any;

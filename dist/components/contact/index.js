@@ -3,27 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const device_key_middleware_1 = require("../../lib/middleware/device-key.middleware");
 const contact_controller_1 = __importDefault(require("./contact.controller"));
 exports.default = [
-    {
-        path: "/contacts",
-        method: "get",
-        escapeAuth: true,
-        handler: [device_key_middleware_1.DeviceKeyValidator, contact_controller_1.default.fetchContacts]
-    },
-    {
-        path: "/contacts/groups",
-        method: "get",
-        escapeAuth: true,
-        handler: [device_key_middleware_1.DeviceKeyValidator, contact_controller_1.default.fetchGroups]
-    },
-    {
-        path: "/contact/group/contacts/:groupId",
-        method: "get",
-        escapeAuth: true,
-        handler: [device_key_middleware_1.DeviceKeyValidator, contact_controller_1.default.fetchGroupContacts]
-    },
     {
         path: "/contact/add",
         method: "post",
@@ -79,10 +60,5 @@ exports.default = [
         method: "delete",
         handler: [contact_controller_1.default.deleteGroup]
     },
-    {
-        path: "/contact/group/:groupId/add",
-        method: "post",
-        handler: [contact_controller_1.default.addGroupContacts]
-    }
 ];
 //# sourceMappingURL=index.js.map

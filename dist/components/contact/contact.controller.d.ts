@@ -11,7 +11,6 @@ export declare class ContactControler {
     editGroupContacts(req: Request, res: Response, next: NextFunction): Promise<void>;
     deleteContacts(req: Request, res: Response, next: NextFunction): Promise<void>;
     deleteGroupContacts(req: Request, res: Response, next: NextFunction): Promise<void>;
-    addGroupContacts(req: Request, res: Response, next: NextFunction): Promise<void>;
 }
 declare const _default: ContactControler;
 export default _default;

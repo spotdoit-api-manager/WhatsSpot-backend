@@ -10,9 +10,12 @@ const express_1 = __importDefault(require("express"));
 const utils_1 = require("./lib/utils");
 const index_1 = __importDefault(require("./lib/middleware/index"));
 const routes_1 = __importDefault(require("./routes"));
+const api_routes_1 = __importDefault(require("./routes/api-routes"));
+const admin_routes_1 = __importDefault(require("./routes/admin-routes"));
 const errorHandlers_middleware_1 = __importDefault(require("./lib/middleware/errorHandlers.middleware"));
 const dbConnection_1 = __importDefault(require("./lib/helpers/dbConnection"));
 const logger_1 = __importDefault(require("./core/logger"));
+const common_middleware_1 = require("./lib/middleware/common.middleware");
 const logFileName = "[App]";
 process.on("uncaughtException", e => {
     console.log(e);
@@ -28,15 +31,21 @@ process.on("unhandledRejection", e => {
 const app = express_1.default();
 exports.app = app;
 // Initialize middlewares
-utils_1.applyMiddleware(index_1.default, app);
+utils_1.applyMiddleware(index_1.default, app); //apply common middle wares
 // open  mongoose connection
 dbConnection_1.default.mongoConnection();
 /*---------------------------------------
 | API VERSIONS CONFIGURATION [START]
 |---------------------------------------*/
 // Different router required to initialize different apis call.
-const r1 = express_1.default.Router();
-app.use("/", utils_1.applyRoutes(routes_1.default, r1)); // default api
+const baseAppRouter = express_1.default.Router();
+utils_1.applyMiddleware([common_middleware_1.allowCors], baseAppRouter); //apply cors to only base endpoints
+const userApiRouter = express_1.default.Router();
+const adminRouter = express_1.default.Router();
+utils_1.applyMiddleware([common_middleware_1.allowCorsAdmin], adminRouter); //apply cors to admin api
+app.use("/", utils_1.applyRoutes(routes_1.default, baseAppRouter)); // base app api
+app.use("/api", utils_1.applyRoutes(api_routes_1.default, userApiRouter)); // users api
+app.use("/admin", utils_1.applyRoutes(admin_routes_1.default, adminRouter)); // admin api
 app.all("*", (req, res, next) => {
     next(new httpErrors_1.HTTP400Error(`Can't found ${req.originalUrl} on WhatsSpot server`));
 });

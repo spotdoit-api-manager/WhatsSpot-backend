@@ -24,6 +24,7 @@ const transaction_model_1 = __importDefault(require("../transaction/transaction.
 const plans_model_1 = __importDefault(require("../plans/plans.model"));
 const wallet_model_1 = __importDefault(require("../wallet/wallet.model"));
 const user_model_1 = __importDefault(require("../user/user.model"));
+const pay_with_enum_1 = require("../../core/enums/pay-with.enum");
 const logFileName = "PaypalModel";
 class PaytmModel {
     createOrder(userId, walletId, planId, amount, currency) {
@@ -74,7 +75,7 @@ class PaytmModel {
                         }]
                 };
                 const order = yield this.createPaypalOrder(payload);
-                const transaction = yield transaction_model_1.default.createTransactionForPlan(plan.planId, order.id, userId, walletId, transaction_interface_1.ETransactionTypes.CREDIT, indianAmount, transactionMessage);
+                const transaction = yield transaction_model_1.default.createTransactionForPlan(plan.planId, order.id, userId, walletId, transaction_interface_1.ETransactionTypes.CREDIT, indianAmount, transactionMessage, pay_with_enum_1.EPayWith.PAYPAL);
                 return transaction;
             }
             catch (e) {

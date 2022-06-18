@@ -42,19 +42,36 @@ const planRef = new mongoose_1.Schema({
         required: true
     }
 }, { timestamps: true });
+const NotificationChannels = new mongoose_1.Schema({
+    email: {
+        type: Boolean,
+        default: false
+    },
+    whatsapp: {
+        type: Boolean,
+        default: true
+    },
+    sms: {
+        type: Boolean,
+        default: true
+    }
+}, { timestamps: false, _id: false });
+const UserSettingsSchema = new mongoose_1.Schema({
+    notifications: {
+        device: {
+            type: NotificationChannels,
+            required: true
+        },
+        plan: {
+            type: NotificationChannels,
+            required: true
+        },
+    }
+}, { timestamps: false, _id: false });
 exports.UserSchema = new mongoose_1.Schema({
-    firstName: {
+    userName: {
         type: String,
-        minlength: 2,
-    },
-    lastName: {
-        type: String,
-        minlength: 2,
-    },
-    username: {
-        type: String,
-        unique: true,
-        sparse: true
+        required: true
     },
     password: {
         type: String,
@@ -64,12 +81,13 @@ exports.UserSchema = new mongoose_1.Schema({
     },
     email: {
         type: String,
-        unique: false,
+        unique: true,
         required: true
     },
-    activePlan: planRef,
+    activePlans: [planRef],
     previousPlans: [planRef],
     walletId: {
+        required: true,
         type: mongoose_1.SchemaTypes.ObjectId,
         ref: "wallet",
         immutable: true
@@ -78,10 +96,8 @@ exports.UserSchema = new mongoose_1.Schema({
     role: {
         type: String,
         enum: ["user", "admin"],
-        required: true
-    },
-    facebookId: {
-        type: String
+        required: true,
+        description: "user"
     },
     phone: {
         type: String,
@@ -94,6 +110,7 @@ exports.UserSchema = new mongoose_1.Schema({
         enum: ["male", "female", "other"],
     },
     otp: Number,
+    emailOtp: Number,
     deviceCodes: {
         type: mongoose_1.SchemaTypes.Mixed,
         required: false,
@@ -113,6 +130,33 @@ exports.UserSchema = new mongoose_1.Schema({
     },
     avatar: {
         type: String
+    },
+    country: {
+        type: String,
+        required: true
+    },
+    emailVerified: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+    settings: {
+        type: UserSettingsSchema,
+        required: true,
+        default: {
+            notifications: {
+                device: {
+                    email: false,
+                    whatsapp: true,
+                    sms: true
+                },
+                plan: {
+                    email: false,
+                    whatsapp: true,
+                    sms: true,
+                }
+            }
+        },
     }
 }, {
     timestamps: true

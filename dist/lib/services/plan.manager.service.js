@@ -17,28 +17,30 @@ const plans_schema_1 = require("./../../components/plans/plans.schema");
 const plans_interface_1 = require("../../components/plans/plans.interface");
 const plans_schema_2 = require("../../components/plans/plans.schema");
 const logger_1 = __importDefault(require("../../core/logger"));
+const user_model_1 = __importDefault(require("../../components/user/user.model"));
+const notify_service_1 = __importDefault(require("./notify.service"));
 const EXPIRE_PLAN_CHECK_INTERVAL = 5;
 const logFileName = "[PlanMangerService]: ";
 class PlanManager {
-    constructor() {
-        this.fetchExpiredPlans();
-    }
-    fetchExpiredPlans() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const now = new Date();
-            const expiredPlans = yield plans_schema_2.UserPlan.find({ endDate: { $lte: now }, planStatus: plans_interface_1.EPlanStatus.ACTIVE });
-            logger_1.default.info(logFileName, `FOUND ${expiredPlans.length} EXPIRED PLANS`);
-            for (const plan of expiredPlans) {
-                const result = yield this.expirePlan(plan._id);
-            }
-            setTimeout(() => {
-                this.fetchExpiredPlans();
-            }, EXPIRE_PLAN_CHECK_INTERVAL * 1000);
-        });
-    }
+    // constructor(){
+    //     this.fetchExpiredPlans();
+    // }
+    // private async fetchExpiredPlans(){
+    //     const now = new Date();        
+    //     const expiredPlans: IUserPlanModel[]= await  UserPlan.find({endDate:{$lte:now},planStatus:EPlanStatus.ACTIVE});
+    //     logger.info(logFileName,`FOUND ${expiredPlans.length} EXPIRED PLANS`);
+    //     for(const plan of expiredPlans){
+    //         const result = await this.expirePlan(plan._id);
+    //     }
+    //     setTimeout(() => {
+    //         this.fetchExpiredPlans();
+    //     },EXPIRE_PLAN_CHECK_INTERVAL*1000);
+    // }
     expirePlan(plan) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield plans_schema_2.UserPlan.findByIdAndUpdate(plan._id, { planStatus: plans_interface_1.EPlanStatus.EXPIRED });
+            notify_service_1.default.planExpired(plan.userId, plan._id);
+            yield user_model_1.default.removeUserActivePlan(plan.userId, plan._id);
             logger_1.default.info(logFileName, `Plan ${plan._id} Expired`);
         });
     }

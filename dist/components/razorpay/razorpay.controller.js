@@ -36,6 +36,7 @@ class RazorPayController {
             }
             catch (e) {
                 // send error with next function.
+                console.log("error", e);
                 next(responseHandler.sendError(e.message));
             }
         });

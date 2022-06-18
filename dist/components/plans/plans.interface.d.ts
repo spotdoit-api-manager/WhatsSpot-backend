@@ -7,10 +7,13 @@ export interface IPLAN {
     planInfo: string[];
     planMaxMessage: number | null;
     isBest: boolean;
+    stripePriceId: string;
 }
 export declare enum EPLANS {
     PAYG = "PAYG",
     MONTHLY = "MONTHLY",
+    SUBSCRIPTION = "SUBSCRIPTION",
+    PREMIUM = "PREMIUM",
     MEMBERSHIP = "MEMBERSHIP"
 }
 export interface IUserPlan {
@@ -25,5 +28,6 @@ export interface IUserPlan {
 }
 export declare enum EPlanStatus {
     ACTIVE = "ACTIVE",
-    EXPIRED = "EXPIRED"
+    EXPIRED = "EXPIRED",
+    EXHAUSTED = "EXHAUSTED"
 }

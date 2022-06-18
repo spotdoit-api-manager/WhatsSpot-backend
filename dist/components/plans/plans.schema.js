@@ -34,8 +34,8 @@ const planSchema = new mongoose_1.Schema({
         required: true
     },
     planMaxMessage: {
-        type: String,
-        required: false,
+        type: Number,
+        required: true,
         default: 0
     },
     planInfo: {
@@ -88,7 +88,7 @@ const userPlanSchema = new mongoose_1.Schema({
     },
     planStatus: {
         type: String,
-        enum: ["ACTIVE", "EXPIRED"]
+        enum: ["ACTIVE", "EXPIRED", "EXHAUSTED"]
     }
 }, { timestamps: true });
 userPlanSchema.methods.savePlan = function () {

@@ -5,7 +5,7 @@ export declare class ContactModal {
     private createNewContact;
     fetchContacts(userId: string): Promise<any[]>;
     fetchGroupContacts(userId: string, groupId: string): Promise<any>;
-    addContactsToGroup(userId: string, groupId: string, contacts: IContact[]): Promise<any[]>;
+    addContactsToGroup(userId: string, groupId: string, contacts: IContact[]): Promise<any>;
     fetchGroups(userId: string): Promise<any[]>;
     createNewGroup(userId: string, groupName: string, contacts?: IContactsGroup[]): IContactGroupModel;
     deleteGroup(user: string, groupId: string): Promise<IContactGroupModel>;
@@ -13,9 +13,13 @@ export declare class ContactModal {
     editGroupContacts(userId: string, groupId: string, contacts: IContactModel[]): Promise<{
         message: string;
     }>;
-    deleteContacts(userId: string, contactsId: string[]): Promise<any[]>;
+    deleteContacts(userId: string, contactsId: string[]): Promise<{
+        ok?: number;
+        n?: number;
+    } & {
+        deletedCount?: number;
+    }>;
     deleteGroupContacts(userId: string, groupId: string, contactsId: string[]): Promise<any[]>;
-    addGroupContacts(userId: string, groupId: string, contacts: IContact[]): void;
 }
 declare const _default: ContactModal;
 export default _default;

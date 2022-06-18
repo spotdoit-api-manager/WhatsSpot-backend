@@ -55,65 +55,35 @@ exports.default = [
         escapeAuth: false,
         handler: [user_controller_1.default.getActivePlan]
     },
-    // // {
-    // //   path: "/logout",
-    // //   method: "post",
-    // //   escapeAuth: true,
-    // //   handler: [userController.logIn]
-    // // },
-    // {
-    //   path: "/signup",
-    //   method: "post",
-    //   escapeAuth:true,
-    //   handler:[userController.signUp]
-    // },
-    // {
-    //   path: "/follower/:id",
-    //   method: "post",
-    //   handler:[userController.addFollower]
-    // },
-    // {
-    //   path: "/following/:id",
-    //   method: "post",
-    //   handler:[userController.addFollowing]
-    // },
-    // {
-    //   path: "/followrequest/:id",
-    //   method: "post",
-    //   handler:[userController.addFolowRequest]
-    // },
-    // {
-    //   path: "/auth",
-    //   method: "post",
-    //   escapeAuth:true,
-    //   handler:[userController.loginViaSocialAccessToken]
-    // },
-    // {
-    //   path: "/user/:id",
-    //   method: "get",
-    //   handler: [userController.fetch]
-    // },
-    // {
-    //   path: "/user/:id",
-    //   method: "patch",
-    //   handler: [userController.update]
-    // },
-    // // {
-    // //   path: "/user/verifyUser",
-    // //   escapeAuth: true,
-    // //   method: "post",
-    // //   handler:[userController.verifyUser]
-    // // },
-    // {
-    //   path: "/user/addPhoneNumber",
-    //   method: "post",
-    //   handler:[userController.addPhoneNumber]
-    // },
     {
         path: "/user/:id/verifyOtp",
-        method: "get",
+        method: "post",
         escapeAuth: true,
         handler: [user_controller_1.default.verifyOtp]
+    },
+    {
+        path: "/user/settings/notifications",
+        method: "post",
+        escapeAuth: false,
+        handler: [user_controller_1.default.updateNotificationSettings]
+    },
+    {
+        path: "/user/settings/profile",
+        method: "post",
+        escapeAuth: false,
+        handler: [user_controller_1.default.updateProfile]
+    },
+    {
+        path: "/user/email/otp",
+        method: "post",
+        escapeAuth: false,
+        handler: [user_controller_1.default.sendEmailVerification]
+    },
+    {
+        path: "/user/email/verify",
+        method: "post",
+        escapeAuth: false,
+        handler: [user_controller_1.default.verifyEmaliOtp]
     },
 ];
 //# sourceMappingURL=index.js.map

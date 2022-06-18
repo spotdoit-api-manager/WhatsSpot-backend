@@ -31,7 +31,7 @@ class UserController {
         this.registerWithPhone = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
-                responseHandler.reqRes(req, res).onFetch("OTP_SENT", yield user_model_1.default.registerWithPhone(req.body)).send();
+                responseHandler.reqRes(req, res).onFetch("OTP_SENT", yield user_model_1.default.registerWithPhone(req.body.phone, req.body.email, req.body.userName, req.body.country)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -41,7 +41,7 @@ class UserController {
         this.loginWithPhone = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
-                responseHandler.reqRes(req, res).onFetch("OTP_SENT", yield user_model_1.default.loginWithPhone(req.body)).send();
+                responseHandler.reqRes(req, res).onFetch("OTP_SENT", yield user_model_1.default.loginWithPhone(req.body.phone, req.body.country)).send();
             }
             catch (e) {
                 // send error with next function.
@@ -153,7 +153,7 @@ class UserController {
         this.verifyOtp = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
-                const data = yield user_model_1.default.verifyOtp(req.params.id, req.query.otp);
+                const data = yield user_model_1.default.verifyOtp(req.params.id, req.body.otp);
                 res.setHeader("Set-Cookie", data.cookie);
                 // res.set('X-Auth', data.token);
                 responseHandler
@@ -173,41 +173,19 @@ class UserController {
                 responseHandler.reqRes(req, res).onFetch("User Data", user).send();
             }
             catch (e) {
-                responseHandler.sendError(e);
+                next(responseHandler.sendError(e));
             }
         });
         this.getActivePlan = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
                 // console.log("getting user active plan");
-                const activePlan = yield user_model_1.default.fetchUserActivePlan(req.userId);
+                const activePlan = yield user_model_1.default.fetchUserDetailedActivePlan(req.userId);
                 responseHandler.reqRes(req, res).onFetch("ACTIVE_PLAN", activePlan).send();
             }
             catch (e) {
-                console.log(e);
-                responseHandler.sendError(e);
-            }
-        });
-        this.addFollower = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-            const responseHandler = new responseHandler_1.default();
-            try {
-                const data = yield user_model_1.default.addFollower(req.params.id, req.body.user.id);
-                responseHandler.reqRes(req, res).onCreate(customMessage_1.user.UPDATED, data).send();
-            }
-            catch (e) {
-                responseHandler.sendError(e);
-            }
-        });
-        this.addFollowing = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-            const responseHandler = new responseHandler_1.default();
-            try {
-                req.body.userId = req.userId;
-                console.log(req.userId);
-                const data = yield user_model_1.default.addFollowing(req.params.id, req.body.userId);
-                responseHandler.reqRes(req, res).onCreate(customMessage_1.user.UPDATED, data).send();
-            }
-            catch (e) {
-                responseHandler.sendError(e);
+                console.log("error is ", e);
+                next(responseHandler.sendError(e));
             }
         });
         this.signUp = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -220,25 +198,24 @@ class UserController {
                 next(responseHandler.sendError(e));
             }
         });
-        // private createSendToken = async (req: Request, res: Response, next: NextFunction, user: any) => {
-        //   const responseHandler = new ResponseHandler();
-        //   let ikcbalance = await userModel.fetchWalletBalance(user._id);
-        //   const token = this.signToken(user._id);
-        //   // console.log(ikcbalance);
-        //   // user.ikcbalance = ikcbalance;
-        //   console.log(user);
-        //   const data = {
-        //     token,
-        //     user,
-        //     ikcbalance
-        //   };
-        //   responseHandler.reqRes(req, res).onCreate(msg.CREATED, data).send();
-        // };
-        // private signToken = (id: string) => {
-        //   return jwt.sign({ id }, commonConfig.jwtSecretKey, {
-        //     expiresIn: process.env.JWT_EXPIRES_IN,
-        //   });
-        // };
+        this.updateNotificationSettings = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onCreate("Phone Number Added", yield user_model_1.default.updateNotificationSettings(req.userId, req.body)).send();
+            }
+            catch (e) {
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.updateProfile = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onCreate("PROFILE_UPDATED", yield user_model_1.default.updateProfile(req.userId, req.body)).send();
+            }
+            catch (e) {
+                next(responseHandler.sendError(e));
+            }
+        });
         this.logIn = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
@@ -247,30 +224,6 @@ class UserController {
             }
             catch (e) {
                 next(responseHandler.sendError(e));
-            }
-        });
-        this.addFolowRequest = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-            const responseHandler = new responseHandler_1.default();
-            try {
-                if (req.userId) {
-                    const data = yield user_model_1.default.addFollowRequest(req.params.id, req.userId);
-                    responseHandler.reqRes(req, res).onCreate(customMessage_1.user.UPDATED, data).send();
-                }
-            }
-            catch (e) {
-                responseHandler.sendError(e);
-            }
-        });
-        this.acceptFollowRequest = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-            const responseHandler = new responseHandler_1.default();
-            try {
-                if (req.userId) {
-                    const data = yield user_model_1.default.acceptFollowRequest(req.params.id, req.userId);
-                    responseHandler.reqRes(req, res).onCreate(customMessage_1.user.UPDATED, data).send();
-                }
-            }
-            catch (e) {
-                responseHandler.sendError(e);
             }
         });
         this.isVerified = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -301,6 +254,26 @@ class UserController {
             try {
                 const data = yield user_model_1.default.addPhoneNumber(req.userId, req.query.phone);
                 responseHandler.reqRes(req, res).onCreate("OTP Updated", data).send();
+            }
+            catch (e) {
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.sendEmailVerification = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                const data = yield user_model_1.default.sendEmailVerification(req.userId);
+                responseHandler.reqRes(req, res).onCreate("EMAIL_OTP_SENT", data).send();
+            }
+            catch (e) {
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.verifyEmaliOtp = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                const data = yield user_model_1.default.verifyEmaliOtp(req.userId, req.body.otp);
+                responseHandler.reqRes(req, res).onCreate("EMAIL_VERIFIED", data).send();
             }
             catch (e) {
                 next(responseHandler.sendError(e));

@@ -16,7 +16,7 @@ exports.convertCurrency = exports.startExchangeRateService = exports.getRate = v
 const logger_1 = __importDefault(require("../../core/logger"));
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const CC = require("currency-converter-lt");
-const FETCH_IN_EVRY = 1;
+const FETCH_IN_EVRY = 100;
 const logFileName = "[ExchangeRateService]: ";
 const currencyConverter = new CC({ from: "USD", to: "INR", amount: 1, });
 const rates = {};

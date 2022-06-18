@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deSanatizeMobile = exports.sanatizeMobile = exports.validateMobile = exports.getPaginationInfo = exports.mongoDBProjectFields = exports.applyRoutes = exports.applyMiddleware = void 0;
+exports.getSkipLimit = exports.validateEmail = exports.deSanatizeMobile = exports.sanatizeMobile = exports.validateMobile = exports.getPaginationInfo = exports.mongoDBProjectFields = exports.applyRoutes = exports.applyMiddleware = void 0;
 const auth_middleware_1 = require("../middleware/auth.middleware");
 // load all middleware with this function call
 exports.applyMiddleware = (middlewareWrappers, router) => {
@@ -45,23 +45,24 @@ exports.getPaginationInfo = (pageNo = 1) => {
     return { limit, skip };
 };
 exports.validateMobile = (phone = "") => {
-    // const regmm='^([0|+[0-9]{1,5})?([7-9][0-9]{9})$';
-    // const regmob = new RegExp(regmm);
-    if (phone.length == 12) {
-        return true;
-    }
-    return false;
+    return true;
 };
 exports.sanatizeMobile = (phone) => {
-    phone.replace("+", "");
-    if (phone.length == 10)
-        return `91${phone}`;
-    return phone;
+    return phone.replace("+", "");
 };
 exports.deSanatizeMobile = (phone) => {
-    phone.replace("+", "");
-    if (phone.length == 12)
-        return phone.slice(2);
-    return phone;
+    return `+${exports.sanatizeMobile(phone)}`;
+};
+exports.validateEmail = (email = "") => {
+    if (!email.length)
+        return false;
+    return String(email)
+        .toLowerCase()
+        .match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+};
+exports.getSkipLimit = (pageNo = 1) => {
+    const limit = 10;
+    const skip = (pageNo - 1) * limit;
+    return { skip, limit };
 };
 //# sourceMappingURL=index.js.map

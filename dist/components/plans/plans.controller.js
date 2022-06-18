@@ -39,6 +39,17 @@ class PlansController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.activateUserPlan = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            console.log("activating new Plan");
+            try {
+                responseHandler.reqRes(req, res).onFetch("PLAN_ACTIVATED", yield plans_model_1.default.activateUserPlan(req.userId, req.params.userId, req.params.planId, req.body.reason)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
         this.fetchPlanById = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             console.log("create new Plan");

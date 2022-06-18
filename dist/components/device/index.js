@@ -107,5 +107,10 @@ exports.default = [
         method: "delete",
         handler: [device_controller_1.default.removeDevice]
     },
+    {
+        path: "/device/:deviceId/status",
+        method: "get",
+        handler: [device_controller_1.default.getDeviceStatus]
+    },
 ];
 //# sourceMappingURL=index.js.map

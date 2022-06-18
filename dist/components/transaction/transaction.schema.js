@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Transaction = void 0;
+const pay_with_enum_1 = require("./../../core/enums/pay-with.enum");
 const mongoose_1 = require("mongoose");
 const TransactionSchema = new mongoose_1.Schema({
     userId: {
@@ -32,7 +33,8 @@ const TransactionSchema = new mongoose_1.Schema({
     },
     amount: {
         type: Number,
-        required: true
+        required: true,
+        mutable: false
     },
     status: {
         type: String,
@@ -46,6 +48,10 @@ const TransactionSchema = new mongoose_1.Schema({
     },
     description: {
         type: String
+    },
+    method: {
+        type: String,
+        enum: pay_with_enum_1.EPayWithMongoEnum
     }
 }, {
     timestamps: true

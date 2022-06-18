@@ -1,5 +1,6 @@
-import { IUser, ITokenData, IDataStoredInToken } from "./user.interface";
+import { ITokenData, IDataStoredInToken, IUserNotificationSettings, IUserProfile } from "./user.interface";
 import { IUserModel } from "./user.schema";
+import { CountryCode } from "libphonenumber-js";
 export declare class UserModel {
     fetchAll(): Promise<IUserModel[]>;
     private findUserById;
@@ -8,20 +9,22 @@ export declare class UserModel {
     }>;
     fetch(id: string): Promise<any>;
     update(id: string, body: IUserModel): Promise<IUserModel>;
+    fetchUserDetailedActivePlan(userId: string): Promise<any>;
     fetchUserActivePlan(userId: string): Promise<any>;
     addPlanToUser(userId: string, activePlanName: string, activePlanId: string): Promise<void>;
-    expireUserPlan(userId: string): Promise<void>;
+    removeUserActivePlan(userId: string, planRef: string): Promise<void>;
+    checkIfUserCanActivatePlan(userId: string, planId: string): Promise<boolean>;
     delete(id: string): Promise<void>;
     add(body: any): Promise<{
         _id: any;
     }>;
-    createNewUser(body: IUser): Promise<IUserModel>;
-    registerWithPhone(body: IUser): Promise<{
-        phone: string;
+    createNewUser(phone: string, email: string, userName: string, country: CountryCode): Promise<IUserModel>;
+    registerWithPhone(phone: string, email: string, userName: string, country: CountryCode): Promise<{
+        phone: import("libphonenumber-js/types").Tagged<string, "E164Number">;
         _id: any;
     }>;
-    loginWithPhone(body: IUser): Promise<{
-        phone: string;
+    loginWithPhone(phone: string, country: CountryCode): Promise<{
+        phone: import("libphonenumber-js/types").Tagged<string, "E164Number">;
         _id: any;
     }>;
     resendOTP(id: string, body: any): Promise<{
@@ -55,19 +58,14 @@ export declare class UserModel {
         token: string;
         expiresIn: string;
     }>;
-    addFollower(id: string, userId: string): Promise<IUserModel>;
-    addFollowing(id: string, userId: string): Promise<IUserModel>;
-    addFollowRequest(id: string, userId: string): Promise<IUserModel>;
-    acceptFollowRequest(id: string, userId: string): Promise<IUserModel>;
     updateOtp(id: string): number;
     updateDeviceCode(userId: string, phone: string): Promise<number>;
     validateDeviceCode(userId: string, devicePhone: string, code: number): Promise<void>;
     sendOtpToMobile(otp: number, phone: string): Promise<{
         proceed: boolean;
-        message?: undefined;
+        message: any;
     } | {
         proceed: boolean;
-        message: any;
     }>;
     signToken: (dataToStore: IDataStoredInToken) => string;
     addNewToken(dataToStore: IDataStoredInToken): Promise<{
@@ -84,7 +82,7 @@ export declare class UserModel {
         cookie: string;
     }>;
     createCookie(tokenData: ITokenData): string;
-    private generateValidUsername;
+    private generateValiduserName;
     private randomString;
     addPhone(body: any): Promise<{
         _id: any;
@@ -101,10 +99,9 @@ export declare class UserModel {
     genrateOTP(phone: string): Promise<{
         res: {
             proceed: boolean;
-            message?: undefined;
+            message: any;
         } | {
             proceed: boolean;
-            message: any;
         };
         proceed: boolean;
     } | {
@@ -125,6 +122,10 @@ export declare class UserModel {
     getAccountMetrics(userId: string): Promise<any>;
     fetchUsersBaseList(): Promise<any[]>;
     userDetailedAccountMetrics(userId: string): Promise<any[]>;
+    updateNotificationSettings(userId: string, notificationSetting: IUserNotificationSettings): Promise<any>;
+    updateProfile(userId: string, profileBody: IUserProfile): Promise<any>;
+    sendEmailVerification(userId: string): Promise<void>;
+    verifyEmaliOtp(userId: string, otp: string): Promise<any>;
 }
 declare const _default: UserModel;
 export default _default;

@@ -33,15 +33,85 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpotSchedular = void 0;
 const scheduler = __importStar(require("node-schedule"));
+const device_interface_1 = require("../../components/device/device.interface");
+const device_schema_1 = require("../../components/device/device.schema");
 const logger_1 = __importDefault(require("../../core/logger"));
+const bson_1 = require("bson");
+const plans_schema_1 = require("../../components/plans/plans.schema");
+const plans_model_1 = __importDefault(require("../../components/plans/plans.model"));
 const logFileName = "[SpotSchedular]";
 class SpotSchedular {
+    reScheduleAllUserPlanExpiration() {
+        return __awaiter(this, void 0, void 0, function* () {
+            logger_1.default.info(logFileName, "Rescheduling all user plan expiration");
+            const userPlans = yield plans_schema_1.UserPlan.aggregate([
+                { $match: {} }
+            ]);
+            for (const plan of userPlans) {
+                try {
+                    yield this.scheduleUserPlanExpiration(plan);
+                }
+                catch (e) {
+                    logger_1.default.error(logFileName, `Error in  user plan expire scheduling of user ${plan._id}`);
+                }
+            }
+        });
+    }
+    scheduleUserPlanExpiration(plan) {
+        return __awaiter(this, void 0, void 0, function* () {
+            logger_1.default.info(logFileName, `Scheduling user plan expiration  ${plan._id} at ${plan.endDate}`);
+            const now = new Date();
+            const expiresOn = plan.endDate;
+            if (expiresOn < now) {
+                return plans_model_1.default.expirePlan(plan);
+            }
+            const job = scheduler.scheduleJob(plan.endDate, () => __awaiter(this, void 0, void 0, function* () {
+                yield plans_model_1.default.expirePlan(plan);
+            }));
+        });
+    }
+    reScheduleAllApiExpiration() {
+        return __awaiter(this, void 0, void 0, function* () {
+            logger_1.default.info(logFileName, "Rescheduling all api key expiration");
+            const apiKeys = yield device_schema_1.Device.aggregate([
+                { $match: {} },
+                { $project: {
+                        apiKeys: 1,
+                    } }
+            ]);
+            for (const deviceApi of apiKeys) {
+                for (const api of deviceApi.apiKeys) {
+                    try {
+                        yield this.scheduleApiExpiration(deviceApi._id, api);
+                    }
+                    catch (e) {
+                        logger_1.default.error(logFileName, `Error in  api expire scheduling of device ${deviceApi._id} for api ${api._id}`);
+                    }
+                }
+            }
+        });
+    }
     scheduleApiExpiration(deviceId, apiKeyData) {
         return __awaiter(this, void 0, void 0, function* () {
-            logger_1.default.info(logFileName, `Scheduling api key expiration api key id: ${apiKeyData._id}`);
+            const now = new Date();
+            if (apiKeyData.expiresOn < now) {
+                return yield this.expireApiKey(deviceId, apiKeyData);
+            }
+            logger_1.default.info(logFileName, `Scheduling api key expiration ${apiKeyData._id} at ${apiKeyData.expiresOn}`);
             const job = scheduler.scheduleJob(apiKeyData.expiresOn, () => __awaiter(this, void 0, void 0, function* () {
-                //  deviceModel.expireApiKey(deviceId,apiKeyData);
+                yield this.expireApiKey(deviceId, apiKeyData);
             }));
+        });
+    }
+    expireApiKey(deviceId, apiKey) {
+        return __awaiter(this, void 0, void 0, function* () {
+            logger_1.default.info(logFileName, `Expiring api key ${apiKey._id}`);
+            const result = yield device_schema_1.Device.findOneAndUpdate({
+                _id: new bson_1.ObjectID(deviceId),
+                "apiKeys._id": new bson_1.ObjectID(apiKey._id),
+            }, { $set: { "apiKeys.$.status.status": device_interface_1.EApiKeyStatus.EXPIRED } }, {
+                new: true
+            }).lean();
         });
     }
 }
