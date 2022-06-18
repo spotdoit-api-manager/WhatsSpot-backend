@@ -18,7 +18,7 @@ export class QrPayModel {
         const isAlreadyExist = await transactionModel.fetchTransactionByOrderId(transactionId);
         if (isAlreadyExist) throw new HTTP401Error("TRANSACTION ID ALREADY REQUESTED", "Entered transaction id is already exist");
         const transaction: ITransactionModel = await transactionModel.createTransactionForPlan(plan.planId, transactionId, userId, walletId, ETransactionTypes.CREDIT, amount, transactionMessage, EPayWith.QR_PAY);
-        notifyService.paymentApproveRequest(userId, planId, transaction._id);
+        notifyService.paymentApproveRequest(userId, planId,amount,transactionId);
         return transaction;
     }
 
@@ -32,7 +32,7 @@ export class QrPayModel {
         } else {
             await plansModel.activateUserPlan(userId, payment.userId, payment.metaData.planId, "Payment Request Approved");
         }
-        notifyService.paymentApprove(payment.userId, payment.metaData.planId, payment._id);
+        notifyService.paymentApprove(payment.userId, payment.metaData.planId,payment.amount,payment.orderId);
         return transactionModel.updateTransactionStatus(paymentId, ETransactionStatus.SUCCESS);
     }
 

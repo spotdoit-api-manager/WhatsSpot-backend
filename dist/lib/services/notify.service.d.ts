@@ -12,8 +12,8 @@ export declare class NotifyService {
     planExhausted(userId: string, userPlanId: string): Promise<void>;
     planActivated(userId: string, userPlanId: string): Promise<void>;
     walletBalanceAdded(userId: string, added: number, balance: number, currency: string): Promise<void>;
-    paymentApproveRequest(userId: string, planId: EPLANS, transactionId: string): Promise<void>;
-    paymentApprove(userId: string, planId: EPLANS, transactionId: string): Promise<void>;
+    paymentApproveRequest(userId: string, planId: EPLANS, amount: number, transactionId: string): Promise<void>;
+    paymentApprove(userId: string, planId: EPLANS, amount: number, transactionId: string): Promise<void>;
 }
 declare const _default: NotifyService;
 export default _default;

@@ -34,7 +34,7 @@ class QrPayModel {
             if (isAlreadyExist)
                 throw new httpErrors_1.HTTP401Error("TRANSACTION ID ALREADY REQUESTED", "Entered transaction id is already exist");
             const transaction = yield transaction_model_1.default.createTransactionForPlan(plan.planId, transactionId, userId, walletId, transaction_interface_2.ETransactionTypes.CREDIT, amount, transactionMessage, pay_with_enum_1.EPayWith.QR_PAY);
-            notify_service_1.default.paymentApproveRequest(userId, planId, transaction._id);
+            notify_service_1.default.paymentApproveRequest(userId, planId, amount, transactionId);
             return transaction;
         });
     }
@@ -51,7 +51,7 @@ class QrPayModel {
             else {
                 yield plans_model_1.default.activateUserPlan(userId, payment.userId, payment.metaData.planId, "Payment Request Approved");
             }
-            notify_service_1.default.paymentApprove(payment.userId, payment.metaData.planId, payment._id);
+            notify_service_1.default.paymentApprove(payment.userId, payment.metaData.planId, payment.amount, payment.orderId);
             return transaction_model_1.default.updateTransactionStatus(paymentId, transaction_interface_1.ETransactionStatus.SUCCESS);
         });
     }

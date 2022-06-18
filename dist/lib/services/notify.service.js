@@ -151,10 +151,10 @@ class NotifyService {
                 logger_1.default.info(`Sending PLAN_EXPIRED notification for user ${userId} and plan ${userPlanId}`);
                 const userData = (yield user_schema_1.User.findById(userId).select("phone email userName settings").lean());
                 if (this.checkNotificationSettings(userData.settings.notifications, notification_interface_1.ENotificationMainTypes.PLAN, notification_interface_2.ENotificationChannel.WHATSAPP)) {
-                    message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n Your plan has been expired. Please purchase new plan to continue the services`);
+                    message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n Your plan has been expired. Please purchase new plan to continue the services`);
                 }
                 if (this.checkNotificationSettings(userData.settings.notifications, notification_interface_1.ENotificationMainTypes.PLAN, notification_interface_2.ENotificationChannel.EMAIL)) {
-                    emailService.sendNotificationMail(userData.email, "DEVICE UNAUTHORIZED", `Dear ${userData.userName}, \n Your plan has been expired. Please purchase new plan to continue the services`);
+                    emailService.sendNotificationMail(userData.email, "DEVICE UNAUTHORIZED", `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n Your plan has been expired. Please purchase new plan to continue the services`);
                 }
             }
             catch (e) {
@@ -168,10 +168,10 @@ class NotifyService {
                 logger_1.default.info(`Sending PLAN_EXHAUSTED notification for user ${userId} and plan ${userPlanId}`);
                 const userData = (yield user_schema_1.User.findById(userId).select("phone email userName settings").lean());
                 if (this.checkNotificationSettings(userData.settings.notifications, notification_interface_1.ENotificationMainTypes.PLAN, notification_interface_2.ENotificationChannel.WHATSAPP)) {
-                    message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n Your plan has reached max message limit. Please purchase new plan to continue the services`);
+                    message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n Your plan has reached max message limit. Please purchase new plan to continue the services`);
                 }
                 if (this.checkNotificationSettings(userData.settings.notifications, notification_interface_1.ENotificationMainTypes.PLAN, notification_interface_2.ENotificationChannel.EMAIL)) {
-                    emailService.sendNotificationMail(userData.email, "PLAN EXHAUSTED", `Dear ${userData.userName}, \n Your plan has reached max message limit. Please purchase new plan to continue the services`);
+                    emailService.sendNotificationMail(userData.email, "PLAN EXHAUSTED", `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n Your plan has reached max message limit. Please purchase new plan to continue the services`);
                 }
             }
             catch (e) {
@@ -187,10 +187,10 @@ class NotifyService {
                 logger_1.default.info(`Sending PLAN_ACTIVATED notification for user ${userId} and plan ${userPlanId}`);
                 const userData = (yield user_schema_1.User.findById(userId).select("phone email userName settings").lean());
                 if (this.checkNotificationSettings((_a = userData === null || userData === void 0 ? void 0 : userData.settings) === null || _a === void 0 ? void 0 : _a.notifications, notification_interface_1.ENotificationMainTypes.PLAN, notification_interface_2.ENotificationChannel.WHATSAPP)) {
-                    message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n You plan has been activated.`);
+                    message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n You plan has been activated.`);
                 }
                 if (this.checkNotificationSettings((_b = userData === null || userData === void 0 ? void 0 : userData.settings) === null || _b === void 0 ? void 0 : _b.notifications, notification_interface_1.ENotificationMainTypes.PLAN, notification_interface_2.ENotificationChannel.EMAIL)) {
-                    emailService.sendNotificationMail(userData.email, "PLAN ACTIVATED", `Dear ${userData.userName}, \n You plan has been activated.`);
+                    emailService.sendNotificationMail(userData.email, "PLAN ACTIVATED", `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n You plan has been activated.`);
                 }
             }
             catch (e) {
@@ -206,10 +206,10 @@ class NotifyService {
                 logger_1.default.info(`Sending BALANCE_ADDED notification for user ${userId} added ${added} amount ${balance}`);
                 const userData = (yield user_schema_1.User.findById(userId).select("phone email userName settings").lean());
                 if (this.checkNotificationSettings((_a = userData === null || userData === void 0 ? void 0 : userData.settings) === null || _a === void 0 ? void 0 : _a.notifications, notification_interface_1.ENotificationMainTypes.PLAN, notification_interface_2.ENotificationChannel.WHATSAPP)) {
-                    message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n ${currency} ${added} added to your wallet.Total balance ${balance}.`);
+                    message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n ${currency} ${added} added to your wallet.Total balance ${balance}.`);
                 }
                 if (this.checkNotificationSettings((_b = userData === null || userData === void 0 ? void 0 : userData.settings) === null || _b === void 0 ? void 0 : _b.notifications, notification_interface_1.ENotificationMainTypes.PLAN, notification_interface_2.ENotificationChannel.EMAIL)) {
-                    emailService.sendNotificationMail(userData.email, "Balance Added", `Dear ${userData.userName}, \n ${currency} ${added} added to your wallet.Total balance ${balance}.`);
+                    emailService.sendNotificationMail(userData.email, "Balance Added", `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n ${currency} ${added} added to your wallet.Total balance ${balance}.`);
                 }
             }
             catch (e) {
@@ -217,16 +217,16 @@ class NotifyService {
             }
         });
     }
-    paymentApproveRequest(userId, planId, transactionId) {
+    paymentApproveRequest(userId, planId, amount, transactionId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 logger_1.default.info(`Sending PAYMENT_APPROVAL notification for user ${userId} and plan ${planId}`);
                 const userData = (yield user_schema_1.User.findById(userId).select("phone email userName settings").lean());
                 // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
-                message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n We have received your payment request approval for transactionId ${transactionId}.`);
+                message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n We have received your payment request approval for amount INR ${amount} with transactionId ${transactionId}.`);
                 // }
                 // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
-                emailService.sendNotificationMail(userData.email, "PAYMENT APPROVAL REQUEST", `Dear ${userData.userName}, \n We have received your payment request approval for transactionId ${transactionId}.`);
+                emailService.sendNotificationMail(userData.email, "PAYMENT APPROVAL REQUEST", `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n We have received your payment request approval for transactionId ${transactionId}.`);
                 // }
             }
             catch (e) {
@@ -234,16 +234,16 @@ class NotifyService {
             }
         });
     }
-    paymentApprove(userId, planId, transactionId) {
+    paymentApprove(userId, planId, amount, transactionId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 logger_1.default.info(`Sending PAYMENT_APPROVED notification for user ${userId} and plan ${planId}`);
-                const userData = (yield user_schema_1.User.findById(userId).select("phone email userName settings settings").lean());
+                const userData = (yield user_schema_1.User.findById(userId).select("phone email userName settings").lean());
                 // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
-                message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n Payment Approved for your transactionId: ${transactionId}.`);
+                message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n Payment Approved with amount INR ${amount} for  transactionId: ${transactionId}.`);
                 // }
                 // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
-                emailService.sendNotificationMail(userData.email, "PAYMENT APPROVED", `Dear ${userData.userName}, \n  Payment Approved for your transactionId  ${transactionId}.`);
+                emailService.sendNotificationMail(userData.email, "PAYMENT APPROVED", `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n  Payment Approved for your transactionId  ${transactionId}.`);
                 // }
             }
             catch (e) {

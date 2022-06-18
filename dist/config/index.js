@@ -17,25 +17,15 @@ exports.mongoUrl = () => {
 exports.configCors = {
     // Allow your domains to restrict ill apis.
     adminAllowOrigin: [
-        "http://localhost:3000",
-        "http://localhost:52636",
-        "http://localhost:60032",
-        "http://localhost:56335",
-        "http://127.0.0.1:5500",
         "http://localhost:4200",
         "https://admin.whatsspot.in",
     ],
     allowOrigin: [
-        "http://localhost:56335",
-        // "http://localhost:4200",
-        "http://localhost:3000",
-        "http://localhost:52636",
-        "http://127.0.0.1:5500",
+        "http://localhost:4200",
         "https://securegw.paytm.in",
         "https://spotdoit.in",
         "https://dashboard.whatsspot.in",
         "https://whatsspot.in",
-        "http://localhost:60032",
         "https://admin.whatsspot.in",
     ],
     // Expose additional which are restricted.

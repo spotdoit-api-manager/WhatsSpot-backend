@@ -129,11 +129,11 @@ export class NotifyService {
             const userData = (await User.findById(userId).select("phone email userName settings").lean());
 
             if (this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)) {
-                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n Your plan has been expired. Please purchase new plan to continue the services`);
+                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData?.userName || "User"}, \n Your plan has been expired. Please purchase new plan to continue the services`);
             }
 
             if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
-                emailService.sendNotificationMail(userData.email, "DEVICE UNAUTHORIZED", `Dear ${userData.userName}, \n Your plan has been expired. Please purchase new plan to continue the services`);
+                emailService.sendNotificationMail(userData.email, "DEVICE UNAUTHORIZED", `Dear ${userData?.userName || "User"}, \n Your plan has been expired. Please purchase new plan to continue the services`);
             }
 
         } catch (e) {
@@ -146,10 +146,10 @@ export class NotifyService {
             logger.info(`Sending PLAN_EXHAUSTED notification for user ${userId} and plan ${userPlanId}`);
             const userData = (await User.findById(userId).select("phone email userName settings").lean());
             if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
-                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n Your plan has reached max message limit. Please purchase new plan to continue the services`);
+                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData?.userName || "User"}, \n Your plan has reached max message limit. Please purchase new plan to continue the services`);
             }
             if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
-                emailService.sendNotificationMail(userData.email, "PLAN EXHAUSTED", `Dear ${userData.userName}, \n Your plan has reached max message limit. Please purchase new plan to continue the services`);
+                emailService.sendNotificationMail(userData.email, "PLAN EXHAUSTED", `Dear ${userData?.userName || "User"}, \n Your plan has reached max message limit. Please purchase new plan to continue the services`);
             }
 
 
@@ -165,10 +165,10 @@ export class NotifyService {
             logger.info(`Sending PLAN_ACTIVATED notification for user ${userId} and plan ${userPlanId}`);
             const userData = (await User.findById(userId).select("phone email userName settings").lean());
             if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
-                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n You plan has been activated.`);
+                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData?.userName || "User"}, \n You plan has been activated.`);
             }
             if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
-                emailService.sendNotificationMail(userData.email, "PLAN ACTIVATED", `Dear ${userData.userName}, \n You plan has been activated.`);
+                emailService.sendNotificationMail(userData.email, "PLAN ACTIVATED", `Dear ${userData?.userName || "User"}, \n You plan has been activated.`);
             }
 
         } catch (e) {
@@ -183,40 +183,40 @@ export class NotifyService {
             logger.info(`Sending BALANCE_ADDED notification for user ${userId} added ${added} amount ${balance}`);
             const userData = (await User.findById(userId).select("phone email userName settings").lean());
             if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
-                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n ${currency} ${added} added to your wallet.Total balance ${balance}.`);
+                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData?.userName || "User"}, \n ${currency} ${added} added to your wallet.Total balance ${balance}.`);
             }
             if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
-                emailService.sendNotificationMail(userData.email, "Balance Added", `Dear ${userData.userName}, \n ${currency} ${added} added to your wallet.Total balance ${balance}.`);
+                emailService.sendNotificationMail(userData.email, "Balance Added", `Dear ${userData?.userName || "User"}, \n ${currency} ${added} added to your wallet.Total balance ${balance}.`);
             }
 
         } catch (e) {
             logger.error(`Error sending BALANCE_ADDED notification for user ${userId}`, e.message);
         }
     }
-    public async paymentApproveRequest(userId: string, planId: EPLANS,transactionId: string) {
+    public async paymentApproveRequest(userId: string, planId: EPLANS,amount: number,transactionId: string) {
         try {
             logger.info(`Sending PAYMENT_APPROVAL notification for user ${userId} and plan ${planId}`);
             const userData = (await User.findById(userId).select("phone email userName settings").lean());
             // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
-                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n We have received your payment request approval for transactionId ${transactionId}.`);
+                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData?.userName || "User"}, \n We have received your payment request approval for amount INR ${amount} with transactionId ${transactionId}.`);
             // }
             // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
-                emailService.sendNotificationMail(userData.email, "PAYMENT APPROVAL REQUEST", `Dear ${userData.userName}, \n We have received your payment request approval for transactionId ${transactionId}.`);
+                emailService.sendNotificationMail(userData.email, "PAYMENT APPROVAL REQUEST", `Dear ${userData?.userName || "User"}, \n We have received your payment request approval for transactionId ${transactionId}.`);
             // }
 
         } catch (e) {
             logger.error(`Error sending PAYMENT_APPROVAL notification for user ${userId}  for  plan ${planId}`, e.message);
         }
     }
-    public async paymentApprove(userId: string, planId: EPLANS,transactionId: string) {
+    public async paymentApprove(userId: string, planId: EPLANS,amount: number,transactionId: string) {
         try {
             logger.info(`Sending PAYMENT_APPROVED notification for user ${userId} and plan ${planId}`);
-            const userData = (await User.findById(userId).select("phone email userName settings settings").lean());
+            const userData = (await User.findById(userId).select("phone email userName settings").lean());
             // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
-                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n Payment Approved for your transactionId: ${transactionId}.`);
+                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData?.userName || "User"}, \n Payment Approved with amount INR ${amount} for  transactionId: ${transactionId}.`);
             // }
             // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
-                emailService.sendNotificationMail(userData.email, "PAYMENT APPROVED", `Dear ${userData.userName}, \n  Payment Approved for your transactionId  ${transactionId}.`);
+                emailService.sendNotificationMail(userData.email, "PAYMENT APPROVED", `Dear ${userData?.userName || "User"}, \n  Payment Approved for your transactionId  ${transactionId}.`);
             // }
 
         } catch (e) {
