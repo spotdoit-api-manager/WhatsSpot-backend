@@ -160,13 +160,14 @@ export class NotifyService {
     }
 
     public async planActivated(userId: string, userPlanId: string) {
+        // return;
         try {
             logger.info(`Sending PLAN_ACTIVATED notification for user ${userId} and plan ${userPlanId}`);
-            const userData = (await User.findById(userId).select("phone email userName").lean());
-            if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
+            const userData = (await User.findById(userId).select("phone email userName settings").lean());
+            if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
                 messageService.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n You plan has been activated.`);
             }
-            if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
+            if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
                 emailService.sendNotificationMail(userData.email, "PLAN ACTIVATED", `Dear ${userData.userName}, \n You plan has been activated.`);
             }
 
@@ -186,13 +187,13 @@ export class NotifyService {
             // }
 
         } catch (e) {
-            logger.error(`Error sending PLAN_ACTIVATED notification for user ${userId}  for  plan ${planId}`, e.message);
+            logger.error(`Error sending PAYMENT_APPROVAL notification for user ${userId}  for  plan ${planId}`, e.message);
         }
     }
     public async paymentApprove(userId: string, planId: EPLANS,transactionId: string) {
         try {
             logger.info(`Sending PAYMENT_APPROVED notification for user ${userId} and plan ${planId}`);
-            const userData = (await User.findById(userId).select("phone email userName").lean());
+            const userData = (await User.findById(userId).select("phone email userName settings").lean());
             // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
                 messageService.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n Payment Approved for your transactionId: ${transactionId}.`);
             // }
@@ -201,7 +202,7 @@ export class NotifyService {
             // }
 
         } catch (e) {
-            logger.error(`Error sending PLAN_ACTIVATED notification for user ${userId}  for  plan ${planId}`, e.message);
+            logger.error(`Error sending  PAYMENT_APPROVED notification for user ${userId}  for  plan ${planId}`, e.message);
         }
     }
 

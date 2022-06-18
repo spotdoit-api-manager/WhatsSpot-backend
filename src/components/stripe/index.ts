@@ -1,3 +1,4 @@
+import { validateStripeEvent } from "./strip.middleware";
 import stripeController from "./stripe.controller";
 
 export default [
@@ -12,10 +13,11 @@ export default [
         handler: [stripeController.validateSession]
     },
     {
-        path: "/stripe/sessions/event",
+        path: "/stripe/event",
         method: "post",
         escapeAuth:true,
         handler: [stripeController.stripeEvent]
+        // validateStripeEvent,
     },
     {
         path: "/stripe/sessions/fetch",

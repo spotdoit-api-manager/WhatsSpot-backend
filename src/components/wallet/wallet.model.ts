@@ -43,7 +43,7 @@ export class WalletModel {
     }
 
     public async addBalanceToWallet(walletId: string,amount: number){
-        return await Wallet.findByIdAndUpdate(walletId,{balance:{$inc: amount}},{new:true});
+        return await Wallet.findByIdAndUpdate(walletId,{$inc:{balance: Number(amount)}},{new:true});
     }
 
     public async fetchTransactions(userId: string, walletId: string,page: number=1) {

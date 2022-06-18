@@ -78,6 +78,7 @@ export const mailazyConfig = {
 export const stripeConfig = {
   secretKey: process.env.STRIPE_SECRET_KEY,
   publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+  webhookSecretKey: process.env.STRIPE_WEBHOOK_SECRET_KEY,
   API:process.env.STRIPE_API
 
 };
