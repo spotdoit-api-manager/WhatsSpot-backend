@@ -127,5 +127,11 @@ export default [
         method:"post",
         role:"admin",
         handler:[adminController.approvePayment]
+      },
+      {
+        path:"/payments/:paymentId/reject",
+        method:"post",
+        role:"admin",
+        handler:[adminController.rejectPayment]
       }
 ];

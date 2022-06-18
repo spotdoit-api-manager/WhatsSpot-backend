@@ -246,7 +246,7 @@ class NotifyService {
                 logger_1.default.info(`Sending PAYMENT_APPROVED notification for user ${userId} and plan ${planId}`);
                 const userData = (yield user_schema_1.User.findById(userId).select("phone email userName settings").lean());
                 // if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
-                message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n Payment Approved with amount INR ${amount} for  transactionId: ${transactionId}.`);
+                message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n Payment Approved for amount INR ${amount} for  transactionId: ${transactionId}.`);
                 // }
                 // if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
                 emailService.sendNotificationMail(userData.email, "PAYMENT APPROVED", `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n  Payment Approved for your transactionId  ${transactionId}.`);
@@ -254,6 +254,23 @@ class NotifyService {
             }
             catch (e) {
                 logger_1.default.error(`Error sending  PAYMENT_APPROVED notification for user ${userId}  for  plan ${planId}`, e.message);
+            }
+        });
+    }
+    paymentRejected(userId, planId, amount, transactionId, reason = "some unknown issue") {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                logger_1.default.info(`Sending PAYMENT_REJECTED notification for user ${userId} and plan ${planId}`);
+                const userData = (yield user_schema_1.User.findById(userId).select("phone email userName settings").lean());
+                // if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
+                message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n Payment Rejected for amount INR ${amount} for  transactionId: ${transactionId} due to "${reason}".`);
+                // }
+                // if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
+                emailService.sendNotificationMail(userData.email, "PAYMENT REJECTED", `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n  Payment Rejected for amount INR ${amount} for your transactionId  ${transactionId} due to "${reason}"`);
+                // }
+            }
+            catch (e) {
+                logger_1.default.error(`Error sending  PAYMENT_REJECTED notification for user ${userId}  for  plan ${planId}`, e.message);
             }
         });
     }

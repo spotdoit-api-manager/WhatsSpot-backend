@@ -35,7 +35,14 @@ export class QrPayModel {
         notifyService.paymentApprove(payment.userId, payment.metaData.planId,payment.amount,payment.orderId);
         return transactionModel.updateTransactionStatus(paymentId, ETransactionStatus.SUCCESS);
     }
-
+    public async rejectPayment(userId: string, paymentId: string,reason: string) {
+        const payment: ITransactionModel = await transactionModel.fetchTransactionById(null, paymentId);
+        if (!payment) throw new HTTP401Error("INVALID PAYMENT ID", "Entered payment id is invalid");
+        if (payment.status == ETransactionStatus.SUCCESS) throw new HTTP401Error("PAYMENT ALREADY APPROVED", "Entered payment id is already approved");
+       
+        notifyService.paymentRejected(payment.userId, payment.metaData.planId,payment.amount,payment.orderId,reason);
+        return transactionModel.updateTransactionStatus(paymentId, ETransactionStatus.ERROR);
+    }
 }
 
 export default new QrPayModel();

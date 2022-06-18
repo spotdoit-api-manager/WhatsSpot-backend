@@ -131,6 +131,12 @@ exports.default = [
         method: "post",
         role: "admin",
         handler: [admin_controller_1.default.approvePayment]
+    },
+    {
+        path: "/payments/:paymentId/reject",
+        method: "post",
+        role: "admin",
+        handler: [admin_controller_1.default.rejectPayment]
     }
 ];
 //# sourceMappingURL=index.js.map

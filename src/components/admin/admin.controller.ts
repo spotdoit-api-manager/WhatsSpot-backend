@@ -231,6 +231,16 @@ export class AdminController{
           next(responseHandler.sendError(e));
         }
       };
+
+      public rejectPayment = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          responseHandler.reqRes(req, res).onFetch("PAYMENT REJECTED", await adminModel.rejectPayment(req.userId,req.params.paymentId,req.body.reason)).send();
+        } catch (e) {
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
 }
 
 

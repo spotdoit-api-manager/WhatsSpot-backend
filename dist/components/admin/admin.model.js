@@ -225,6 +225,11 @@ class AdminModel {
             return qr_pay_model_1.default.approvePayment(userId, paymentId);
         });
     }
+    rejectPayment(userId, paymentId, reason) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return qr_pay_model_1.default.rejectPayment(userId, paymentId, reason);
+        });
+    }
 }
 exports.AdminModel = AdminModel;
 exports.default = new AdminModel();

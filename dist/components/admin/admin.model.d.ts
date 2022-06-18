@@ -51,10 +51,9 @@ export declare class AdminModel {
     updateOtp(id: string): number;
     sendOtpToMobile(otp: number, phone: string): Promise<{
         proceed: boolean;
-        message?: undefined;
+        message: any;
     } | {
         proceed: boolean;
-        message: any;
     }>;
     addProduct(adminId: string, productBody: IStripeProduct): Promise<any>;
     getProducts(userId: string, limit: number): Promise<any>;
@@ -62,6 +61,7 @@ export declare class AdminModel {
     getPrices(userId: string, limit: number): Promise<any>;
     fetchPaymentsRequests(userId: string, status: ETransactionStatus, page: number): Promise<any[]>;
     approvePayment(userId: string, paymentId: string): Promise<any>;
+    rejectPayment(userId: string, paymentId: string, reason: string): Promise<any>;
 }
 declare const _default: AdminModel;
 export default _default;

@@ -55,6 +55,17 @@ class QrPayModel {
             return transaction_model_1.default.updateTransactionStatus(paymentId, transaction_interface_1.ETransactionStatus.SUCCESS);
         });
     }
+    rejectPayment(userId, paymentId, reason) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const payment = yield transaction_model_1.default.fetchTransactionById(null, paymentId);
+            if (!payment)
+                throw new httpErrors_1.HTTP401Error("INVALID PAYMENT ID", "Entered payment id is invalid");
+            if (payment.status == transaction_interface_1.ETransactionStatus.SUCCESS)
+                throw new httpErrors_1.HTTP401Error("PAYMENT ALREADY APPROVED", "Entered payment id is already approved");
+            notify_service_1.default.paymentRejected(payment.userId, payment.metaData.planId, payment.amount, payment.orderId, reason);
+            return transaction_model_1.default.updateTransactionStatus(paymentId, transaction_interface_1.ETransactionStatus.ERROR);
+        });
+    }
 }
 exports.QrPayModel = QrPayModel;
 exports.default = new QrPayModel();

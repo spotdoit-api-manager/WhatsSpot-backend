@@ -247,6 +247,16 @@ class AdminController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.rejectPayment = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("PAYMENT REJECTED", yield admin_model_1.default.rejectPayment(req.userId, req.params.paymentId, req.body.reason)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
     }
 }
 exports.AdminController = AdminController;
