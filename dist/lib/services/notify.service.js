@@ -53,20 +53,21 @@ class NotifyService {
         }, CACHE_CLEAR_INTERVAL * 1000);
     }
     checkNotificationSettings(notificationSettings, notificationMainType, channel) {
-        if (notificationSettings[notificationMainType][channel]) {
+        if (notificationSettings && notificationSettings[notificationMainType] && notificationSettings[notificationMainType][channel]) {
             return true;
         }
         return false;
     }
     // device event notification
     deviceUnAuthorized(deviceId) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 logger_1.default.info(`Sending DEVICE_UNAUTHORIZED notification for device ${deviceId}`);
                 if (!deviceIdPhoneMap[deviceId]) {
                     const device = (yield device_schema_1.Device.findById(deviceId).select("userId phone").lean());
                     const userData = (yield user_schema_1.User.findById(device.userId).select("phone email userName settings").lean());
-                    deviceIdPhoneMap[deviceId] = { notificationSettings: userData.settings.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
+                    deviceIdPhoneMap[deviceId] = { notificationSettings: (_a = userData === null || userData === void 0 ? void 0 : userData.settings) === null || _a === void 0 ? void 0 : _a.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
                 }
                 if (this.checkNotificationSettings(deviceIdPhoneMap[deviceId].notificationSettings, notification_interface_1.ENotificationMainTypes.DEVICE, notification_interface_2.ENotificationChannel.WHATSAPP)) {
                     message_service_1.default.sendWhatsappMessage(deviceIdPhoneMap[deviceId].phone, `Your device with Phone ${deviceIdPhoneMap[deviceId].devicePhone} is unauthorized.`);
@@ -81,13 +82,14 @@ class NotifyService {
         });
     }
     deviceAuthorized(deviceId) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 logger_1.default.info(`Sending DEVICE_AUTHORIZED notification for device ${deviceId}`);
                 if (!deviceIdPhoneMap[deviceId]) {
                     const device = (yield device_schema_1.Device.findById(deviceId).select("userId phone").lean());
                     const userData = (yield user_schema_1.User.findById(device.userId).select("phone email userName settings").lean());
-                    deviceIdPhoneMap[deviceId] = { notificationSettings: userData.settings.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
+                    deviceIdPhoneMap[deviceId] = { notificationSettings: (_a = userData === null || userData === void 0 ? void 0 : userData.settings) === null || _a === void 0 ? void 0 : _a.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
                 }
                 logger_1.default.info("device cacheche is ", deviceIdPhoneMap);
                 if (this.checkNotificationSettings(deviceIdPhoneMap[deviceId].notificationSettings, notification_interface_1.ENotificationMainTypes.DEVICE, notification_interface_2.ENotificationChannel.WHATSAPP)) {
@@ -103,13 +105,14 @@ class NotifyService {
         });
     }
     deviceConnectionClosed(deviceId, reason) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 logger_1.default.info(`Sending DEVICE_CONNECTION_CLOSED notification for device ${deviceId}`);
                 if (!deviceIdPhoneMap[deviceId]) {
                     const device = (yield device_schema_1.Device.findById(deviceId).select("userId phone").lean());
                     const userData = (yield user_schema_1.User.findById(device.userId).select("phone email userName settings").lean());
-                    deviceIdPhoneMap[deviceId] = { notificationSettings: userData.settings.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
+                    deviceIdPhoneMap[deviceId] = { notificationSettings: (_a = userData === null || userData === void 0 ? void 0 : userData.settings) === null || _a === void 0 ? void 0 : _a.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
                 }
                 if (this.checkNotificationSettings(deviceIdPhoneMap[deviceId].notificationSettings, notification_interface_1.ENotificationMainTypes.DEVICE, notification_interface_2.ENotificationChannel.WHATSAPP)) {
                     emailService.sendNotificationMail(deviceIdPhoneMap[deviceId].email, "DEVICE UNAUTHORIZED", `Your device with Phone ${deviceIdPhoneMap[deviceId].devicePhone} is unauthorized.`);
@@ -124,13 +127,14 @@ class NotifyService {
         });
     }
     deviceMaxRetryReached(deviceId) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 logger_1.default.info(`Sending DEVICE_MAX_RETRY_REACHED notification for device ${deviceId}`);
                 if (!deviceIdPhoneMap[deviceId]) {
                     const device = (yield device_schema_1.Device.findById(deviceId).select("userId phone").lean());
                     const userData = (yield user_schema_1.User.findById(device.userId).select("phone email userName settings").lean());
-                    deviceIdPhoneMap[deviceId] = { notificationSettings: userData.settings.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
+                    deviceIdPhoneMap[deviceId] = { notificationSettings: (_a = userData === null || userData === void 0 ? void 0 : userData.settings) === null || _a === void 0 ? void 0 : _a.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
                 }
                 if (this.checkNotificationSettings(deviceIdPhoneMap[deviceId].notificationSettings, notification_interface_1.ENotificationMainTypes.DEVICE, notification_interface_2.ENotificationChannel.WHATSAPP)) {
                     emailService.sendNotificationMail(deviceIdPhoneMap[deviceId].email, "DEVICE UNAUTHORIZED", `Device with phone ${deviceIdPhoneMap[deviceId].devicePhone} has reached max retry to reconnect`);
@@ -146,14 +150,15 @@ class NotifyService {
     }
     // Plan event notification 
     planExpired(userId, userPlanId) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 logger_1.default.info(`Sending PLAN_EXPIRED notification for user ${userId} and plan ${userPlanId}`);
                 const userData = (yield user_schema_1.User.findById(userId).select("phone email userName settings").lean());
-                if (this.checkNotificationSettings(userData.settings.notifications, notification_interface_1.ENotificationMainTypes.PLAN, notification_interface_2.ENotificationChannel.WHATSAPP)) {
+                if (this.checkNotificationSettings((_a = userData === null || userData === void 0 ? void 0 : userData.settings) === null || _a === void 0 ? void 0 : _a.notifications, notification_interface_1.ENotificationMainTypes.PLAN, notification_interface_2.ENotificationChannel.WHATSAPP)) {
                     message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n Your plan has been expired. Please purchase new plan to continue the services`);
                 }
-                if (this.checkNotificationSettings(userData.settings.notifications, notification_interface_1.ENotificationMainTypes.PLAN, notification_interface_2.ENotificationChannel.EMAIL)) {
+                if (this.checkNotificationSettings((_b = userData === null || userData === void 0 ? void 0 : userData.settings) === null || _b === void 0 ? void 0 : _b.notifications, notification_interface_1.ENotificationMainTypes.PLAN, notification_interface_2.ENotificationChannel.EMAIL)) {
                     emailService.sendNotificationMail(userData.email, "DEVICE UNAUTHORIZED", `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n Your plan has been expired. Please purchase new plan to continue the services`);
                 }
             }
@@ -163,14 +168,15 @@ class NotifyService {
         });
     }
     planExhausted(userId, userPlanId) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 logger_1.default.info(`Sending PLAN_EXHAUSTED notification for user ${userId} and plan ${userPlanId}`);
                 const userData = (yield user_schema_1.User.findById(userId).select("phone email userName settings").lean());
-                if (this.checkNotificationSettings(userData.settings.notifications, notification_interface_1.ENotificationMainTypes.PLAN, notification_interface_2.ENotificationChannel.WHATSAPP)) {
+                if (this.checkNotificationSettings((_a = userData === null || userData === void 0 ? void 0 : userData.settings) === null || _a === void 0 ? void 0 : _a.notifications, notification_interface_1.ENotificationMainTypes.PLAN, notification_interface_2.ENotificationChannel.WHATSAPP)) {
                     message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n Your plan has reached max message limit. Please purchase new plan to continue the services`);
                 }
-                if (this.checkNotificationSettings(userData.settings.notifications, notification_interface_1.ENotificationMainTypes.PLAN, notification_interface_2.ENotificationChannel.EMAIL)) {
+                if (this.checkNotificationSettings((_b = userData === null || userData === void 0 ? void 0 : userData.settings) === null || _b === void 0 ? void 0 : _b.notifications, notification_interface_1.ENotificationMainTypes.PLAN, notification_interface_2.ENotificationChannel.EMAIL)) {
                     emailService.sendNotificationMail(userData.email, "PLAN EXHAUSTED", `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n Your plan has reached max message limit. Please purchase new plan to continue the services`);
                 }
             }
@@ -222,10 +228,10 @@ class NotifyService {
             try {
                 logger_1.default.info(`Sending PAYMENT_APPROVAL notification for user ${userId} and plan ${planId}`);
                 const userData = (yield user_schema_1.User.findById(userId).select("phone email userName settings").lean());
-                // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
+                // if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
                 message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n We have received your payment request approval for amount INR ${amount} with transactionId ${transactionId}.`);
                 // }
-                // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
+                // if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
                 emailService.sendNotificationMail(userData.email, "PAYMENT APPROVAL REQUEST", `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n We have received your payment request approval for transactionId ${transactionId}.`);
                 // }
             }
@@ -239,10 +245,10 @@ class NotifyService {
             try {
                 logger_1.default.info(`Sending PAYMENT_APPROVED notification for user ${userId} and plan ${planId}`);
                 const userData = (yield user_schema_1.User.findById(userId).select("phone email userName settings").lean());
-                // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
+                // if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
                 message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n Payment Approved with amount INR ${amount} for  transactionId: ${transactionId}.`);
                 // }
-                // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
+                // if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
                 emailService.sendNotificationMail(userData.email, "PAYMENT APPROVED", `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n  Payment Approved for your transactionId  ${transactionId}.`);
                 // }
             }
