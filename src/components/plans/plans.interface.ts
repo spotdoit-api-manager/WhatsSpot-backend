@@ -11,12 +11,15 @@ isBest: boolean;
 stripePriceId: string;
 }
 
-export enum EPLANS{
-PAYG="PAYG",
-MONTHLY="MONTHLY",
-MEMBERSHIP="MEMBERSHIP"
-}
 
+export enum EPLANS {
+    PAYG = "PAYG",
+    MONTHLY = "MONTHLY", //1month
+    SUBSCRIPTION = "SUBSCRIPTION", //3month
+    PREMIUM = "PREMIUM", //6 month
+    MEMBERSHIP = "MEMBERSHIP" // 6 month unlimited
+  }
+  
 
 export interface IUserPlan{
     planName: string;
