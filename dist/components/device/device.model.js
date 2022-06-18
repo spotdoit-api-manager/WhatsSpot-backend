@@ -50,6 +50,7 @@ const api_blocklist_model_1 = __importDefault(require("../api-blocklist/api-bloc
 const schedular_1 = __importDefault(require("../../lib/services/schedular"));
 const phone_handler_1 = require("../../lib/utils/phone.handler");
 const projection_values_1 = require("../../lib/values/projection.values");
+const plans_model_1 = __importDefault(require("../plans/plans.model"));
 const logFileName = "[DeviceModal] : ";
 class DeviceModel {
     constructor() {
@@ -75,6 +76,7 @@ class DeviceModel {
     newDevice(userId, walletId, body, newDeviceCode) {
         return __awaiter(this, void 0, void 0, function* () {
             body.userId = userId;
+            yield this.isMaxDeviceLimitReached(userId);
             const parsedPhone = phone_handler_1.parsePhoneWithCountry(body.phone, body.country).number;
             const device = yield this.findDeviceByPhone(parsedPhone);
             this.validateDeviceAdd(userId, device);
@@ -89,6 +91,22 @@ class DeviceModel {
             ;
             const keys = yield this.generateNewKey(userId, walletId, newDeviceData._id, { name: process.env.DEFAULT_APIKEY_NAME, expiresOn });
             return newDeviceData;
+        });
+    }
+    isMaxDeviceLimitReached(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const devices = yield device_schema_1.Device.find({ userId: new bson_1.ObjectID(userId), "isDeleted.status": false });
+            const userPlan = yield user_model_1.default.fetchUserActivePlan(userId);
+            if (userPlan && userPlan.planId) {
+                const plan = yield plans_model_1.default.fetchPlanById(userPlan.planId);
+                if (devices.length >= plan.maxDevices)
+                    throw new httpErrors_1.HTTP400Error("MAX_DEVICE_LIMIT_REACHED", `You have reached maximum device limit of ${plan.maxDevices} in your ${plan.planName} plan`);
+            }
+            else {
+                if (devices.length >= parseInt(process.env.DEFAULT_MAX_DEVICES || "1"))
+                    throw new httpErrors_1.HTTP400Error("MAX_DEVICE_LIMIT_REACHED", `You have reached maximum device limit of ${process.env.DEFAULT_MAX_DEVICES || "1"}`);
+            }
+            return false;
         });
     }
     newDeviceCode(userId, walletId, newDeviceBody) {

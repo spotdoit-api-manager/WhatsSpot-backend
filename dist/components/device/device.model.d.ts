@@ -4,12 +4,12 @@ import { IApiKey, IDevice } from "./device.interface";
 import { IDeviceModel } from "./device.schema";
 export declare class DeviceModel {
     newDevice(userId: string, walletId: string, body: IDevice, newDeviceCode: string): Promise<IDeviceModel>;
+    private isMaxDeviceLimitReached;
     newDeviceCode(userId: string, walletId: string, newDeviceBody: INewDevice): Promise<{
         proceed: boolean;
-        message?: undefined;
+        message: any;
     } | {
         proceed: boolean;
-        message: any;
     }>;
     private validateDeviceAdd;
     getQr(userId: string, deviceId: string): Promise<{

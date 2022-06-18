@@ -25,6 +25,10 @@ const planSchema = new mongoose_1.Schema({
         type: Number,
         required: true
     },
+    stripePriceId: {
+        type: String,
+        required: true
+    },
     planPeriod: {
         type: Number,
         required: true
@@ -38,13 +42,14 @@ const planSchema = new mongoose_1.Schema({
         required: true,
         default: 0
     },
-    planInfo: {
-        type: [String]
-    },
     isBest: {
         type: Boolean,
         required: true,
         default: false
+    },
+    maxDevices: {
+        type: Number,
+        required: true,
     }
 }, {
     timestamps: true
@@ -63,6 +68,11 @@ const userPlanSchema = new mongoose_1.Schema({
     planName: {
         type: String,
         required: true
+    },
+    planInfo: {
+        type: [String],
+        required: true,
+        default: []
     },
     planId: {
         type: String,

@@ -30,6 +30,7 @@ class StripePaymentController {
         this.stripeEvent = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
+                console.log("stripe event ", req.get("origin"));
                 responseHandler.reqRes(req, res).onFetch("STRIPE_EVENT", yield stripe_model_1.default.stripeEvent(req.body)).send();
             }
             catch (e) {

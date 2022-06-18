@@ -32,8 +32,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserModel = void 0;
-const phone_handler_1 = require("./../../lib/utils/phone.handler");
 const index_1 = require("./../../lib/utils/index");
+const phone_handler_1 = require("./../../lib/utils/phone.handler");
 const message_interface_1 = require("./../messages/message.interface");
 const helpers_1 = require("../../lib/helpers");
 const user_schema_1 = require("./user.schema");
@@ -1140,6 +1140,9 @@ class UserModel {
                 throw new httpErrors_1.HTTP400Error("INVALID_OTP", "The entered OTP is invalid");
             return yield user_schema_1.User.findByIdAndUpdate(userId, { $set: { emailVerified: true } }).lean();
         });
+    }
+    getUserById(userId) {
+        return user_schema_1.User.findById(userId);
     }
 }
 exports.UserModel = UserModel;

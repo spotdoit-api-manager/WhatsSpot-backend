@@ -22,6 +22,7 @@ const config_1 = require("../../config");
 const plans_model_1 = __importDefault(require("../plans/plans.model"));
 const transaction_model_1 = __importDefault(require("../transaction/transaction.model"));
 const wallet_model_1 = __importDefault(require("../wallet/wallet.model"));
+const user_model_1 = __importDefault(require("../user/user.model"));
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const stripe = require("stripe")(config_1.stripeConfig.secretKey);
 class StripePaymentModel {
@@ -54,12 +55,15 @@ class StripePaymentModel {
         return __awaiter(this, void 0, void 0, function* () {
             const plan = yield plans_model_1.default.fetchPlanByPlanId(planId);
             if (!plan)
-                throw new httpErrors_1.HTTP401Error("INVALID_PLAN", "The plan you have request doesnt exists");
+                throw new httpErrors_1.HTTP401Error("INVALID_PLAN", "The plan you have request doesn't exists");
+            const user = yield user_model_1.default.getUserById(userId);
             const finalAmount = planId === plans_interface_1.EPLANS.PAYG ? amount : plan.planAmount;
+            const currency = user.country === "IN" ? "INR" : "USD";
             const session = yield stripe.checkout.sessions.create({
                 line_items: [
                     {
                         // Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+                        // currency,
                         price: plan.stripePriceId,
                         quantity: planId == plans_interface_1.EPLANS.PAYG ? amount : 1,
                     },
@@ -71,6 +75,9 @@ class StripePaymentModel {
                 },
                 success_url: `${config_1.commonConfig.domain}/user/wallet`,
                 cancel_url: `${config_1.commonConfig.domain}/user/wallet`,
+            }).catch((err) => {
+                console.log("error creating session", err);
+                throw new httpErrors_1.HTTP401Error("STRIPE_SESSION_ERROR", err.message);
             });
             const transaction = yield transaction_model_1.default.createTransactionForPlan(planId, session.id, userId, walletId, transaction_interface_1.ETransactionTypes.CREDIT, finalAmount, plan.planName, pay_with_enum_1.EPayWith.STRIPE);
             if (!transaction)

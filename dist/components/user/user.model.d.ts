@@ -1,3 +1,4 @@
+/// <reference types="mongoose" />
 import { ITokenData, IDataStoredInToken, IUserNotificationSettings, IUserProfile } from "./user.interface";
 import { IUserModel } from "./user.schema";
 import { CountryCode } from "libphonenumber-js";
@@ -126,6 +127,7 @@ export declare class UserModel {
     updateProfile(userId: string, profileBody: IUserProfile): Promise<any>;
     sendEmailVerification(userId: string): Promise<void>;
     verifyEmaliOtp(userId: string, otp: string): Promise<any>;
+    getUserById(userId: string): import("mongoose").DocumentQuery<IUserModel, IUserModel, {}>;
 }
 declare const _default: UserModel;
 export default _default;

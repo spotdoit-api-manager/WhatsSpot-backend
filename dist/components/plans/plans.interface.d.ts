@@ -8,6 +8,7 @@ export interface IPLAN {
     planMaxMessage: number | null;
     isBest: boolean;
     stripePriceId: string;
+    maxDevices: number;
 }
 export declare enum EPLANS {
     PAYG = "PAYG",
