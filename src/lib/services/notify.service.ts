@@ -26,7 +26,7 @@ export class NotifyService {
     }
 
     private checkNotificationSettings(notificationSettings: IUserNotificationSettings, notificationMainType: ENotificationMainTypes, channel: ENotificationChannel) {
-        if (notificationSettings[notificationMainType][channel]) {
+        if (notificationSettings &&  notificationSettings[notificationMainType] && notificationSettings[notificationMainType][channel]) {
             return true;
         }
         return false;
@@ -42,7 +42,7 @@ export class NotifyService {
             if (!deviceIdPhoneMap[deviceId]) {
                 const device = (await Device.findById(deviceId).select("userId phone").lean());
                 const userData = (await User.findById(device.userId).select("phone email userName settings").lean());
-                deviceIdPhoneMap[deviceId] = { notificationSettings: userData.settings.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
+                deviceIdPhoneMap[deviceId] = { notificationSettings: userData?.settings?.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
             }
 
             if (this.checkNotificationSettings(deviceIdPhoneMap[deviceId].notificationSettings, ENotificationMainTypes.DEVICE, ENotificationChannel.WHATSAPP)) {
@@ -65,7 +65,7 @@ export class NotifyService {
             if (!deviceIdPhoneMap[deviceId]) {
                 const device = (await Device.findById(deviceId).select("userId phone").lean());
                 const userData = (await User.findById(device.userId).select("phone email userName settings").lean());
-                deviceIdPhoneMap[deviceId] = { notificationSettings: userData.settings.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
+                deviceIdPhoneMap[deviceId] = { notificationSettings: userData?.settings?.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
             }
                 logger.info("device cacheche is ",deviceIdPhoneMap);
             if (this.checkNotificationSettings(deviceIdPhoneMap[deviceId].notificationSettings, ENotificationMainTypes.DEVICE, ENotificationChannel.WHATSAPP)) {
@@ -87,7 +87,7 @@ export class NotifyService {
             if (!deviceIdPhoneMap[deviceId]) {
                 const device = (await Device.findById(deviceId).select("userId phone").lean());
                 const userData = (await User.findById(device.userId).select("phone email userName settings").lean());
-                deviceIdPhoneMap[deviceId] = { notificationSettings: userData.settings.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
+                deviceIdPhoneMap[deviceId] = { notificationSettings: userData?.settings?.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
             }
             if(this.checkNotificationSettings(deviceIdPhoneMap[deviceId].notificationSettings, ENotificationMainTypes.DEVICE, ENotificationChannel.WHATSAPP)){
                 emailService.sendNotificationMail(deviceIdPhoneMap[deviceId].email, "DEVICE UNAUTHORIZED", `Your device with Phone ${deviceIdPhoneMap[deviceId].devicePhone} is unauthorized.`);
@@ -108,7 +108,7 @@ export class NotifyService {
             if (!deviceIdPhoneMap[deviceId]) {
                 const device = (await Device.findById(deviceId).select("userId phone").lean());
                 const userData = (await User.findById(device.userId).select("phone email userName settings").lean());
-                deviceIdPhoneMap[deviceId] = { notificationSettings: userData.settings.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
+                deviceIdPhoneMap[deviceId] = { notificationSettings: userData?.settings?.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
             }
             if(this.checkNotificationSettings(deviceIdPhoneMap[deviceId].notificationSettings, ENotificationMainTypes.DEVICE, ENotificationChannel.WHATSAPP)){
                 emailService.sendNotificationMail(deviceIdPhoneMap[deviceId].email, "DEVICE UNAUTHORIZED", `Device with phone ${deviceIdPhoneMap[deviceId].devicePhone} has reached max retry to reconnect`);
@@ -128,12 +128,12 @@ export class NotifyService {
             logger.info(`Sending PLAN_EXPIRED notification for user ${userId} and plan ${userPlanId}`);
             const userData = (await User.findById(userId).select("phone email userName settings").lean());
 
-            if (this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)) {
-                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n Your plan has been expired. Please purchase new plan to continue the services`);
+            if (this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)) {
+                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData?.userName || "User"}, \n Your plan has been expired. Please purchase new plan to continue the services`);
             }
 
-            if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
-                emailService.sendNotificationMail(userData.email, "DEVICE UNAUTHORIZED", `Dear ${userData.userName}, \n Your plan has been expired. Please purchase new plan to continue the services`);
+            if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
+                emailService.sendNotificationMail(userData.email, "DEVICE UNAUTHORIZED", `Dear ${userData?.userName || "User"}, \n Your plan has been expired. Please purchase new plan to continue the services`);
             }
 
         } catch (e) {
@@ -145,11 +145,11 @@ export class NotifyService {
         try {
             logger.info(`Sending PLAN_EXHAUSTED notification for user ${userId} and plan ${userPlanId}`);
             const userData = (await User.findById(userId).select("phone email userName settings").lean());
-            if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
-                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n Your plan has reached max message limit. Please purchase new plan to continue the services`);
+            if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
+                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData?.userName || "User"}, \n Your plan has reached max message limit. Please purchase new plan to continue the services`);
             }
-            if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
-                emailService.sendNotificationMail(userData.email, "PLAN EXHAUSTED", `Dear ${userData.userName}, \n Your plan has reached max message limit. Please purchase new plan to continue the services`);
+            if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
+                emailService.sendNotificationMail(userData.email, "PLAN EXHAUSTED", `Dear ${userData?.userName || "User"}, \n Your plan has reached max message limit. Please purchase new plan to continue the services`);
             }
 
 
@@ -165,10 +165,10 @@ export class NotifyService {
             logger.info(`Sending PLAN_ACTIVATED notification for user ${userId} and plan ${userPlanId}`);
             const userData = (await User.findById(userId).select("phone email userName settings").lean());
             if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
-                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n You plan has been activated.`);
+                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData?.userName || "User"}, \n You plan has been activated.`);
             }
             if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
-                emailService.sendNotificationMail(userData.email, "PLAN ACTIVATED", `Dear ${userData.userName}, \n You plan has been activated.`);
+                emailService.sendNotificationMail(userData.email, "PLAN ACTIVATED", `Dear ${userData?.userName || "User"}, \n You plan has been activated.`);
             }
 
         } catch (e) {
@@ -183,44 +183,60 @@ export class NotifyService {
             logger.info(`Sending BALANCE_ADDED notification for user ${userId} added ${added} amount ${balance}`);
             const userData = (await User.findById(userId).select("phone email userName settings").lean());
             if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
-                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n ${currency} ${added} added to your wallet.Total balance ${balance}.`);
+                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData?.userName || "User"}, \n ${currency} ${added} added to your wallet.Total balance ${balance}.`);
             }
             if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
-                emailService.sendNotificationMail(userData.email, "Balance Added", `Dear ${userData.userName}, \n ${currency} ${added} added to your wallet.Total balance ${balance}.`);
+                emailService.sendNotificationMail(userData.email, "Balance Added", `Dear ${userData?.userName || "User"}, \n ${currency} ${added} added to your wallet.Total balance ${balance}.`);
             }
 
         } catch (e) {
             logger.error(`Error sending BALANCE_ADDED notification for user ${userId}`, e.message);
         }
     }
-    public async paymentApproveRequest(userId: string, planId: EPLANS,transactionId: string) {
+    public async paymentApproveRequest(userId: string, planId: EPLANS,amount: number,transactionId: string) {
         try {
             logger.info(`Sending PAYMENT_APPROVAL notification for user ${userId} and plan ${planId}`);
             const userData = (await User.findById(userId).select("phone email userName settings").lean());
-            // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
-                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n We have received your payment request approval for transactionId ${transactionId}.`);
+            // if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
+                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData?.userName || "User"}, \n We have received your payment request approval for amount INR ${amount} with transactionId ${transactionId}.`);
             // }
-            // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
-                emailService.sendNotificationMail(userData.email, "PAYMENT APPROVAL REQUEST", `Dear ${userData.userName}, \n We have received your payment request approval for transactionId ${transactionId}.`);
+            // if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
+                emailService.sendNotificationMail(userData.email, "PAYMENT APPROVAL REQUEST", `Dear ${userData?.userName || "User"}, \n We have received your payment request approval for transactionId ${transactionId}.`);
             // }
 
         } catch (e) {
             logger.error(`Error sending PAYMENT_APPROVAL notification for user ${userId}  for  plan ${planId}`, e.message);
         }
     }
-    public async paymentApprove(userId: string, planId: EPLANS,transactionId: string) {
+    public async paymentApprove(userId: string, planId: EPLANS,amount: number,transactionId: string) {
         try {
             logger.info(`Sending PAYMENT_APPROVED notification for user ${userId} and plan ${planId}`);
-            const userData = (await User.findById(userId).select("phone email userName settings settings").lean());
-            // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
-                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData.userName}, \n Payment Approved for your transactionId: ${transactionId}.`);
+            const userData = (await User.findById(userId).select("phone email userName settings").lean());
+            // if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
+                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData?.userName || "User"}, \n Payment Approved for amount INR ${amount} for  transactionId: ${transactionId}.`);
             // }
-            // if(this.checkNotificationSettings(userData.settings.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
-                emailService.sendNotificationMail(userData.email, "PAYMENT APPROVED", `Dear ${userData.userName}, \n  Payment Approved for your transactionId  ${transactionId}.`);
+            // if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
+                emailService.sendNotificationMail(userData.email, "PAYMENT APPROVED", `Dear ${userData?.userName || "User"}, \n  Payment Approved for your transactionId  ${transactionId}.`);
             // }
 
         } catch (e) {
             logger.error(`Error sending  PAYMENT_APPROVED notification for user ${userId}  for  plan ${planId}`, e.message);
+        }
+    }
+
+    public async paymentRejected(userId: string, planId: EPLANS,amount: number,transactionId: string,reason: string="some unknown issue") {
+        try {
+            logger.info(`Sending PAYMENT_REJECTED notification for user ${userId} and plan ${planId}`);
+            const userData = (await User.findById(userId).select("phone email userName settings").lean());
+            // if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.WHATSAPP)){
+                messageService.sendWhatsappMessage(userData.phone, `Dear ${userData?.userName || "User"}, \n Payment Rejected for amount INR ${amount} for  transactionId: ${transactionId} due to "${reason}".`);
+            // }
+            // if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
+                emailService.sendNotificationMail(userData.email, "PAYMENT REJECTED", `Dear ${userData?.userName || "User"}, \n  Payment Rejected for amount INR ${amount} for your transactionId  ${transactionId} due to "${reason}"`);
+            // }
+
+        } catch (e) {
+            logger.error(`Error sending  PAYMENT_REJECTED notification for user ${userId}  for  plan ${planId}`, e.message);
         }
     }
 

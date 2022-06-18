@@ -1,5 +1,5 @@
-import {  parsePhoneWithCountry } from "./../../lib/utils/phone.handler";
 import { validateEmail } from "./../../lib/utils/index";
+import {  parsePhoneWithCountry } from "./../../lib/utils/phone.handler";
 import { IWalletModel } from "../wallet/wallet.schema";
 import { EMessageStatus } from "./../messages/message.interface";
 import {  otpGenerator } from "../../lib/helpers";
@@ -1092,6 +1092,9 @@ public async verifyEmaliOtp(userId: string,otp: string){
   return await User.findByIdAndUpdate(userId,{$set:{emailVerified:true}}).lean();
 }
 
+public getUserById(userId: string){
+  return User.findById(userId);
+}
 
 
 }

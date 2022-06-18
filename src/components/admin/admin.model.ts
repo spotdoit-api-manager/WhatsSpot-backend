@@ -194,5 +194,9 @@ export class AdminModel {
         return qrPayModel.approvePayment(userId,paymentId);
     }
 
+    public async rejectPayment(userId: string,paymentId: string,reason: string){
+        return qrPayModel.rejectPayment(userId,paymentId,reason);
+    }
+
 }
 export default new AdminModel();

@@ -1,3 +1,4 @@
+import { IPlanModel } from "./../plans/plans.schema";
 import { mongoDBProjectFields } from "./../../lib/utils/index";
 import logger from "../../core/logger";
 import { EDeviceStatus, IDeviceTokenData, INewDevice } from "../device/device.interface";
@@ -20,17 +21,19 @@ import apiBlockListModel from "../api-blocklist/api-blocklist.model";
 import spotSchedular from "../../lib/services/schedular";
 import { parsePhoneWithCountry } from "../../lib/utils/phone.handler";
 import { deviceProjection } from "../../lib/values/projection.values";
+import plansModel from "../plans/plans.model";
 
 const logFileName = "[DeviceModal] : ";
 export class DeviceModel {
     public async newDevice(userId: string, walletId: string, body: IDevice, newDeviceCode: string) {
         body.userId = userId;
-        const parsedPhone = parsePhoneWithCountry(body.phone,body.country).number;
+        await this.isMaxDeviceLimitReached(userId);
+        const parsedPhone = parsePhoneWithCountry(body.phone, body.country).number;
         const device = await this.findDeviceByPhone(parsedPhone);
         this.validateDeviceAdd(userId, device);
         await userModel.validateDeviceCode(userId, parsedPhone, parseInt(newDeviceCode));
         logger.info(logFileName, `Device ${parsedPhone} verified`);
-        body.phone =parsedPhone;
+        body.phone = parsedPhone;
         const newDevice = new Device(body);
         const newDeviceData: IDeviceModel = await newDevice.saveDevice();
         if (!newDeviceData) throw new HTTP400Error("UNKNOWN_ERROR");
@@ -39,6 +42,17 @@ export class DeviceModel {
         return newDeviceData;
     }
 
+    private async isMaxDeviceLimitReached(userId: string) {
+        const devices = await Device.find({ userId: new ObjectID(userId), "isDeleted.status": false });
+        const userPlan = await userModel.fetchUserActivePlan(userId);
+        if (userPlan && userPlan.planId) {
+            const plan: IPlanModel = await plansModel.fetchPlanById(userPlan.planId);
+                if (devices.length >= plan.maxDevices) throw new HTTP400Error("MAX_DEVICE_LIMIT_REACHED",`You have reached maximum device limit of ${plan.maxDevices} in your ${plan.planName} plan`);
+        }else{
+            if (devices.length >= parseInt(process.env.DEFAULT_MAX_DEVICES || "1")) throw new HTTP400Error("MAX_DEVICE_LIMIT_REACHED",`You have reached maximum device limit of ${process.env.DEFAULT_MAX_DEVICES || "1"}`);
+        }
+        return false;
+    }
 
 
     public async newDeviceCode(userId: string, walletId: string, newDeviceBody: INewDevice) {
@@ -64,7 +78,7 @@ export class DeviceModel {
         // if (!device.authState && device.reason && device.reason.statusCode === DisconnectReason.loggedOut) {
         //     return { message: "DEVICE_LOGGED_OUT" };
         // }
-        const data = whatsappClientService.getClientQr(deviceId,device.phone);
+        const data = whatsappClientService.getClientQr(deviceId, device.phone);
         return { message: "QR_REQUESTED" };
     };
 
@@ -97,11 +111,11 @@ export class DeviceModel {
         return result[0] || null;
     }
 
-    public async fetchDevicesMetrics(){
+    public async fetchDevicesMetrics() {
         const totalDevices = await Device.countDocuments();
-        const activeDevices = await Device.countDocuments({authState:true});
-        const deletedDevices = await Device.countDocuments({"isDeleted.status":true});
-        return {totalDevices ,activeDevices,deletedDevices};
+        const activeDevices = await Device.countDocuments({ authState: true });
+        const deletedDevices = await Device.countDocuments({ "isDeleted.status": true });
+        return { totalDevices, activeDevices, deletedDevices };
     }
 
 
@@ -165,7 +179,7 @@ export class DeviceModel {
 
 
     public async deleteAuth(userId: string, deviceId: string) {
-        console.log("params ",userId,deviceId);
+        console.log("params ", userId, deviceId);
         const device = await this.findDeviceById(userId, deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
@@ -219,7 +233,7 @@ export class DeviceModel {
         try {
             const result = await Device.findOneAndUpdate({ _id: new ObjectID(deviceId) }, { $pull: { apiKeys: { _id: new ObjectID(keyId) } } }, { upsert: false, new: false }).lean();
             const apiData = result.apiKeys.find((x: IApiKeyModal) => x._id.toString() === keyId);
-            if(apiData.status !==EApiKeyStatus.EXPIRED){
+            if (apiData.status !== EApiKeyStatus.EXPIRED) {
                 await apiBlockListModel.addApiToBlockList(deviceId, apiData);
             }
 
@@ -250,7 +264,7 @@ export class DeviceModel {
         return token;
     }
 
- 
+
 
     public signDeviceToken = (apiKeyData: IDeviceTokenData, expiresIn: string) => {
         if (!expiresIn) {
@@ -323,7 +337,7 @@ export class DeviceModel {
             let result = await Device.aggregate([
                 { $match: condition },
                 { $set: { _id: { $toObjectId: "$_id" } } },
-               
+
                 {
                     $lookup: {
                         from: "fastmessages",
@@ -344,7 +358,7 @@ export class DeviceModel {
                 },
                 {
                     $project: {
-                        _id:0,
+                        _id: 0,
                         messageMetrics: {
                             totalFastError: {
                                 $size: {
@@ -392,21 +406,21 @@ export class DeviceModel {
                                 }
                             }
                         },
-                        messages:{
-                            fastMessages:"$fastMessages",
-                            queueMessages:"$queueMessages",
+                        messages: {
+                            fastMessages: "$fastMessages",
+                            queueMessages: "$queueMessages",
                         },
 
-                        deviceInfo:{
-                            deviceId:"$_id",
-                            isDeleted:"$isDeleted",
-                            phone:"$phone",
-                            name:"$name",
-                            userId:"$userId",
-                            createdAt:"$createdAt",
-                            updatedAt:"$updatedAt",
-                            authState:"$authState",
-                            reason:"$reason"
+                        deviceInfo: {
+                            deviceId: "$_id",
+                            isDeleted: "$isDeleted",
+                            phone: "$phone",
+                            name: "$name",
+                            userId: "$userId",
+                            createdAt: "$createdAt",
+                            updatedAt: "$updatedAt",
+                            authState: "$authState",
+                            reason: "$reason"
                         }
                     }
                 },
@@ -449,16 +463,16 @@ export class DeviceModel {
         const result = await Device.findByIdAndUpdate(deviceId, { isDeleted: { status: true, deletedAt: new Date() } });
     }
 
-    public async getDeviceStatus(userId: string,deviceId: string){
-        const device = await Device.findOne({userId:userId,_id:deviceId,isDeleted:{status:false}});
-        if(!device)throw new HTTP400Error("DEVICE_NOT_FOUND");
+    public async getDeviceStatus(userId: string, deviceId: string) {
+        const device = await Device.findOne({ userId: userId, _id: deviceId, isDeleted: { status: false } });
+        if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
 
         return whatsappClientService.getClientStatus(device.phone);
     }
 
- 
 
-    public fetchDevicesList(){
+
+    public fetchDevicesList() {
         return Device.find({}).select(deviceProjection).lean();
     }
 }

@@ -16,6 +16,7 @@ export class StripePaymentController{
       public stripeEvent = async (req: Request, res: Response, next: NextFunction) => {
         const responseHandler = new ResponseHandler();
         try {
+          console.log("stripe event ",req.get("origin"));
           responseHandler.reqRes(req, res).onFetch("STRIPE_EVENT", await stripePaymentModel.stripeEvent(req.body)).send();
         } catch (e) {
           // send error with next function.

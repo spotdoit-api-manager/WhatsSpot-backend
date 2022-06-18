@@ -10,6 +10,7 @@ import { IPlanModel } from "../plans/plans.schema";
 import { IStripePrice, IStripeProduct } from "./stripe.interface";
 import transactionModel from "../transaction/transaction.model";
 import walletModel from "../wallet/wallet.model";
+import userModel from "../user/user.model";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const stripe = require("stripe")(stripeConfig.secretKey);
 
@@ -39,13 +40,15 @@ export class StripePaymentModel {
 
   public async createNewSession(userId: string, walletId: string, amount: number, planId: string) {
     const plan: IPlanModel = await plansModel.fetchPlanByPlanId(planId);
-    if (!plan) throw new HTTP401Error("INVALID_PLAN", "The plan you have request doesnt exists");
+    if (!plan) throw new HTTP401Error("INVALID_PLAN", "The plan you have request doesn't exists");
+    const user = await userModel.getUserById(userId);
     const finalAmount = planId === EPLANS.PAYG ? amount : plan.planAmount;
-
+    const currency = user.country === "IN" ? "INR" : "USD";
     const session = await stripe.checkout.sessions.create({
       line_items: [
         {
           // Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+          // currency,
           price: plan.stripePriceId,
           quantity: planId == EPLANS.PAYG ? amount : 1,
         },
@@ -57,6 +60,9 @@ export class StripePaymentModel {
       },
       success_url: `${commonConfig.domain}/user/wallet`,
       cancel_url: `${commonConfig.domain}/user/wallet`,
+    }).catch((err) => {
+      console.log("error creating session", err);
+      throw new HTTP401Error("STRIPE_SESSION_ERROR", err.message);
     });
 
     const transaction: ITransactionModel = await transactionModel.createTransactionForPlan(planId, session.id, userId, walletId, ETransactionTypes.CREDIT, finalAmount, plan.planName, EPayWith.STRIPE);
@@ -86,6 +92,7 @@ export class StripePaymentModel {
 
   public stripeEvent(event: any) {
     // console.log("stripe event",body);
+    
     switch (event.type) {
       case "checkout.session.completed":
         this.sessionSucceed(event);

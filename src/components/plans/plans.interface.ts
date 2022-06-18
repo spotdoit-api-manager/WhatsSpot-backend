@@ -9,6 +9,7 @@ planInfo: string[];
 planMaxMessage: number|null;
 isBest: boolean;
 stripePriceId: string;
+maxDevices: number;
 }
 
 

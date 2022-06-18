@@ -21,9 +21,28 @@ export const allowCors = (router: Router) => {
           return callback(null, true);
       }
       if (configCors.allowOrigin.indexOf(origin) === -1) {
-        const msg = "The CORS policy for this site does not allow access from the specified Origin.";
+        const msg = "The CORS policy for this site does not allow access from the specified Origin to WhatsSpot.";
         return callback(new Error(msg), false);
       }
+      return callback(null, true);
+    },
+    exposedHeaders: configCors.exposedHeaders,
+    // To enable HTTP cookies over CORS
+    // credentials: true,
+  }));
+};
+
+export const allowCorsApi = (router: Router) => {
+
+  router.use(cors({
+    origin(origin, callback) {
+      if(!origin){
+          return callback(null, true);
+      }
+      // if (configCors.allowOrigin.indexOf(origin) === -1) {
+      //   const msg = "The CORS policy for this site does not allow access from the specified Origin to whatsspot api.";
+      //   return callback(new Error(msg), false);
+      // }
       return callback(null, true);
     },
     exposedHeaders: configCors.exposedHeaders,
@@ -40,7 +59,7 @@ export const allowCorsAdmin = (router: Router) => {
           return callback(null, true);
       }
       if (configCors.adminAllowOrigin.indexOf(origin) === -1) {
-        const msg = "The CORS policy for this site does not allow access from the specified Origin.";
+        const msg = "The CORS policy for this site does not allow access from the specified Origin to WhatsSpot Admin.";
         return callback(new Error(msg), false);
       }
       return callback(null, true);
