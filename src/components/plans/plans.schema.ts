@@ -33,8 +33,8 @@ planPeriodUnit:{
     required:true
 },
 planMaxMessage:{
-    type:String,
-    required:false,
+    type:Number,
+    required:true,
     default:0
 },
 planInfo:{
