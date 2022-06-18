@@ -1,3 +1,4 @@
+import { ETransactionStatus } from "./../transaction/transaction.interface";
 import { HTTP401Error } from "../../lib/utils/httpErrors";
 import { ObjectID } from "bson";
 import { NextFunction } from "express";
@@ -7,6 +8,8 @@ import { IWalletModel, Wallet } from "./wallet.schema";
 import transactionModel from "../transaction/transaction.model";
 import { ETransactionTypes } from "../transaction/transaction.interface";
 import logger from "../../core/logger";
+import { EPayWith } from "../../core/enums/pay-with.enum";
+import notifyService from "../../lib/services/notify.service";
 const logFileName = "[WalletModel] : ";
 export class WalletModel {
 
@@ -16,6 +19,10 @@ export class WalletModel {
         const newWalletData = await newWallet.save();
         logger.info(logFileName,`New Wallet Created ${newWalletData._id}`);
         return newWalletData;
+    }
+
+    public async deleteWallet(walletId: string){
+        Wallet.findByIdAndDelete(walletId);
     }
 
   
@@ -36,9 +43,14 @@ export class WalletModel {
         return await Wallet.findByIdAndUpdate(walletId,{balance: balance},{new:true});
     }
 
-    public async fetchTransactions(userId: string, walletId: string) {
-        console.log("fetch wallet transaciton ", userId, walletId);
-        const transactions = await transactionModel.fetchTransactions(walletId);
+    public async addBalanceToWallet(userId: string,walletId: string,amount: number,currency: string="INR"){
+        const newBalance =  await Wallet.findByIdAndUpdate(walletId,{$inc:{balance: Number(amount)}},{new:true});
+        notifyService.walletBalanceAdded(userId,amount,newBalance.balance,currency);
+        return newBalance;
+    }
+
+    public async fetchTransactions(userId: string, walletId: string,page: number=1) {
+        const transactions = await transactionModel.fetchTransactions(walletId,page);
         return transactions;
     }
 
@@ -109,11 +121,12 @@ export class WalletModel {
             }
     
         public async makePaymentFromWallet(walletId: string,userId: string,amount: number,description: string,metaData: Record<string, any>={}){            
-            const transaction = transactionModel.createTransactionForWallet(walletId,userId,ETransactionTypes.DEBIT,amount,description,metaData);
+            const transaction = await transactionModel.createTransactionForWallet(walletId,userId,ETransactionTypes.DEBIT,amount,description,metaData,EPayWith.WALLET);
             const wallet = await this.removeCreditFromWallet(walletId,amount);
+            transactionModel.updateTransactionStatus(transaction._id,ETransactionStatus.SUCCESS);
             return {error:false,transaction,wallet};
         }
-   
+
 
 }
 

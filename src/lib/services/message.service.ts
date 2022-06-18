@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { deSanatizeMobile } from "./../utils/index";
-import { WhatsappConfig } from "./../interfaces/providers.interface";
-import { pilvoConfig, fast2SmsConfig } from "./../../config/index";
+import { deSanatizeMobile } from "../utils/index";
+import { WhatsappConfig } from "../interfaces/providers.interface";
+import { pilvoConfig, fast2SmsConfig } from "../../config/index";
 import axios from "axios";
 import messageModel from "../../components/messages/message.model";
 import { EWhatsappMessageTypes } from "./whatsapp/whatsapp.enum";
-import logger from "../../lib/utils/logger";
+import logger from "../utils/logger";
 // const plivo = require("plivo");
 const logFileName = "[OTPService] : ";
 export class OTPMessagesService {
@@ -29,7 +29,7 @@ export class OTPMessagesService {
       message: message,
       language: "english",
       flash: 0,
-      numbers: deSanatizeMobile(number),
+      numbers: number,
     };
     try {
       const result = await axios.post(fast2SmsConfig.url, body, {
@@ -78,7 +78,7 @@ public  sendWhatsappMessage(to: string,message: string){
   try{
     messageModel.sendTypeMessage(EWhatsappMessageTypes.TEXT_MESSAGE,{text:message},process.env.TEST_MESSAGE_DEVICE_NUMBER,to);
   }catch(e){
-    logger.info(logFileName,`Error sending whatsapp OTP to ${to}`);
+    logger.info(logFileName,`Error sending whatsapp message to ${to}`);
   }
 }
 

@@ -18,15 +18,28 @@ export const mongoUrl = (): string => {
 
 export const configCors = {
   // Allow your domains to restrict ill apis.
-  allowOrigin: [
+  adminAllowOrigin:[
     "http://localhost:3000",
     "http://localhost:52636",
-
+    "http://localhost:60032",
+"http://localhost:56335",
     "http://127.0.0.1:5500",
     "http://localhost:4200",
+ 
+    "https://admin.whatsspot.in",
+  ],
+  allowOrigin: [
+    "http://localhost:56335",
+    "http://localhost:4200",
+    "http://localhost:3000",
+    "http://localhost:52636",
+    "http://127.0.0.1:5500",
+    "https://securegw.paytm.in",
     "https://spotdoit.in",
     "https://dashboard.whatsspot.in",
-    "https://whatsspot.in"
+    "https://whatsspot.in",
+    "http://localhost:60032",
+
 
     //add your origin
   ],
@@ -42,6 +55,8 @@ export const rateLimitConfig = {
 export const commonConfig = {
   jwtSecretKey: process.env.SECRET_KEY || "some-secret-key",
   pageSizeLimit: 15,
+  domain: process.env.NODE_ENV === "production"?"https://dashboard.whatsspot.in":"http://localhost:4200",
+  backendUrl: process.env.NODE_ENV === "production"?"https://backend.whatsspot.in":"http://localhost:4250"
 };
 
 export const deviceKeyConfig = {
@@ -52,6 +67,20 @@ export const deviceKeyConfig = {
 
 export const textLocalConfig = {
   apiKey: process.env.TEXTLOCAL_KEY
+};
+
+export const mailazyConfig = {
+  accessKey: process.env.MAILAZY_KEY,
+  accessSecret:process.env.MAILAZY_SECRET
+};
+
+
+export const stripeConfig = {
+  secretKey: process.env.STRIPE_SECRET_KEY,
+  publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+  webhookSecretKey: process.env.STRIPE_WEBHOOK_SECRET_KEY,
+  API:process.env.STRIPE_API
+
 };
 
 export const s3Config = {

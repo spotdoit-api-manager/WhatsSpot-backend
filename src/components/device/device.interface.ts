@@ -1,20 +1,27 @@
+import { CountryCode } from "libphonenumber-js/max";
 /* eslint-disable @typescript-eslint/interface-name-prefix */
 import { IReason } from "./../../lib/services/whatsapp/whatsapp.interface";
 
 
 export interface INewDevice {
     name: string;
+    country: CountryCode;
     phone: string;
 }
 export interface IDevice {
     name: string;
     phone: string;
+    country: CountryCode;
     authState: boolean;
     reason: IReason;
     userId: string;
+    isDeleted: IDeviceDeleted;
     apiKeys: IApiKey[];
 }
 
+export interface IDeviceDeleted {
+    status: boolean;
+}
 export interface IApiKey {
     token: string;
     expiresOn: Date;

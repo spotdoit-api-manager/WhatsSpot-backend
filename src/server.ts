@@ -1,3 +1,4 @@
+import { startExchangeRateService } from "./lib/services/exchange-rate.service";
 import { config } from "dotenv";
 import { Server } from "socket.io";
 import { createServer } from "http";
@@ -10,7 +11,10 @@ config({ path: "./config.env" });
 import { app } from "./app";
 import whatsappClientService from "./lib/services/whatsapp/whatsapp-client.service";
 import socketManager from "./lib/services/socket";
+import spotSchedular from "./lib/services/schedular";
+import logger from "./lib/utils/logger";
 
+const logFileName = "[Server]: ";
 // Set PORT in .env or use 3000 by default  
 const Port: number = process.env.PORT ? + process.env.PORT : 8000;
 
@@ -19,10 +23,16 @@ const server = createServer(app);
 
 socketManager.socketServer(server);
 
-server.listen(Port, () => {
-    console.log(`Listening to port ${Port}`);
+server.listen(Port, async() => {
+    logger.info(`Listening to port ${Port}`);
+    await startExchangeRateService();
     whatsappClientService.initializeAllClients();
-    // dash.monitor({server: server});
+    if(process.env.NODE_ENV === "production") {
+        spotSchedular.reScheduleAllApiExpiration();
+        spotSchedular.reScheduleAllUserPlanExpiration();
+    }else{
+        logger.warn(logFileName,"Scheduling is disabled in Development mode");
+    }
 });
 
 

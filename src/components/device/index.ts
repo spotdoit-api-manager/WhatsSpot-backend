@@ -108,4 +108,9 @@ export default [
         method: "delete",
         handler: [deviceController.removeDevice]
     },
+    {
+        path: "/device/:deviceId/status",
+        method: "get",
+        handler: [deviceController.getDeviceStatus]
+    },
 ];

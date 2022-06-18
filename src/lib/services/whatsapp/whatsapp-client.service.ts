@@ -24,12 +24,19 @@ export class WhatsappClient {
     clients: IWhatsappClient = clients;
 
 
-    public addClient = (phone: string) => {
-        const clientInstance = new Whatsapp(phone);
+    public addClient = (deviceId: string,phone: string) => {
+        const clientInstance = new Whatsapp(deviceId,phone);
         const instaceId = instanceProvider.getInstanceId(clientInstance); 
+        logger.info(logFileName,`Adding client ${phone}`);
         clients[phone] = instaceId;    
         console.info(logFileName,`Number of instance present = ${Object.keys(this.clients).length}`);
         return clientInstance;
+    }
+
+    public getClientStatus(phone: string){
+        const client = this.getClientInstanceByPhone(phone);
+        if(!client) return {error:false,message:"CLIENT_NOT_AUTHENTICATED"};
+        return client.getDeviceStatus();
     }
 
     public getClientInstanceByPhone(phone: string){
@@ -41,6 +48,7 @@ export class WhatsappClient {
             const instance = instanceProvider.getClassInstance(Whatsapp, instanceId); 
             return instance;
         }catch(e){
+            console.error(e);
             throw new Error("CLIENT_NOT_AUTHENTICATED");
         }
     }
@@ -62,9 +70,9 @@ export class WhatsappClient {
     }
 
   
-    public getClientQr = async (phone: string) => {
+    public getClientQr = async (deviceId: string,phone: string) => {
         this.removeClientInstanceByPhone(phone);
-        const client = this.addClient(phone);
+        const client = this.addClient(deviceId,phone);
         client.on("qr", (qrData) => {
             console.debug(logFileName,"got qr ", qrData.qr);
             socketManager.sendQrCode(phone, qrData);
@@ -105,11 +113,17 @@ export class WhatsappClient {
 
     public sendTextMessage = async (from: string, to: string, message: IWhatsappTextMessage) => {
         try {
-            logger.info(logFileName,`Sending Text Message to ${to}`);
+            logger.info(logFileName,`Sending Text Message to ${to} | from: ${from}`);
             const clientInstance = this.getClientInstanceByPhone(from);
-            if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-            if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-            const data = await clientInstance.sendTextMessage(sanatizeMobile(to), message);
+            if (!clientInstance){
+                logger.error(logFileName,`Client not found ${from}`);
+                return { error: true, message: "CLIENT_NOT_FOUND" };
+            };
+            if (!clientInstance.authState) {
+                logger.error(logFileName,`Client not authenticated ${from}`);
+                return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+            };
+            const data = await clientInstance.sendAnyMessage(sanatizeMobile(to), message);
             return data;
         } catch (e) {
             return { error: true, message: e.message };
@@ -122,7 +136,7 @@ export class WhatsappClient {
             const clientInstance = this.getClientInstanceByPhone(from);
             if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-            const data = await clientInstance.sendListMessage(sanatizeMobile(to), message);
+            const data = await clientInstance.sendAnyMessage(sanatizeMobile(to), message);
             return data;
         } catch (e) {
             return { error: true, message: e.message };
@@ -135,7 +149,7 @@ export class WhatsappClient {
             const clientInstance = this.getClientInstanceByPhone(from);
             if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-            const data = await clientInstance.sendButtonMessage(sanatizeMobile(to), message);
+            const data = await clientInstance.sendAnyMessage(sanatizeMobile(to), message);
             return data;
         } catch (e) {
             return { error: true, message: e.message };
@@ -148,7 +162,7 @@ export class WhatsappClient {
             const clientInstance = this.getClientInstanceByPhone(from);
             if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-            const data = await clientInstance.sendTemplateMessage(sanatizeMobile(to), message);
+            const data = await clientInstance.sendAnyMessage(sanatizeMobile(to), message);
             return data;
         } catch (e) {
             return { error: true, message: e.message };
@@ -161,7 +175,7 @@ export class WhatsappClient {
             const clientInstance = this.getClientInstanceByPhone(phone);
             if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-            const data = await clientInstance.sendRawMessage(sanatizeMobile(to), message);
+            const data = await clientInstance.sendAnyMessage(sanatizeMobile(to), message);
             return data;
         } catch (e) {
             return { error: true, message: e.message };
@@ -175,7 +189,7 @@ export class WhatsappClient {
             if (!client) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
             if (!client.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
 
-            const data = await client.sendImageMessage(to, msg);
+            const data = await client.sendAnyMessage(to, msg);
             console.log("image sent data is ", data);
 
             return data;
@@ -195,7 +209,7 @@ export class WhatsappClient {
         for (let i = 0; i < devices.length; i++) {
             const device = devices[i];
             console.debug(logFileName,`client${i}:${device.phone}`);
-            const client =  this.addClient(device.phone);
+            const client =  this.addClient(device._id,device.phone);
             await client.initiClient();
         }
         

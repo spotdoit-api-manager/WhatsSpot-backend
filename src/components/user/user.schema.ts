@@ -23,20 +23,40 @@ const planRef: Schema = new Schema({
 },{timestamps:true});
 
 
+const NotificationChannels = new Schema({
+  email:{
+    type:Boolean,
+    default:false
+  },
+  whatsapp:{
+   type:Boolean,
+   default:true
+  },
+   sms:{
+     type:Boolean,
+     default:true
+   }
+},{timestamps: false,_id:false});
+
+const UserSettingsSchema = new Schema({
+  notifications:{
+    device:{
+      type:NotificationChannels,
+      required:true
+    },
+    plan:{
+      type:NotificationChannels,
+      required:true
+    },
+  }
+},{timestamps:false,_id:false});
+
 export const UserSchema: Schema = new Schema(
   {
-    firstName: {
+   
+    userName: {
       type: String,
-      minlength: 2,
-    },
-    lastName: {
-      type: String,
-      minlength: 2,
-    },
-    username: {
-      type: String,
-      unique: true,
-      sparse:true
+      required: true
     },
     password: {
       type: String,
@@ -46,12 +66,13 @@ export const UserSchema: Schema = new Schema(
     },
     email : {
       type:String,
-      unique:false,
+      unique:true,
       required:true
     },
-    activePlan:planRef,
+    activePlans:[planRef],
     previousPlans:[planRef],
     walletId:{
+      required:true,
       type:SchemaTypes.ObjectId,
       ref:"wallet",
       immutable: true 
@@ -60,11 +81,10 @@ export const UserSchema: Schema = new Schema(
     role: {
       type: String,
       enum: ["user", "admin"],
-      required: true
+      required: true,
+      description:"user"
     },
-    facebookId: {
-      type:String
-    },
+    
     phone: {
       type: String,
       minlength: 3,
@@ -76,6 +96,7 @@ export const UserSchema: Schema = new Schema(
       enum: ["male", "female", "other"],
     },
     otp: Number,
+    emailOtp:Number,
     deviceCodes:{
       type:SchemaTypes.Mixed,
       required:false,
@@ -95,6 +116,33 @@ export const UserSchema: Schema = new Schema(
     },
     avatar:{
       type:String
+    },
+    country:{
+      type:String,
+      required:true
+    },
+    emailVerified:{
+      type:Boolean,
+      required:true,
+      default:false
+    },
+    settings:{
+      type:UserSettingsSchema,
+      required:true,
+      default:{
+        notifications:{
+          device:{
+            email:false,
+            whatsapp:true,
+            sms:true
+          },
+          plan:{
+            email:false,
+            whatsapp:true,
+            sms:true,
+          }
+        }
+      },
     }
   },
   {

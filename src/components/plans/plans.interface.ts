@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/interface-name-prefix */
 export interface IPLAN{
     planId: string;
 planName: string;
@@ -7,14 +8,18 @@ planPeriodUnit: string;
 planInfo: string[];
 planMaxMessage: number|null;
 isBest: boolean;
+stripePriceId: string;
 }
 
-export enum EPLANS{
-PAYG="PAYG",
-MONTHLY="MONTHLY",
-MEMBERSHIP="MEMBERSHIP"
-}
 
+export enum EPLANS {
+    PAYG = "PAYG",
+    MONTHLY = "MONTHLY", //1month
+    SUBSCRIPTION = "SUBSCRIPTION", //3month
+    PREMIUM = "PREMIUM", //6 month
+    MEMBERSHIP = "MEMBERSHIP" // 6 month unlimited
+  }
+  
 
 export interface IUserPlan{
     planName: string;
@@ -29,5 +34,6 @@ export interface IUserPlan{
 
 export enum EPlanStatus{
     ACTIVE="ACTIVE",
-    EXPIRED="EXPIRED"
+    EXPIRED="EXPIRED",
+    EXHAUSTED="EXHAUSTED",
 }
