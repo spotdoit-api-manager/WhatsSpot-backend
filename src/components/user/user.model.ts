@@ -1,23 +1,24 @@
-import { sanatizeMobile } from "./../../lib/utils/index";
-import { IWallet } from "../wallet/wallet.interface";
+import {  parsePhoneWithCountry } from "./../../lib/utils/phone.handler";
+import { validateEmail } from "./../../lib/utils/index";
 import { IWalletModel } from "../wallet/wallet.schema";
 import { EMessageStatus } from "./../messages/message.interface";
-import { generateToken, imageUrl, isValidMongoId, otpGenerator } from "../../lib/helpers";
-import { User, UserSchema } from "./user.schema";
-import { IUser, ITokenData, IDataStoredInToken, IPlanRef } from "./user.interface";
+import {  otpGenerator } from "../../lib/helpers";
+import { User } from "./user.schema";
+import { IUser, ITokenData, IDataStoredInToken, IPlanRef, IUserNotificationSettings, IUserProfile } from "./user.interface";
 import { IUserModel } from "./user.schema";
 import socialAuth from "./../../lib/middleware/socialAuth";
 import * as  bcrypt from "bcryptjs";
-import axios from "axios";
 import { sendMessage } from "../../lib/services/otp-handler";
 import jwt from "jsonwebtoken";
 import { ObjectID } from "bson";
 import { commonConfig } from "../../config";
 import { HTTP400Error, HTTP401Error } from "../../lib/utils/httpErrors";
-import walletModel, { WalletModel } from "../wallet/wallet.model";
-import plansModel from "../plans/plans.model";
+import walletModel from "../wallet/wallet.model";
 import logger from "../../core/logger";
-import { EPlanStatus } from "../plans/plans.interface";
+import { EPLANS, EPlanStatus } from "../plans/plans.interface";
+import { CountryCode } from "libphonenumber-js";
+import notifyService from "../../lib/services/notify.service";
+import * as emailService from "../../lib/services/email.service";
 
 const logFileName = "[UserModal] : ";
 export class UserModel {
@@ -67,61 +68,117 @@ export class UserModel {
 
     return data;
   }
-  public async fetchUserActivePlan(userId: string) {
+
+  public async fetchUserDetailedActivePlan(userId: string){
     const userPlan = await User.aggregate([
-      { $match: { _id: new ObjectID(userId) } },
+      {$match:{_id:new ObjectID(userId)}},
+      {
+        $project:{
+          activePlan: { $arrayElemAt: [ "$activePlans", 0 ] } 
+        }
+      },
       {
         $lookup: {
           from: "userplans",
           localField: "activePlan.planRef",
           foreignField: "_id",
-          as: "activePlan"
-        },
-
+          as: "activePlanInfo"
       },
+     
+      },
+     
       {
-        $unwind: {
-          path: "$activePlan"
+        $project:{
+          activePlanInfo: { $arrayElemAt: [ "$activePlanInfo", 0 ] } 
         }
       },
       {
         $lookup: {
           from: "plans",
-          localField: "activePlan.planId",
+          localField: "activePlanInfo.planId",
           foreignField: "planId",
           as: "planInfo"
-        },
       },
+      },
+     {
+       $project:{
+        planInfo: { $arrayElemAt: [ "$planInfo", 0 ] } ,
+        activePlanInfo: 1
+       }
+     },
+     
+    
+    ]);  
+    if(userPlan[0] && userPlan[0].activePlanInfo){
+      return userPlan[0];
+    }
+     throw new HTTP401Error("NO_ACTIVE_PLAN","You don't have any active plan to show");
+  }
+  public async fetchUserActivePlan(userId: string) {
+    const userPlan = await User.aggregate([
+      { $match: { _id: new ObjectID(userId) } },
+      {$project:{
+        _id:1,
+        activePlans:1
+      }},
       {
         $unwind: {
-          path: "$planInfo"
+          path: "$activePlans"
         }
       },
+
       {
-        $project: {
-          _id: 0,
-          userId: "$_id",
-          activePlanInfo: "$activePlan",
-          planInfo: 1
-        }
-      }
+        $lookup: {
+          from: "userplans",
+          let: { planRef: "$activePlans.planRef" },
+          pipeline: [
+            {
+              $match: {
+                planStatus:{$in:[ EPlanStatus.ACTIVE,EPlanStatus.EXHAUSTED]},
+                $expr: {
+                  $eq: ["$_id", "$$planRef"],
+                }
+              }
+            }
+          ],
+          as: "activePlan"
+        },
+
+      },
+      
     ]);
-    return userPlan[0]?.activePlan || null;
+    return userPlan[0]?.activePlan[0] || null;
   }
+  
 
   public async addPlanToUser(userId: string, activePlanName: string, activePlanId: string) {
     const planRef: IPlanRef = { planName: activePlanName, planRef: activePlanId };
-    const result = await User.findByIdAndUpdate(userId, { activePlan: planRef });
+    const result = await User.findByIdAndUpdate(userId, { $push:{activePlans: planRef} });
+    notifyService.planActivated(userId, activePlanId);
   }
 
 
 
 
-  public async expireUserPlan(userId: string) {
-    const result = await User.findByIdAndUpdate(userId, { $unset: { activePlan: 1 } });
+  public async removeUserActivePlan(userId: string,planRef: string) {
+    logger.info(logFileName, `removeUserActivePlan : ${userId} PlanRef: ${planRef}`);
+    const userData = await User.findByIdAndUpdate(userId, { $pull: { activePlans: {planRef:new ObjectID(planRef)} } },{new:false}).lean();
+    const activePlan = userData.activePlans.find(plan => plan.planRef.toString() === planRef);
+    await User.findByIdAndUpdate(userId, { $push: {previousPlans:activePlan } });
   }
 
-
+  public async checkIfUserCanActivatePlan(userId: string, planId: string) {
+    if(planId==EPLANS.PAYG){
+      return true;
+    }
+    const userActivePlan = await this.fetchUserActivePlan(userId);
+    if(userActivePlan && userActivePlan.planStatus === EPlanStatus.ACTIVE){
+        throw new HTTP400Error("ALREADY_HAS_ACTIVE_PLAN","User already has an active plan");
+    }else if(userActivePlan && userActivePlan.planStatus === EPlanStatus.EXHAUSTED){
+        await this.removeUserActivePlan(userId,userActivePlan._id);
+    }   
+  }
+ 
 
   public async delete(id: string) {
     await User.deleteOne({ _id: id });
@@ -137,14 +194,16 @@ export class UserModel {
     return { _id: data._id };
   }
 
-  async createNewUser(body: IUser) {
+  async createNewUser(phone: string,email: string,userName: string,country: CountryCode) {
+    let walletId=null;
     try {
-      body.role = "user";
+      const body: IUser = {phone,email,userName,country,emailVerified:false,isVerified:false,deactivation:false,role:"user",};
       const existingUser = await this.isUserExistByPhone(body.phone);
       let data: IUserModel;
       if (!existingUser) {
         const wallet: IWalletModel = await walletModel.createWallet(parseInt(process.env.INITIAL_WALLET_BALANCE));
         body.walletId = wallet._id;
+        walletId = wallet._id;
         const newUser: IUserModel = new User(body);
         data = await newUser.addNewUser();
         if (!data) throw new HTTP400Error("SOME_ERROR_OCCURED");
@@ -153,20 +212,35 @@ export class UserModel {
       }
       return existingUser;
     } catch (err) {
+      walletModel.deleteWallet(walletId);
       throw new HTTP400Error(err.message);
     }
   }
 
-  async registerWithPhone(body: IUser) {
+  async registerWithPhone(phone: string,email: string,userName: string,country: CountryCode) {
     try {
-      const userExist = await this.findUserByPhone(body.phone);;
-      if (userExist) throw new HTTP401Error("USER_ALREADY_EXIST");
-      const user: IUserModel = await this.createNewUser(body);
-      const otp = this.updateOtp(user._id);
-      const otpData = await this.sendOtpToMobile(otp, body.phone);
-      if (otpData.proceed) {
-        return { phone: body.phone, _id: user.id };
+      if(!phone || !email || !userName || !country) throw new HTTP400Error("Fields missing or empty { phone,email,userName,country} are required fields");
+      if(!validateEmail(email)) throw new HTTP400Error("INVALID_EMAIL","Please enter valid email id");
+      const phoneInfo = parsePhoneWithCountry(phone,country);
+      logger.info("Phone Info is ",phoneInfo);
+      const userExist = await this.findUserByPhone(phoneInfo.number);;
+      if (userExist && userExist.isVerified) throw new HTTP401Error("USER_ALREADY_EXIST");
+
+      if(userExist && !userExist.isVerified){
+        const otp = this.updateOtp(userExist._id);
+        const otpData = await this.sendOtpToMobile(otp, phoneInfo.number);
+        if (otpData.proceed) {
+          return { phone:phoneInfo.number, _id: userExist.id };
+        }
+      }else{
+        const user: IUserModel = await this.createNewUser(phoneInfo.number,email,userName,country);
+        const otp = this.updateOtp(user._id);
+        const otpData = await this.sendOtpToMobile(otp, phone);
+        if (otpData.proceed) {
+          return { phone:phoneInfo.number, _id: user.id };
+        }
       }
+     
       throw new HTTP400Error("OTP_NOT_SENT");
     } catch (e) {
       logger.error(logFileName, e);
@@ -177,18 +251,20 @@ export class UserModel {
     }
   }
 
-  public async loginWithPhone(body: IUser) {
-    const user: IUserModel = await this.findUserByPhone(body.phone);
+  public async loginWithPhone(phone: string,country: CountryCode) {
+    const parsedPhone = parsePhoneWithCountry(phone,country).number;
+    const user: IUserModel = await this.findUserByPhone(parsedPhone);
     if (!user) throw new HTTP401Error("USER_NOT_FOUND");
     const otp = this.updateOtp(user._id);
-    const otpData = await this.sendOtpToMobile(otp, body.phone);
+    const otpData = await this.sendOtpToMobile(otp, parsedPhone);
     if (otpData.proceed) {
-      return { phone: body.phone, _id: user.id };
+      return { phone: parsedPhone, _id: user.id };
     }
   }
 
   public async resendOTP(id: string, body: any) {
-    const user: IUserModel = await User.findOne({ _id: new ObjectID(id), phone: sanatizeMobile(body.phoneNumber) });
+    const parsedPhone = parsePhoneWithCountry(body.phoneNumber,body.country);
+    const user: IUserModel = await User.findOne({ _id: new ObjectID(id), phone: parsedPhone });
     if (!user) throw new HTTP401Error("USER_NOT_FOUND");
     const otp = this.updateOtp(user._id);
     const otpData = await this.sendOtpToMobile(otp, body.phone);
@@ -219,17 +295,17 @@ export class UserModel {
 
   public async isUserExist(body: any) {
     try {
-      const { username, password } = body;
+      const { userName, password } = body;
 
       // 1>  check email and password exist
-      if (!username || !password) {
-        throw new HTTP400Error("Please provide username or password");
+      if (!userName || !password) {
+        throw new HTTP400Error("Please provide userName or password");
       }
       // 2> check if user exist and password is correct
-      const user = await User.findOne({ username: username }).select("+password");
+      const user = await User.findOne({ userName: userName }).select("+password");
 
       if (user) {
-        throw new HTTP400Error("Invalid username or password");
+        throw new HTTP400Error("Invalid userName or password");
       }
     } catch (e) {
       throw new HTTP400Error(e.message);
@@ -238,14 +314,14 @@ export class UserModel {
 
   public async login(body: any) {
     try {
-      const { username, password } = body;
+      const { userName, password } = body;
 
       // 1>  check email and password exist
-      if (!username || !password) {
-        throw new HTTP400Error("Please provide username or password");
+      if (!userName || !password) {
+        throw new HTTP400Error("Please provide userName or password");
       }
       // 2> check if user exist and password is correct
-      const user = await User.findOne({ username: username }).select("+password");
+      const user = await User.findOne({ userName: userName }).select("+password");
 
       if (!user || !(await user.correctPassword(password, user.password))) {
         throw new HTTP400Error("Invalid email or password");
@@ -305,12 +381,12 @@ export class UserModel {
 
       if (!response.isExisted) {
         let u;
-        const userName = await this.generateValidUsername(user.given_name);
+        const userName = await this.generateValiduserName(user.given_name);
         if (body.authProvider === "facebook") {
           u = {
             role: "user",
             firstName: `${user.given_name}`,
-            username: userName,
+            userName: userName,
             lastName: `${user.family_name}`,
             phone: body.phone,
             facebookId: user.id
@@ -320,7 +396,7 @@ export class UserModel {
           u = {
             role: "user",
             firstName: `${user.given_name}`,
-            username: userName,
+            userName: userName,
             lastName: `${user.family_name}`,
             phone: body.phone,
             email: user.email,
@@ -339,53 +415,7 @@ export class UserModel {
     }
   }
 
-  public async addFollower(id: string, userId: string) {
 
-    const data = User.findOneAndUpdate({ id: userId }, {
-      $push: { "followers": id }
-    });
-
-    return data;
-  };
-
-
-
-
-
-  public async addFollowing(id: string, userId: string) {
-    const data = User.findOneAndUpdate({ _id: userId }, {
-      $push: { "following": id }
-    });
-
-    return data;
-  };
-
-
-  public async addFollowRequest(id: string, userId: string) {
-    const data = User.findOneAndUpdate({ id: userId }, {
-      $push: { "followRequest": id }
-    });
-
-    return data;
-  };
-
-  public async acceptFollowRequest(id: string, userId: string) {
-    const data = await User.findOneAndUpdate({ id: userId }, {
-      $pull: { "followRequest": id }
-    });
-
-    if (data) {
-      await User.findOneAndUpdate({ id: userId }, {
-        $push: { "followRequest": id }
-      });
-
-      await User.findOneAndUpdate({ id }, {
-        $push: { "following": userId }
-      });
-    }
-
-    return data;
-  };
 
   updateOtp(id: string): number {
     const otp = otpGenerator();
@@ -414,23 +444,6 @@ export class UserModel {
 
 
 
-
-  // private async generateValidUsername(firstName: string, id: string | null = null) {
-  //   let s = this.randomString(6);
-  //   let userName = `${firstName}_${s}`
-  //   if (id == null) {
-  //     while ((await User.findOne({ "userName": userName }).count()) > 0) {
-  //       s = this.randomString(6);
-  //       userName = `${firstName}_${s}`
-  //     }
-  //   } else {
-  //     while ((await User.findOne({ _id: { $ne: id }, "userName": userName }).count()) > 0) {
-  //       s = this.randomString(6);
-  //       userName = `${firstName}_${s}`
-  //     }
-  //   }
-  //   return userName;
-  // }
 
   public signToken = (dataToStore: IDataStoredInToken) => {
     return jwt.sign(dataToStore, commonConfig.jwtSecretKey, {
@@ -485,7 +498,7 @@ export class UserModel {
   public createCookie(tokenData: ITokenData): string {
     return `Authorization=${tokenData.token}; HttpOnly; Max-Age=${tokenData.expiresIn};`;
   }
-  private async generateValidUsername(firstName: string, id: string | null = null) {
+  private async generateValiduserName(firstName: string, id: string | null = null) {
     let s = this.randomString(6);
     let userName = `${firstName}_${s}`;
     if (id == null) {
@@ -555,12 +568,12 @@ export class UserModel {
           }
         } else { // If we are adding a completely new user
           let u;
-          const userName = await this.generateValidUsername(user.given_name);
+          const userName = await this.generateValiduserName(user.given_name);
           if (body.authProvider === "facebook") {
             u = {
               role: "user",
               firstName: `${user.given_name}`,
-              username: userName,
+              userName: userName,
               lastName: `${user.family_name}`,
               phone: body.phone,
               facebookId: user.id
@@ -570,7 +583,7 @@ export class UserModel {
             u = {
               role: "user",
               firstName: `${user.given_name}`,
-              username: userName,
+              userName: userName,
               lastName: `${user.family_name}`,
               phone: body.phone,
               email: user.email,
@@ -800,8 +813,6 @@ export class UserModel {
         }
       }
     ]);
-
-    console.log("metrics result ", result);
     return result[0] || null;
   }
 
@@ -950,18 +961,7 @@ export class UserModel {
      
       { $match: { _id: new ObjectID(userId) } },
       { $set: { _id: { $toObjectId: "$_id" } } },
-      {
-        $project: {
-          _id: 1,
-            phone:1,
-            email:1,
-            createdAt:1,
-            isVerified:1,
-            deactivation:1,
-            walletId:1,
-        }
-    
-      },
+     
       {
         $lookup: {
           from: "devices",
@@ -974,6 +974,12 @@ export class UserModel {
                   $eq: ["$userId", "$$userId"],
                 }
               }
+            },
+            {
+              $project: {
+                apiKeys:0,
+                
+              }
             }
           ],
           as: "devices"
@@ -981,201 +987,113 @@ export class UserModel {
 
       },
       {
-        $unwind: {
-          path: "$devices"
-        }
-      },
-      {
-        $project: {
-          deviceId: "$devices._id",
-          authState: "$devices.authState"
-        }
-      },
-      {
         $lookup: {
-          from: "fastmessages",
-          localField: "deviceId",
-          foreignField: "deviceId",
-          as: "fastMessages"
-        },
-      },
-      {
-        $lookup: {
-          from: "messagequeues",
-          localField: "deviceId",
-          foreignField: "deviceId",
-          as: "queueMessages"
+          from: "userplans",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$userId", "$$userId"],
+                }
+              }
+            }
+          ],
+          as: "plans"
         },
 
       },
-      // {
-      //   $project: {
+      {
+        $lookup: {
+          from: "wallets",
+          let: { userId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: ["$userId", "$$userId"],
+                }
+              },
+              
+            },
+            {
+              $project:{
+                _id:0,
+                walletId:"$_id",
+                balance:1,
+                createdAt:1,
+                updatedAt:1,
+              }
+            }
+          ],
+          as: "wallet"
+        },
 
-      //     deviceId: "$deviceId",
-      
-  
-      //     // authState: "$authState",
-      //     metrics: {
-      //       fastError: {
-             
-      //           $filter: {
-      //             input: "$fastMessages",
-      //             as: "fastMessage",
-      //             cond: { "$eq": ["$$fastMessage.status", EMessageStatus.ERROR] }
-      //           }
-              
-      //       },
-      //       fastSuccess: {
-      //           $filter: {
-      //             input: "$fastMessages",
-      //             as: "fastMessage",
-      //             cond: { "$eq": ["$$fastMessage.status", EMessageStatus.SENT] }
-      //           }
-              
-      //       },
-      //       queueSuccess: {
-
-      //           $filter: {
-      //             input: "$queueMessages",
-      //             as: "queueMessage",
-      //             cond: { "$eq": ["$$queueMessage.status", EMessageStatus.SENT] }
-      //           }
-              
-      //       },
-      //       totalQueueError: {
-      //           $filter: {
-      //             input: "$queueMessages",
-      //             as: "queueMessage",
-      //             cond: { "$eq": ["$$queueMessage.status", EMessageStatus.ERROR] }
-      //           }
-              
-      //       },
-      //       totalQueuePending: {
-      //           $filter: {
-      //             input: "$queueMessages",
-      //             as: "queueMessage",
-      //             cond: { "$eq": ["$$queueMessage.status", EMessageStatus.PENDING] }
-                
-      //         }
-      //       }
-      //     }
-      //   }
-      // },
+      },
+      {
+        $project:{
+          _id:0,
+          userInfo:{
+            userId:"$_id",
+            isVerified:"$isVerified",
+            deactivation:"$deactivation",
+            phone:"$phone",
+            email:"$email",
+            waletId:"$walletId",
+            previousPlans:"$previousPlans",
+            createdAt:"$createdAt",
+            updatedAt:"$updatedAt",
+          },
+          walletInfo: { $arrayElemAt: [ "$wallet", 0 ] },
+          devices:1,
+          plans:1
+        }
+      }
      
-      // {
-      //   $group: {
-      //     _id: "$deviceId",
-       
-      //     // totalDevices: { $sum: 1 },
-      //     metrics:{
-      //       $push: "$metrics"
-      //     },
-      //     // activeDevices: {
-      //     //   "$sum": {
-      //     //     "$cond": [
-      //     //       { "$eq": ["$authState", true] },
-      //     //       1,
-      //     //       0
-      //     //     ]
-      //     //   }
-      //     // },
-      //     // totalFastSuccess: { $sum: "$metrics.totalFastSuccess" },
-      //     // totalFastError: { $sum: "$metrics.totalFastError" },
-      //     // totalQueueSuccess: { $sum: "$metrics.totalQueueSuccess" },
-      //     // totalQueueError: { $sum: "$metrics.totalQueueError" }
-
-      //   }
-      // },
-
-      // {
-      //   $project: {
-      //     _id: 0,
-      //     userId: "$_id",
-      //     phone:1,
-      //     email:1,
-      //     isVerified:1,
-      //     deactivation:1,
-      //     walletId:1,
-
-      //     metrics: 1
-      //   }
-      // },
-
-
-
-      // {
-      //   $lookup: {
-      //     from: "devices",
-      //     let: { userId: "$_id" },
-      //     pipeline: [
-      //       {
-      //         $match: {
-      //           "isDeleted.status": true,
-      //           $expr: {
-      //             $eq: ["$userId", "$$userId"],
-      //           }
-      //         }
-      //       }
-      //     ],
-      //     as: "deletedDevices"
-      //   },
-      // },
-      // {
-      //   $lookup: {
-      //     from: "devices",
-      //     let: { userId: "$_id" },
-      //     pipeline: [
-      //       {
-      //         $match: {
-      //           authState: true,
-      //           $expr: {
-      //             $eq: ["$userId", "$$userId"],
-      //           }
-      //         }
-      //       }
-      //     ],
-      //     as: "activeDevices"
-      //   },
-      // },
-      // {
-      //   $lookup: {
-      //     from: "devices",
-      //     let: { userId: "$userId" },
-      //     pipeline: [
-      //       {
-      //         $match: {
-      //           authState: false,
-      //           $expr: {
-      //             $eq: ["$userId", "$$userId"],
-      //           }
-      //         }
-      //       }
-      //     ],
-      //     as: "inactiveDevices"
-      //   },
-      // },
-      
-      // { $addFields: {totalDevices: { $size: "$totalDevices", }  },},
-      // { $addFields: {deletedDevices: { $size: "$deletedDevices", }  }},
-      // { $addFields: {activeDevices: { $size: "$activeDevices", }  }},
-      // { $addFields: {inactiveDevices: { $size: "$inactiveDevices", }  }},
-      // {
-      //   $project:{
-      //     phone:1,
-      //     email:1,
-      //     allDevices:1,
-      //     deletedDevices:1,
-      //     activeDevices:1,
-      //     inactiveDevices:1,
-      //     createdAt:1,
-      //     isVerified:1,
-      //     deactivation:1,
-      //     walletId:1,
-      //     metrics:1
-      //   }
-      // }
     ]);
   }
+
+public async updateNotificationSettings(userId: string, notificationSetting: IUserNotificationSettings) {
+    const newSettings = { 
+      device:{
+        ...notificationSetting.device,
+      },
+      plan:{
+        ...notificationSetting.plan,
+      }
+    };
+  return await User.findOneAndUpdate({_id:new ObjectID(userId)},{$set:{"settings.notifications":newSettings}},{new:true}).select("settings.notifications").lean();
+}
+
+public async updateProfile(userId: string,profileBody: IUserProfile){
+  if(!profileBody.country || !profileBody.userName) throw new HTTP400Error("Invalid request","country and userName are required");
+  return await User.findByIdAndUpdate(userId,{country:profileBody.country,userName:profileBody.userName},{new:true}).lean();
+}
+
+public async sendEmailVerification(userId: string){
+    const user: IUserModel = await this.findUserById(userId);
+    if(user.emailVerified) throw new HTTP401Error("EMAIL_ALREADY_VERIFIED","Your email id is already verifeid");
+    if(!user) throw new HTTP400Error("USER_NOT_FOUND","User not found");
+    const email = user.email;
+    if(!email) throw new HTTP400Error("USER_EMAIL_FOUND","User do not have email");
+    const otp = otpGenerator();
+    logger.info(logFileName,`Sending Email OTP ${otp} to ${email}`);
+    await User.findByIdAndUpdate(userId,{$set:{emailOtp:otp}});
+    const res = await emailService.sendVerificationMail(email,"Email Verification",`Dear ${user.userName}, Your OTP for email verification is <b><h2>${otp}</h2></h2></b>`,`Dear ${user.userName}, Your OTP for email verification is <b><h2>${otp}</h2></h2></b>`);
+    if(!res) throw new HTTP400Error("EMAIL_SEND_FAILED","Email send failed");
+}
+
+public async verifyEmaliOtp(userId: string,otp: string){
+  const user: IUserModel = await this.findUserById(userId);
+  if(!user) throw new HTTP400Error("USER_NOT_FOUND","User not found");
+  if(user.emailVerified) throw new HTTP400Error("EMAIL_ALREADY_VERIFIED","Your email id is already verifeid");
+  if(!user.emailOtp) throw new HTTP400Error("EMAIL_OTP_NOT_FOUND","Email OTP not found");
+  if(user.emailOtp !== parseInt(otp)) throw new HTTP400Error("INVALID_OTP","The entered OTP is invalid");
+  return await User.findByIdAndUpdate(userId,{$set:{emailVerified:true}}).lean();
+}
+
+
+
 }
 
 export default new UserModel();

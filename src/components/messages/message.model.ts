@@ -1,3 +1,4 @@
+import { EPlanStatus } from "./../plans/plans.interface";
 
 import { EWhatsappMessageTypes } from "./../../lib/services/whatsapp/whatsapp.enum";
 import { ObjectID } from "bson";
@@ -17,6 +18,7 @@ import { IPLAN, IUserPlan } from "../plans/plans.interface";
 import { IPlanModel, IUserPlanModel } from "../plans/plans.schema";
 import { IContact, IGroupList } from "../contact/contact.interface";
 import logger from "../../core/logger";
+import { parsePhone } from "../../lib/utils/phone.handler";
 
 const logFileName = "[MessageModel] : ";
 export class MessageModel {
@@ -38,7 +40,7 @@ export class MessageModel {
     }
 
 
-    public async addMessageToQueue(userId: string, body: { groups: IGroupList[]; numbers: string | IContact[]; message: IWhatsappMessage; isGroup: boolean;messageType: EWhatsappMessageTypes }, deviceId: string) {
+    public async addMessageToQueue(userId: string, body: { groups: IGroupList[]; numbers: string | string[]; message: IWhatsappMessage; isGroup: boolean;messageType: EWhatsappMessageTypes }, deviceId: string) {
         logger.debug(logFileName,"add to queue request", body, deviceId);
         const device = await deviceModel.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
@@ -56,14 +58,14 @@ export class MessageModel {
         if (typeof (body.numbers) === "string") {
             numbers.push(body.numbers);
         } else {
-            body.numbers.forEach((contact: IContact) => {
-                numbers.push(contact.phoneNumber);
+            body.numbers.forEach((phone: any) => {
+               const parsedPhone = parsePhone(phone);
+                numbers.push(parsedPhone.number);
             });
         }
 
         for (let i = 0; i < numbers.length; i++) {
-            const to = sanatizeMobile(numbers[i]);
-            if (!validateMobile(to)) throw new HTTP400Error(`${numbers[i]} is not valid Number at index ${i}`);
+            const to = numbers[i];
             const newBody: IMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.QUEUE, to,messageType:body.messageType, message: body.message, status: EMessageStatus.PENDING };
             messagesBody.push(newBody);
         }
@@ -107,12 +109,10 @@ export class MessageModel {
     }
 
     private async hasActivePlan(userId: string) {
-        const userCurrentPlan: { activePlanInfo: IUserPlanModel; planInfo: IPlanModel } = await userModel.fetchUserActivePlan(userId);
-        if (userCurrentPlan && userCurrentPlan.activePlanInfo) {
-            const isMessageOver = !Boolean(userCurrentPlan.planInfo.planMaxMessage - userCurrentPlan.activePlanInfo.sentMessageCount);
-            console.log(`isMessageOver is ${isMessageOver}`);
-
-            return { hasActivePlan: true, isMessageOver, activePlanInfo: userCurrentPlan.activePlanInfo, planInfo: userCurrentPlan.planInfo };
+        const userCurrentPlan: IUserPlanModel|null = await userModel.fetchUserActivePlan(userId);
+        if (userCurrentPlan) {
+            const isMessageOver = userCurrentPlan.planStatus==EPlanStatus.EXHAUSTED;
+            return { hasActivePlan: true, isMessageOver:isMessageOver, activePlanInfo: userCurrentPlan};
         }
         return { hasActivePlan: false };
     }
@@ -121,53 +121,52 @@ export class MessageModel {
 
     // }
 
-    public async sendFastMessage(userId: string, numbers: string|string[], message: IWhatsappTextMessage,messageType: EWhatsappMessageTypes,deviceId: string, walletId: string) {
+    public async sendFastMessage(userId: string, numbers: string, message: IWhatsappTextMessage,messageType: EWhatsappMessageTypes,deviceId: string, walletId: string) {
+        if(typeof numbers !== "string") throw new HTTP401Error("FAST_LIMIT","fast messages can be only send to 1 contacts per request");
+
         const device = await deviceModel.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const results=[];
         if(typeof numbers == "string"){
-            const result = await this.sendMessage(userId, numbers as string, message,messageType, deviceId, walletId);
-            const newBody: IMessage = { phone: device.phone, userId, to:numbers, reason: result?.message, sendType: ESendType.FAST,messageType:EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT };
+            const parsedNumber = parsePhone(numbers).number;
+            const result = await this.sendMessage(userId, parsedNumber as string, message,messageType, deviceId, walletId);
+            const newBody: IMessage = { phone: device.phone, userId, to:parsedNumber, reason: result?.message, sendType: ESendType.FAST,messageType:EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT };
             const saveResult = await this.saveFastMessage(newBody);
             results.push({...result,messageInfo:saveResult.data});
-        }else if(typeof numbers == "object"){
-            numbers.forEach((number: string,index: number)=>{
-                const to = sanatizeMobile(number);
-                if (!validateMobile(to)) throw new HTTP401Error(`Invalid number ${number} at ${index}`);
-            });
-            for(let i=0;i<numbers.length;i++){
-                const to = sanatizeMobile(numbers[i]);
-                const result = await this.sendMessage(userId, to, message,messageType, deviceId, walletId);
-                results.push({...result,messageInfo:{phone:device.phone,message,to:numbers,messageType:EWhatsappMessageTypes.TEXT_MESSAGE,userId,deviceId}});
-                const newBody: IMessage = { phone: device.phone, userId, to, reason: result?.message, sendType: ESendType.FAST,messageType:EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT };
-            const saveResult = await this.saveFastMessage(newBody);
-            results.push({...result,messageInfo:saveResult.data});
-            }
+        }
+        // else if(typeof numbers == "object"){
+        //     numbers.forEach((number: string,index: number)=>{
+        //         const to = parsePhone(number).number;
+        //     });
+        //     for(let i=0;i<numbers.length;i++){
+        //         const to = parsePhone(numbers[i]).number;
+        //         const result = await this.sendMessage(userId, to, message,messageType, deviceId, walletId);
+        //         results.push({...result,messageInfo:{phone:device.phone,message,to:numbers,messageType:EWhatsappMessageTypes.TEXT_MESSAGE,userId,deviceId}});
+        //         const newBody: IMessage = { phone: device.phone, userId, to, reason: result?.message, sendType: ESendType.FAST,messageType:EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT };
+        //     const saveResult = await this.saveFastMessage(newBody);
+        //     results.push({...result,messageInfo:saveResult.data});
+        //     }
 
-        }else{
+        // }
+        else{
             throw new HTTP400Error("INVALID_NUMBER_TYPE");
         }
-        logger.info(logFileName,results);
         return results;
     }
-    public async sendMessage(userId: string, to: string, message: IWhatsappTextMessage,messageType: EWhatsappMessageTypes, deviceId: string, walletId: string) {
+    public async sendMessage(userId: string, to: string, message: IWhatsappTextMessage,messageType: EWhatsappMessageTypes, deviceId: string, walletId: string,transactionId: string=null) {
         try {
-            to = sanatizeMobile(to);
-            if (!validateMobile(to)) throw new HTTP401Error("INVALID_NUMBER");
             const device = await deviceModel.findDeviceById(userId,deviceId);
             if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-            const { hasActivePlan, isMessageOver, activePlanInfo, planInfo } = await this.hasActivePlan(userId);
+            const { hasActivePlan, isMessageOver, activePlanInfo } = await this.hasActivePlan(userId);
             if (isMessageOver) throw new HTTP400Error("MESSAGES_EXHAUSTED", "message exhausted for your active plan");
-            logger.info(logFileName, `User ${userId} hasPlanActive: ${hasActivePlan}`);
             if (!hasActivePlan) {
                 const { isValidAmount, balance } = await walletModel.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
-                // logger.debug(logFileName, `validAMount ${isValidAmount}`);
                 if (!isValidAmount) throw new Error("NOT_ENOUGH_BALANCE");
             }
             const result = await this.sendTypeMessage(messageType,message,device.phone,to);
             if(result.error) throw Error(result.message);
             if (hasActivePlan) {
-                await plansModel.increamentMessageCount(activePlanInfo._id);
+                 plansModel.increamentMessageCount(activePlanInfo._id);
                 return { error: false, creditUsed: 0, message: result.message };
             } else {
                 const paymentMetaData = { deviceId: deviceId, to: to };
@@ -186,7 +185,7 @@ export class MessageModel {
     public async sendImageMessage(userId: string, deviceId: string,body: any,) {
         const device = await deviceModel.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-        const to = body.to;
+        const to = parsePhone(body.to).number;
         const msg: IImageMessage = { image: body.locationUrl, caption: body.caption || "" };
         const result = await whatsappClientService.sendImageMessage(device.phone, to, msg);
         // console.log(result);
@@ -201,7 +200,6 @@ export class MessageModel {
     }
 
     public async sendTypeMessage(messageType: EWhatsappMessageTypes,message: IWhatsappMessage,from: string,to: string){
-        console.log("sending type message ",messageType);
         
         switch(messageType){
             case EWhatsappMessageTypes.TEXT_MESSAGE:

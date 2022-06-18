@@ -6,14 +6,20 @@ import Messages from "../components/messages";
 import Plans from "../components/plans";
 import contact  from "../components/contact";
 import Admin from "../components/admin";
+import Stripe from "../components/stripe";
+import paypal from "../components/paypal";
+import qrPay from "../components/qrpay";
 
 export default [
     ...user,
     ...contact,
     ...Device,
-    ...Messages,
+    // ...Messages,
     ...Wallet,
     ...Razorpay,
     ...Plans,
-    ...Admin
+    ...Admin,
+    ...Stripe,
+    ...paypal,
+    ...qrPay
 ];

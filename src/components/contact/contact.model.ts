@@ -1,26 +1,34 @@
+import { parsePhoneWithCountry } from "./../../lib/utils/phone.handler";
 import { MessageQueue } from "./../messages/message.schema";
 import { ObjectID } from "bson";
 import { IContact, IContactsGroup } from "./contact.interface";
 import { IContactModel,Contact, ContactGroup, IContactGroupModel } from "./contact.schema";
 import logger from "../../core/logger";
+import { parsePhone } from "../../lib/utils/phone.handler";
 const logFileName = "[ContactsModel]";
 export class ContactModal{
 
         public async addNewContacts(userId: string,contacts: IContact[]){        
-            console.log("New Contact ",contacts);
             
             const newContacts: IContactModel[]= this.createNewContact(contacts,userId);
-            console.log("new contacts ",newContacts);            
                     const result = await Contact.insertMany(newContacts,{ordered:false});
                     return result;
    
         }
 
-        private createNewContact(contacts: IContact[],userId: string){
+        private createNewContact(contacts: IContact[],userId: string|null=null){
             const newContacts: IContactModel[]=[];
             for (let i = 0; i < contacts.length; i++) {
                 const contact: any = contacts[i];
-                contact.userId = userId;
+                if(contact.country && contact.country.length>0){
+                contact.phoneNumber = parsePhoneWithCountry(contact.phoneNumber,contact.country).number;
+                }else{
+                    contact.phoneNumber = parsePhone(contacts[i].phoneNumber).number;
+                }
+                if(userId){
+                    contact.userId = userId;
+                }
+
                 newContacts.push(contact);
             }
             return newContacts;
@@ -60,14 +68,9 @@ export class ContactModal{
         }
 
         public async addContactsToGroup(userId: string,groupId: string,contacts: IContact[]){
-            console.log("add contact ",contacts);
-            for (let i = 0; i < contacts.length; i++) {
-                const contact = contacts[i];
-                const result = await ContactGroup.findByIdAndUpdate(groupId,{$push:{contacts:{name:contact.name,phoneNumber:contact.phoneNumber}}},{ upsert: true, new : true},
-                    );
-            }
-                
-            return [];
+            const newContacts = this.createNewContact(contacts);
+            const result = await ContactGroup.findByIdAndUpdate(groupId,{$addToSet:{contacts:{$each:newContacts}}},{ upsert: false, new : true}).lean();
+            return result;
         }
 
         public async fetchGroups(userId: string){
@@ -116,14 +119,7 @@ export class ContactModal{
         }
 
         public async deleteContacts(userId: string,contactsId: string[]){
-            const finalResult =[];
-            // await Contact.deleteMany({_id:{$in:contactsId}});
-            for (let i = 0; i < contactsId.length; i++) {
-                const cId = contactsId[i];
-                const result = await Contact.findByIdAndDelete(cId);
-                finalResult.push(result);
-            }
-            return finalResult;
+            return await Contact.deleteMany({_id:{$in:contactsId}});
         }
 
         public async deleteGroupContacts(userId: string,groupId: string,contactsId: string[]){
@@ -136,11 +132,7 @@ export class ContactModal{
             return finalResult;
         }
 
-       
-
-        public addGroupContacts(userId: string,groupId: string,contacts: IContact[]){
-                logger.info("add group contacts ",contacts);
-        }
+      
 }
 
 export default new ContactModal();

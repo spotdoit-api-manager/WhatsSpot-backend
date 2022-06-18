@@ -22,7 +22,7 @@ class UserController {
   public registerWithPhone = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-      responseHandler.reqRes(req, res).onFetch("OTP_SENT", await userModel.registerWithPhone(req.body)).send();
+      responseHandler.reqRes(req, res).onFetch("OTP_SENT", await userModel.registerWithPhone(req.body.phone,req.body.email,req.body.userName,req.body.country)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -32,7 +32,7 @@ class UserController {
   public loginWithPhone = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-      responseHandler.reqRes(req, res).onFetch("OTP_SENT", await userModel.loginWithPhone(req.body)).send();
+      responseHandler.reqRes(req, res).onFetch("OTP_SENT", await userModel.loginWithPhone(req.body.phone,req.body.country)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -162,7 +162,7 @@ class UserController {
   public verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-      const data = await userModel.verifyOtp(req.params.id, req.query.otp);
+      const data = await userModel.verifyOtp(req.params.id, req.body.otp);
       res.setHeader("Set-Cookie", data.cookie);
 
       // res.set('X-Auth', data.token);
@@ -184,7 +184,7 @@ class UserController {
 
       responseHandler.reqRes(req, res).onFetch("User Data", user).send();
     } catch (e) {
-      responseHandler.sendError(e);
+      next(responseHandler.sendError(e));
     }
   };
 
@@ -193,38 +193,12 @@ class UserController {
     try {
       // console.log("getting user active plan");
       
-      const activePlan = await userModel.fetchUserActivePlan(req.userId);
+      const activePlan = await userModel.fetchUserDetailedActivePlan(req.userId);
 
       responseHandler.reqRes(req, res).onFetch("ACTIVE_PLAN", activePlan).send();
     } catch (e) {
-      console.log(e);
-      
-      responseHandler.sendError(e);
-    }
-  };
-
-
-  public addFollower = async (req: Request, res: Response, next: NextFunction) => {
-    const responseHandler = new ResponseHandler();
-    try {
-      const data = await userModel.addFollower(req.params.id, req.body.user.id);
-
-      responseHandler.reqRes(req, res).onCreate(msg.UPDATED, data).send();
-    } catch (e) {
-      responseHandler.sendError(e);
-    }
-  };
-
-  public addFollowing = async (req: Request, res: Response, next: NextFunction) => {
-    const responseHandler = new ResponseHandler();
-    try {
-      req.body.userId = req.userId;
-      console.log(req.userId);
-      const data = await userModel.addFollowing(req.params.id, req.body.userId);
-
-      responseHandler.reqRes(req, res).onCreate(msg.UPDATED, data).send();
-    } catch (e) {
-      responseHandler.sendError(e);
+      console.log("error is ",e);
+      next(responseHandler.sendError(e));
     }
   };
 
@@ -240,26 +214,27 @@ class UserController {
     }
   };
 
-  // private createSendToken = async (req: Request, res: Response, next: NextFunction, user: any) => {
-  //   const responseHandler = new ResponseHandler();
-  //   let ikcbalance = await userModel.fetchWalletBalance(user._id);
-  //   const token = this.signToken(user._id);
-  //   // console.log(ikcbalance);
-  //   // user.ikcbalance = ikcbalance;
-  //   console.log(user);
-  //   const data = {
-  //     token,
-  //     user,
-  //     ikcbalance
-  //   };
-  //   responseHandler.reqRes(req, res).onCreate(msg.CREATED, data).send();
-  // };
+  public updateNotificationSettings = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
 
-  // private signToken = (id: string) => {
-  //   return jwt.sign({ id }, commonConfig.jwtSecretKey, {
-  //     expiresIn: process.env.JWT_EXPIRES_IN,
-  //   });
-  // };
+    try {
+
+      responseHandler.reqRes(req, res).onCreate("Phone Number Added", await userModel.updateNotificationSettings(req.userId,req.body)).send();
+    } catch (e) {
+      next(responseHandler.sendError(e));
+    }
+  };
+
+  public updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+
+    try {
+
+      responseHandler.reqRes(req, res).onCreate("PROFILE_UPDATED", await userModel.updateProfile(req.userId,req.body)).send();
+    } catch (e) {
+      next(responseHandler.sendError(e));
+    }
+  };
 
   public logIn = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
@@ -271,32 +246,8 @@ class UserController {
     }
   };
 
-  public addFolowRequest = async (req: Request, res: Response, next: NextFunction) => {
-    const responseHandler = new ResponseHandler();
-    try {
+ 
 
-      if (req.userId) {
-        const data = await userModel.addFollowRequest(req.params.id, req.userId);
-
-        responseHandler.reqRes(req, res).onCreate(msg.UPDATED, data).send();
-      }
-    } catch (e) {
-      responseHandler.sendError(e);
-    }
-  };
-
-  public acceptFollowRequest = async (req: Request, res: Response, next: NextFunction) => {
-    const responseHandler = new ResponseHandler();
-    try {
-      if (req.userId) {
-        const data = await userModel.acceptFollowRequest(req.params.id, req.userId);
-
-        responseHandler.reqRes(req, res).onCreate(msg.UPDATED, data).send();
-      }
-    } catch (e) {
-      responseHandler.sendError(e);
-    }
-  };
 
   public isVerified = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
@@ -335,6 +286,27 @@ class UserController {
     }
   }
 
+  public sendEmailVerification = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      const data = await userModel.sendEmailVerification(req.userId);
+
+      responseHandler.reqRes(req, res).onCreate("EMAIL_OTP_SENT", data).send();
+    } catch (e) {
+      next(responseHandler.sendError(e));
+    }
+  }
+
+  public verifyEmaliOtp = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      const data = await userModel.verifyEmaliOtp(req.userId,req.body.otp);
+
+      responseHandler.reqRes(req, res).onCreate("EMAIL_VERIFIED", data).send();
+    } catch (e) {
+      next(responseHandler.sendError(e));
+    }
+  }
   public verifyUser = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {

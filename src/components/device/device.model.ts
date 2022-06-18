@@ -1,12 +1,11 @@
+import { mongoDBProjectFields } from "./../../lib/utils/index";
 import logger from "../../core/logger";
 import { EDeviceStatus, IDeviceTokenData, INewDevice } from "../device/device.interface";
-import { MessageQueue } from "./../messages/message.schema";
 import { deviceKeyConfig } from "./../../config/index";
-import { IImageMessage } from "./../../lib/services/whatsapp/whatsapp.interface";
-import { EMessageStatus, ESendType, IMessage } from "./../messages/message.interface";
+import { EMessageStatus, } from "./../messages/message.interface";
 import { HTTP400Error, HTTP401Error } from "./../../lib/utils/httpErrors";
-import { EApiKeyStatus, IApiKey, IDevice, TextMessage } from "./device.interface";
-import { Device, IApiKeyModal, IDeviceModel } from "./device.shema";
+import { EApiKeyStatus, IApiKey, IDevice } from "./device.interface";
+import { Device, IApiKeyModal, IDeviceModel } from "./device.schema";
 import whatsappClientService from "../../lib/services/whatsapp/whatsapp-client.service";
 import fileManagement from "../../lib/helpers/file.management";
 import messageModel from "../messages/message.model";
@@ -15,20 +14,23 @@ import { ObjectID } from "bson";
 import jwt from "jsonwebtoken";
 import dayjs from "dayjs";
 
-import { sanatizeMobile, validateMobile } from "../../lib/utils";
 import * as otpHandler from "../../lib/services/otp-handler";
 import userModel from "../user/user.model";
 import apiBlockListModel from "../api-blocklist/api-blocklist.model";
 import spotSchedular from "../../lib/services/schedular";
+import { parsePhoneWithCountry } from "../../lib/utils/phone.handler";
+import { deviceProjection } from "../../lib/values/projection.values";
 
 const logFileName = "[DeviceModal] : ";
 export class DeviceModel {
     public async newDevice(userId: string, walletId: string, body: IDevice, newDeviceCode: string) {
         body.userId = userId;
-        const device = await this.findDeviceByPhone(body.phone);
+        const parsedPhone = parsePhoneWithCountry(body.phone,body.country).number;
+        const device = await this.findDeviceByPhone(parsedPhone);
         this.validateDeviceAdd(userId, device);
-        await userModel.validateDeviceCode(userId, body.phone, parseInt(newDeviceCode));
-        logger.info(logFileName, `Device ${body.phone} verified`);
+        await userModel.validateDeviceCode(userId, parsedPhone, parseInt(newDeviceCode));
+        logger.info(logFileName, `Device ${parsedPhone} verified`);
+        body.phone =parsedPhone;
         const newDevice = new Device(body);
         const newDeviceData: IDeviceModel = await newDevice.saveDevice();
         if (!newDeviceData) throw new HTTP400Error("UNKNOWN_ERROR");
@@ -40,10 +42,11 @@ export class DeviceModel {
 
 
     public async newDeviceCode(userId: string, walletId: string, newDeviceBody: INewDevice) {
-        const device = await this.findDeviceByPhone(newDeviceBody.phone);
+        const parsedPhone = parsePhoneWithCountry(newDeviceBody.phone, newDeviceBody.country).number;
+        const device = await this.findDeviceByPhone(parsedPhone);
         this.validateDeviceAdd(userId, device);
-        const code = await userModel.updateDeviceCode(userId, newDeviceBody.phone);
-        const result = await otpHandler.sendNewDeviceCode(newDeviceBody.phone, code);
+        const code = await userModel.updateDeviceCode(userId, parsedPhone);
+        const result = await otpHandler.sendNewDeviceCode(parsedPhone, code);
         return result;
     }
 
@@ -61,7 +64,7 @@ export class DeviceModel {
         // if (!device.authState && device.reason && device.reason.statusCode === DisconnectReason.loggedOut) {
         //     return { message: "DEVICE_LOGGED_OUT" };
         // }
-        const data = whatsappClientService.getClientQr(device.phone);
+        const data = whatsappClientService.getClientQr(deviceId,device.phone);
         return { message: "QR_REQUESTED" };
     };
 
@@ -162,12 +165,13 @@ export class DeviceModel {
 
 
     public async deleteAuth(userId: string, deviceId: string) {
+        console.log("params ",userId,deviceId);
         const device = await this.findDeviceById(userId, deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
         const res: any = await fileManagement.deleteFile(authFilePath);
         if (res.error) throw new HTTP401Error(res.message);
-        await this.updateDevice(device.phone, { reason: null });
+        await this.updateDevice(device._id, { reason: null });
         return { message: "DEVICE_LOGGEDOUT" };
     };
 
@@ -179,15 +183,7 @@ export class DeviceModel {
         await fileManagement.deleteFile(authFilePath);
         const data = await whatsappClientService.logoutClient(device.phone);
         if (data.error) throw new HTTP400Error(data.message);
-        // const updateDeviceData ={
-        //     authState: false,
-        //     reason: {
-        //       statusCode: 401,
-        //       error: 'Unauthorized',
-        //       message: 'Connection Failure'
-        //     }
-        //   }
-        // await this.updateDevice(device.phone,updateDeviceData);
+
         return { message: "DEVICE_LOGGED_OUT", device: device };
     }
 
@@ -223,7 +219,10 @@ export class DeviceModel {
         try {
             const result = await Device.findOneAndUpdate({ _id: new ObjectID(deviceId) }, { $pull: { apiKeys: { _id: new ObjectID(keyId) } } }, { upsert: false, new: false }).lean();
             const apiData = result.apiKeys.find((x: IApiKeyModal) => x._id.toString() === keyId);
-            await apiBlockListModel.addApiToBlockList(deviceId, apiData);
+            if(apiData.status !==EApiKeyStatus.EXPIRED){
+                await apiBlockListModel.addApiToBlockList(deviceId, apiData);
+            }
+
         } catch (err) {
             throw new HTTP400Error(err.message);
         }
@@ -251,17 +250,7 @@ export class DeviceModel {
         return token;
     }
 
-    public async expireApiKey(deviceId: string, apiKey: IApiKeyModal) {
-        logger.info(logFileName, `Expiring api key ${apiKey._id}`);
-        const result = await Device.findOneAndUpdate({
-            _id: new ObjectID(deviceId),
-            "apiKeys._id": new ObjectID(apiKey._id),
-        },
-            { $set: { "apiKeys.$.status.status": EApiKeyStatus.EXPIRED } },
-            {
-                new: true
-            }).lean();
-    }
+ 
 
     public signDeviceToken = (apiKeyData: IDeviceTokenData, expiresIn: string) => {
         if (!expiresIn) {
@@ -284,11 +273,10 @@ export class DeviceModel {
         ]);
         return result[0].count;
     }
-    public async updateDevice(phone: string, clientData: any) {
-        if (!phone) return { error: true, message: "phone not provided in client update" };
+    public async updateDevice(deviceId: string, clientData: any) {
         const options = { upsert: true, new: true, setDefaultsOnInsert: true };
-        const client = await Device.findOneAndUpdate({ phone: phone }, { ...clientData }, options);
-        if (!client) return { error: true, message: "some error occured" };
+        const client = await Device.findByIdAndUpdate(deviceId, { ...clientData }, options);
+        if (!client) return { error: true, message: "some error occurred" };
         return { error: false };
     }
 
@@ -335,11 +323,7 @@ export class DeviceModel {
             let result = await Device.aggregate([
                 { $match: condition },
                 { $set: { _id: { $toObjectId: "$_id" } } },
-                {
-                    $project: {
-                        _id: 1
-                    }
-                },
+               
                 {
                     $lookup: {
                         from: "fastmessages",
@@ -360,6 +344,7 @@ export class DeviceModel {
                 },
                 {
                     $project: {
+                        _id:0,
                         messageMetrics: {
                             totalFastError: {
                                 $size: {
@@ -406,6 +391,22 @@ export class DeviceModel {
                                     }
                                 }
                             }
+                        },
+                        messages:{
+                            fastMessages:"$fastMessages",
+                            queueMessages:"$queueMessages",
+                        },
+
+                        deviceInfo:{
+                            deviceId:"$_id",
+                            isDeleted:"$isDeleted",
+                            phone:"$phone",
+                            name:"$name",
+                            userId:"$userId",
+                            createdAt:"$createdAt",
+                            updatedAt:"$updatedAt",
+                            authState:"$authState",
+                            reason:"$reason"
                         }
                     }
                 },
@@ -446,6 +447,19 @@ export class DeviceModel {
     public async removeDevice(userId: string, deviceId: string) {
         await this.logoutDevice(userId, deviceId);
         const result = await Device.findByIdAndUpdate(deviceId, { isDeleted: { status: true, deletedAt: new Date() } });
+    }
+
+    public async getDeviceStatus(userId: string,deviceId: string){
+        const device = await Device.findOne({userId:userId,_id:deviceId,isDeleted:{status:false}});
+        if(!device)throw new HTTP400Error("DEVICE_NOT_FOUND");
+
+        return whatsappClientService.getClientStatus(device.phone);
+    }
+
+ 
+
+    public fetchDevicesList(){
+        return Device.find({}).select(deviceProjection).lean();
     }
 }
 

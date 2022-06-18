@@ -70,22 +70,29 @@ export const getPaginationInfo = (pageNo: number=1)=>{
 
 
 export  const validateMobile=(phone: string="")=>{
-    // const regmm='^([0|+[0-9]{1,5})?([7-9][0-9]{9})$';
-    // const regmob = new RegExp(regmm);
-    if(phone.length==12){
-        return true;
-    }
-        return false;    
+   return true; 
 };
 
 export const sanatizeMobile=(phone: string)=>{
-  phone.replace("+","");
-  if(phone.length==10) return `91${phone}`;
-  return phone;
+  return phone.replace("+","");
 };
 
 export const deSanatizeMobile=(phone: string)=>{
-  phone.replace("+","");
-  if(phone.length==12) return phone.slice(2);
-  return phone;
+ 
+  return `+${sanatizeMobile(phone)}`;
+};
+
+export const validateEmail = (email: string = "")=> {
+  if (!email.length) return false;
+  return String(email)
+    .toLowerCase()
+    .match(
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    );
+};
+
+export const getSkipLimit = (pageNo: number=1)=>{
+  const limit = 10;
+  const skip = (pageNo-1)*limit;
+  return {skip,limit};
 };

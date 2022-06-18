@@ -232,9 +232,21 @@ export class DeviceController {
       responseHandler.reqRes(req, res).onFetch("DEVICE_RREMOVED", await deviceModel.removeDevice(req.userId,req.params.deviceId)).send();
     } catch (e) {
       // send error with next function.
+      console.log(e);
       next(responseHandler.sendError(e));
     }
   };
+
+  public getDeviceStatus = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      responseHandler.reqRes(req, res).onFetch("DEVICE_STATUS", await deviceModel.getDeviceStatus(req.userId,req.params.deviceId)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
 }
 
 

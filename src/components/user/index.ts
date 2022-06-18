@@ -52,106 +52,37 @@ export default [
     escapeAuth:false,
     handler: [userController.getActivePlan]
 },
-  // // {
-  // //   path: "/logout",
-  // //   method: "post",
-  // //   escapeAuth: true,
-  // //   handler: [userController.logIn]
-  // // },
-  // {
-  //   path: "/signup",
-  //   method: "post",
-  //   escapeAuth:true,
-  //   handler:[userController.signUp]
-  // },
-  // {
-  //   path: "/follower/:id",
-  //   method: "post",
-  //   handler:[userController.addFollower]
-  // },
-  // {
-  //   path: "/following/:id",
-  //   method: "post",
-  //   handler:[userController.addFollowing]
-  // },
-  // {
-  //   path: "/followrequest/:id",
-  //   method: "post",
-  //   handler:[userController.addFolowRequest]
-  // },
-  // {
-  //   path: "/auth",
-  //   method: "post",
-  //   escapeAuth:true,
-  //   handler:[userController.loginViaSocialAccessToken]
-  // },
-  // {
-  //   path: "/user/:id",
-  //   method: "get",
-  //   handler: [userController.fetch]
-  // },
-  // {
-  //   path: "/user/:id",
-  //   method: "patch",
-  //   handler: [userController.update]
-  // },
-  // // {
-  // //   path: "/user/verifyUser",
-  // //   escapeAuth: true,
-  // //   method: "post",
-  // //   handler:[userController.verifyUser]
-  // // },
-  // {
-  //   path: "/user/addPhoneNumber",
-  //   method: "post",
-  //   handler:[userController.addPhoneNumber]
-  // },
+ 
   {
     path: "/user/:id/verifyOtp",
-    method: "get",
+    method: "post",
     escapeAuth: true,
     handler: [userController.verifyOtp]
   },
-  // {
-  //   path: "/user/generateOTP",
-  //   escapeAuth:true,
-  //   method: "post",
-  //   handler:[userController.generateOTP]
-  // },
-  // {
-  //   path: "/user/login/socialAuth/addphone",
-  //   method: "get",
-  //   escapeAuth: true,
-  //   handler: [userController.socialAuthAddPhone]
-  // },
-//   {
-//     path: "/user/:id/photos",
-//     method: "get",
-//     handler: [userController.photos]
-//   }, {
-//     path: "/user/:id/liked",
-//     method: "get",
-//     handler: [userController.likes]
-//   }, {
-//     path: "/user/:id/follower",
-//     method: "get",
-//     handler: [userController.followers]
-//   },
-//   {
-//     path: "/user/:id/following",
-//     method: "get",
-//     handler: [userController.followings]
-//   },
-//   {
-//     path: "/user/is-available/userName",
-//     method: "get",
-//     escapeAuth: true,
-//     handler: [userController.isUsernameExist]
-//   },
-//   {
-//     path: "/user/search/on",
-//     method: "get",
-//     handler: [userController.searchByName]
-//   }
+  {
+    path: "/user/settings/notifications",
+    method: "post",
+    escapeAuth: false,
+    handler: [userController.updateNotificationSettings]
+  },
+  {
+    path: "/user/settings/profile",
+    method: "post",
+    escapeAuth: false,
+    handler: [userController.updateProfile]
+  },
+  {
+    path: "/user/email/otp",
+    method: "post",
+    escapeAuth: false,
+    handler: [userController.sendEmailVerification]
+  },
+  {
+    path: "/user/email/verify",
+    method: "post",
+    escapeAuth: false,
+    handler: [userController.verifyEmaliOtp]
+  },
+  
 ];
 
