@@ -7,19 +7,27 @@ import makeWASocket, {
   DisconnectReason,
   AnyMessageContent,
   delay,
+
+  WABrowserDescription,
   useSingleFileAuthState,
   AuthenticationState,
   SocketConfig,
+  CommonSocketConfig,
 } from "@adiwajshing/baileys";
 
 import deviceModel from "./../../../components/device/device.model";
 import path from "path";
 import instanceProvider from "./instance.provider";
 import logger from "../../../core/logger";
+import notifyService from "../notify.service";
+import fileManagement from "../../../lib/helpers/file.management";
+import { EWhatsappMessageTypes } from "./whatsapp.enum";
+
 const logFileName = "[WhatsappService] : ";
 export default class Whatsapp extends EventEmitter {
   client: any;
   phone: string;
+  deviceId: string;
   state: AuthenticationState;
   saveState: any;
   public authState = false;
@@ -27,26 +35,30 @@ export default class Whatsapp extends EventEmitter {
   qrRequested = false;
   public _instanceId: number;
   private retryCount =0;
-  constructor(phone: string) {
+  private removed =false;
+
+  constructor(deviceId: string,phone: string) {
     super();
     this._instanceId = instanceProvider.addInstance(this);
     this.state = useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
     this.saveState = useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
     this.phone = phone;
+    this.deviceId = deviceId;
   }
   // start a connection
   public initiClient = async () => {
     // if(!this.qrRequested) return;
     try {
       const sock = makeWASocket({
-        logger: P({ level: "info" }),
+        logger: P({ level: "info" }), //silent
         printQRInTerminal: false,
         auth: this.state,
+        browser:["Mac OS", "Chrome", "10.15.3"]
         // version: [2,2204,13],
       });
       this.client = sock;
       this.startBasicEventListners();
-      // await this.client.waitForSocketOpen();
+      await this.client.waitForSocketOpen();
       return { error: false };
     } catch (err) {
       return { error: true, message: err.message };
@@ -101,6 +113,10 @@ export default class Whatsapp extends EventEmitter {
         else{
           const reason: IReason = this.getDisconnectReason(lastDisconnect);
           logger.debug(logFileName,"connection update (not open| not close)", update, reason);
+          if(update.qr){
+            this.updateDeviceStatus(false,reason);
+          }
+
           this.qrInProcess = true;
         }
       } catch (err) {
@@ -111,27 +127,17 @@ export default class Whatsapp extends EventEmitter {
     // message upsert
     this.client.ev.on("messages.upsert", async (m: any) => {
       try {
-        // logger.log(JSON.stringify(m, undefined, 2))
         const msg = m.messages[0];
-
         if (!msg.key.fromMe) {
-          logger.debug(logFileName,`received msg :${msg.message?.conversation}`);
-          logger.debug(logFileName,`From: ${msg.key.remoteJid}`);
+          logger.info(logFileName,`received msg :${msg.message?.conversation}`);
+          logger.info(logFileName,`From: ${msg.key.remoteJid}`);
         } else {
-          logger.log(logFileName,`sent msg :${JSON.stringify(msg.message)}`);
-          logger.log(logFileName,`to: ${msg.key.remoteJid}`);
+          logger.info(logFileName,`sent msg :${JSON.stringify(msg.message)}`);
+          logger.info(logFileName,`to: ${msg.key.remoteJid}`);
         }
-        if (!msg.key.fromMe && m.type === "notify") {
-          // logger.log("replying to", m.messages[0].key.remoteJid);
-          // await this.client!.sendReadReceipt(
-          //   msg.key.remoteJid,
-          //   msg.key.participant,
-          //   [msg.key.id]
-          // );
-          // await this.sendMessageWTyping(this.phone, { text: 'Hello there!' }, msg.key.remoteJid)
-        }
+       
       } catch (err) {
-        logger.error(logFileName,err);
+        logger.error(logFileName,`Error in message upsert for client ${this.phone}`,err);
       }
     });
   }
@@ -150,9 +156,11 @@ export default class Whatsapp extends EventEmitter {
     if(this.isMaxRetryReached()){
       this.retryCount = 0;
       logger.warn(logFileName,`[${this.phone}] Max Connection Retry Reached....`);
+      notifyService.deviceMaxRetryReached(this.deviceId);
       // this.destroyClient();
       return;
     }
+
     this.client.ev.removeAllListeners();
     await this.initiClient();
   }
@@ -168,15 +176,40 @@ export default class Whatsapp extends EventEmitter {
   private destroyClient(){
     return;
   }
+
+  public async getDeviceStatus(){
+    try{ 
+       await this.client.sendPresenceUpdate("available", getSerializedPhone("919099858434"));
+       return {status:true};
+    }catch(e){
+      console.log(e.message);
+      await deviceModel.updateDevice(this.deviceId, {
+        authState: false, reason:"unknown"
+      });
+      return {status:false};
+    }
+
+  }
   private async handleConnectionOpen(){
      logger.info(logFileName,"CONNECTION_OPENED");
     this.qrRequested = true;
     this.qrInProcess = false;
-    await deviceModel.updateDevice(this.phone, {
+    this.emit("authenticated", { phone: this.phone });
+     deviceModel.updateDevice(this.deviceId, {
       authState: true, reason: null
     });
-    this.emit("authenticated", { phone: this.phone });
-    return this.authState = true;
+
+    notifyService.deviceAuthorized(this.deviceId);
+     this.authState = true;
+  }
+
+  private async deleteAuthFile(){
+    try{
+      const authFilePath = `${process.env.SESSIONS_FOLDER}/${this.phone}_cred.json`;
+      await fileManagement.deleteFile(authFilePath);
+    }catch(e){
+      logger.error(`Error in deleting auth file for ${this.phone}: `,e);
+    }
   }
 
   private async handleConnectionClose(lastDisconnect){
@@ -187,158 +220,60 @@ export default class Whatsapp extends EventEmitter {
     }
     else {
       const reason = this.getDisconnectReason(lastDisconnect);
-      await deviceModel.updateDevice(this.phone, {
+      this.deleteAuthFile();
+      await deviceModel.updateDevice(this.deviceId, {
         authState: false, reason
       });
+      notifyService.deviceConnectionClosed(this.deviceId,reason);
+
       this.qrInProcess = false;
       this.qrRequested = false;
       logger.warn(logFileName,"CONNECTION_CLOSED (LOGGEDOUT)", reason, this.phone);
       this.emit("LOGGEDOUT", { phone: this.phone, reason: reason?.message });
     }
   }
-  private sendMessageWTyping = async (
-    phone: string,
-    msg: AnyMessageContent,
-    jid: string
-  ) => {
-    await this.client.presenceSubscribe(jid);
-    await delay(500);
 
-    await this.client.sendPresenceUpdate("composing", jid);
-    await delay(2000);
+  private async updateDeviceStatus(authState: boolean,reason: IReason){
+    if(!this.removed){
 
-    await this.client.sendPresenceUpdate("paused", jid);
-
-    await this.client.sendMessage(jid, msg);
-  };
-
-  public sendTextMessage = async (
+      return await deviceModel.updateDevice(this.deviceId, {
+        authState, reason
+      });
+    }else{
+     logger.info(logFileName,"tried to update Device Status but device is removed",authState,reason);
+    }
+  }
+  
+  public sendAnyMessage = async (
     to: string,
     msg: IWhatsappTextMessage,
   ) => {
     try {
       const jid = getSerializedPhone(to);
-      logger.info(logFileName,`Sending Text Message to ${jid} ${JSON.stringify(msg)}`);
       await this.client.presenceSubscribe(jid);
       await delay(500);
       const result = await this.client.sendMessage(jid, {
         ...msg, detectLinks: true,
       });
-      logger.debug(result);
+      logger.debug(logFileName,`Sent  Result client ${this.phone} :`,result);
 
       if (result.status != 1) {
         return { error: true };
       }
       return { error: false };
     } catch (e) {
-      logger.log(e);
-      return { error: true, message: e.message };
-    }
-  };
-
-  public sendListMessage = async (
-    to: string,
-    msg: IWhatsappListMessage,
-  ) => {
-    try {
-      const jid = getSerializedPhone(to);
-      logger.info(logFileName,`Sending List Message to ${jid} ${JSON.stringify(msg)}`);
-
-      await this.client.presenceSubscribe(jid);
-      await delay(500);
-      const result = await this.client.sendMessage(jid, {
-        ...msg, detectLinks: true,
-      });
-      logger.debug(result);
-
-      if (result.status != 1) {
-        return { error: true };
-      }
-      return { error: false };
-    } catch (e) {
-      logger.log(e);
-      return { error: true, message: e.message };
-    }
-  };
-  public sendMediaMessage = async (
-    to: string,
-    msg: IImageMessage,
-  ) => {
-    try {
-      const jid = getSerializedPhone(to);
-      await this.client.presenceSubscribe(jid);
-      await delay(500);
-      logger.log("serialized phone ", jid);
-      logger.log("message is ",msg as any);
-      const msgBody = {
-        image: msg.image,
-        caption: msg.caption
-      };
-      const result = await this.client.sendMessage(jid, msgBody);
-      if (result.status != 1) {
-        return { error: true };
-      }
-      return { error: false };
-    } catch (e) {
-      logger.log(e);
+      logger.error(logFileName,`Sent Error client ${this.phone} :`,e);
 
       return { error: true, message: e.message };
     }
   };
 
-  public sendRawMessage = async(to: string,msg: any)=>{
-    try{
-      const jid = getSerializedPhone(to);
-      logger.debug(logFileName,`Sending Raw Message to ${jid}`);
-      await this.client.presenceSubscribe(jid);
-      await delay(500);
-      const result = await this.client.sendMessage(jid, msg);
-      if (result.status != 1) {
-        return { error: true };
-      }
-      return { error: false };
-    }catch(e){
-
-    }
-  }
-
-  public sendButtonMessage = async(to: string,btnMsg: IButtonMessage)=>{
-    try{
-      const jid = getSerializedPhone(to);
-      logger.debug(logFileName,`Sending ButtonMessage to ${jid}`);
-      await this.client.presenceSubscribe(jid);
-      await delay(500);
-      const result = await this.client.sendMessage(jid, btnMsg);
-      logger.debug(result);
-      if (result.status != 1) {
-        return { error: true };
-      }
-      return { error: false };
-    }catch(e){
-      logger.error(logFileName,e);
-    }
-  }
-
-  public sendTemplateMessage = async(to: string,templateMsg: IButtonMessage)=>{
-    try{
-      const jid = getSerializedPhone(to);
-      logger.debug(logFileName,`Sending Template Message to ${jid}`);
-      await this.client.presenceSubscribe(jid);
-      await delay(500);
-      const result = await this.client.sendMessage(jid, templateMsg);
-      logger.debug(result);
-      if (result.status != 1) {
-        return { error: true };
-      }
-      return { error: false };
-    }catch(e){
-      logger.error(logFileName,e);
-    }
-  }
 
   public endClient() {
     // this.client.
+    this.removed=true;
     this.client.end();
+  
 
   }
 

@@ -28,6 +28,18 @@ export class PlansController{
         }
       };
 
+      public activateUserPlan = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        console.log("activating new Plan");
+        
+        try {    
+          responseHandler.reqRes(req, res).onFetch("PLAN_ACTIVATED", await plansModel.activateUserPlan(req.userId,req.params.userId,req.params.planId,req.body.reason)).send();
+        } catch (e) {
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
+
       public fetchPlanById = async (req: Request, res: Response, next: NextFunction) => {
         const responseHandler = new ResponseHandler();
         console.log("create new Plan");

@@ -90,7 +90,7 @@ const userPlanSchema: Schema = new Schema({
     },
     planStatus:{
         type:String,
-        enum:["ACTIVE","EXPIRED"]
+        enum:["ACTIVE","EXPIRED","EXHAUSTED"]
 
     }
 },{timestamps: true});

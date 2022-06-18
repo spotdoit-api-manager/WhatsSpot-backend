@@ -4,7 +4,7 @@ import path from "path";
 export class FileManagement{
     public async deleteFile(filePath: string){
       return new Promise((resolve)=>{
-        console.log("delete path ",path.join(__dirname, filePath));
+        console.log("delete path ",filePath);
         
         try{
           fs.unlink(filePath,()=>{
