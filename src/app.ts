@@ -52,7 +52,7 @@ applyMiddleware([allowCorsApi],userApiRouter); //apply cors to only base endpoin
 app.use("/api", applyRoutes(apiRoutes, userApiRouter)); // users api
 userApiRouter.all("*", (req, res, next) => {
   const responseHandler = new ResponseHandler();
-  next(responseHandler.reqRes(req, res).onFetch("API IS ACTIVE","Everything seems to be fine on WhatsSpot Server").send());
+  responseHandler.reqRes(req, res).onFetch("API IS ACTIVE","Hurray!! Everything seems to be fine on WhatsSpot Server").send();
 });
 
 

@@ -45,7 +45,7 @@ utils_1.applyMiddleware([common_middleware_1.allowCorsApi], userApiRouter); //ap
 app.use("/api", utils_1.applyRoutes(api_routes_1.default, userApiRouter)); // users api
 userApiRouter.all("*", (req, res, next) => {
     const responseHandler = new responseHandler_1.default();
-    next(responseHandler.reqRes(req, res).onFetch("API IS ACTIVE", "Everything seems to be fine on WhatsSpot Server").send());
+    responseHandler.reqRes(req, res).onFetch("API IS ACTIVE", "Hurray!! Everything seems to be fine on WhatsSpot Server").send();
 });
 //!APP BASE ROUTER
 const baseAppRouter = express_1.default.Router();
