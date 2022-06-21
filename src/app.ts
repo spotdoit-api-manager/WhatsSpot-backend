@@ -13,6 +13,7 @@ import dbConnection from "./lib/helpers/dbConnection";
 import { schedule } from "node-cron";
 import logger from "./core/logger";
 import { allowCors, allowCorsAdmin, allowCorsApi } from "./lib/middleware/common.middleware";
+import ResponseHandler from "./lib/helpers/responseHandler";
 const logFileName = "[App]";
 
 
@@ -43,18 +44,26 @@ dbConnection.mongoConnection();
 | API VERSIONS CONFIGURATION [START]
 |---------------------------------------*/
 // Different router required to initialize different apis call.
+
+//!USER API ROUTER
 const userApiRouter = express.Router();
 applyMiddleware([allowCorsApi],userApiRouter); //apply cors to only base endpoints
 
 app.use("/api", applyRoutes(apiRoutes, userApiRouter)); // users api
+userApiRouter.all("*", (req, res, next) => {
+  const responseHandler = new ResponseHandler();
+  next(responseHandler.reqRes(req, res).onFetch("API IS ACTIVE","Everything seems to be fine on WhatsSpot Server").send());
+});
 
+
+//!APP BASE ROUTER
 const baseAppRouter = express.Router();
 applyMiddleware([allowCors],baseAppRouter); //apply cors to only base endpoints
 app.use("/", applyRoutes(routes, baseAppRouter)); // base app api
 
 
 
-
+//!ADMIN ROUTER
 const adminRouter = express.Router();
 applyMiddleware([allowCorsAdmin],adminRouter); //apply cors to admin api
 app.use("/admin", applyRoutes(adminRoutes, adminRouter)); // admin api

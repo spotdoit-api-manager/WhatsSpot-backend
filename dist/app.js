@@ -16,6 +16,7 @@ const errorHandlers_middleware_1 = __importDefault(require("./lib/middleware/err
 const dbConnection_1 = __importDefault(require("./lib/helpers/dbConnection"));
 const logger_1 = __importDefault(require("./core/logger"));
 const common_middleware_1 = require("./lib/middleware/common.middleware");
+const responseHandler_1 = __importDefault(require("./lib/helpers/responseHandler"));
 const logFileName = "[App]";
 process.on("uncaughtException", e => {
     console.log(e);
@@ -38,12 +39,19 @@ dbConnection_1.default.mongoConnection();
 | API VERSIONS CONFIGURATION [START]
 |---------------------------------------*/
 // Different router required to initialize different apis call.
+//!USER API ROUTER
 const userApiRouter = express_1.default.Router();
 utils_1.applyMiddleware([common_middleware_1.allowCorsApi], userApiRouter); //apply cors to only base endpoints
 app.use("/api", utils_1.applyRoutes(api_routes_1.default, userApiRouter)); // users api
+userApiRouter.all("*", (req, res, next) => {
+    const responseHandler = new responseHandler_1.default();
+    next(responseHandler.reqRes(req, res).onFetch("API IS ACTIVE", "Everything seems to be fine on WhatsSpot Server").send());
+});
+//!APP BASE ROUTER
 const baseAppRouter = express_1.default.Router();
 utils_1.applyMiddleware([common_middleware_1.allowCors], baseAppRouter); //apply cors to only base endpoints
 app.use("/", utils_1.applyRoutes(routes_1.default, baseAppRouter)); // base app api
+//!ADMIN ROUTER
 const adminRouter = express_1.default.Router();
 utils_1.applyMiddleware([common_middleware_1.allowCorsAdmin], adminRouter); //apply cors to admin api
 app.use("/admin", utils_1.applyRoutes(admin_routes_1.default, adminRouter)); // admin api

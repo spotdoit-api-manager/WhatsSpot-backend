@@ -8,7 +8,6 @@ export default [
     {
         path:"/message/text",
         method: "post",
-        
         escapeAuth: true,
         handler: [DeviceKeyValidator,validateTextMessage, messageController.queueTextMessage]
     },
@@ -16,7 +15,6 @@ export default [
         path:"/message/list",
         method: "post",
         escapeAuth: true,
-        
         handler: [DeviceKeyValidator,validateListMessage, messageController.queueListMessage]
     },
     {
