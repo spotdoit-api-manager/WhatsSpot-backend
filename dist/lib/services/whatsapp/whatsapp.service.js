@@ -41,6 +41,7 @@ const logger_1 = __importDefault(require("../../../core/logger"));
 const notify_service_1 = __importDefault(require("../notify.service"));
 const file_management_1 = __importDefault(require("../../../lib/helpers/file.management"));
 const logFileName = "[WhatsappService] : ";
+const refreshInterval = 40;
 class Whatsapp extends events_1.EventEmitter {
     constructor(deviceId, phone) {
         super();
@@ -119,6 +120,19 @@ class Whatsapp extends events_1.EventEmitter {
         this.saveState = baileys_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
         this.phone = phone;
         this.deviceId = deviceId;
+        this.initRefreshInterval();
+    }
+    initRefreshInterval() {
+        this.interval = setInterval(() => {
+            logger_1.default.info(logFileName, `[${this.phone}] Refreshing Client`);
+            this.getDeviceStatus();
+        }, refreshInterval * 1000);
+    }
+    closeRefreshInterval() {
+        if (this.interval) {
+            logger_1.default.info(logFileName, `[${this.phone}] Closing Refresh Interval`);
+            clearInterval(this.interval);
+        }
     }
     checkIfQrRetryExceeded(lastDisconnect) {
         var _a, _b;
@@ -266,6 +280,7 @@ class Whatsapp extends events_1.EventEmitter {
                 this.qrRequested = false;
                 logger_1.default.warn(logFileName, "CONNECTION_CLOSED (LOGGEDOUT)", reason, this.phone);
                 this.emit("LOGGEDOUT", { phone: this.phone, reason: reason === null || reason === void 0 ? void 0 : reason.message });
+                this.closeRefreshInterval();
             }
         });
     }
@@ -277,7 +292,7 @@ class Whatsapp extends events_1.EventEmitter {
                 });
             }
             else {
-                logger_1.default.info(logFileName, "tried to update Device Status but device is removed", authState, reason);
+                logger_1.default.warn(logFileName, "tried to update Device Status but device is removed", authState, reason);
             }
         });
     }

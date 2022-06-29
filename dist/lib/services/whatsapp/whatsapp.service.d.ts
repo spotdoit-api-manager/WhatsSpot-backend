@@ -14,7 +14,10 @@ export default class Whatsapp extends EventEmitter {
     _instanceId: number;
     private retryCount;
     private removed;
+    private interval;
     constructor(deviceId: string, phone: string);
+    private initRefreshInterval;
+    private closeRefreshInterval;
     initiClient: () => Promise<{
         error: boolean;
         message?: undefined;

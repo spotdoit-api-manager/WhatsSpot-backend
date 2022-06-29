@@ -24,6 +24,7 @@ import fileManagement from "../../../lib/helpers/file.management";
 import { EWhatsappMessageTypes } from "./whatsapp.enum";
 
 const logFileName = "[WhatsappService] : ";
+const refreshInterval = 40; 
 export default class Whatsapp extends EventEmitter {
   client: any;
   phone: string;
@@ -36,7 +37,7 @@ export default class Whatsapp extends EventEmitter {
   public _instanceId: number;
   private retryCount =0;
   private removed =false;
-
+private interval;
   constructor(deviceId: string,phone: string) {
     super();
     this._instanceId = instanceProvider.addInstance(this);
@@ -44,6 +45,20 @@ export default class Whatsapp extends EventEmitter {
     this.saveState = useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
     this.phone = phone;
     this.deviceId = deviceId;
+    this.initRefreshInterval();
+  }
+  private initRefreshInterval(){
+    this.interval = setInterval(()=>{
+      logger.info(logFileName,`[${this.phone}] Refreshing Client`);
+      this.getDeviceStatus();
+    },refreshInterval*1000);
+  }
+
+  private closeRefreshInterval(){
+    if(this.interval){
+      logger.info(logFileName,`[${this.phone}] Closing Refresh Interval`);
+      clearInterval(this.interval);
+    }
   }
   // start a connection
   public initiClient = async () => {
@@ -230,6 +245,7 @@ export default class Whatsapp extends EventEmitter {
       this.qrRequested = false;
       logger.warn(logFileName,"CONNECTION_CLOSED (LOGGEDOUT)", reason, this.phone);
       this.emit("LOGGEDOUT", { phone: this.phone, reason: reason?.message });
+      this.closeRefreshInterval();
     }
   }
 
@@ -240,7 +256,7 @@ export default class Whatsapp extends EventEmitter {
         authState, reason
       });
     }else{
-     logger.info(logFileName,"tried to update Device Status but device is removed",authState,reason);
+     logger.warn(logFileName,"tried to update Device Status but device is removed",authState,reason);
     }
   }
   
