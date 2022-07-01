@@ -36,7 +36,6 @@ export default [
         path:"/message/fast/text",
         method: "post",
         escapeAuth: true,
-        
         handler: [DeviceKeyValidator,validateTextMessage, messageController.fastText]
     },
     {
