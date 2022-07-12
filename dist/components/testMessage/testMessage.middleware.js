@@ -13,27 +13,35 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateTestMessageRequest = void 0;
+const phone_handler_1 = require("./../../lib/utils/phone.handler");
 const httpErrors_1 = require("./../../lib/utils/httpErrors");
 const testMessage_model_1 = __importDefault(require("./testMessage.model"));
 const config_1 = require("../../config");
-const utils_1 = require("../../lib/utils");
 exports.validateTestMessageRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const to = (_a = req.body) === null || _a === void 0 ? void 0 : _a.to;
-    if (!utils_1.validateMobile(to)) {
-        const error = new httpErrors_1.HTTP401Error("INVLAID_PHONE", "phone number is invalid");
-        next(error);
-    }
-    const testMessage = yield testMessage_model_1.default.fetchTestMessageByPhoneNumber(to);
-    if (testMessage) {
-        req.testMessageId = testMessage._id;
-        if (testMessage.messageCount < config_1.testMessageConfig.maxMessage) {
-            return next();
+    try {
+        const to = (_a = req.body) === null || _a === void 0 ? void 0 : _a.to;
+        try {
+            req.body.to = phone_handler_1.parsePhone(to).number;
         }
-        const error = new httpErrors_1.HTTP401Error("LIMIT_REACHED", "You have sent maximum message to a number allowed");
-        next(error);
+        catch (e) {
+            const error = new httpErrors_1.HTTP401Error("INVALID_PHONE", "phone number is invalid");
+            next(error);
+        }
+        const testMessage = yield testMessage_model_1.default.fetchTestMessageByPhoneNumber(to);
+        if (testMessage) {
+            req.testMessageId = testMessage._id;
+            if (testMessage.messageCount < config_1.testMessageConfig.maxMessage) {
+                return next();
+            }
+            const error = new httpErrors_1.HTTP401Error("LIMIT_REACHED", "You have sent maximum message to a number allowed");
+            return next(error);
+        }
+        req.testMessageId = null;
+        return next();
     }
-    req.testMessageId = null;
-    return next();
+    catch (e) {
+        next(new httpErrors_1.HTTP401Error(e.message));
+    }
 });
 //# sourceMappingURL=testMessage.middleware.js.map

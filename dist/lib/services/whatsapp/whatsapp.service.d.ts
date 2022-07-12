@@ -32,7 +32,7 @@ export default class Whatsapp extends EventEmitter {
     private reconnectClient;
     private getDisconnectReason;
     private destroyClient;
-    getDeviceStatus(): Promise<{
+    getDeviceStatus(): Promise<void | {
         status: boolean;
     }>;
     private handleConnectionOpen;

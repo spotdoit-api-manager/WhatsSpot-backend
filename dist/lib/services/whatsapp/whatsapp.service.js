@@ -41,7 +41,7 @@ const logger_1 = __importDefault(require("../../../core/logger"));
 const notify_service_1 = __importDefault(require("../notify.service"));
 const file_management_1 = __importDefault(require("../../../lib/helpers/file.management"));
 const logFileName = "[WhatsappService] : ";
-const refreshInterval = 40;
+const refreshInterval = 1800;
 class Whatsapp extends events_1.EventEmitter {
     constructor(deviceId, phone) {
         super();
@@ -230,8 +230,11 @@ class Whatsapp extends events_1.EventEmitter {
             }
             catch (e) {
                 console.log(e.message);
+                if (e.message == "Connection Closed") {
+                    return this.reconnectClient();
+                }
                 yield device_model_1.default.updateDevice(this.deviceId, {
-                    authState: false, reason: "unknown"
+                    authState: false, reason: e.message
                 });
                 return { status: false };
             }
