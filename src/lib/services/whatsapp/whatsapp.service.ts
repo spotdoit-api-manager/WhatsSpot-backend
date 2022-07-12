@@ -24,7 +24,7 @@ import fileManagement from "../../../lib/helpers/file.management";
 import { EWhatsappMessageTypes } from "./whatsapp.enum";
 
 const logFileName = "[WhatsappService] : ";
-const refreshInterval = 40; 
+const refreshInterval = 1800; 
 export default class Whatsapp extends EventEmitter {
   client: any;
   phone: string;
@@ -198,8 +198,11 @@ private interval;
        return {status:true};
     }catch(e){
       console.log(e.message);
+      if(e.message == "Connection Closed"){
+        return this.reconnectClient();
+      }
       await deviceModel.updateDevice(this.deviceId, {
-        authState: false, reason:"unknown"
+        authState: false, reason:e.message
       });
       return {status:false};
     }
