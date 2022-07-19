@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/interface-name-prefix */
 import { Document, model, Model, Mongoose, Schema, SchemaTypes } from "mongoose";
 import { ITestMessage } from "./testMessage.interface";
 
@@ -25,4 +26,4 @@ const testMessageSchema = new Schema({
 };
 
 
-  export const TestMessage: Model<ITestMessageModel> = model<ITestMessageModel>("TestMessag", testMessageSchema);
+  export const TestMessage: Model<ITestMessageModel> = model<ITestMessageModel>("TestMessage", testMessageSchema);

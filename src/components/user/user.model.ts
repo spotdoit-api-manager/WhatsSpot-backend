@@ -241,7 +241,7 @@ export class UserModel {
         }
       }
      
-      throw new HTTP400Error("OTP_NOT_SENT");
+      throw new HTTP400Error("SOME_ERROR_OCCURRED");
     } catch (e) {
       logger.error(logFileName, e);
       if (e.code == 11000) {
@@ -1072,7 +1072,7 @@ public async updateProfile(userId: string,profileBody: IUserProfile){
 
 public async sendEmailVerification(userId: string){
     const user: IUserModel = await this.findUserById(userId);
-    if(user.emailVerified) throw new HTTP401Error("EMAIL_ALREADY_VERIFIED","Your email id is already verifeid");
+    if(user.emailVerified) throw new HTTP401Error("EMAIL_ALREADY_VERIFIED","Your email id is already verified");
     if(!user) throw new HTTP400Error("USER_NOT_FOUND","User not found");
     const email = user.email;
     if(!email) throw new HTTP400Error("USER_EMAIL_FOUND","User do not have email");

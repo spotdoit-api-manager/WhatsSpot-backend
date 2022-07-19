@@ -13,6 +13,7 @@ export const sendMessage = async (to: string, message: string) => {
     return await OTPMessagesService.sendFast2Sms(sanatizeMobile(phone.phone),message);
   }else{
     logger.info(`Mobile SMS not supported for ${phone?.country}`);
+    return {proceed:true};
   }
 };
 

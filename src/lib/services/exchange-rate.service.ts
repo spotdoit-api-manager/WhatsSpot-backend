@@ -21,11 +21,11 @@ const fetchRate = ()=>{
     });
 };
 
-const init =()=>{
-    const fetchInterval = setInterval(() => {
-        fetchRate();
-    },FETCH_IN_EVRY*60 * 1000);
-};
+// const init =()=>{
+//     const fetchInterval = setInterval(() => {
+//         fetchRate();
+//     },FETCH_IN_EVRY*60 * 1000);
+// };
 export const startExchangeRateService = async(): Promise<void> => {
     logger.info(logFileName, "Starting the Exchange Rate service... at every ", FETCH_IN_EVRY, " minutes");
    return new Promise<void>(async(resolve)=>{
