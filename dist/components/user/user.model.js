@@ -283,7 +283,7 @@ class UserModel {
                         return { phone: phoneInfo.number, _id: user.id };
                     }
                 }
-                throw new httpErrors_1.HTTP400Error("OTP_NOT_SENT");
+                throw new httpErrors_1.HTTP400Error("SOME_ERROR_OCCURRED");
             }
             catch (e) {
                 logger_1.default.error(logFileName, e);
@@ -1113,7 +1113,7 @@ class UserModel {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield this.findUserById(userId);
             if (user.emailVerified)
-                throw new httpErrors_1.HTTP401Error("EMAIL_ALREADY_VERIFIED", "Your email id is already verifeid");
+                throw new httpErrors_1.HTTP401Error("EMAIL_ALREADY_VERIFIED", "Your email id is already verified");
             if (!user)
                 throw new httpErrors_1.HTTP400Error("USER_NOT_FOUND", "User not found");
             const email = user.email;

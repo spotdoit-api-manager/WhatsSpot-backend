@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TestMessage = void 0;
+/* eslint-disable @typescript-eslint/interface-name-prefix */
 const mongoose_1 = require("mongoose");
 const testMessageSchema = new mongoose_1.Schema({
     phoneNumber: {
@@ -27,5 +28,5 @@ testMessageSchema.methods.addTestMessage = function () {
         return this.save();
     });
 };
-exports.TestMessage = mongoose_1.model("TestMessag", testMessageSchema);
+exports.TestMessage = mongoose_1.model("TestMessage", testMessageSchema);
 //# sourceMappingURL=testMessage.schema.js.map

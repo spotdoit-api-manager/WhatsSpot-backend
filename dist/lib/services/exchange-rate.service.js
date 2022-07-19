@@ -31,11 +31,11 @@ const fetchRate = () => {
         });
     });
 };
-const init = () => {
-    const fetchInterval = setInterval(() => {
-        fetchRate();
-    }, FETCH_IN_EVRY * 60 * 1000);
-};
+// const init =()=>{
+//     const fetchInterval = setInterval(() => {
+//         fetchRate();
+//     },FETCH_IN_EVRY*60 * 1000);
+// };
 exports.startExchangeRateService = () => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.default.info(logFileName, "Starting the Exchange Rate service... at every ", FETCH_IN_EVRY, " minutes");
     return new Promise((resolve) => __awaiter(void 0, void 0, void 0, function* () {

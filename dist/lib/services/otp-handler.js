@@ -29,6 +29,7 @@ exports.sendMessage = (to, message) => __awaiter(void 0, void 0, void 0, functio
     }
     else {
         logger_1.default.info(`Mobile SMS not supported for ${phone === null || phone === void 0 ? void 0 : phone.country}`);
+        return { proceed: true };
     }
 });
 exports.sendNewDeviceCode = (to, otp) => __awaiter(void 0, void 0, void 0, function* () {
