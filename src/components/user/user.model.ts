@@ -229,14 +229,14 @@ export class UserModel {
       if(userExist && !userExist.isVerified){
         const otp = this.updateOtp(userExist._id);
         const otpData = await this.sendOtpToMobile(otp, phoneInfo.number);
-        if (otpData.proceed) {
+        if (otpData?.proceed) {
           return { phone:phoneInfo.number, _id: userExist.id };
         }
       }else{
         const user: IUserModel = await this.createNewUser(phoneInfo.number,email,userName,country);
         const otp = this.updateOtp(user._id);
-        const otpData = await this.sendOtpToMobile(otp, phone);
-        if (otpData.proceed) {
+        const otpData = await this.sendOtpToMobile(otp, phoneInfo.number);
+        if (otpData?.proceed) {
           return { phone:phoneInfo.number, _id: user.id };
         }
       }

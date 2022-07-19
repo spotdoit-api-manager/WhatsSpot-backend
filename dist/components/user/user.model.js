@@ -271,15 +271,15 @@ class UserModel {
                 if (userExist && !userExist.isVerified) {
                     const otp = this.updateOtp(userExist._id);
                     const otpData = yield this.sendOtpToMobile(otp, phoneInfo.number);
-                    if (otpData.proceed) {
+                    if (otpData === null || otpData === void 0 ? void 0 : otpData.proceed) {
                         return { phone: phoneInfo.number, _id: userExist.id };
                     }
                 }
                 else {
                     const user = yield this.createNewUser(phoneInfo.number, email, userName, country);
                     const otp = this.updateOtp(user._id);
-                    const otpData = yield this.sendOtpToMobile(otp, phone);
-                    if (otpData.proceed) {
+                    const otpData = yield this.sendOtpToMobile(otp, phoneInfo.number);
+                    if (otpData === null || otpData === void 0 ? void 0 : otpData.proceed) {
                         return { phone: phoneInfo.number, _id: user.id };
                     }
                 }
