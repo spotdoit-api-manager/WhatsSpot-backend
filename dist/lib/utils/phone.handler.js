@@ -32,7 +32,7 @@ exports.parsePhone = (phone) => {
     }
     catch (e) {
         logger_1.default.error(logFileName, e.message + `at ${phone}`);
-        throw new httpErrors_1.HTTP400Error(e.message + ` at ${phone}`);
+        throw new httpErrors_1.HTTP400Error(e.message, `Not a valid number at ${phone}`);
     }
 };
 //# sourceMappingURL=phone.handler.js.map

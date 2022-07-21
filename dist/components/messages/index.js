@@ -67,7 +67,7 @@ exports.default = [
     {
         path: "/message/rawMessage",
         method: "post",
-        escapeAuth: true,
+        // escapeAuth: true,
         handler: [message_controller_1.default.sendRawMessage]
     }
 ];

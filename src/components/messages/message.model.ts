@@ -117,40 +117,20 @@ export class MessageModel {
         return { hasActivePlan: false };
     }
 
-    // private isPlanReachedMaxMessage(userCurrentPlan) {
-
-    // }
+    
 
     public async sendFastMessage(userId: string, numbers: string, message: IWhatsappTextMessage,messageType: EWhatsappMessageTypes,deviceId: string, walletId: string) {
-        if(typeof numbers !== "string") throw new HTTP401Error("FAST_LIMIT","fast messages can be only send to 1 contacts per request");
+        if(typeof numbers !== "string") throw new HTTP401Error("FAST_LIMIT","fast messages can be only send to 1 contacts per request , please send to single contact in req body");
 
         const device = await deviceModel.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const results=[];
-        if(typeof numbers == "string"){
             const parsedNumber = parsePhone(numbers).number;
             const result = await this.sendMessage(userId, parsedNumber as string, message,messageType, deviceId, walletId);
             const newBody: IMessage = { phone: device.phone, userId, to:parsedNumber, reason: result?.message, sendType: ESendType.FAST,messageType:EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT };
             const saveResult = await this.saveFastMessage(newBody);
             results.push({...result,messageInfo:saveResult.data});
-        }
-        // else if(typeof numbers == "object"){
-        //     numbers.forEach((number: string,index: number)=>{
-        //         const to = parsePhone(number).number;
-        //     });
-        //     for(let i=0;i<numbers.length;i++){
-        //         const to = parsePhone(numbers[i]).number;
-        //         const result = await this.sendMessage(userId, to, message,messageType, deviceId, walletId);
-        //         results.push({...result,messageInfo:{phone:device.phone,message,to:numbers,messageType:EWhatsappMessageTypes.TEXT_MESSAGE,userId,deviceId}});
-        //         const newBody: IMessage = { phone: device.phone, userId, to, reason: result?.message, sendType: ESendType.FAST,messageType:EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT };
-        //     const saveResult = await this.saveFastMessage(newBody);
-        //     results.push({...result,messageInfo:saveResult.data});
-        //     }
-
-        // }
-        else{
-            throw new HTTP400Error("INVALID_NUMBER_TYPE");
-        }
+        
         return results;
     }
     public async sendMessage(userId: string, to: string, message: IWhatsappTextMessage,messageType: EWhatsappMessageTypes, deviceId: string, walletId: string,transactionId: string=null) {

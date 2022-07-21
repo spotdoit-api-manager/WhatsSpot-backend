@@ -27,6 +27,6 @@ const logFileName = "[PhoneHandler] : ";
         return {number: parsedPhone.number};
     }catch(e){
         logger.error(logFileName,e.message +`at ${phone}`);
-        throw new HTTP400Error(e.message+` at ${phone}`);
+        throw new HTTP400Error(e.message,`Not a valid number at ${phone}`);
     }
   };

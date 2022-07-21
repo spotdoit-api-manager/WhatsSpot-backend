@@ -127,39 +127,19 @@ class MessageModel {
             return { hasActivePlan: false };
         });
     }
-    // private isPlanReachedMaxMessage(userCurrentPlan) {
-    // }
     sendFastMessage(userId, numbers, message, messageType, deviceId, walletId) {
         return __awaiter(this, void 0, void 0, function* () {
             if (typeof numbers !== "string")
-                throw new httpErrors_1.HTTP401Error("FAST_LIMIT", "fast messages can be only send to 1 contacts per request");
+                throw new httpErrors_1.HTTP401Error("FAST_LIMIT", "fast messages can be only send to 1 contacts per request , please send to single contact in req body");
             const device = yield device_model_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const results = [];
-            if (typeof numbers == "string") {
-                const parsedNumber = phone_handler_1.parsePhone(numbers).number;
-                const result = yield this.sendMessage(userId, parsedNumber, message, messageType, deviceId, walletId);
-                const newBody = { phone: device.phone, userId, to: parsedNumber, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, messageType: whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
-                const saveResult = yield this.saveFastMessage(newBody);
-                results.push(Object.assign(Object.assign({}, result), { messageInfo: saveResult.data }));
-            }
-            // else if(typeof numbers == "object"){
-            //     numbers.forEach((number: string,index: number)=>{
-            //         const to = parsePhone(number).number;
-            //     });
-            //     for(let i=0;i<numbers.length;i++){
-            //         const to = parsePhone(numbers[i]).number;
-            //         const result = await this.sendMessage(userId, to, message,messageType, deviceId, walletId);
-            //         results.push({...result,messageInfo:{phone:device.phone,message,to:numbers,messageType:EWhatsappMessageTypes.TEXT_MESSAGE,userId,deviceId}});
-            //         const newBody: IMessage = { phone: device.phone, userId, to, reason: result?.message, sendType: ESendType.FAST,messageType:EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT };
-            //     const saveResult = await this.saveFastMessage(newBody);
-            //     results.push({...result,messageInfo:saveResult.data});
-            //     }
-            // }
-            else {
-                throw new httpErrors_1.HTTP400Error("INVALID_NUMBER_TYPE");
-            }
+            const parsedNumber = phone_handler_1.parsePhone(numbers).number;
+            const result = yield this.sendMessage(userId, parsedNumber, message, messageType, deviceId, walletId);
+            const newBody = { phone: device.phone, userId, to: parsedNumber, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, messageType: whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
+            const saveResult = yield this.saveFastMessage(newBody);
+            results.push(Object.assign(Object.assign({}, result), { messageInfo: saveResult.data }));
             return results;
         });
     }
