@@ -6,15 +6,27 @@ interface QRData {
 }
 export declare class SocketManager {
     socketServer: (server: any) => Promise<void>;
-    sendClientError: (phone: string, error: any) => void;
-    sendQrCode: (phone: string, qrData: QRData) => void;
-    sendAuthenticated: (phone: string) => void;
-    sendQrRetryExceed: (data: any) => void;
-    sendConnectionClosed: (data: any) => void;
-    sendError: (data: any) => void;
-    sendLoggedout(data: any): void;
-    sendFailedMessageSendProgress(deviceId: string, progressData: IMessageProgress): void;
-    sendFailedMessageSendComplete(data: any): void;
+    sendClientError: (phone: string, error: any) => import("winston").Logger;
+    sendQrCode: (phone: string, qrData: QRData) => import("winston").Logger;
+    sendAuthenticated: (phone: string) => import("winston").Logger;
+    sendQrRetryExceed: (data: {
+        phone: string;
+    }) => import("winston").Logger;
+    sendConnectionClosed: (data: {
+        phone: string;
+        reason: string;
+    }) => import("winston").Logger;
+    sendError: (data: {
+        phone: string;
+        reason: string;
+    }) => import("winston").Logger;
+    sendLoggedOut(data: {
+        phone: string;
+    }): import("winston").Logger;
+    sendFailedMessageSendProgress(deviceId: string, progressData: IMessageProgress): import("winston").Logger;
+    sendFailedMessageSendComplete(data: {
+        deviceId: string;
+    }): import("winston").Logger;
 }
 declare const _default: SocketManager;
 export default _default;

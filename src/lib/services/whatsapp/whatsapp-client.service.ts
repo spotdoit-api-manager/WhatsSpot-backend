@@ -60,8 +60,8 @@ export class WhatsappClient {
             if(!client) return {error:false,message:"CLIENT_NOT_AUTHENTICATED"};
            const result  = await client.logoutClient();
            if(result.error) throw new HTTP400Error(result.message);
-            client.on("LOGGEDOUT", (data: any) => {
-                socketManager.sendLoggedout(data);
+            client.on("LOGGED_OUT", (data: any) => {
+                socketManager.sendLoggedOut(data);
             });
             return { error: false };
         } catch (e) {

@@ -1,10 +1,8 @@
-import deviceModel from "./../../components/device/device.model";
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { Socket } from "socket.io";
-import { schedule } from "node-cron";
-import { configCors, rateLimitConfig } from "../../config";
-import { io } from "socket.io-client";
-import whatsappService from "./whatsapp/whatsapp.service";
+import { configCors } from "../../config";
 import { IMessageProgress } from "../interfaces/socket.interface";
+import logger from "../../core/logger";
 
 let webClient: Socket;
 interface QRData {
@@ -23,63 +21,62 @@ export class SocketManager {
 
 
     io.on("connection", (socket: Socket) => {
-      console.log("socket connected ");
-      console.log(socket.id);
+      logger.info("socket connected ");
+      logger.info(socket.id);
       webClient = socket;
-      let task: any;
     });
 
   };
 
 
   public sendClientError = (phone: string, error: any) => {
-    if (!webClient) return console.log("webClient not connected..");
+    if (!webClient) return logger.error("webClient not connected..");
     webClient.emit(`${phone}_clientError`, { reason: error });
   }
   public sendQrCode = (phone: string, qrData: QRData) => {
-    console.log("emittinq qr to ", `${phone}_qr`);
+    logger.info("emittinq qr to ", `${phone}_qr`);
 
-    if (!webClient) return console.log("webClient not connected..");
+    if (!webClient) return logger.error("webClient not connected..");
     webClient.emit(`${phone}_qr`, qrData);
   };
 
   public sendAuthenticated = (phone: string) => {
-    if (!webClient) return console.log("webClient not connected..");
+    if (!webClient) return logger.error("webClient not connected..");
     webClient.emit(`${phone}_authenticated`);
   }
 
-  public sendQrRetryExceed = (data: any) => {
-    if (!webClient) return console.log("webClient not connected..");
-    console.log("sending qr excedded");
+  public sendQrRetryExceed = (data: {phone: string}) => {
+    if (!webClient) return logger.error("webClient not connected..");
+    logger.info("sending qr exceeded");
 
     webClient.emit(`${data.phone}_qr_exceeded`);
   };
 
-  public sendConnectionClosed = (data: any) => {
-    if (!webClient) return console.log("webClient not connected..");
+  public sendConnectionClosed = (data: {phone: string;reason: string}) => {
+    if (!webClient) return logger.error("webClient not connected..");
     webClient.emit(`${data.phone}_connection_closed`, { reason: data.reason });
   };
 
-  public sendError = (data: any) => {
-    if (!webClient) return console.log("webClient not connected..");
+  public sendError = (data: {phone: string;reason: string}) => {
+    if (!webClient) return logger.error("webClient not connected..");
     webClient.emit(`${data.phone}_error`, { reason: data.reason });
   };
 
-  public sendLoggedout(data: any) {
-    if (!webClient) return console.log("webClient not connected..");
-    console.log("sendign logout to ", data);
+  public sendLoggedOut(data: {phone: string}) {
+    if (!webClient) return logger.error("webClient not connected..");
+    logger.info("sending logout to ", data);
     webClient.emit(`${data.phone}_LOGGEDOUT`, data);
   }
 
   public sendFailedMessageSendProgress(deviceId: string,progressData: IMessageProgress) {
-    if (!webClient) return console.log("webClient not connected..");
-    console.log("sendign failed message over to ", progressData);
+    if (!webClient) return logger.error("webClient not connected..");
+    logger.info("sending failed message over to ", progressData);
     webClient.emit(`${deviceId}_FAILED_PROGRESS`, progressData);
   }
 
-  public sendFailedMessageSendComplete(data: any) {
-    if (!webClient) return console.log("webClient not connected..");
-    console.log("sendign failed message over to ", data);
+  public sendFailedMessageSendComplete(data: {deviceId: string}) {
+    if (!webClient) return logger.error("webClient not connected..");
+    logger.info("sending failed message over to ", data);
     webClient.emit(`${data.deviceId}_FAILED_COMPLETED`, data);
   }
 }

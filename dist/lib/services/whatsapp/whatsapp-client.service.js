@@ -163,8 +163,8 @@ class WhatsappClient {
                 const result = yield client.logoutClient();
                 if (result.error)
                     throw new httpErrors_1.HTTP400Error(result.message);
-                client.on("LOGGEDOUT", (data) => {
-                    socket_1.default.sendLoggedout(data);
+                client.on("LOGGED_OUT", (data) => {
+                    socket_1.default.sendLoggedOut(data);
                 });
                 return { error: false };
             }
