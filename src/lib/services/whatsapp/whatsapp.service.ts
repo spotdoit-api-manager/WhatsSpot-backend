@@ -24,7 +24,7 @@ import fileManagement from "../../../lib/helpers/file.management";
 import { EWhatsappMessageTypes } from "./whatsapp.enum";
 
 const logFileName = "[WhatsappService] : ";
-const refreshInterval = 1800; 
+const refreshInterval = 1800; //in seconds
 export default class Whatsapp extends EventEmitter {
   client: any;
   phone: string;

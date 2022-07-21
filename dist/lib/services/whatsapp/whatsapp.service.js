@@ -41,7 +41,7 @@ const logger_1 = __importDefault(require("../../../core/logger"));
 const notify_service_1 = __importDefault(require("../notify.service"));
 const file_management_1 = __importDefault(require("../../../lib/helpers/file.management"));
 const logFileName = "[WhatsappService] : ";
-const refreshInterval = 1800;
+const refreshInterval = 1800; //in seconds
 class Whatsapp extends events_1.EventEmitter {
     constructor(deviceId, phone) {
         super();
