@@ -257,6 +257,16 @@ class AdminController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.sendEmail = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("MAIL SENT", yield admin_model_1.default.sendEmail(req.userId, req.body.to, req.body.subject, req.body.message)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
     }
 }
 exports.AdminController = AdminController;

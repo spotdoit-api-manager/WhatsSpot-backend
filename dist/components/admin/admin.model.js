@@ -1,4 +1,23 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -28,6 +47,7 @@ const stripe_model_1 = __importDefault(require("../stripe/stripe.model"));
 const transaction_model_1 = __importDefault(require("../transaction/transaction.model"));
 const pay_with_enum_1 = require("../../core/enums/pay-with.enum");
 const qr_pay_model_1 = __importDefault(require("../qrpay/qr-pay.model"));
+const emailService = __importStar(require("../../lib/services/email.service"));
 const logFileName = "[AdminModel] : ";
 class AdminModel {
     constructor() {
@@ -228,6 +248,13 @@ class AdminModel {
     rejectPayment(userId, paymentId, reason) {
         return __awaiter(this, void 0, void 0, function* () {
             return qr_pay_model_1.default.rejectPayment(userId, paymentId, reason);
+        });
+    }
+    sendEmail(adminId, to, subject, message) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!(yield this.isSuperAdmin(adminId)))
+                throw new httpErrors_2.HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can send email");
+            return yield emailService.sendMail(to, subject, message);
         });
     }
 }

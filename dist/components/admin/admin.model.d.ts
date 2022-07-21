@@ -62,6 +62,7 @@ export declare class AdminModel {
     fetchPaymentsRequests(userId: string, status: ETransactionStatus, page: number): Promise<any[]>;
     approvePayment(userId: string, paymentId: string): Promise<any>;
     rejectPayment(userId: string, paymentId: string, reason: string): Promise<any>;
+    sendEmail(adminId: string, to: string, subject: string, message: string): Promise<void>;
 }
 declare const _default: AdminModel;
 export default _default;

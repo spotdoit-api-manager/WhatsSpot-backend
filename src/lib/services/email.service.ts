@@ -7,6 +7,22 @@ import { HTTP400Error } from "../utils/httpErrors";
 const logFileName="[EmailService]: ";
 
 
+export const sendMail = async(to: string,subject: string,text: string,html: string="")=>{
+    try {
+        const client = new MailazyClient({ accessKey: mailazyConfig.accessKey, accessSecret: mailazyConfig.accessSecret });
+        const res = await client.send({
+            to,
+            from: process.env.NOTIFICATION_EMAIL, 
+            subject,
+            text,
+            html
+        });
+        logger.info(logFileName,`Email to ${to} sent successfully`,res);
+    } catch (e) {
+       logger.error(logFileName,`Error in sending mail to ${to}`,e);
+    }
+};
+
 
 export const sendNotificationMail = async(to: string,subject: string,text: string,html: string="")=>{
     try {

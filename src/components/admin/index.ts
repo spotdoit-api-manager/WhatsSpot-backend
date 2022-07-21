@@ -133,5 +133,11 @@ export default [
         method:"post",
         role:"admin",
         handler:[adminController.rejectPayment]
+      },
+      {
+        path:"/email/send",
+        method:"post",
+        role:"admin",
+        handler:[adminController.sendEmail]
       }
 ];

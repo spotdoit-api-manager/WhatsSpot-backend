@@ -19,6 +19,7 @@ import transactionModel from "../transaction/transaction.model";
 import { EPayWith } from "../../core/enums/pay-with.enum";
 import { ETransactionStatus } from "../transaction/transaction.interface";
 import qrPayModel from "../qrpay/qr-pay.model";
+import * as emailService from "../../lib/services/email.service";
 
 const logFileName = "[AdminModel] : ";
 export class AdminModel {
@@ -196,6 +197,11 @@ export class AdminModel {
 
     public async rejectPayment(userId: string,paymentId: string,reason: string){
         return qrPayModel.rejectPayment(userId,paymentId,reason);
+    }
+
+    public async sendEmail(adminId: string,to: string,subject: string,message: string){
+        if (!await this.isSuperAdmin(adminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can send email");
+        return await emailService.sendMail(to,subject,message);
     }
 
 }

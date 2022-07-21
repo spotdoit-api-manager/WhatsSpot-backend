@@ -22,6 +22,7 @@ export declare class AdminController {
     fetchPaymentRequests: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     approvePayment: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     rejectPayment: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    sendEmail: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 }
 declare const _default: AdminController;
 export default _default;

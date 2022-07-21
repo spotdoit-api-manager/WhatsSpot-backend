@@ -137,6 +137,12 @@ exports.default = [
         method: "post",
         role: "admin",
         handler: [admin_controller_1.default.rejectPayment]
+    },
+    {
+        path: "/email/send",
+        method: "post",
+        role: "admin",
+        handler: [admin_controller_1.default.sendEmail]
     }
 ];
 //# sourceMappingURL=index.js.map
