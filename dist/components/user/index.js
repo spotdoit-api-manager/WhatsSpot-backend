@@ -83,7 +83,7 @@ exports.default = [
         path: "/user/email/verify",
         method: "post",
         escapeAuth: false,
-        handler: [user_controller_1.default.verifyEmaliOtp]
+        handler: [user_controller_1.default.verifyEmailOtp]
     },
 ];
 //# sourceMappingURL=index.js.map

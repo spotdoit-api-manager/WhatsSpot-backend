@@ -269,10 +269,10 @@ class UserController {
                 next(responseHandler.sendError(e));
             }
         });
-        this.verifyEmaliOtp = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+        this.verifyEmailOtp = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
-                const data = yield user_model_1.default.verifyEmaliOtp(req.userId, req.body.otp);
+                const data = yield user_model_1.default.verifyEmailOtp(req.userId, req.body.otp);
                 responseHandler.reqRes(req, res).onCreate("EMAIL_VERIFIED", data).send();
             }
             catch (e) {

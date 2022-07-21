@@ -437,7 +437,7 @@ export class UserModel {
   }
   async sendOtpToMobile(otp: number, phone: string) {
     logger.debug(logFileName, `send this ${otp} to ${phone}`);
-    const message = `Your SpotDoit Services login OTP is ${otp}.`;
+    const message = `Your WhatsSpot login OTP is ${otp}. Please do not share it with anyone.`;
     return await sendMessage(phone, message);
   }
 
@@ -1083,7 +1083,7 @@ public async sendEmailVerification(userId: string){
     if(!res) throw new HTTP400Error("EMAIL_SEND_FAILED","Email send failed");
 }
 
-public async verifyEmaliOtp(userId: string,otp: string){
+public async verifyEmailOtp(userId: string,otp: string){
   const user: IUserModel = await this.findUserById(userId);
   if(!user) throw new HTTP400Error("USER_NOT_FOUND","User not found");
   if(user.emailVerified) throw new HTTP400Error("EMAIL_ALREADY_VERIFIED","Your email id is already verifeid");

@@ -126,7 +126,7 @@ export declare class UserModel {
     updateNotificationSettings(userId: string, notificationSetting: IUserNotificationSettings): Promise<any>;
     updateProfile(userId: string, profileBody: IUserProfile): Promise<any>;
     sendEmailVerification(userId: string): Promise<void>;
-    verifyEmaliOtp(userId: string, otp: string): Promise<any>;
+    verifyEmailOtp(userId: string, otp: string): Promise<any>;
     getUserById(userId: string): import("mongoose").DocumentQuery<IUserModel, IUserModel, {}>;
 }
 declare const _default: UserModel;

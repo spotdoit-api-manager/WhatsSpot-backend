@@ -297,10 +297,10 @@ class UserController {
     }
   }
 
-  public verifyEmaliOtp = async (req: Request, res: Response, next: NextFunction) => {
+  public verifyEmailOtp = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-      const data = await userModel.verifyEmaliOtp(req.userId,req.body.otp);
+      const data = await userModel.verifyEmailOtp(req.userId,req.body.otp);
 
       responseHandler.reqRes(req, res).onCreate("EMAIL_VERIFIED", data).send();
     } catch (e) {

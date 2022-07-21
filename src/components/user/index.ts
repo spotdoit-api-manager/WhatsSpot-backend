@@ -81,7 +81,7 @@ export default [
     path: "/user/email/verify",
     method: "post",
     escapeAuth: false,
-    handler: [userController.verifyEmaliOtp]
+    handler: [userController.verifyEmailOtp]
   },
   
 ];

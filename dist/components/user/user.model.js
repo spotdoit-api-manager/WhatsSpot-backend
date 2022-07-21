@@ -493,7 +493,7 @@ class UserModel {
     sendOtpToMobile(otp, phone) {
         return __awaiter(this, void 0, void 0, function* () {
             logger_1.default.debug(logFileName, `send this ${otp} to ${phone}`);
-            const message = `Your SpotDoit Services login OTP is ${otp}.`;
+            const message = `Your WhatsSpot login OTP is ${otp}. Please do not share it with anyone.`;
             return yield otp_handler_1.sendMessage(phone, message);
         });
     }
@@ -1127,7 +1127,7 @@ class UserModel {
                 throw new httpErrors_1.HTTP400Error("EMAIL_SEND_FAILED", "Email send failed");
         });
     }
-    verifyEmaliOtp(userId, otp) {
+    verifyEmailOtp(userId, otp) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield this.findUserById(userId);
             if (!user)

@@ -22,7 +22,7 @@ declare class UserController {
     generateOTP: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     addPhoneNumber: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     sendEmailVerification: (req: Request, res: Response, next: NextFunction) => Promise<void>;
-    verifyEmaliOtp: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    verifyEmailOtp: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     verifyUser: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 }
 declare const _default: UserController;
