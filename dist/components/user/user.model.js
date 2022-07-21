@@ -1122,7 +1122,7 @@ class UserModel {
             const otp = helpers_1.otpGenerator();
             logger_1.default.info(logFileName, `Sending Email OTP ${otp} to ${email}`);
             yield user_schema_1.User.findByIdAndUpdate(userId, { $set: { emailOtp: otp } });
-            const res = yield emailService.sendVerificationMail(email, "Email Verification", `Dear ${user.userName}, Your OTP for email verification is <b><h2>${otp}</h2></h2></b>`, `Dear ${user.userName}, Your OTP for email verification is <b><h2>${otp}</h2></h2></b>`);
+            const res = yield emailService.sendVerificationMail(email, "Email Verification", `Dear ${(user === null || user === void 0 ? void 0 : user.userName) || "User"}, Your OTP for email verification is <b><h2>${otp}</h2></h2></b><br><br> Please do not share this with anyone.`, `Dear ${user.userName}, Your OTP for email verification is <b><h2>${otp}</h2></h2></b>Please do not share this with anyone.`);
             if (!res)
                 throw new httpErrors_1.HTTP400Error("EMAIL_SEND_FAILED", "Email send failed");
         });

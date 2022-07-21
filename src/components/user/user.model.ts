@@ -1079,7 +1079,7 @@ public async sendEmailVerification(userId: string){
     const otp = otpGenerator();
     logger.info(logFileName,`Sending Email OTP ${otp} to ${email}`);
     await User.findByIdAndUpdate(userId,{$set:{emailOtp:otp}});
-    const res = await emailService.sendVerificationMail(email,"Email Verification",`Dear ${user.userName}, Your OTP for email verification is <b><h2>${otp}</h2></h2></b>`,`Dear ${user.userName}, Your OTP for email verification is <b><h2>${otp}</h2></h2></b>`);
+    const res = await emailService.sendVerificationMail(email,"Email Verification",`Dear ${user?.userName || "User"}, Your OTP for email verification is <b><h2>${otp}</h2></h2></b><br><br> Please do not share this with anyone.`,`Dear ${user.userName}, Your OTP for email verification is <b><h2>${otp}</h2></h2></b>Please do not share this with anyone.`);
     if(!res) throw new HTTP400Error("EMAIL_SEND_FAILED","Email send failed");
 }
 
