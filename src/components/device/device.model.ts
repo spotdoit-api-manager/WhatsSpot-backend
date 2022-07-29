@@ -46,7 +46,7 @@ export class DeviceModel {
         const devices = await Device.find({ userId: new ObjectID(userId), "isDeleted.status": false });
         const userPlan = await userModel.fetchUserActivePlan(userId);
         if (userPlan && userPlan.planId) {
-            const plan: IPlanModel = await plansModel.fetchPlanById(userPlan.planId);
+            const plan: IPlanModel = await plansModel.fetchPlanByPlanId(userPlan.planId);
                 if (devices.length >= plan.maxDevices) throw new HTTP400Error("MAX_DEVICE_LIMIT_REACHED",`You have reached maximum device limit of ${plan.maxDevices} in your ${plan.planName} plan`);
         }else{
             if (devices.length >= parseInt(process.env.DEFAULT_MAX_DEVICES || "1")) throw new HTTP400Error("MAX_DEVICE_LIMIT_REACHED",`You have reached maximum device limit of ${process.env.DEFAULT_MAX_DEVICES || "1"}`);

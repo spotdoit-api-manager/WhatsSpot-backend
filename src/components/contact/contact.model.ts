@@ -104,7 +104,7 @@ export class ContactModal{
             const finalResult =[];
             for (let i = 0; i < contacts.length; i++) {
                 const contact = contacts[i];
-                const result = await Contact.findOneAndUpdate({userId:new ObjectID(userId)},{name:contact.name,phoneNumber:contact.phoneNumber});
+                const result = await Contact.findOneAndUpdate({userId:new ObjectID(userId)},{name:contact?.name || "",phoneNumber:contact.phoneNumber});
                 finalResult.push(result);
             }
             return finalResult;

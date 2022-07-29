@@ -98,7 +98,7 @@ class DeviceModel {
             const devices = yield device_schema_1.Device.find({ userId: new bson_1.ObjectID(userId), "isDeleted.status": false });
             const userPlan = yield user_model_1.default.fetchUserActivePlan(userId);
             if (userPlan && userPlan.planId) {
-                const plan = yield plans_model_1.default.fetchPlanById(userPlan.planId);
+                const plan = yield plans_model_1.default.fetchPlanByPlanId(userPlan.planId);
                 if (devices.length >= plan.maxDevices)
                     throw new httpErrors_1.HTTP400Error("MAX_DEVICE_LIMIT_REACHED", `You have reached maximum device limit of ${plan.maxDevices} in your ${plan.planName} plan`);
             }

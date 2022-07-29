@@ -36,7 +36,7 @@ export class MessageModel {
     }
 
     public updateMessageToGroupStatus = async (id: string, contact: IContact, status: EMessageStatus, reason: string = null) => {
-        await MessageQueue.updateOne({ _id: id }, { $push: { contactsSent: { phoneNumber: contact.phoneNumber, name: contact.name, status: status, reason: reason } } });
+        await MessageQueue.updateOne({ _id: id }, { $push: { contactsSent: { phoneNumber: contact.phoneNumber, name: contact?.name, status: status, reason: reason } } });
     }
 
 

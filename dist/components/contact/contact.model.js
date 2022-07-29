@@ -113,7 +113,7 @@ class ContactModal {
             const finalResult = [];
             for (let i = 0; i < contacts.length; i++) {
                 const contact = contacts[i];
-                const result = yield contact_schema_1.Contact.findOneAndUpdate({ userId: new bson_1.ObjectID(userId) }, { name: contact.name, phoneNumber: contact.phoneNumber });
+                const result = yield contact_schema_1.Contact.findOneAndUpdate({ userId: new bson_1.ObjectID(userId) }, { name: (contact === null || contact === void 0 ? void 0 : contact.name) || "", phoneNumber: contact.phoneNumber });
                 finalResult.push(result);
             }
             return finalResult;

@@ -34,7 +34,7 @@ class MessageModel {
             yield message_schema_1.MessageQueue.updateOne({ _id: id }, { status: status, reason: reason });
         });
         this.updateMessageToGroupStatus = (id, contact, status, reason = null) => __awaiter(this, void 0, void 0, function* () {
-            yield message_schema_1.MessageQueue.updateOne({ _id: id }, { $push: { contactsSent: { phoneNumber: contact.phoneNumber, name: contact.name, status: status, reason: reason } } });
+            yield message_schema_1.MessageQueue.updateOne({ _id: id }, { $push: { contactsSent: { phoneNumber: contact.phoneNumber, name: contact === null || contact === void 0 ? void 0 : contact.name, status: status, reason: reason } } });
         });
     }
     retryFailedMessage(userId, deviceId) {
