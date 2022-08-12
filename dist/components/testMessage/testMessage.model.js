@@ -33,7 +33,11 @@ class TestMessageModel {
                     { index: 3, urlButton: { displayText: "View Plans", url: "https://www.whatsspot.in/#plans" } },
                 ]
             };
-            const result = yield whatsapp_client_service_1.default.sendTemplateMessage(config_1.testMessageConfig.devicePhone, body.to, tempMsg);
+            // const result  = await whatsappClientService.sendTemplateMessage(testMessageConfig.devicePhone,body.to,tempMsg);
+            const textMsg = {
+                text: "Welcome to WhatsSpot!!\nThis is a test message."
+            };
+            const result = yield whatsapp_client_service_1.default.sendTextMessage(config_1.testMessageConfig.devicePhone, body.to, textMsg);
             if (result.error)
                 throw new httpErrors_1.HTTP401Error(result.message);
             yield this.updateOrCreateTestMessage(body.to, testMessageId);

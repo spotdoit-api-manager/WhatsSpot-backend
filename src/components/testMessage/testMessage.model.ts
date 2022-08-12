@@ -1,4 +1,4 @@
-import { IWhatsappButtonMessage, IWhatsappTemplateMessage } from "./../../lib/services/whatsapp/whatsapp.interface";
+import { IWhatsappButtonMessage, IWhatsappTemplateMessage, IWhatsappTextMessage } from "./../../lib/services/whatsapp/whatsapp.interface";
 import { HTTP401Error } from "../../lib/utils/httpErrors";
 import { testMessageConfig } from "../../config";
 import whatsappClientService from "../../lib/services/whatsapp/whatsapp-client.service";
@@ -19,7 +19,11 @@ export class TestMessageModel{
                 {index: 3, urlButton: {displayText: "View Plans",url:"https://www.whatsspot.in/#plans"}},
             ]
         };
-            const result  = await whatsappClientService.sendTemplateMessage(testMessageConfig.devicePhone,body.to,tempMsg);
+            // const result  = await whatsappClientService.sendTemplateMessage(testMessageConfig.devicePhone,body.to,tempMsg);
+            const textMsg: IWhatsappTextMessage = {
+                text:"Welcome to WhatsSpot!!\nThis is a test message."
+            };
+            const result  = await whatsappClientService.sendTextMessage(testMessageConfig.devicePhone,body.to,textMsg);
             if(result.error) throw new HTTP401Error(result.message);
             await this.updateOrCreateTestMessage(body.to,testMessageId);
     }
