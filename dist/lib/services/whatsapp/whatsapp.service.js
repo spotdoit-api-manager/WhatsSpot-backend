@@ -54,13 +54,14 @@ class Whatsapp extends events_1.EventEmitter {
         this.initiClient = () => __awaiter(this, void 0, void 0, function* () {
             // if(!this.qrRequested) return;
             try {
-                const sock = baileys_1.default({
+                const config = {
                     logger: pino_1.default({ level: "info" }),
                     printQRInTerminal: false,
                     auth: this.state,
-                    browser: ["Mac OS", "Chrome", "10.15.3"]
-                    // version: [2,2204,13],
-                });
+                    browser: ["Mac OS", "Chrome", "10.15.3"],
+                    downloadHistory: false,
+                };
+                const sock = baileys_1.default(config);
                 this.client = sock;
                 this.startBasicEventListners();
                 yield this.client.waitForSocketOpen();

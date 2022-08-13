@@ -13,6 +13,7 @@ import makeWASocket, {
   AuthenticationState,
   SocketConfig,
   CommonSocketConfig,
+  UserFacingSocketConfig,
 } from "@adiwajshing/baileys";
 
 import deviceModel from "./../../../components/device/device.model";
@@ -64,13 +65,15 @@ private interval;
   public initiClient = async () => {
     // if(!this.qrRequested) return;
     try {
-      const sock = makeWASocket({
+      const config: UserFacingSocketConfig ={
         logger: P({ level: "info" }), //silent
         printQRInTerminal: false,
         auth: this.state,
-        browser:["Mac OS", "Chrome", "10.15.3"]
+        browser:["Mac OS", "Chrome", "10.15.3"],
+        downloadHistory: false,
         // version: [2,2204,13],
-      });
+      } ;
+      const sock = makeWASocket(config);
       this.client = sock;
       this.startBasicEventListners();
       await this.client.waitForSocketOpen();

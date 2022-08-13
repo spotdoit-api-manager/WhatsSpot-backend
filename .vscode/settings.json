@@ -24,6 +24,7 @@
   "appService.zipIgnorePattern": [".vscode{,/**}"],
   "appService.deploySubpath": "",
   "cSpell.words": [
+    "Creds",
     "EPLANS",
     "PAYG",
     "Paytm",
