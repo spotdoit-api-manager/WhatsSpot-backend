@@ -42,3 +42,4 @@ dist/sessions
 # ignore yarn.lock
 yarn.lock
 dist/sessions
+sessions

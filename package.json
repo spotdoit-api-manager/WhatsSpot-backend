@@ -27,7 +27,7 @@
         "postinstall": "node patch.js"
     },
     "dependencies": {
-        "@adiwajshing/baileys": "^4.1.0",
+        "@adiwajshing/baileys": "^4.3.0",
         "@adiwajshing/baileys-md": "github:adiwajshing/baileys#multi-device",
         "@types/bcrypt": "^5.0.0",
         "@types/events": "^3.0.0",
