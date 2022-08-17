@@ -13,8 +13,8 @@ import makeWASocket, {
   AuthenticationState,
   SocketConfig,
   CommonSocketConfig,
-  UserFacingSocketConfig,
-} from "@adiwajshing/baileys";
+  
+} from "@adiwajshing/baileys-md";
 
 import deviceModel from "./../../../components/device/device.model";
 import path from "path";
@@ -65,7 +65,7 @@ private interval;
   public initiClient = async () => {
     // if(!this.qrRequested) return;
     try {
-      const config: UserFacingSocketConfig ={
+      const config: any ={
         logger: P({ level: "info" }), //silent
         printQRInTerminal: false,
         auth: this.state,
