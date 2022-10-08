@@ -34,7 +34,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const whatsapp_utils_1 = require("./whatsapp-utils");
 const events_1 = require("events");
 const pino_1 = __importDefault(require("pino"));
-const baileys_1 = __importStar(require("@adiwajshing/baileys"));
+const baileys_md_1 = __importStar(require("@adiwajshing/baileys-md"));
 const device_model_1 = __importDefault(require("./../../../components/device/device.model"));
 const instance_provider_1 = __importDefault(require("./instance.provider"));
 const logger_1 = __importDefault(require("../../../core/logger"));
@@ -61,7 +61,7 @@ class Whatsapp extends events_1.EventEmitter {
                     browser: ["Mac OS", "Chrome", "10.15.3"],
                     downloadHistory: false,
                 };
-                const sock = baileys_1.default(config);
+                const sock = baileys_md_1.default(config);
                 this.client = sock;
                 this.startBasicEventListners();
                 yield this.client.waitForSocketOpen();
@@ -103,7 +103,7 @@ class Whatsapp extends events_1.EventEmitter {
             try {
                 const jid = whatsapp_utils_1.getSerializedPhone(to);
                 yield this.client.presenceSubscribe(jid);
-                yield baileys_1.delay(500);
+                yield baileys_md_1.delay(500);
                 const result = yield this.client.sendMessage(jid, Object.assign(Object.assign({}, msg), { detectLinks: true }));
                 logger_1.default.debug(logFileName, `Sent  Result client ${this.phone} :`, result);
                 if (result.status != 1) {
@@ -117,8 +117,8 @@ class Whatsapp extends events_1.EventEmitter {
             }
         });
         this._instanceId = instance_provider_1.default.addInstance(this);
-        this.state = baileys_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
-        this.saveState = baileys_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
+        this.state = baileys_md_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
+        this.saveState = baileys_md_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
         this.phone = phone;
         this.deviceId = deviceId;
         this.initRefreshInterval();
@@ -268,7 +268,7 @@ class Whatsapp extends events_1.EventEmitter {
     handleConnectionClose(lastDisconnect) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
-            const shouldReconnect = ((_b = (_a = lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.statusCode) !== baileys_1.DisconnectReason.loggedOut;
+            const shouldReconnect = ((_b = (_a = lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.statusCode) !== baileys_md_1.DisconnectReason.loggedOut;
             if (shouldReconnect) {
                 logger_1.default.warn(logFileName, "CONNECTION_CLOSED (NOT_LOGGED_OUT) Retrying......");
                 return yield this.reconnectClient();
