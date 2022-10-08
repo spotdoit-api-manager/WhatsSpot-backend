@@ -37,7 +37,7 @@ export class DeviceModel {
         const newDevice = new Device(body);
         const newDeviceData: IDeviceModel = await newDevice.saveDevice();
         if (!newDeviceData) throw new HTTP400Error("UNKNOWN_ERROR");
-        const expiresOn = dayjs().add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN || "3d").replace("d", "")), "day").toDate().toUTCString();;
+        const expiresOn = dayjs().add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN || "3d").replace("d", "")), "day").toDate().toUTCString();
         const keys = await this.generateNewKey(userId, walletId, newDeviceData._id, { name: process.env.DEFAULT_APIKEY_NAME, expiresOn });
         return newDeviceData;
     }
@@ -80,7 +80,7 @@ export class DeviceModel {
         // }
         const data = whatsappClientService.getClientQr(deviceId, device.phone);
         return { message: "QR_REQUESTED" };
-    };
+    }
 
     public async removeClient(userId: string, deviceId: string) {
         const device = await this.findDeviceById(userId, deviceId);
@@ -187,7 +187,7 @@ export class DeviceModel {
         if (res.error) throw new HTTP401Error(res.message);
         await this.updateDevice(device._id, { reason: null });
         return { message: "DEVICE_LOGGEDOUT" };
-    };
+    }
 
     public async logoutDevice(userId: string, deviceId: string) {
         const device = await this.findDeviceById(userId, deviceId);
@@ -437,7 +437,7 @@ export class DeviceModel {
                         }
                     }
                 ];
-            };
+            }
             return result[0];
         } catch (err) {
             console.log(err);

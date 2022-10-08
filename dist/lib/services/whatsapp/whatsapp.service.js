@@ -85,7 +85,6 @@ class Whatsapp extends events_1.EventEmitter {
                         this.emit("qr", { qr: update.qr, error: false });
                         return;
                     }
-                    ;
                     if (this.checkIfQrRetryExceeded(lastDisconnect)) {
                         this.emit("qr", { error: true, message: "QR_RETRY_EXCEEDED" });
                         this.qrRequested = true;
@@ -141,7 +140,6 @@ class Whatsapp extends events_1.EventEmitter {
             "QR refs attempts ended") {
             return true;
         }
-        ;
         false;
     }
     startBasicEventListners() {

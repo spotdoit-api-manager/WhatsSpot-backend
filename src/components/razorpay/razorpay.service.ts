@@ -1,5 +1,5 @@
 import { ETransactionStatus } from "./../transaction/transaction.interface";
-/* eslint-disable @typescript-eslint/camelcase */
+
 import { razorPaySecrets } from "./../../config/index";
 import { ERazorPayOrderStatus, ICreateOrder } from "./razorpay.interface";
 import Razorpay from "razorpay";

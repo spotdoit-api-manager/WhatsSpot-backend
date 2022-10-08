@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 export interface IStripeProduct{
     name: string;
     active?: boolean;

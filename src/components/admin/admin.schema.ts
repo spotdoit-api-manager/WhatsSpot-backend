@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 import { Document,Model, model, Schema } from "mongoose";
 import { IAdminUser } from "./admin.interface";
 

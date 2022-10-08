@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/camelcase */
+
 import { EDeviceStatus } from "./../../../components/device/device.interface";
 import deviceModel from "../../../components/device/device.model";
 import messageModel from "../../../components/messages/message.model";
@@ -34,7 +34,7 @@ export class MessageQueueService {
         setTimeout(() => {            
             this.getPendingMessagesToGroup();
         }, FETCH_PENDING_INTERVAL * 1000);
-    };
+    }
 
     private MGCSPF_Counter = 0;
       public async sendPendingMessageToGroup(pendingMessages: IMessageModel[]){
@@ -106,7 +106,7 @@ export class MessageQueueService {
             resolve({ error: false });
 
         });
-    };
+    }
 
 
 

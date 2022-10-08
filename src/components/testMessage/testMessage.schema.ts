@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 import { Document, model, Model, Mongoose, Schema, SchemaTypes } from "mongoose";
 import { ITestMessage } from "./testMessage.interface";
 

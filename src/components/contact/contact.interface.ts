@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 import { CountryCode } from "libphonenumber-js";
 
 export interface IContact{

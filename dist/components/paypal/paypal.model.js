@@ -18,7 +18,6 @@ const httpErrors_1 = require("./../../lib/utils/httpErrors");
 const transaction_interface_1 = require("./../transaction/transaction.interface");
 const axios_1 = __importDefault(require("axios"));
 const logger_1 = __importDefault(require("../../core/logger"));
-/* eslint-disable @typescript-eslint/camelcase */
 const plans_interface_1 = require("../plans/plans.interface");
 const transaction_model_1 = __importDefault(require("../transaction/transaction.model"));
 const plans_model_1 = __importDefault(require("../plans/plans.model"));
@@ -83,7 +82,6 @@ class PaytmModel {
             }
         });
     }
-    ;
     createPaypalOrder(order) {
         return __awaiter(this, void 0, void 0, function* () {
             const token = yield this.getPaypalToken();

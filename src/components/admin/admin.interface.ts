@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 export interface IAdminUser{
    phoneNumber: string;
    email: string;

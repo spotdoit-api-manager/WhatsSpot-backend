@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 import { IErrorResponse } from "../utils/commonInterface";
 import { Request, Response } from "express";
 import { HTTP400Error, HTTP401Error, HTTP403Error, HTTP404Error, HTTP409Error } from "../utils/httpErrors";

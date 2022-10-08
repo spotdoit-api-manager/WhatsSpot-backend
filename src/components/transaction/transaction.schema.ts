@@ -1,5 +1,5 @@
 import { EPayWithMongoEnum } from "./../../core/enums/pay-with.enum";
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 import { ITransaction } from "./transaction.interface";
 import { Document, model, Model, Mongoose, Schema, SchemaTypes } from "mongoose";
 

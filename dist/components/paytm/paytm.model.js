@@ -137,7 +137,6 @@ class PaytmModel {
             });
         });
     }
-    ;
     responsePayment(paymentObject) {
         console.log("Response Paytm :", paytm_1.default.PAYTM_MERCHANT_KEY);
         return new Promise((resolve, reject) => {
@@ -149,7 +148,6 @@ class PaytmModel {
             }
         });
     }
-    ;
 }
 exports.default = new PaytmModel();
 //# sourceMappingURL=paytm.model.js.map

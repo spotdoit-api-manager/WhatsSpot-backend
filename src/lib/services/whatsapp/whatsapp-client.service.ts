@@ -1,5 +1,5 @@
 import { IWhatsappListMessage,IWhatsappButtonMessage, IWhatsappTemplateMessage } from "./whatsapp.interface";
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 import socketManager from "./../socket";
 
 import { EventEmitter } from "events";
@@ -118,11 +118,11 @@ export class WhatsappClient {
             if (!clientInstance){
                 logger.error(logFileName,`Client not found ${from}`);
                 return { error: true, message: "CLIENT_NOT_FOUND" };
-            };
+            }
             if (!clientInstance.authState) {
                 logger.error(logFileName,`Client not authenticated ${from}`);
                 return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-            };
+            }
             const data = await clientInstance.sendAnyMessage(sanatizeMobile(to), message);
             return data;
         } catch (e) {

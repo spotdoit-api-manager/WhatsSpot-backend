@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WhatsappClient = exports.eventEmitter = void 0;
-/* eslint-disable @typescript-eslint/interface-name-prefix */
 const socket_1 = __importDefault(require("./../socket"));
 const events_1 = require("events");
 const clients_data_1 = __importDefault(require("../../../data/clients.data"));
@@ -70,12 +69,10 @@ class WhatsappClient {
                     logger_1.default.error(logFileName, `Client not found ${from}`);
                     return { error: true, message: "CLIENT_NOT_FOUND" };
                 }
-                ;
                 if (!clientInstance.authState) {
                     logger_1.default.error(logFileName, `Client not authenticated ${from}`);
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
                 }
-                ;
                 const data = yield clientInstance.sendAnyMessage(utils_1.sanatizeMobile(to), message);
                 return data;
             }

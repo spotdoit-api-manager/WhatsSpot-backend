@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/camelcase */
+
 import { deSanatizeMobile } from "../utils/index";
 import { WhatsappConfig } from "../interfaces/providers.interface";
 import { pilvoConfig, fast2SmsConfig } from "../../config/index";

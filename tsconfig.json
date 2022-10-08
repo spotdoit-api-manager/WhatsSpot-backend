@@ -27,7 +27,7 @@
         }
     },
     "rules": {
-        "interface-name": false
+        "interface-name" : [true, "never-prefix"]
     },
     "include": [
         "src/**/*"

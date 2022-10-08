@@ -128,7 +128,7 @@ class PaytmModel {
                 }
             );
         });
-    };
+    }
 
     private responsePayment(paymentObject: IPaytmPaymentObject) {
         console.log("Response Paytm :", paytmConfig.PAYTM_MERCHANT_KEY);
@@ -145,7 +145,7 @@ class PaytmModel {
                 return reject("Error while verifying checksum");
             }
         });
-    };
+    }
 
 }
 

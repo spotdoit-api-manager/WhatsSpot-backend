@@ -1,7 +1,5 @@
 "use strict";
 /* eslint-disable quotes */
-/* eslint-disable @typescript-eslint/interface-name-prefix */
-/* eslint-disable @typescript-eslint/no-use-before-define */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isWhatsappTemplateMessageType = exports.isWhatsappButtonMessageType = exports.isWhatsappListMessageType = exports.isWhatsappTextMessageType = void 0;
 //validate text message

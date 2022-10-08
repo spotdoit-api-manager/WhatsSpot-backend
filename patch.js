@@ -12,7 +12,7 @@ async function replace(err, filesAndFolders) {
     for(const filePath of filesAndFolders) {
         if(fs.lstatSync(filePath).isDirectory() ) {
             continue;
-        };
+        }
         console.log("patching ",filePath);
         const content = fs.readFileSync(filePath).toString();
         const newContent = content.replace(/baileys/ig, "Whatsapp");

@@ -130,26 +130,6 @@ class UserController {
         //       next(responseHandler.sendError(e));
         //     }
         //   };
-        this.loginViaSocialAccessToken = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-            const responseHandler = new responseHandler_1.default();
-            try {
-                const data = yield user_model_1.default.loginViaSocialAccessToken(req.query);
-                // if user never existed then make user and save it to database
-                responseHandler.reqRes(req, res).onCreate("Sign up Complete", data).send();
-            }
-            catch (e) {
-                next(responseHandler.sendError(e));
-            }
-        });
-        this.socialAuthAddPhone = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-            const responseHandler = new responseHandler_1.default();
-            try {
-                responseHandler.reqRes(req, res).onFetch("Phone Number added", yield user_model_1.default.addPhone(req.query)).send();
-            }
-            catch (e) {
-                next(responseHandler.sendError(e));
-            }
-        });
         this.verifyOtp = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {

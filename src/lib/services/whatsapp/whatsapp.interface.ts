@@ -19,15 +19,15 @@ export interface IImageMessage{
 
 export interface IButtonMessage{
     buttons: [{ 
-        buttonId:String,
+        buttonId:string,
         buttonText:{
             displayText:string
         },
-        type:Number
+        type:number
     }];
     text: string;
-    footer:String,
-    headerType:Number,
+    footer:string,
+    headerType:number,
     
 }
 
@@ -90,9 +90,9 @@ export interface IWhatsappTemplateMessage {
 
 export type ITemplateButtons = IURLButton | ICallButton | IQuickReplyButton;
 export enum ETemplateButtons {
-  URL_BUTTON = 'URL_BUTTON',
-  CALL_BUTTON = 'CALL_BUTTON',
-  QUICK_REPLY_BUTTON = 'QUICK_REPLY_BUTTON'
+  URL_BUTTON = "URL_BUTTON",
+  CALL_BUTTON = "CALL_BUTTON",
+  QUICK_REPLY_BUTTON = "QUICK_REPLY_BUTTON"
 }
 
 export interface IURLButton {

@@ -1,10 +1,10 @@
-import { EWhatsappMessageTypes } from './../../lib/services/whatsapp/whatsapp.enum';
-import { IWhatsappMessage } from './../../lib/services/whatsapp/whatsapp.interface';
+import { EWhatsappMessageTypes } from "./../../lib/services/whatsapp/whatsapp.enum";
+import { IWhatsappMessage } from "./../../lib/services/whatsapp/whatsapp.interface";
 export interface IMessage {
     messageType: EWhatsappMessageTypes;
     message: IWhatsappMessage;
     to: string;
-    status: String;
+    status: string;
     phone: string;
     deviceId: string;
     userId: string;

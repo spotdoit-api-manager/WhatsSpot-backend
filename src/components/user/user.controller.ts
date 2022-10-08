@@ -138,26 +138,8 @@ class UserController {
   //   };
 
 
-  public loginViaSocialAccessToken = async (req: Request, res: Response, next: NextFunction) => {
-    const responseHandler = new ResponseHandler();
-    try {
-      const data = await userModel.loginViaSocialAccessToken(req.query);
 
-      // if user never existed then make user and save it to database
-      responseHandler.reqRes(req, res).onCreate("Sign up Complete", data).send();
-    } catch (e) {
-      next(responseHandler.sendError(e));
-    }
-  };
 
-  public socialAuthAddPhone = async (req: Request, res: Response, next: NextFunction) => {
-    const responseHandler = new ResponseHandler();
-    try {
-      responseHandler.reqRes(req, res).onFetch("Phone Number added", await userModel.addPhone(req.query)).send();
-    } catch (e) {
-      next(responseHandler.sendError(e));
-    }
-  };
 
   public verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();

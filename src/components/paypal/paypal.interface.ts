@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 export interface IPayPalConfig {
     /**
      * Currency - Defaults to USD if not provided

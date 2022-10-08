@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 import { Document, model, Model, Mongoose, Schema, SchemaType, SchemaTypes } from "mongoose";
 import { IUserPlan, IPLAN } from "./plans.interface";
 

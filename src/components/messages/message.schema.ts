@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 import { IMessage } from "./message.interface";
 import { Document, Model, model, Schema, SchemaType, SchemaTypes } from "mongoose";
 import { validateMobile } from "../../lib/utils";

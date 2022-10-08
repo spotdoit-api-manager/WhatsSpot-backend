@@ -7,13 +7,13 @@ import jwt from "jsonwebtoken";
 
 class SocialAuthenticator {
 
-    public async getFacebookUserInfo(token: string) {
-        const { data } = await axios.get(`https://graph.facebook.com/me?fields=id,first_name,email,last_name&access_token=${token}`);
-        data.given_name = data.first_name;
-        data.family_name = data.last_name;
-        data.picture = "https://polbol-media.s3.ap-south-1.amazonaws.com/ic_user_dummy.jpg";
-        return data;
-    }
+    // public async getFacebookUserInfo(token: string) {
+    //     const { data } = await axios.get(`https://graph.facebook.com/me?fields=id,first_name,email,last_name&access_token=${token}`);
+    //     data.given_name = data.first_name;
+    //     data.family_name = data.last_name;
+    //     data.picture = "https://polbol-media.s3.ap-south-1.amazonaws.com/ic_user_dummy.jpg";
+    //     return data;
+    // }
 
     // private appleClient = jwkClient({jwksUri: 'https://appleid.apple.com/auth/keys'});
 
@@ -91,16 +91,16 @@ class SocialAuthenticator {
     //     return data.access_token;
     // };
 
-    public async getGoogleUserInfo(access_token: string) {
-        const { data } = await axios({
-            url: "https://www.googleapis.com/oauth2/v2/userinfo",
-            method: "get",
-            headers: {
-                Authorization: `Bearer ${access_token}`,
-            },
-        });
-        return data;
-    };
+    // public async getGoogleUserInfo(access_token: string) {
+    //     const { data } = await axios({
+    //         url: "https://www.googleapis.com/oauth2/v2/userinfo",
+    //         method: "get",
+    //         headers: {
+    //             Authorization: `Bearer ${access_token}`,
+    //         },
+    //     });
+    //     return data;
+    // };
 
     // public async getGoogleAccountFromCode(code: any) {
     //     const tokens = await this.getAccessTokenFromCode(code);

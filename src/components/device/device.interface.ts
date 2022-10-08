@@ -1,5 +1,5 @@
 import { CountryCode } from "libphonenumber-js/max";
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 import { IReason } from "./../../lib/services/whatsapp/whatsapp.interface";
 
 

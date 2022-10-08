@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 import {HTTP401Error} from "../utils/httpErrors";
 import jwt from "jsonwebtoken";
 import {NextFunction, Request, Response} from "express";

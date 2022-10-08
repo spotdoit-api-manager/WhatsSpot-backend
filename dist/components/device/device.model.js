@@ -88,7 +88,6 @@ class DeviceModel {
             if (!newDeviceData)
                 throw new httpErrors_1.HTTP400Error("UNKNOWN_ERROR");
             const expiresOn = dayjs_1.default().add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN || "3d").replace("d", "")), "day").toDate().toUTCString();
-            ;
             const keys = yield this.generateNewKey(userId, walletId, newDeviceData._id, { name: process.env.DEFAULT_APIKEY_NAME, expiresOn });
             return newDeviceData;
         });
@@ -139,7 +138,6 @@ class DeviceModel {
             return { message: "QR_REQUESTED" };
         });
     }
-    ;
     removeClient(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
             const device = yield this.findDeviceById(userId, deviceId);
@@ -243,7 +241,6 @@ class DeviceModel {
             return { message: "DEVICE_LOGGEDOUT" };
         });
     }
-    ;
     logoutDevice(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
             const device = yield this.findDeviceById(userId, deviceId);
@@ -492,7 +489,6 @@ class DeviceModel {
                         }
                     ];
                 }
-                ;
                 return result[0];
             }
             catch (err) {

@@ -55,10 +55,6 @@ export declare class UserModel {
         isExisted: boolean;
         userInfo?: undefined;
     }>;
-    loginViaSocialAccessToken(body: any): Promise<{
-        token: string;
-        expiresIn: string;
-    }>;
     updateOtp(id: string): number;
     updateDeviceCode(userId: string, phone: string): Promise<number>;
     validateDeviceCode(userId: string, devicePhone: string, code: number): Promise<void>;
@@ -85,18 +81,6 @@ export declare class UserModel {
     createCookie(tokenData: ITokenData): string;
     private generateValiduserName;
     private randomString;
-    addPhone(body: any): Promise<{
-        _id: any;
-        isExisted: boolean;
-        token: Promise<{
-            token: string;
-            expiresIn: string;
-        }>;
-    } | {
-        _id: any;
-        isExisted: boolean;
-        token?: undefined;
-    }>;
     genrateOTP(phone: string): Promise<{
         res: {
             proceed: boolean;

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
-/* eslint-disable @typescript-eslint/camelcase */
+
 import crypto from "crypto";
 import * as chalk from "chalk";
 import { paymentTemplate, responseTemplate } from "../../lib/utils/htmlTemplate";

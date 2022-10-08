@@ -1,5 +1,5 @@
 import { EPLANS } from "./../plans/plans.interface";
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 export interface IPaytmPaymentObject {
     ORDER_ID: string;
     // CUST_ID: string;

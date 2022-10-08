@@ -4,7 +4,7 @@ import { ETransactionStatus, ETransactionTypes } from "./../transaction/transact
 import { ITransactionModel } from "./../transaction/transaction.schema";
 import axios from "axios";
 import logger from "../../core/logger";
-/* eslint-disable @typescript-eslint/camelcase */
+
 import { EPLANS } from "../plans/plans.interface";
 import transactionModel from "../transaction/transaction.model";
 import plansModel from "../plans/plans.model";
@@ -70,7 +70,7 @@ export class PaytmModel {
       }catch(e){
         return {error:true,message:e.message};
       }
-    };
+    }
 
     public async createPaypalOrder(order: any): Promise<any> {
         const token = await this.getPaypalToken();

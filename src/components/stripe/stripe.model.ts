@@ -2,7 +2,7 @@ import { EPayWith } from "./../../core/enums/pay-with.enum";
 import { EPLANS } from "./../plans/plans.interface";
 import { ITransactionModel } from "./../transaction/transaction.schema";
 import { ETransactionStatus, ETransactionTypes } from "./../transaction/transaction.interface";
-/* eslint-disable @typescript-eslint/camelcase */
+
 import { HTTP401Error } from "../../lib/utils/httpErrors";
 import { commonConfig, stripeConfig } from "../../config";
 import plansModel from "../plans/plans.model";

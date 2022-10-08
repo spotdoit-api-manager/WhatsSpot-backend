@@ -14,16 +14,16 @@ export interface IImageMessage {
 export interface IButtonMessage {
     buttons: [
         {
-            buttonId: String;
+            buttonId: string;
             buttonText: {
                 displayText: string;
             };
-            type: Number;
+            type: number;
         }
     ];
     text: string;
-    footer: String;
-    headerType: Number;
+    footer: string;
+    headerType: number;
 }
 export interface IWhatsappButtonMessage {
     text: string;

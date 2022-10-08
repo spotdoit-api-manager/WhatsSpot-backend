@@ -16,7 +16,6 @@ exports.StripePaymentModel = void 0;
 const pay_with_enum_1 = require("./../../core/enums/pay-with.enum");
 const plans_interface_1 = require("./../plans/plans.interface");
 const transaction_interface_1 = require("./../transaction/transaction.interface");
-/* eslint-disable @typescript-eslint/camelcase */
 const httpErrors_1 = require("../../lib/utils/httpErrors");
 const config_1 = require("../../config");
 const plans_model_1 = __importDefault(require("../plans/plans.model"));

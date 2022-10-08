@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 import { EPLANS } from "./../plans/plans.interface";
 import { Document,Model, model, Schema, SchemaType, SchemaTypes } from "mongoose";
 import { NextFunction } from "express";

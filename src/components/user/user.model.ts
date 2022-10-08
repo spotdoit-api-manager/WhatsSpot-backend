@@ -223,7 +223,7 @@ export class UserModel {
       if(!validateEmail(email)) throw new HTTP400Error("INVALID_EMAIL","Please enter valid email id");
       const phoneInfo = parsePhoneWithCountry(phone,country);
       logger.info("Phone Info is ",phoneInfo);
-      const userExist = await this.findUserByPhone(phoneInfo.number);;
+      const userExist = await this.findUserByPhone(phoneInfo.number);
       if (userExist && userExist.isVerified) throw new HTTP401Error("USER_ALREADY_EXIST");
 
       if(userExist && !userExist.isVerified){
@@ -291,7 +291,7 @@ export class UserModel {
       throw new HTTP400Error(e.message);
     }
 
-  };
+  }
 
   public async isUserExist(body: any) {
     try {
@@ -333,7 +333,7 @@ export class UserModel {
     } catch (e) {
       throw new HTTP400Error(e.message);
     }
-  };
+  }
 
   public async verifyUser(otp: string, userId: string) {
     // console.log("verify user ", userId, otp);
@@ -366,54 +366,7 @@ export class UserModel {
   }
 
 
-  public async loginViaSocialAccessToken(body: any) {
-    try {
-      let user;
-      if (body.authProvider === "google") {
-        user = await socialAuth.getGoogleUserInfo(body.access_token);
-      } else if (body.authProvider === "facebook") {
-        user = await socialAuth.getFacebookUserInfo(body.access_token);
-      } else if (body.authProvider === "apple") {
-        // user = await socialAuth.verifyAppleUserInfo(body);
-      }
-      console.log("Login Info as Fetched By Auth Provider : ", user);
-      const response = await this.authenticateWithAccesToken(user);
 
-      if (!response.isExisted) {
-        let u;
-        const userName = await this.generateValiduserName(user.given_name);
-        if (body.authProvider === "facebook") {
-          u = {
-            role: "user",
-            firstName: `${user.given_name}`,
-            userName: userName,
-            lastName: `${user.family_name}`,
-            phone: body.phone,
-            facebookId: user.id
-          };
-        } else if (body.authProvider === "google") {
-          console.log(user);
-          u = {
-            role: "user",
-            firstName: `${user.given_name}`,
-            userName: userName,
-            lastName: `${user.family_name}`,
-            phone: body.phone,
-            email: user.email,
-          };
-        }
-
-        const data = await this.add(u);
-        const userData = await this.addNewToken(data._id);
-        return userData;
-      } else {
-        const userData = await this.addNewToken(response.userInfo._id);
-        return userData;
-      }
-    } catch (e) {
-      throw new HTTP400Error(e.message);
-    }
-  }
 
 
 
@@ -519,96 +472,6 @@ export class UserModel {
     return Math.round((Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))).toString(36).slice(1);
   }
 
-  public async addPhone(body: any) {
-    try {
-      let user;
-      if (body.authProvider === "google") {
-        user = await socialAuth.getGoogleUserInfo(body.access_token);
-      } else if (body.authProvider === "facebook") {
-        user = await socialAuth.getFacebookUserInfo(body.access_token);
-      }
-      console.log("User At Addding Phone In Social Auth:", user);
-      if (user) {
-        const temp = await User.findOne({ $or: [{ $and: [{ email: { $ne: null } }, { email: { $eq: user.email } }] }, { $and: [{ facebookId: { $ne: null } }, { facebookId: { $eq: user.id } }] }] }); //If User exist but starting facebook auth
-        const updatePhone = await User.findOne({ $or: [{ facebookId: user.id }, { appleSub: user.id }] }); // If user added facebookId but while adding phone number entred worng number and an OTP is sent
-        if (temp) {
-          // if (body.authProvider === 'facebook') {
-          //   await User.updateOne({ phone: body.phone }, { $set: { facebookId: user.id } });
-          // } 
-          // let otpData;
-          // if (body.phone === '9876543219') {
-          //   otpData = { proceed: true };
-          // } else {
-          //   const otp = this.updateOtp(temp._id);
-          //   console.log(otp);
-          //   otpData = await this.sendOtpToMobile(otp, body.phone);
-          //   console.log(otpData);
-          // }
-          // TODO: Uncomment
-          const token = this.addNewToken(temp._id);
-          if (temp) {
-            return { _id: temp._id, isExisted: true, token };
-          } else {
-            throw new HTTP400Error("Unable to Send OTP");
-          }
-        } else if (updatePhone) {
-          const data = await User.findOneAndUpdate({ $or: [{ facebookId: user.id }, { appleSub: user.id }] }, { $set: { phone: body.phone } });
-          if (data) {
-            const otp = this.updateOtp(data._id);
-            console.log(otp);
-            const otpData = await this.sendOtpToMobile(otp, body.phone);
-            console.log(otpData);
-            if (otpData.proceed) {
-              return { _id: data._id, isExisted: false };
-            } else {
-              throw new HTTP400Error("Unable to Send OTP");
-            }
-          } else {
-            throw new HTTP400Error("Error in Facebook User for Updatiing Phone");
-          }
-        } else { // If we are adding a completely new user
-          let u;
-          const userName = await this.generateValiduserName(user.given_name);
-          if (body.authProvider === "facebook") {
-            u = {
-              role: "user",
-              firstName: `${user.given_name}`,
-              userName: userName,
-              lastName: `${user.family_name}`,
-              phone: body.phone,
-              facebookId: user.id
-            };
-          } else if (body.authProvider === "google") {
-            console.log(user);
-            u = {
-              role: "user",
-              firstName: `${user.given_name}`,
-              userName: userName,
-              lastName: `${user.family_name}`,
-              phone: body.phone,
-              email: user.email,
-            };
-          }
-
-          const data = await this.add(u);
-          const otp = this.updateOtp(data._id);
-          console.log(otp);
-          const otpData = await this.sendOtpToMobile(otp, body.phone);
-          console.log(otpData);
-          if (otpData.proceed) {
-            return { _id: data._id, isExisted: false };
-          } else {
-            throw new HTTP400Error("Unable to Send OTP");
-          }
-        }
-      } else {
-        throw new HTTP400Error("Not Authorised to edit phone number");
-      }
-    } catch (e) {
-      console.log(e);
-      throw new HTTP400Error(e);
-    }
-  }
 
   public async genrateOTP(phone: string) {
     const otp = otpGenerator();
@@ -621,7 +484,7 @@ export class UserModel {
     }
 
     return { proceed: false };
-  };
+  }
 
   public async addPhoneNumber(id: string, phone: string) {
     try {
@@ -662,7 +525,7 @@ export class UserModel {
     }
 
     return { proceed: false };
-  };
+  }
   public async getAccountMetrics(userId: string) {
     console.log("user id is ", userId);
 
@@ -954,7 +817,7 @@ export class UserModel {
         }
       }
     ]);
-  };
+  }
 
   public async userDetailedAccountMetrics(userId: string) {
     return await User.aggregate([

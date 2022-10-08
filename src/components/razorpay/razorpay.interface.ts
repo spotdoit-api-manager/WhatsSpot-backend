@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 export interface ICreateOrder{
     amount: number;
     planId: string;

@@ -1,5 +1,5 @@
 /* eslint-disable quotes */
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
 import { ICallButton, IQuickReplyButton, ITemplateButtons, IURLButton } from "../services/whatsapp/whatsapp.interface";

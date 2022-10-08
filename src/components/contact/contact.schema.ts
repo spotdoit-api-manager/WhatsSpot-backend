@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 import { IContact, IContactsGroup } from "./contact.interface";
 import { Document, model, Model, Schema, SchemaType } from "mongoose";
 

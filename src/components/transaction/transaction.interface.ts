@@ -1,5 +1,5 @@
 import { EPayWith } from "./../../core/enums/pay-with.enum";
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 export interface ITransaction{
     amount: number;
     type: ETransactionTypes;

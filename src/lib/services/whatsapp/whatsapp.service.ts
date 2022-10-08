@@ -94,7 +94,7 @@ private interval;
         if (qr) {
           this.emit("qr", { qr: update.qr, error: false });
           return;
-        };
+        }
         if (this.checkIfQrRetryExceeded(lastDisconnect)) {
           this.emit("qr", { error: true, message: "QR_RETRY_EXCEEDED" });
           this.qrRequested = true;
@@ -112,7 +112,7 @@ private interval;
     if (lastDisconnect && (lastDisconnect.error as Boom)?.output?.payload.message ==
       "QR refs attempts ended") {
       return true;
-    };
+    }
     false;
   }
 

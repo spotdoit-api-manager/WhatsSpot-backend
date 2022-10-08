@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 import { IDevice, EApiKeyStatus, IApiKey } from "./device.interface";
 import { Document, Model, model, Schema, Types } from "mongoose";
 import { validateMobile } from "../../lib/utils";

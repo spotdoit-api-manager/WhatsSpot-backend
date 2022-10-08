@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 import {NextFunction, Request, Response, Router} from "express";
 import { ERoles } from "../../components/user/user.interface";
 import {AdminAuthorization, Authorization, RoleAuthorization} from "../middleware/auth.middleware";

@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageQueueService = void 0;
-/* eslint-disable @typescript-eslint/camelcase */
 const device_interface_1 = require("./../../../components/device/device.interface");
 const device_model_1 = __importDefault(require("../../../components/device/device.model"));
 const message_model_1 = __importDefault(require("../../../components/messages/message.model"));
@@ -52,7 +51,6 @@ class MessageQueueService {
             }, FETCH_PENDING_INTERVAL * 1000);
         });
     }
-    ;
     sendPendingMessageToGroup(pendingMessages) {
         return __awaiter(this, void 0, void 0, function* () {
             this.MGCSPF_Counter = 0;
@@ -125,7 +123,6 @@ class MessageQueueService {
             }));
         });
     }
-    ;
     sendErrorMessageForDevice(errorMessages, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {

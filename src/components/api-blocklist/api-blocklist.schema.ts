@@ -1,5 +1,5 @@
 import { IApiBlock } from "./api-blocklist.interface";
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 import { Document, Model, model, Schema, Types } from "mongoose";
 
 export interface IApiBlockListModel extends IApiBlock, Document {

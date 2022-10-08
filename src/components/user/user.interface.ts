@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/interface-name-prefix */
+
 // import { Interface } from "readline";
 
 export interface IUser {

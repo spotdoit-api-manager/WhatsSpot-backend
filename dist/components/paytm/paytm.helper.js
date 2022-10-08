@@ -1,4 +1,5 @@
 "use strict";
+/* eslint-disable @typescript-eslint/no-this-alias */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -22,8 +23,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-/* eslint-disable @typescript-eslint/no-this-alias */
-/* eslint-disable @typescript-eslint/camelcase */
 const crypto_1 = __importDefault(require("crypto"));
 const chalk = __importStar(require("chalk"));
 const htmlTemplate_1 = require("../../lib/utils/htmlTemplate");

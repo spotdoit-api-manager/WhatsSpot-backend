@@ -37,7 +37,6 @@ const phone_handler_1 = require("./../../lib/utils/phone.handler");
 const message_interface_1 = require("./../messages/message.interface");
 const helpers_1 = require("../../lib/helpers");
 const user_schema_1 = require("./user.schema");
-const socialAuth_1 = __importDefault(require("./../../lib/middleware/socialAuth"));
 const bcrypt = __importStar(require("bcryptjs"));
 const otp_handler_1 = require("../../lib/services/otp-handler");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -265,7 +264,6 @@ class UserModel {
                 const phoneInfo = phone_handler_1.parsePhoneWithCountry(phone, country);
                 logger_1.default.info("Phone Info is ", phoneInfo);
                 const userExist = yield this.findUserByPhone(phoneInfo.number);
-                ;
                 if (userExist && userExist.isVerified)
                     throw new httpErrors_1.HTTP401Error("USER_ALREADY_EXIST");
                 if (userExist && !userExist.isVerified) {
@@ -339,7 +337,6 @@ class UserModel {
             }
         });
     }
-    ;
     isUserExist(body) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -381,7 +378,6 @@ class UserModel {
             }
         });
     }
-    ;
     verifyUser(otp, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             // console.log("verify user ", userId, otp);
@@ -413,59 +409,6 @@ class UserModel {
             }
             catch (e) {
                 throw new httpErrors_1.HTTP400Error(e);
-            }
-        });
-    }
-    loginViaSocialAccessToken(body) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                let user;
-                if (body.authProvider === "google") {
-                    user = yield socialAuth_1.default.getGoogleUserInfo(body.access_token);
-                }
-                else if (body.authProvider === "facebook") {
-                    user = yield socialAuth_1.default.getFacebookUserInfo(body.access_token);
-                }
-                else if (body.authProvider === "apple") {
-                    // user = await socialAuth.verifyAppleUserInfo(body);
-                }
-                console.log("Login Info as Fetched By Auth Provider : ", user);
-                const response = yield this.authenticateWithAccesToken(user);
-                if (!response.isExisted) {
-                    let u;
-                    const userName = yield this.generateValiduserName(user.given_name);
-                    if (body.authProvider === "facebook") {
-                        u = {
-                            role: "user",
-                            firstName: `${user.given_name}`,
-                            userName: userName,
-                            lastName: `${user.family_name}`,
-                            phone: body.phone,
-                            facebookId: user.id
-                        };
-                    }
-                    else if (body.authProvider === "google") {
-                        console.log(user);
-                        u = {
-                            role: "user",
-                            firstName: `${user.given_name}`,
-                            userName: userName,
-                            lastName: `${user.family_name}`,
-                            phone: body.phone,
-                            email: user.email,
-                        };
-                    }
-                    const data = yield this.add(u);
-                    const userData = yield this.addNewToken(data._id);
-                    return userData;
-                }
-                else {
-                    const userData = yield this.addNewToken(response.userInfo._id);
-                    return userData;
-                }
-            }
-            catch (e) {
-                throw new httpErrors_1.HTTP400Error(e.message);
             }
         });
     }
@@ -563,107 +506,6 @@ class UserModel {
     randomString(length) {
         return Math.round((Math.pow(36, length + 1) - Math.random() * Math.pow(36, length))).toString(36).slice(1);
     }
-    addPhone(body) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                let user;
-                if (body.authProvider === "google") {
-                    user = yield socialAuth_1.default.getGoogleUserInfo(body.access_token);
-                }
-                else if (body.authProvider === "facebook") {
-                    user = yield socialAuth_1.default.getFacebookUserInfo(body.access_token);
-                }
-                console.log("User At Addding Phone In Social Auth:", user);
-                if (user) {
-                    const temp = yield user_schema_1.User.findOne({ $or: [{ $and: [{ email: { $ne: null } }, { email: { $eq: user.email } }] }, { $and: [{ facebookId: { $ne: null } }, { facebookId: { $eq: user.id } }] }] }); //If User exist but starting facebook auth
-                    const updatePhone = yield user_schema_1.User.findOne({ $or: [{ facebookId: user.id }, { appleSub: user.id }] }); // If user added facebookId but while adding phone number entred worng number and an OTP is sent
-                    if (temp) {
-                        // if (body.authProvider === 'facebook') {
-                        //   await User.updateOne({ phone: body.phone }, { $set: { facebookId: user.id } });
-                        // } 
-                        // let otpData;
-                        // if (body.phone === '9876543219') {
-                        //   otpData = { proceed: true };
-                        // } else {
-                        //   const otp = this.updateOtp(temp._id);
-                        //   console.log(otp);
-                        //   otpData = await this.sendOtpToMobile(otp, body.phone);
-                        //   console.log(otpData);
-                        // }
-                        // TODO: Uncomment
-                        const token = this.addNewToken(temp._id);
-                        if (temp) {
-                            return { _id: temp._id, isExisted: true, token };
-                        }
-                        else {
-                            throw new httpErrors_1.HTTP400Error("Unable to Send OTP");
-                        }
-                    }
-                    else if (updatePhone) {
-                        const data = yield user_schema_1.User.findOneAndUpdate({ $or: [{ facebookId: user.id }, { appleSub: user.id }] }, { $set: { phone: body.phone } });
-                        if (data) {
-                            const otp = this.updateOtp(data._id);
-                            console.log(otp);
-                            const otpData = yield this.sendOtpToMobile(otp, body.phone);
-                            console.log(otpData);
-                            if (otpData.proceed) {
-                                return { _id: data._id, isExisted: false };
-                            }
-                            else {
-                                throw new httpErrors_1.HTTP400Error("Unable to Send OTP");
-                            }
-                        }
-                        else {
-                            throw new httpErrors_1.HTTP400Error("Error in Facebook User for Updatiing Phone");
-                        }
-                    }
-                    else { // If we are adding a completely new user
-                        let u;
-                        const userName = yield this.generateValiduserName(user.given_name);
-                        if (body.authProvider === "facebook") {
-                            u = {
-                                role: "user",
-                                firstName: `${user.given_name}`,
-                                userName: userName,
-                                lastName: `${user.family_name}`,
-                                phone: body.phone,
-                                facebookId: user.id
-                            };
-                        }
-                        else if (body.authProvider === "google") {
-                            console.log(user);
-                            u = {
-                                role: "user",
-                                firstName: `${user.given_name}`,
-                                userName: userName,
-                                lastName: `${user.family_name}`,
-                                phone: body.phone,
-                                email: user.email,
-                            };
-                        }
-                        const data = yield this.add(u);
-                        const otp = this.updateOtp(data._id);
-                        console.log(otp);
-                        const otpData = yield this.sendOtpToMobile(otp, body.phone);
-                        console.log(otpData);
-                        if (otpData.proceed) {
-                            return { _id: data._id, isExisted: false };
-                        }
-                        else {
-                            throw new httpErrors_1.HTTP400Error("Unable to Send OTP");
-                        }
-                    }
-                }
-                else {
-                    throw new httpErrors_1.HTTP400Error("Not Authorised to edit phone number");
-                }
-            }
-            catch (e) {
-                console.log(e);
-                throw new httpErrors_1.HTTP400Error(e);
-            }
-        });
-    }
     genrateOTP(phone) {
         return __awaiter(this, void 0, void 0, function* () {
             const otp = helpers_1.otpGenerator();
@@ -674,7 +516,6 @@ class UserModel {
             return { proceed: false };
         });
     }
-    ;
     addPhoneNumber(id, phone) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -713,7 +554,6 @@ class UserModel {
             return { proceed: false };
         });
     }
-    ;
     getAccountMetrics(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("user id is ", userId);
@@ -1002,7 +842,6 @@ class UserModel {
             ]);
         });
     }
-    ;
     userDetailedAccountMetrics(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield user_schema_1.User.aggregate([
