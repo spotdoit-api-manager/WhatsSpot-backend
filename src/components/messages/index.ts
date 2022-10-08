@@ -70,7 +70,7 @@ export default [
     {
         path:"/message/rawMessage",
         method: "post",
-        // escapeAuth: true,
+        escapeAuth: true,
         
         handler: [messageController.sendRawMessage]
     }
