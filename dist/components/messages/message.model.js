@@ -17,16 +17,16 @@ const plans_interface_1 = require("./../plans/plans.interface");
 const whatsapp_enum_1 = require("./../../lib/services/whatsapp/whatsapp.enum");
 const bson_1 = require("bson");
 const httpErrors_1 = require("../../lib/utils/httpErrors");
-const device_model_1 = __importDefault(require("../device/device.model"));
 const message_interface_1 = require("./message.interface");
 const message_schema_1 = require("./message.schema");
 const whatsapp_client_service_1 = __importDefault(require("../../lib/services/whatsapp/whatsapp-client.service"));
 const wallet_model_1 = __importDefault(require("../wallet/wallet.model"));
-const message_queue_service_1 = __importDefault(require("../../lib/services/whatsapp/message-queue.service"));
+// import messageQueueService from "../../lib/services/whatsapp/message-queue.service";
 const user_model_1 = __importDefault(require("../user/user.model"));
 const plans_model_1 = __importDefault(require("../plans/plans.model"));
 const logger_1 = __importDefault(require("../../core/logger"));
 const phone_handler_1 = require("../../lib/utils/phone.handler");
+const device_utils_1 = __importDefault(require("../device/device.utils"));
 const logFileName = "[MessageModel] : ";
 class MessageModel {
     constructor() {
@@ -41,7 +41,7 @@ class MessageModel {
         return __awaiter(this, void 0, void 0, function* () {
             const messages = yield message_schema_1.MessageQueue.find({ userId: new bson_1.ObjectID(userId), deviceId: new bson_1.ObjectID(deviceId), status: message_interface_1.EMessageStatus.ERROR });
             logger_1.default.info(logFileName, `Found ${messages.length} Failed Messages for user ${userId}`);
-            message_queue_service_1.default.sendErrorMessageForDevice(messages, deviceId);
+            // messageQueueService.sendErrorMessageForDevice(messages, deviceId);
             if (messages)
                 return { error: false, messageCount: messages.length };
             throw new httpErrors_1.HTTP401Error("NO_MESSAGES_FOUND");
@@ -50,7 +50,7 @@ class MessageModel {
     addMessageToQueue(userId, body, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
             logger_1.default.debug(logFileName, "add to queue request", body, deviceId);
-            const device = yield device_model_1.default.findDeviceById(userId, deviceId);
+            const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const messagesBody = [];
@@ -131,7 +131,7 @@ class MessageModel {
         return __awaiter(this, void 0, void 0, function* () {
             if (typeof numbers !== "string")
                 throw new httpErrors_1.HTTP401Error("FAST_LIMIT", "fast messages can be only send to 1 contacts per request , please send to single contact in req body");
-            const device = yield device_model_1.default.findDeviceById(userId, deviceId);
+            const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const results = [];
@@ -146,7 +146,7 @@ class MessageModel {
     sendMessage(userId, to, message, messageType, deviceId, walletId, transactionId = null) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const device = yield device_model_1.default.findDeviceById(userId, deviceId);
+                const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
                 if (!device)
                     throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
                 const { hasActivePlan, isMessageOver, activePlanInfo } = yield this.hasActivePlan(userId);
@@ -157,7 +157,7 @@ class MessageModel {
                     if (!isValidAmount)
                         throw new Error("NOT_ENOUGH_BALANCE");
                 }
-                const result = yield this.sendTypeMessage(messageType, message, device.phone, to);
+                const result = yield whatsapp_client_service_1.default.sendTypeMessage(messageType, message, device.phone, to);
                 if (result.error)
                     throw Error(result.message);
                 if (hasActivePlan) {
@@ -178,7 +178,7 @@ class MessageModel {
     }
     sendImageMessage(userId, deviceId, body) {
         return __awaiter(this, void 0, void 0, function* () {
-            const device = yield device_model_1.default.findDeviceById(userId, deviceId);
+            const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const to = phone_handler_1.parsePhone(body.to).number;
@@ -195,20 +195,6 @@ class MessageModel {
                 return { error: false, data };
             }
             return { error: true, message: "NOT_ADDED" };
-        });
-    }
-    sendTypeMessage(messageType, message, from, to) {
-        return __awaiter(this, void 0, void 0, function* () {
-            switch (messageType) {
-                case whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE:
-                    return yield whatsapp_client_service_1.default.sendTextMessage(from, to, message);
-                case whatsapp_enum_1.EWhatsappMessageTypes.LIST_MESSAGE:
-                    return yield whatsapp_client_service_1.default.sendListMessage(from, to, message);
-                case whatsapp_enum_1.EWhatsappMessageTypes.BUTTON_MESSAGE:
-                    return yield whatsapp_client_service_1.default.sendButtonMessage(from, to, message);
-                case whatsapp_enum_1.EWhatsappMessageTypes.TEMPLATE_MESSAGE:
-                    return yield whatsapp_client_service_1.default.sendTemplateMessage(from, to, message);
-            }
         });
     }
 }

@@ -7,10 +7,9 @@ export declare class DeviceModel {
     private isMaxDeviceLimitReached;
     newDeviceCode(userId: string, walletId: string, newDeviceBody: INewDevice): Promise<{
         proceed: boolean;
-        message?: undefined;
+        message: any;
     } | {
         proceed: boolean;
-        message: any;
     }>;
     private validateDeviceAdd;
     getQr(userId: string, deviceId: string): Promise<{
@@ -47,17 +46,8 @@ export declare class DeviceModel {
     private generateDeviceKey;
     signDeviceToken: (apiKeyData: IDeviceTokenData, expiresIn: string) => string;
     private getTotalAvailableApiKeys;
-    updateDevice(deviceId: string, clientData: any): Promise<{
-        error: boolean;
-        message: string;
-    } | {
-        error: boolean;
-        message?: undefined;
-    }>;
     findDeviceByPhone(phone: string): Promise<IDeviceModel>;
-    findDeviceById(userId: string, deviceId: string): Promise<IDeviceModel>;
     findDeviceByUseId(userId: string): Promise<any>;
-    findDeviceByCondition(condition: any): Promise<any[]>;
     findDeviceByIdAndUserId(deviceId: string, userId: string): Promise<any>;
     fetchDeviceMetrics(deviceId: string): Promise<any>;
     retryFailedMessage(userId: string, deviceId: string): Promise<{

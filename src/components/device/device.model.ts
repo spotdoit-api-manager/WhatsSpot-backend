@@ -22,6 +22,7 @@ import spotSchedular from "../../lib/services/schedular";
 import { parsePhoneWithCountry } from "../../lib/utils/phone.handler";
 import { deviceProjection } from "../../lib/values/projection.values";
 import plansModel from "../plans/plans.model";
+import deviceUtils from "./device.utils";
 
 const logFileName = "[DeviceModal] : ";
 export class DeviceModel {
@@ -72,7 +73,7 @@ export class DeviceModel {
         else if (device && device.userId != userId) throw new HTTP401Error("DEVICE_ALREADY_REGISTERD", "This device is already added by some user");
     }
     public async getQr(userId: string, deviceId: string) {
-        const device = await this.findDeviceById(userId, deviceId);
+        const device = await deviceUtils.findDeviceById(userId, deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         if (device.authState) return { error: true, message: "ALREADY_AUTHENTICATED" };
         // if (!device.authState && device.reason && device.reason.statusCode === DisconnectReason.loggedOut) {
@@ -83,7 +84,7 @@ export class DeviceModel {
     }
 
     public async removeClient(userId: string, deviceId: string) {
-        const device = await this.findDeviceById(userId, deviceId);
+        const device = await deviceUtils.findDeviceById(userId, deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const data = whatsappClientService.removeClientInstanceByPhone(device.phone);
         return { message: "CLIENT_REMOVED" };
@@ -180,17 +181,17 @@ export class DeviceModel {
 
     public async deleteAuth(userId: string, deviceId: string) {
         console.log("params ", userId, deviceId);
-        const device = await this.findDeviceById(userId, deviceId);
+        const device = await deviceUtils.findDeviceById(userId, deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
         const res: any = await fileManagement.deleteFile(authFilePath);
         if (res.error) throw new HTTP401Error(res.message);
-        await this.updateDevice(device._id, { reason: null });
+        await deviceUtils.updateDevice(device._id, { reason: null });
         return { message: "DEVICE_LOGGEDOUT" };
     }
 
     public async logoutDevice(userId: string, deviceId: string) {
-        const device = await this.findDeviceById(userId, deviceId);
+        const device = await deviceUtils.findDeviceById(userId, deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
 
@@ -287,12 +288,6 @@ export class DeviceModel {
         ]);
         return result[0].count;
     }
-    public async updateDevice(deviceId: string, clientData: any) {
-        const options = { upsert: true, new: true, setDefaultsOnInsert: true };
-        const client = await Device.findByIdAndUpdate(deviceId, { ...clientData }, options);
-        if (!client) return { error: true, message: "some error occurred" };
-        return { error: false };
-    }
 
 
     public async findDeviceByPhone(phone: string) {
@@ -300,22 +295,14 @@ export class DeviceModel {
         return device;
     }
 
-    public async findDeviceById(userId: string, deviceId: string) {
-        const device = await Device.findOne({ userId: new ObjectID(userId), _id: new ObjectID(deviceId), "isDeleted.status": false });
-        return device;
-    }
+  
 
     public async findDeviceByUseId(userId: string) {
         const devices = await Device.find({ userId: userId, "isDeleted.status": false }).lean();
         return devices;
     }
 
-    public async findDeviceByCondition(condition) {
-        const data = await Device.aggregate([{
-            $match: condition
-        }]);
-        return data;
-    }
+
 
     public async findDeviceByIdAndUserId(deviceId: string, userId: string) {
         const result = await Device.aggregate([

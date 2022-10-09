@@ -1,8 +1,9 @@
 /// <reference types="node" />
-import { IWhatsappListMessage, IWhatsappButtonMessage, IWhatsappTemplateMessage } from "./whatsapp.interface";
+import { IWhatsappListMessage, IWhatsappButtonMessage, IWhatsappTemplateMessage, IWhatsappMessage } from "./whatsapp.interface";
 import { EventEmitter } from "events";
 import Whatsapp from "./whatsapp.service";
 import { IImageMessage, IWhatsappTextMessage } from "./whatsapp.interface";
+import { EWhatsappMessageTypes } from "./whatsapp.enum";
 interface IWhatsappClient {
     [phone: string]: number;
 }
@@ -33,6 +34,7 @@ export declare class WhatsappClient {
     sendRawMessage(phone: string, to: string, message: any): Promise<any>;
     sendImageMessage: (phone: string, to: string, msg: IImageMessage) => Promise<any>;
     initializeAllClients(): Promise<void>;
+    sendTypeMessage(messageType: EWhatsappMessageTypes, message: IWhatsappMessage, from: string, to: string): Promise<any>;
 }
 declare const _default: WhatsappClient;
 export default _default;

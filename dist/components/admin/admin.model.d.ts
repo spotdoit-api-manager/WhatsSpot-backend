@@ -22,7 +22,6 @@ export declare class AdminModel {
     fetchUsersBaseList(): Promise<any[]>;
     userDetailedAccountMetrics(userId: string): Promise<any[]>;
     getDeviceData(deviceId: string): Promise<any>;
-    isSuperAdmin(adminId: string): Promise<boolean>;
     addNewAdmin(adminId: string, body: IAdminUser): Promise<IAdminUserModel>;
     fetchAdmins(): Promise<IAdminUserModel[]>;
     convertToSuperAdmin(superAdminId: string, adminId: string): Promise<IAdminUserModel>;
@@ -51,9 +50,10 @@ export declare class AdminModel {
     updateOtp(id: string): number;
     sendOtpToMobile(otp: number, phone: string): Promise<{
         proceed: boolean;
-        message: any;
+        message?: undefined;
     } | {
         proceed: boolean;
+        message: any;
     }>;
     addProduct(adminId: string, productBody: IStripeProduct): Promise<any>;
     getProducts(userId: string, limit: number): Promise<any>;

@@ -29,6 +29,13 @@ const Port = process.env.PORT ? +process.env.PORT : 8000;
 // // Create http server [non ssl]
 const server = http_1.createServer(app_1.app);
 socket_1.default.socketServer(server);
+process.on("unhandledRejection", (reason, p) => {
+    console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+    // application specific logging, throwing an error, or other logic here
+});
+process.on("uncaughtException", function (exception) {
+    console.log(exception);
+});
 server.listen(Port, () => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.default.info(`Listening to port ${Port}`);
     yield exchange_rate_service_1.startExchangeRateService();

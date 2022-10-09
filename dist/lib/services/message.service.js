@@ -15,9 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.OTPMessagesService = void 0;
 const index_1 = require("../../config/index");
 const axios_1 = __importDefault(require("axios"));
-const message_model_1 = __importDefault(require("../../components/messages/message.model"));
-const whatsapp_enum_1 = require("./whatsapp/whatsapp.enum");
 const logger_1 = __importDefault(require("../utils/logger"));
+// import whatsappClientService from "./whatsapp/whatsapp-client.service";
 // const plivo = require("plivo");
 const logFileName = "[OTPService] : ";
 class OTPMessagesService {
@@ -86,7 +85,7 @@ class OTPMessagesService {
     }
     sendWhatsappMessage(to, message) {
         try {
-            message_model_1.default.sendTypeMessage(whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, { text: message }, process.env.TEST_MESSAGE_DEVICE_NUMBER, to);
+            // whatsappClientService.sendTypeMessage(EWhatsappMessageTypes.TEXT_MESSAGE,{text:message},process.env.TEST_MESSAGE_DEVICE_NUMBER,to);
         }
         catch (e) {
             logger_1.default.info(logFileName, `Error sending whatsapp message to ${to}`);

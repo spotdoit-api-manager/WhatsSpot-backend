@@ -51,6 +51,7 @@ const schedular_1 = __importDefault(require("../../lib/services/schedular"));
 const phone_handler_1 = require("../../lib/utils/phone.handler");
 const projection_values_1 = require("../../lib/values/projection.values");
 const plans_model_1 = __importDefault(require("../plans/plans.model"));
+const device_utils_1 = __importDefault(require("./device.utils"));
 const logFileName = "[DeviceModal] : ";
 class DeviceModel {
     constructor() {
@@ -126,7 +127,7 @@ class DeviceModel {
     }
     getQr(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const device = yield this.findDeviceById(userId, deviceId);
+            const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             if (device.authState)
@@ -140,7 +141,7 @@ class DeviceModel {
     }
     removeClient(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const device = yield this.findDeviceById(userId, deviceId);
+            const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const data = whatsapp_client_service_1.default.removeClientInstanceByPhone(device.phone);
@@ -230,20 +231,20 @@ class DeviceModel {
     deleteAuth(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("params ", userId, deviceId);
-            const device = yield this.findDeviceById(userId, deviceId);
+            const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
             const res = yield file_management_1.default.deleteFile(authFilePath);
             if (res.error)
                 throw new httpErrors_1.HTTP401Error(res.message);
-            yield this.updateDevice(device._id, { reason: null });
+            yield device_utils_1.default.updateDevice(device._id, { reason: null });
             return { message: "DEVICE_LOGGEDOUT" };
         });
     }
     logoutDevice(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const device = yield this.findDeviceById(userId, deviceId);
+            const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
@@ -336,24 +337,9 @@ class DeviceModel {
             return result[0].count;
         });
     }
-    updateDevice(deviceId, clientData) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const options = { upsert: true, new: true, setDefaultsOnInsert: true };
-            const client = yield device_schema_1.Device.findByIdAndUpdate(deviceId, Object.assign({}, clientData), options);
-            if (!client)
-                return { error: true, message: "some error occurred" };
-            return { error: false };
-        });
-    }
     findDeviceByPhone(phone) {
         return __awaiter(this, void 0, void 0, function* () {
             const device = yield device_schema_1.Device.findOne({ phone, "isDeleted.status": false });
-            return device;
-        });
-    }
-    findDeviceById(userId, deviceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const device = yield device_schema_1.Device.findOne({ userId: new bson_1.ObjectID(userId), _id: new bson_1.ObjectID(deviceId), "isDeleted.status": false });
             return device;
         });
     }
@@ -361,14 +347,6 @@ class DeviceModel {
         return __awaiter(this, void 0, void 0, function* () {
             const devices = yield device_schema_1.Device.find({ userId: userId, "isDeleted.status": false }).lean();
             return devices;
-        });
-    }
-    findDeviceByCondition(condition) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const data = yield device_schema_1.Device.aggregate([{
-                    $match: condition
-                }]);
-            return data;
         });
     }
     findDeviceByIdAndUserId(deviceId, userId) {

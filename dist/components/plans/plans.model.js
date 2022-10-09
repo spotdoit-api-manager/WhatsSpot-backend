@@ -22,9 +22,9 @@ const dayjs_1 = __importDefault(require("dayjs"));
 const user_model_1 = __importDefault(require("../user/user.model"));
 const plan_manager_service_1 = __importDefault(require("../../lib/services/plan.manager.service"));
 const transaction_model_1 = __importDefault(require("../transaction/transaction.model"));
-const admin_model_1 = __importDefault(require("../admin/admin.model"));
 const logger_1 = __importDefault(require("../../lib/utils/logger"));
 const pay_with_enum_1 = require("../../core/enums/pay-with.enum");
+const admin_utils_1 = __importDefault(require("../admin/admin.utils"));
 const logFileName = "[PlanModel] : ";
 class PlansModel {
     fetchPlanById(planId) {
@@ -60,7 +60,7 @@ class PlansModel {
         return __awaiter(this, void 0, void 0, function* () {
             if (planId == plans_interface_1.EPLANS.PAYG)
                 throw new httpErrors_1.HTTP401Error("PAYG_PLAN_NOT_ALLOWED");
-            yield admin_model_1.default.isSuperAdmin(adminId);
+            yield admin_utils_1.default.isSuperAdmin(adminId);
             const userActivePlan = yield user_model_1.default.fetchUserActivePlan(userId);
             if (userActivePlan && userActivePlan.planStatus === plans_interface_1.EPlanStatus.ACTIVE) {
                 throw new httpErrors_1.HTTP401Error("ALREADY_HAS_ACTIVE_PLAN", "User already has an active plan");

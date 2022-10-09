@@ -35,11 +35,11 @@ const whatsapp_utils_1 = require("./whatsapp-utils");
 const events_1 = require("events");
 const pino_1 = __importDefault(require("pino"));
 const baileys_md_1 = __importStar(require("@adiwajshing/baileys-md"));
-const device_model_1 = __importDefault(require("./../../../components/device/device.model"));
 const instance_provider_1 = __importDefault(require("./instance.provider"));
 const logger_1 = __importDefault(require("../../../core/logger"));
 const notify_service_1 = __importDefault(require("../notify.service"));
 const file_management_1 = __importDefault(require("../../../lib/helpers/file.management"));
+const device_utils_1 = __importDefault(require("../../../components/device/device.utils"));
 const logFileName = "[WhatsappService] : ";
 const refreshInterval = 1800; //in seconds
 class Whatsapp extends events_1.EventEmitter {
@@ -232,7 +232,7 @@ class Whatsapp extends events_1.EventEmitter {
                 if (e.message == "Connection Closed") {
                     return this.reconnectClient();
                 }
-                yield device_model_1.default.updateDevice(this.deviceId, {
+                yield device_utils_1.default.updateDevice(this.deviceId, {
                     authState: false, reason: e.message
                 });
                 return { status: false };
@@ -245,7 +245,7 @@ class Whatsapp extends events_1.EventEmitter {
             this.qrRequested = true;
             this.qrInProcess = false;
             this.emit("authenticated", { phone: this.phone });
-            device_model_1.default.updateDevice(this.deviceId, {
+            device_utils_1.default.updateDevice(this.deviceId, {
                 authState: true, reason: null
             });
             notify_service_1.default.deviceAuthorized(this.deviceId);
@@ -274,7 +274,7 @@ class Whatsapp extends events_1.EventEmitter {
             else {
                 const reason = this.getDisconnectReason(lastDisconnect);
                 this.deleteAuthFile();
-                yield device_model_1.default.updateDevice(this.deviceId, {
+                yield device_utils_1.default.updateDevice(this.deviceId, {
                     authState: false, reason
                 });
                 notify_service_1.default.deviceConnectionClosed(this.deviceId, reason);
@@ -289,7 +289,7 @@ class Whatsapp extends events_1.EventEmitter {
     updateDeviceStatus(authState, reason) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.removed) {
-                return yield device_model_1.default.updateDevice(this.deviceId, {
+                return yield device_utils_1.default.updateDevice(this.deviceId, {
                     authState, reason
                 });
             }

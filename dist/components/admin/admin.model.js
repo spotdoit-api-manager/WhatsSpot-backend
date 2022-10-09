@@ -48,6 +48,7 @@ const transaction_model_1 = __importDefault(require("../transaction/transaction.
 const pay_with_enum_1 = require("../../core/enums/pay-with.enum");
 const qr_pay_model_1 = __importDefault(require("../qrpay/qr-pay.model"));
 const emailService = __importStar(require("../../lib/services/email.service"));
+const admin_utils_1 = __importDefault(require("./admin.utils"));
 const logFileName = "[AdminModel] : ";
 class AdminModel {
     constructor() {
@@ -100,20 +101,9 @@ class AdminModel {
             return yield device_model_1.default.fetchDeviceMetrics(deviceId);
         });
     }
-    isSuperAdmin(adminId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const adminUser = yield admin_schema_1.AdminUser.findById(adminId);
-            if (!adminUser)
-                throw new httpErrors_2.HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can make Admin User Super Admin");
-            if (adminUser.isSuperAdmin) {
-                return true;
-            }
-            return false;
-        });
-    }
     addNewAdmin(adminId, body) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!(yield this.isSuperAdmin(adminId)))
+            if (!(yield admin_utils_1.default.isSuperAdmin(adminId)))
                 throw new httpErrors_2.HTTP401Error("OPERATION_NOT_ALLOWED", "new admin can only added by super admins");
             body.isSuperAdmin = false;
             const newAdminUser = new admin_schema_1.AdminUser(body);
@@ -127,21 +117,21 @@ class AdminModel {
     }
     convertToSuperAdmin(superAdminId, adminId) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!(yield this.isSuperAdmin(superAdminId)))
+            if (!(yield admin_utils_1.default.isSuperAdmin(superAdminId)))
                 throw new httpErrors_2.HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can make Admin User Super Admin");
             return yield admin_schema_1.AdminUser.findByIdAndUpdate(adminId, { isSuperAdmin: true });
         });
     }
     convertToNormalAdmin(superAdminId, adminId) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!(yield this.isSuperAdmin(superAdminId)))
+            if (!(yield admin_utils_1.default.isSuperAdmin(superAdminId)))
                 throw new httpErrors_2.HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can make Admin User Normal Admin");
             return yield admin_schema_1.AdminUser.findByIdAndUpdate(adminId, { isSuperAdmin: false });
         });
     }
     removeAdmin(superAdminId, adminId) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!(yield this.isSuperAdmin(superAdminId)))
+            if (!(yield admin_utils_1.default.isSuperAdmin(superAdminId)))
                 throw new httpErrors_2.HTTP401Error("OPERATION_NOT_ALLOWED", "Admins can only be removed by super admins");
             return yield admin_schema_1.AdminUser.findByIdAndDelete(adminId);
         });
@@ -216,7 +206,7 @@ class AdminModel {
     // !! STRIPE
     addProduct(adminId, productBody) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!(yield this.isSuperAdmin(adminId)))
+            if (!(yield admin_utils_1.default.isSuperAdmin(adminId)))
                 throw new httpErrors_2.HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can add new Stripe Product");
             return yield stripe_model_1.default.addProduct(productBody);
         });
@@ -252,7 +242,7 @@ class AdminModel {
     }
     sendEmail(adminId, to, subject, message) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!(yield this.isSuperAdmin(adminId)))
+            if (!(yield admin_utils_1.default.isSuperAdmin(adminId)))
                 throw new httpErrors_2.HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can send email");
             return yield emailService.sendMail(to, subject, message);
         });

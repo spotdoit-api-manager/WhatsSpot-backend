@@ -11,6 +11,7 @@ import transactionModel from "../transaction/transaction.model";
 import adminModel from "../admin/admin.model";
 import logger from "../../lib/utils/logger";
 import { EPayWith } from "../../core/enums/pay-with.enum";
+import adminUtils from "../admin/admin.utils";
 
 const logFileName ="[PlanModel] : ";
 export class PlansModel{
@@ -41,7 +42,7 @@ public async updatePlan(adminId: string,planId: string,planUpdate: any){
 
 public async activateUserPlan(adminId: string,userId: string,planId: string,reason: string="Admin Activated "){//by admin
     if(planId == EPLANS.PAYG)throw new HTTP401Error("PAYG_PLAN_NOT_ALLOWED");
-    await adminModel.isSuperAdmin(adminId);
+    await adminUtils.isSuperAdmin(adminId);
     const userActivePlan = await userModel.fetchUserActivePlan(userId);
     if(userActivePlan && userActivePlan.planStatus === EPlanStatus.ACTIVE){
         throw new HTTP401Error("ALREADY_HAS_ACTIVE_PLAN","User already has an active plan");

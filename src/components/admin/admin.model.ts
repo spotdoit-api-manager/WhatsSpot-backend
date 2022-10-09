@@ -20,6 +20,7 @@ import { EPayWith } from "../../core/enums/pay-with.enum";
 import { ETransactionStatus } from "../transaction/transaction.interface";
 import qrPayModel from "../qrpay/qr-pay.model";
 import * as emailService from "../../lib/services/email.service";
+import adminUtils from "./admin.utils";
 
 const logFileName = "[AdminModel] : ";
 export class AdminModel {
@@ -58,17 +59,9 @@ export class AdminModel {
     public async getDeviceData(deviceId: string) {
         return await deviceModel.fetchDeviceMetrics(deviceId);
     }
-    public async isSuperAdmin(adminId: string): Promise<boolean> {
-        const adminUser = await AdminUser.findById(adminId);
-        if (!adminUser) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can make Admin User Super Admin");
-        if (adminUser.isSuperAdmin) {
-            return true;
-        }
-        return false;
-    }
-
+   
     public async addNewAdmin(adminId: string, body: IAdminUser) {
-        if (!await this.isSuperAdmin(adminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "new admin can only added by super admins");
+        if (!await adminUtils.isSuperAdmin(adminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "new admin can only added by super admins");
         body.isSuperAdmin = false;
         const newAdminUser = new AdminUser(body);
         return await newAdminUser.save();
@@ -78,17 +71,17 @@ export class AdminModel {
     }
 
     public async convertToSuperAdmin(superAdminId: string, adminId: string) {
-        if (!await this.isSuperAdmin(superAdminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can make Admin User Super Admin");
+        if (!await adminUtils.isSuperAdmin(superAdminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can make Admin User Super Admin");
         return await AdminUser.findByIdAndUpdate(adminId, { isSuperAdmin: true });
     }
 
     public async convertToNormalAdmin(superAdminId: string, adminId: string) {
-        if (!await this.isSuperAdmin(superAdminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can make Admin User Normal Admin");
+        if (!await adminUtils.isSuperAdmin(superAdminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can make Admin User Normal Admin");
         return await AdminUser.findByIdAndUpdate(adminId, { isSuperAdmin: false });
     }
 
     public async removeAdmin(superAdminId: string, adminId: string) {
-        if (!await this.isSuperAdmin(superAdminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Admins can only be removed by super admins");
+        if (!await adminUtils.isSuperAdmin(superAdminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Admins can only be removed by super admins");
         return await AdminUser.findByIdAndDelete(adminId);
     }
     private findAdminUserByPhone(phone: string) {
@@ -170,7 +163,7 @@ export class AdminModel {
     // !! STRIPE
 
     public async addProduct(adminId: string, productBody: IStripeProduct) {
-        if (!await this.isSuperAdmin(adminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can add new Stripe Product");
+        if (!await adminUtils.isSuperAdmin(adminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can add new Stripe Product");
         return await stripeModel.addProduct(productBody);
     }
 
@@ -200,7 +193,7 @@ export class AdminModel {
     }
 
     public async sendEmail(adminId: string,to: string,subject: string,message: string){
-        if (!await this.isSuperAdmin(adminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can send email");
+        if (!await adminUtils.isSuperAdmin(adminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can send email");
         return await emailService.sendMail(to,subject,message);
     }
 

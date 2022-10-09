@@ -17,11 +17,12 @@ const socket_1 = __importDefault(require("./../socket"));
 const events_1 = require("events");
 const clients_data_1 = __importDefault(require("../../../data/clients.data"));
 const whatsapp_service_1 = __importDefault(require("./whatsapp.service"));
-const device_model_1 = __importDefault(require("../../../components/device/device.model"));
 const utils_1 = require("../../../lib/utils");
 const instance_provider_1 = __importDefault(require("./instance.provider"));
 const logger_1 = __importDefault(require("../../../core/logger"));
 const httpErrors_1 = require("../../../lib/utils/httpErrors");
+const device_utils_1 = __importDefault(require("../../../components/device/device.utils"));
+const whatsapp_enum_1 = require("./whatsapp.enum");
 const logFileName = "[WhatsappClientService] : ";
 exports.eventEmitter = new events_1.EventEmitter();
 class WhatsappClient {
@@ -214,7 +215,7 @@ class WhatsappClient {
             if (process.env.RECONNECT_CLIENT === "true") {
                 logger_1.default.info(logFileName, "INITIALIZING ALL CLIENTS...");
                 const condition = { authState: true };
-                const devices = yield device_model_1.default.findDeviceByCondition(condition);
+                const devices = yield device_utils_1.default.findDeviceByCondition(condition);
                 logger_1.default.info(logFileName, "Total Clients to Initialize: ", devices.length);
                 for (let i = 0; i < devices.length; i++) {
                     const device = devices[i];
@@ -225,6 +226,20 @@ class WhatsappClient {
             }
             else {
                 logger_1.default.warn(logFileName, "Client initialization is disabled");
+            }
+        });
+    }
+    sendTypeMessage(messageType, message, from, to) {
+        return __awaiter(this, void 0, void 0, function* () {
+            switch (messageType) {
+                case whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE:
+                    return yield this.sendTextMessage(from, to, message);
+                case whatsapp_enum_1.EWhatsappMessageTypes.LIST_MESSAGE:
+                    return yield this.sendListMessage(from, to, message);
+                case whatsapp_enum_1.EWhatsappMessageTypes.BUTTON_MESSAGE:
+                    return yield this.sendButtonMessage(from, to, message);
+                case whatsapp_enum_1.EWhatsappMessageTypes.TEMPLATE_MESSAGE:
+                    return yield this.sendTemplateMessage(from, to, message);
             }
         });
     }

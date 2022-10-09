@@ -23,6 +23,7 @@ import logger from "../../../core/logger";
 import notifyService from "../notify.service";
 import fileManagement from "../../../lib/helpers/file.management";
 import { EWhatsappMessageTypes } from "./whatsapp.enum";
+import deviceUtils from "../../../components/device/device.utils";
 
 const logFileName = "[WhatsappService] : ";
 const refreshInterval = 1800; //in seconds
@@ -204,7 +205,7 @@ private interval;
       if(e.message == "Connection Closed"){
         return this.reconnectClient();
       }
-      await deviceModel.updateDevice(this.deviceId, {
+      await deviceUtils.updateDevice(this.deviceId, {
         authState: false, reason:e.message
       });
       return {status:false};
@@ -216,7 +217,7 @@ private interval;
     this.qrRequested = true;
     this.qrInProcess = false;
     this.emit("authenticated", { phone: this.phone });
-     deviceModel.updateDevice(this.deviceId, {
+     deviceUtils.updateDevice(this.deviceId, {
       authState: true, reason: null
     });
 
@@ -242,7 +243,7 @@ private interval;
     else {
       const reason = this.getDisconnectReason(lastDisconnect);
       this.deleteAuthFile();
-      await deviceModel.updateDevice(this.deviceId, {
+      await deviceUtils.updateDevice(this.deviceId, {
         authState: false, reason
       });
       notifyService.deviceConnectionClosed(this.deviceId,reason);
@@ -258,7 +259,7 @@ private interval;
   private async updateDeviceStatus(authState: boolean,reason: IReason){
     if(!this.removed){
 
-      return await deviceModel.updateDevice(this.deviceId, {
+      return await deviceUtils.updateDevice(this.deviceId, {
         authState, reason
       });
     }else{

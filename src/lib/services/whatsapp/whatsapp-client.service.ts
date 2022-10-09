@@ -1,4 +1,4 @@
-import { IWhatsappListMessage,IWhatsappButtonMessage, IWhatsappTemplateMessage } from "./whatsapp.interface";
+import { IWhatsappListMessage,IWhatsappButtonMessage, IWhatsappTemplateMessage, IWhatsappMessage } from "./whatsapp.interface";
 
 import socketManager from "./../socket";
 
@@ -11,6 +11,8 @@ import { sanatizeMobile } from "../../../lib/utils";
 import instanceProvider from "./instance.provider";
 import logger from "../../../core/logger";
 import { HTTP400Error } from "../../../lib/utils/httpErrors";
+import deviceUtils from "../../../components/device/device.utils";
+import { EWhatsappMessageTypes } from "./whatsapp.enum";
 interface IWhatsappClient {
     [phone: string]: number;
 }
@@ -204,7 +206,7 @@ export class WhatsappClient {
 
             logger.info(logFileName,"INITIALIZING ALL CLIENTS...");
             const condition = { authState: true };
-            const devices = await deviceModel.findDeviceByCondition(condition);
+            const devices = await deviceUtils.findDeviceByCondition(condition);
             logger.info(logFileName,"Total Clients to Initialize: ", devices.length);
         for (let i = 0; i < devices.length; i++) {
             const device = devices[i];
@@ -218,6 +220,20 @@ export class WhatsappClient {
     }
 }
 
+public async sendTypeMessage(messageType: EWhatsappMessageTypes,message: IWhatsappMessage,from: string,to: string){
+        
+    switch(messageType){
+        case EWhatsappMessageTypes.TEXT_MESSAGE:
+            return await this.sendTextMessage(from, to, message as IWhatsappTextMessage);
+        case EWhatsappMessageTypes.LIST_MESSAGE:
+            return await this.sendListMessage(from, to, message as IWhatsappListMessage);    
+        case EWhatsappMessageTypes.BUTTON_MESSAGE:
+            return await this.sendButtonMessage(from, to, message as IWhatsappButtonMessage);    
+        case EWhatsappMessageTypes.TEMPLATE_MESSAGE:
+             return await this.sendTemplateMessage(from, to, message as IWhatsappTemplateMessage);    
+
+    }
+}
 
 }
 export default new WhatsappClient();

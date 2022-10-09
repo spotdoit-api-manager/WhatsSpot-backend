@@ -6,12 +6,11 @@ import { IImageMessage, IWhatsappMessage, IWhatsappTextMessage,IWhatsappListMess
 import { sanatizeMobile } from "./../../lib/utils/index";
 import { validateMobile } from "../../lib/utils";
 import { HTTP400Error, HTTP401Error } from "../../lib/utils/httpErrors";
-import deviceModel from "../device/device.model";
 import { ESendType, IMessage, EMessageStatus } from "./message.interface";
 import { MessageQueue, FastMessage, IMessageModel } from "./message.schema";
 import whatsappClientService from "../../lib/services/whatsapp/whatsapp-client.service";
 import walletModel from "../wallet/wallet.model";
-import messageQueueService from "../../lib/services/whatsapp/message-queue.service";
+// import messageQueueService from "../../lib/services/whatsapp/message-queue.service";
 import userModel from "../user/user.model";
 import plansModel from "../plans/plans.model";
 import { IPLAN, IUserPlan } from "../plans/plans.interface";
@@ -19,6 +18,7 @@ import { IPlanModel, IUserPlanModel } from "../plans/plans.schema";
 import { IContact, IGroupList } from "../contact/contact.interface";
 import logger from "../../core/logger";
 import { parsePhone } from "../../lib/utils/phone.handler";
+import deviceUtils from "../device/device.utils";
 
 const logFileName = "[MessageModel] : ";
 export class MessageModel {
@@ -26,7 +26,7 @@ export class MessageModel {
     public async retryFailedMessage(userId: string, deviceId: string) {
         const messages = await MessageQueue.find({ userId: new ObjectID(userId), deviceId: new ObjectID(deviceId), status: EMessageStatus.ERROR });
         logger.info(logFileName, `Found ${messages.length} Failed Messages for user ${userId}`);
-        messageQueueService.sendErrorMessageForDevice(messages, deviceId);
+        // messageQueueService.sendErrorMessageForDevice(messages, deviceId);
         if (messages) return { error: false, messageCount: messages.length };
         throw new HTTP401Error("NO_MESSAGES_FOUND");
     }
@@ -42,7 +42,7 @@ export class MessageModel {
 
     public async addMessageToQueue(userId: string, body: { groups: IGroupList[]; numbers: string | string[]; message: IWhatsappMessage; isGroup: boolean;messageType: EWhatsappMessageTypes }, deviceId: string) {
         logger.debug(logFileName,"add to queue request", body, deviceId);
-        const device = await deviceModel.findDeviceById(userId,deviceId);
+        const device = await deviceUtils.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
 
         const messagesBody: IMessage[] = [];
@@ -122,7 +122,7 @@ export class MessageModel {
     public async sendFastMessage(userId: string, numbers: string, message: IWhatsappTextMessage,messageType: EWhatsappMessageTypes,deviceId: string, walletId: string) {
         if(typeof numbers !== "string") throw new HTTP401Error("FAST_LIMIT","fast messages can be only send to 1 contacts per request , please send to single contact in req body");
 
-        const device = await deviceModel.findDeviceById(userId,deviceId);
+        const device = await deviceUtils.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const results=[];
             const parsedNumber = parsePhone(numbers).number;
@@ -135,7 +135,7 @@ export class MessageModel {
     }
     public async sendMessage(userId: string, to: string, message: IWhatsappTextMessage,messageType: EWhatsappMessageTypes, deviceId: string, walletId: string,transactionId: string=null) {
         try {
-            const device = await deviceModel.findDeviceById(userId,deviceId);
+            const device = await deviceUtils.findDeviceById(userId,deviceId);
             if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
             const { hasActivePlan, isMessageOver, activePlanInfo } = await this.hasActivePlan(userId);
             if (isMessageOver) throw new HTTP400Error("MESSAGES_EXHAUSTED", "message exhausted for your active plan");
@@ -143,7 +143,7 @@ export class MessageModel {
                 const { isValidAmount, balance } = await walletModel.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
                 if (!isValidAmount) throw new Error("NOT_ENOUGH_BALANCE");
             }
-            const result = await this.sendTypeMessage(messageType,message,device.phone,to);
+            const result = await whatsappClientService.sendTypeMessage(messageType,message,device.phone,to);
             if(result.error) throw Error(result.message);
             if (hasActivePlan) {
                  plansModel.increamentMessageCount(activePlanInfo._id);
@@ -163,7 +163,7 @@ export class MessageModel {
 
 
     public async sendImageMessage(userId: string, deviceId: string,body: any,) {
-        const device = await deviceModel.findDeviceById(userId,deviceId);
+        const device = await deviceUtils.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const to = parsePhone(body.to).number;
         const msg: IImageMessage = { image: body.locationUrl, caption: body.caption || "" };
@@ -179,20 +179,7 @@ export class MessageModel {
         return { error: true, message: "NOT_ADDED" };
     }
 
-    public async sendTypeMessage(messageType: EWhatsappMessageTypes,message: IWhatsappMessage,from: string,to: string){
-        
-        switch(messageType){
-            case EWhatsappMessageTypes.TEXT_MESSAGE:
-                return await whatsappClientService.sendTextMessage(from, to, message as IWhatsappTextMessage);
-            case EWhatsappMessageTypes.LIST_MESSAGE:
-                return await whatsappClientService.sendListMessage(from, to, message as IWhatsappListMessage);    
-            case EWhatsappMessageTypes.BUTTON_MESSAGE:
-                return await whatsappClientService.sendButtonMessage(from, to, message as IWhatsappButtonMessage);    
-            case EWhatsappMessageTypes.TEMPLATE_MESSAGE:
-                 return await whatsappClientService.sendTemplateMessage(from, to, message as IWhatsappTemplateMessage);    
-
-        }
-    }
+   
 
 }
 export default new MessageModel();

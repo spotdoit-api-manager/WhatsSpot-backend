@@ -69,7 +69,6 @@ export declare class MessageModel {
         message: string;
         data?: undefined;
     }>;
-    sendTypeMessage(messageType: EWhatsappMessageTypes, message: IWhatsappMessage, from: string, to: string): Promise<any>;
 }
 declare const _default: MessageModel;
 export default _default;
