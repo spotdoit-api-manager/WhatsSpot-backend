@@ -20,6 +20,7 @@ import { IContact, IGroupList } from "../contact/contact.interface";
 import logger from "../../core/logger";
 import { parsePhone } from "../../lib/utils/phone.handler";
 import deviceUtils from "../device/device.utils";
+import messageQueueService from "../../lib/services/whatsapp/message-queue.service";
 
 const logFileName = "[MessageModel] : ";
 export class MessageModel {
@@ -27,7 +28,7 @@ export class MessageModel {
     public async retryFailedMessage(userId: string, deviceId: string) {
         const messages = await MessageQueue.find({ userId: userId, deviceId: deviceId, status: EMessageStatus.ERROR });
         logger.info(logFileName, `Found ${messages.length} Failed Messages for user ${userId}`);
-        // messageQueueService.sendErrorMessageForDevice(messages, deviceId);
+        messageQueueService.sendErrorMessageForDevice(messages, deviceId);
         if (messages) return { error: false, messageCount: messages.length };
         throw new HTTP401Error("NO_MESSAGES_FOUND");
     }

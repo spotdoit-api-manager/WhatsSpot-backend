@@ -64,7 +64,7 @@ class Whatsapp extends events_1.EventEmitter {
                     auth: this.state,
                     browser: ["Mac OS", "Chrome", "10.15.3"],
                     downloadHistory: false,
-                    // version: [2,2204,13],
+                    version: [2, 2204, 13],
                 };
                 const sock = (0, baileys_md_1.default)(config);
                 this.client = sock;

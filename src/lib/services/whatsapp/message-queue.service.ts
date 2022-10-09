@@ -14,7 +14,8 @@ const logFileName = "[MessageQueueService] : ";
 const MGCSPF= process.env.MGCSPF || 2;//mag group contact send per fetch;
 export class MessageQueueService {
 
-    constructor(){
+
+    public start(){
         this.getPendingMessagesToContacts();
         this.getPendingMessagesToGroup();
     }

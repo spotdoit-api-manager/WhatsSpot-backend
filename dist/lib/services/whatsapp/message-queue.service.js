@@ -28,6 +28,8 @@ const MGCSPF = process.env.MGCSPF || 2; //mag group contact send per fetch;
 class MessageQueueService {
     constructor() {
         this.MGCSPF_Counter = 0;
+    }
+    start() {
         this.getPendingMessagesToContacts();
         this.getPendingMessagesToGroup();
     }

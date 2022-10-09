@@ -28,6 +28,7 @@ const plans_model_1 = __importDefault(require("../plans/plans.model"));
 const logger_1 = __importDefault(require("../../core/logger"));
 const phone_handler_1 = require("../../lib/utils/phone.handler");
 const device_utils_1 = __importDefault(require("../device/device.utils"));
+const message_queue_service_1 = __importDefault(require("../../lib/services/whatsapp/message-queue.service"));
 const logFileName = "[MessageModel] : ";
 class MessageModel {
     constructor() {
@@ -42,7 +43,7 @@ class MessageModel {
         return __awaiter(this, void 0, void 0, function* () {
             const messages = yield message_schema_1.MessageQueue.find({ userId: userId, deviceId: deviceId, status: message_interface_1.EMessageStatus.ERROR });
             logger_1.default.info(logFileName, `Found ${messages.length} Failed Messages for user ${userId}`);
-            // messageQueueService.sendErrorMessageForDevice(messages, deviceId);
+            message_queue_service_1.default.sendErrorMessageForDevice(messages, deviceId);
             if (messages)
                 return { error: false, messageCount: messages.length };
             throw new httpErrors_1.HTTP401Error("NO_MESSAGES_FOUND");

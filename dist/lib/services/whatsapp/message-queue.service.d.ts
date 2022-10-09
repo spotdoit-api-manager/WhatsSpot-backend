@@ -1,6 +1,6 @@
 import { IMessageModel } from "./../../../components/messages/message.schema";
 export declare class MessageQueueService {
-    constructor();
+    start(): void;
     getPendingMessagesToContacts(limit?: number): Promise<void>;
     getPendingMessagesToGroup(limit?: number): Promise<void>;
     private MGCSPF_Counter;

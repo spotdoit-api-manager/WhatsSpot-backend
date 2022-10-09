@@ -13,6 +13,7 @@ import whatsappClientService from "./lib/services/whatsapp/whatsapp-client.servi
 import socketManager from "./lib/services/socket";
 import spotSchedular from "./lib/services/schedular";
 import logger from "./lib/utils/logger";
+import messageQueueService from "./lib/services/whatsapp/message-queue.service";
 
 const logFileName = "[Server]: ";
 // Set PORT in .env or use 3000 by default  
@@ -36,6 +37,7 @@ process.on("unhandledRejection", (reason, p) => {
     logger.info(`Listening to port ${Port}`);
     await startExchangeRateService();
     whatsappClientService.initializeAllClients();
+    messageQueueService.start();
     if(process.env.NODE_ENV === "production") {
         spotSchedular.reScheduleAllApiExpiration();
         spotSchedular.reScheduleAllUserPlanExpiration();
