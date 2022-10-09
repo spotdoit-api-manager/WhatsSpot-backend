@@ -205,6 +205,7 @@ export class DeviceModel {
 
     public async generateNewKey(userId: string, walletId: string, deviceId: string, body: any) {
         if (!body.name || !body.expiresOn) throw new HTTP400Error("Fields missing");
+        console.log(body);
         try {
             let expiresIn = null;
             let expiresOn: any;
@@ -214,7 +215,7 @@ export class DeviceModel {
                 expiresIn = `${Math.floor(diff)}d`;
             } else {
                 expiresOn = dayjs();
-                expiresOn.add(50, "year");
+                expiresOn =expiresOn.add(50, "year");
             }
             const totalAvailableKeys = await this.getTotalAvailableApiKeys(deviceId);
 

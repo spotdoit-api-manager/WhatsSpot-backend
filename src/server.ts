@@ -25,25 +25,25 @@ const server = createServer(app);
 socketManager.socketServer(server);
 
 process.on("unhandledRejection", (reason, p) => {
-    console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
-    // application specific logging, throwing an error, or other logic here
-  });
-  
-  process.on("uncaughtException", function (exception) {
-    console.log(exception); 
-  });
+  console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+  // application specific logging, throwing an error, or other logic here
+});
 
-  server.listen(Port, async() => {
-    logger.info(`Listening to port ${Port}`);
-    await startExchangeRateService();
+process.on("uncaughtException", function (exception) {
+  console.log(exception);
+});
+
+server.listen(Port, async () => {
+  logger.info(`Listening to port ${Port}`);
+  await startExchangeRateService();
+  if (process.env.NODE_ENV === "production") {
     whatsappClientService.initializeAllClients();
     messageQueueService.start();
-    if(process.env.NODE_ENV === "production") {
-        spotSchedular.reScheduleAllApiExpiration();
-        spotSchedular.reScheduleAllUserPlanExpiration();
-    }else{
-        logger.warn(logFileName,"Scheduling is disabled in Development mode");
-    }
+    spotSchedular.reScheduleAllApiExpiration();
+    spotSchedular.reScheduleAllUserPlanExpiration();
+  } else {
+    logger.warn(logFileName, "Scheduling is disabled in Development mode");
+  }
 });
 
 

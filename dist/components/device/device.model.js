@@ -263,6 +263,7 @@ class DeviceModel {
         return __awaiter(this, void 0, void 0, function* () {
             if (!body.name || !body.expiresOn)
                 throw new httpErrors_1.HTTP400Error("Fields missing");
+            console.log(body);
             try {
                 let expiresIn = null;
                 let expiresOn;
@@ -273,7 +274,7 @@ class DeviceModel {
                 }
                 else {
                     expiresOn = (0, dayjs_1.default)();
-                    expiresOn.add(50, "year");
+                    expiresOn = expiresOn.add(50, "year");
                 }
                 const totalAvailableKeys = yield this.getTotalAvailableApiKeys(deviceId);
                 if (totalAvailableKeys < parseInt(process.env.MAX_APIKEY_PER_DEVICE)) {
