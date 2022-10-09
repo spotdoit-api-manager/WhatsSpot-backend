@@ -13,17 +13,17 @@ export class TestMessageModel{
     public async sendTestMessage(body: any,testMessageId: string|null){
         const tempMsg: IWhatsappTemplateMessage = {
             text: "Welcome to WhatsSpot!!",
-            footer: "This is test message",
+            footer: "This is test template message",
             templateButtons: [
                 {index: 1, urlButton: {displayText: "Show Api Documentation", url: "https://www.whatsspot.in/docs/index.html"}},
                 {index: 3, urlButton: {displayText: "View Plans",url:"https://www.whatsspot.in/#plans"}},
             ]
         };
-            // const result  = await whatsappClientService.sendTemplateMessage(testMessageConfig.devicePhone,body.to,tempMsg);
-            const textMsg: IWhatsappTextMessage = {
-                text:"Welcome to WhatsSpot!!\nThis is a test message."
-            };
-            const result  = await whatsappClientService.sendTextMessage(testMessageConfig.devicePhone,body.to,textMsg);
+            const result  = await whatsappClientService.sendTemplateMessage(testMessageConfig.devicePhone,body.to,tempMsg);
+            // const textMsg: IWhatsappTextMessage = {
+            //     text:"Welcome to WhatsSpot!!\nThis is a test message."
+            // };
+            // const result  = await whatsappClientService.sendTextMessage(testMessageConfig.devicePhone,body.to,textMsg);
             if(result.error) throw new HTTP401Error(result.message);
             await this.updateOrCreateTestMessage(body.to,testMessageId);
     }
