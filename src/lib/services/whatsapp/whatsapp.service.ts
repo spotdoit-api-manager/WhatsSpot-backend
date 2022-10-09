@@ -1,22 +1,16 @@
 import { getSerializedPhone } from "./whatsapp-utils";
-import { IButtonMessage, IImageMessage, IReason, IWhatsappListMessage, IWhatsappTextMessage } from "./whatsapp.interface";
+import {  IReason, IWhatsappTextMessage } from "./whatsapp.interface";
 import { EventEmitter } from "events";
 import P from "pino";
 import { Boom } from "@hapi/boom";
 import makeWASocket, {
   DisconnectReason,
-  AnyMessageContent,
   delay,
-
-  WABrowserDescription,
   useSingleFileAuthState,
   AuthenticationState,
-  SocketConfig,
-  CommonSocketConfig,
   
-} from "@adiwajshing/baileys-md";
+} from "@adiwajshing/baileys";
 
-import deviceModel from "./../../../components/device/device.model";
 import path from "path";
 import instanceProvider from "./instance.provider";
 import logger from "../../../core/logger";
@@ -72,7 +66,7 @@ private interval;
         auth: this.state,
         browser:["Mac OS", "Chrome", "10.15.3"],
         downloadHistory: false,
-        version: [2,2204,13],
+        // version: [2,2204,13],
       } ;
       const sock = makeWASocket(config);
       this.client = sock;
