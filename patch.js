@@ -24,3 +24,6 @@ async function replace(err, filesAndFolders) {
 
 // glob("./node_modules/@adiwajshing/baileys/lib/**/*", replace);
 glob("./node_modules/@adiwajshing/baileys-md/lib/**/*", replace);
+
+
+//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
