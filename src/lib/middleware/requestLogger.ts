@@ -1,15 +1,15 @@
 import { Request, Response, NextFunction as Next } from "express";
-import * as chalk from "chalk";
 import { log } from "util";
+import chalk from "chalk";
 
 
-const red = chalk.default.redBright;
-const green = chalk.default.greenBright;
-const yellow = chalk.default.yellowBright;
-const cyan = chalk.default.cyanBright.bold;
-const bgRed = chalk.default.bgRedBright;
-const bgGreen = chalk.default.bgGreenBright;
-const bgYellow = chalk.default.bgYellow;
+const red = chalk.redBright;
+const green = chalk.greenBright;
+const yellow = chalk.yellowBright;
+const cyan = chalk.cyanBright.bold;
+const bgRed = chalk.bgRedBright;
+const bgGreen = chalk.bgGreenBright;
+const bgYellow = chalk.bgYellow;
 
 interface Logger {
     method: string;

@@ -32,8 +32,7 @@ process.on("unhandledRejection", (reason, p) => {
     console.log(exception); 
   });
 
-  
-server.listen(Port, async() => {
+  server.listen(Port, async() => {
     logger.info(`Listening to port ${Port}`);
     await startExchangeRateService();
     whatsappClientService.initializeAllClients();

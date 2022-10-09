@@ -69,8 +69,8 @@ class Connection {
             useFindAndModify: false,
             useUnifiedTopology: true,
             // autoIndex: false, // Don't build indexes
-            reconnectTries: Number.MAX_VALUE,
-            reconnectInterval: 500,
+            // reconnectTries: Number.MAX_VALUE, // Never stop trying to reconnect
+            // reconnectInterval: 500, // Reconnect every 500ms
             poolSize: 10,
             // If not connected, return errors immediately rather than waiting for reconnect
             bufferMaxEntries: 0,
