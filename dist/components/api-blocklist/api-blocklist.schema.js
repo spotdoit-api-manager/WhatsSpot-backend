@@ -39,5 +39,5 @@ apiBlockListSchema.methods.addToList = function () {
         return this.save();
     });
 };
-exports.ApiBlockList = mongoose_1.model("api-block-list", apiBlockListSchema);
+exports.ApiBlockList = (0, mongoose_1.model)("api-block-list", apiBlockListSchema);
 //# sourceMappingURL=api-blocklist.schema.js.map

@@ -74,7 +74,7 @@ class WhatsappClient {
                     logger_1.default.error(logFileName, `Client not authenticated ${from}`);
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
                 }
-                const data = yield clientInstance.sendAnyMessage(utils_1.sanatizeMobile(to), message);
+                const data = yield clientInstance.sendAnyMessage((0, utils_1.sanatizeMobile)(to), message);
                 return data;
             }
             catch (e) {
@@ -89,7 +89,7 @@ class WhatsappClient {
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
                 if (!clientInstance.authState)
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-                const data = yield clientInstance.sendAnyMessage(utils_1.sanatizeMobile(to), message);
+                const data = yield clientInstance.sendAnyMessage((0, utils_1.sanatizeMobile)(to), message);
                 return data;
             }
             catch (e) {
@@ -104,7 +104,7 @@ class WhatsappClient {
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
                 if (!clientInstance.authState)
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-                const data = yield clientInstance.sendAnyMessage(utils_1.sanatizeMobile(to), message);
+                const data = yield clientInstance.sendAnyMessage((0, utils_1.sanatizeMobile)(to), message);
                 return data;
             }
             catch (e) {
@@ -119,7 +119,7 @@ class WhatsappClient {
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
                 if (!clientInstance.authState)
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-                const data = yield clientInstance.sendAnyMessage(utils_1.sanatizeMobile(to), message);
+                const data = yield clientInstance.sendAnyMessage((0, utils_1.sanatizeMobile)(to), message);
                 return data;
             }
             catch (e) {
@@ -202,7 +202,7 @@ class WhatsappClient {
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
                 if (!clientInstance.authState)
                     return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
-                const data = yield clientInstance.sendAnyMessage(utils_1.sanatizeMobile(to), message);
+                const data = yield clientInstance.sendAnyMessage((0, utils_1.sanatizeMobile)(to), message);
                 return data;
             }
             catch (e) {

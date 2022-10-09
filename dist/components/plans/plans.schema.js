@@ -105,6 +105,6 @@ userPlanSchema.methods.savePlan = function () {
         return this.save();
     });
 };
-exports.Plan = mongoose_1.model("Plan", planSchema);
-exports.UserPlan = mongoose_1.model("UserPlan", userPlanSchema);
+exports.Plan = (0, mongoose_1.model)("Plan", planSchema);
+exports.UserPlan = (0, mongoose_1.model)("UserPlan", userPlanSchema);
 //# sourceMappingURL=plans.schema.js.map

@@ -18,34 +18,36 @@ const message_service_1 = __importDefault(require("./message.service"));
 const logger_1 = __importDefault(require("../../core/logger"));
 const libphonenumber_js_1 = require("libphonenumber-js");
 const logFileName = "[OTPHandler] : ";
-exports.sendMessage = (to, message) => __awaiter(void 0, void 0, void 0, function* () {
+const sendMessage = (to, message) => __awaiter(void 0, void 0, void 0, function* () {
     const env = process.env.NODE_ENV;
-    const phone = libphonenumber_js_1.parseNumber(to);
+    const phone = (0, libphonenumber_js_1.parseNumber)(to);
     message_service_1.default.sendWhatsappMessage(to, message);
     if (env == "development")
         return { proceed: true };
     if (phone.country == "IN") {
-        return yield message_service_1.default.sendFast2Sms(index_1.sanatizeMobile(phone.phone), message);
+        return yield message_service_1.default.sendFast2Sms((0, index_1.sanatizeMobile)(phone.phone), message);
     }
     else {
         logger_1.default.info(`Mobile SMS not supported for ${phone === null || phone === void 0 ? void 0 : phone.country}`);
         return { proceed: true };
     }
 });
-exports.sendNewDeviceCode = (to, otp) => __awaiter(void 0, void 0, void 0, function* () {
+exports.sendMessage = sendMessage;
+const sendNewDeviceCode = (to, otp) => __awaiter(void 0, void 0, void 0, function* () {
     const env = process.env.NODE_ENV;
     const message = `Your Device verification code is ${otp}`;
     logger_1.default.info(logFileName, message);
-    message_service_1.default.sendWhatsappMessage(index_1.sanatizeMobile(to), message);
-    const phone = libphonenumber_js_1.parseNumber(to);
+    message_service_1.default.sendWhatsappMessage((0, index_1.sanatizeMobile)(to), message);
+    const phone = (0, libphonenumber_js_1.parseNumber)(to);
     console.log(phone);
     if (env == "development")
         return { proceed: true };
     if (phone.country == "IN") {
-        return yield message_service_1.default.sendFast2Sms(index_1.sanatizeMobile(phone.phone), message);
+        return yield message_service_1.default.sendFast2Sms((0, index_1.sanatizeMobile)(phone.phone), message);
     }
     else {
         logger_1.default.info(`Mobile SMS not supported for ${phone === null || phone === void 0 ? void 0 : phone.country}`);
     }
 });
+exports.sendNewDeviceCode = sendNewDeviceCode;
 //# sourceMappingURL=otp-handler.js.map

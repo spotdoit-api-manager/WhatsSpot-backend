@@ -46,7 +46,7 @@ class PlanManager {
     }
     deletePlan(planId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield plans_schema_1.Plan.findOneAndDelete(planId);
+            const result = yield plans_schema_1.Plan.findOneAndDelete({ planId });
             return result;
         });
     }

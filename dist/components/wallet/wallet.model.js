@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WalletModel = void 0;
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 const transaction_interface_1 = require("./../transaction/transaction.interface");
 const httpErrors_1 = require("../../lib/utils/httpErrors");
 const bson_1 = require("bson");
@@ -64,9 +65,9 @@ class WalletModel {
             return newBalance;
         });
     }
-    fetchTransactions(userId, walletId, page = 1) {
+    fetchTransactions(userId, walletId, page = "1") {
         return __awaiter(this, void 0, void 0, function* () {
-            const transactions = yield transaction_model_1.default.fetchTransactions(walletId, page);
+            const transactions = yield transaction_model_1.default.fetchTransactions(walletId, parseInt(page));
             return transactions;
         });
     }
@@ -98,7 +99,7 @@ class WalletModel {
     }
     getWalletIdByUserId(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const wallet = yield wallet_schema_1.Wallet.findOne({ userId: new bson_1.ObjectID(userId) });
+            const wallet = yield wallet_schema_1.Wallet.findOne({ userId: userId });
             if (!wallet)
                 throw Error("WALLET_NOT_FOUND");
             return wallet._id;

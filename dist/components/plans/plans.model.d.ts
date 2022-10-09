@@ -1,10 +1,9 @@
-/// <reference types="mongoose" />
 import { IPlanModel, IUserPlanModel } from "./plans.schema";
 import { IPLAN, IUserPlan } from "./plans.interface";
 export declare class PlansModel {
     fetchPlanById(planId: string): Promise<IPlanModel>;
     fetchPlans(): Promise<IPlanModel[]>;
-    fetchPlanByPlanId(planId: string): import("mongoose").Query<any>;
+    fetchPlanByPlanId(planId: string): Promise<IPlanModel>;
     addNewPlan(adminId: string, planBody: IPLAN): Promise<any>;
     updatePlan(adminId: string, planId: string, planUpdate: any): Promise<void>;
     activateUserPlan(adminId: string, userId: string, planId: string, reason?: string): Promise<IUserPlan>;

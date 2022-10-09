@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -29,8 +33,8 @@ const cyan = chalk.default.cyanBright.bold;
 const bgRed = chalk.default.bgRedBright;
 const bgGreen = chalk.default.bgGreenBright;
 const bgYellow = chalk.default.bgYellow;
-exports.requestLogger = (req, res, next) => {
-    util_1.log(green(`${req.method} ${req.originalUrl}`));
+const requestLogger = (req, res, next) => {
+    (0, util_1.log)(green(`${req.method} ${req.originalUrl}`));
     const start = new Date().getTime();
     res.on("finish", () => {
         const elapsed = new Date().getTime() - start;
@@ -43,16 +47,17 @@ exports.requestLogger = (req, res, next) => {
     });
     next();
 };
+exports.requestLogger = requestLogger;
 const reqConsoleLogger = (logValue) => {
     const { status, method, url, time } = logValue;
     if (status < 400) {
-        util_1.log(green(`${method} ${url} -> `) + bgGreen(`${status}`) + cyan(` ${time}ms`));
+        (0, util_1.log)(green(`${method} ${url} -> `) + bgGreen(`${status}`) + cyan(` ${time}ms`));
     }
     else if (status < 500) {
-        util_1.log(yellow(`${method} ${url} -> `) + bgYellow(`${status}`) + cyan(` ${time}ms`));
+        (0, util_1.log)(yellow(`${method} ${url} -> `) + bgYellow(`${status}`) + cyan(` ${time}ms`));
     }
     else {
-        util_1.log(red(`${method} ${url} -> `) + bgRed(`${status}`) + cyan(` ${time}ms`));
+        (0, util_1.log)(red(`${method} ${url} -> `) + bgRed(`${status}`) + cyan(` ${time}ms`));
     }
 };
 //# sourceMappingURL=requestLogger.js.map

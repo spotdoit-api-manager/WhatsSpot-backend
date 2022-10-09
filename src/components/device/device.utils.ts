@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { ObjectID } from "bson";
 import { Device } from "./device.schema";
 
 export class DeviceUtils{
     public async findDeviceById(userId: string, deviceId: string) {
-        const device = await Device.findOne({ userId: new ObjectID(userId), _id: new ObjectID(deviceId), "isDeleted.status": false });
+        const device = await Device.findOne({ userId: userId, _id: deviceId, "isDeleted.status": false });
         return device;
     }
 

@@ -1,3 +1,4 @@
+/// <reference types="mongoose" />
 import { IStripePrice, IStripeProduct } from "./../stripe/stripe.interface";
 import { IAdminUser, IDataStoredInAdminToken } from "./admin.interface";
 import { IAdminUserModel } from "./admin.schema";
@@ -18,7 +19,7 @@ export declare class AdminModel {
         };
         walletBalance: any;
     }>;
-    devicesList(adminId: string): Promise<any>;
+    devicesList(adminId: string): Promise<import("mongoose").LeanDocument<import("../device/device.schema").IDeviceModel>[]>;
     fetchUsersBaseList(): Promise<any[]>;
     userDetailedAccountMetrics(userId: string): Promise<any[]>;
     getDeviceData(deviceId: string): Promise<any>;
@@ -50,18 +51,17 @@ export declare class AdminModel {
     updateOtp(id: string): number;
     sendOtpToMobile(otp: number, phone: string): Promise<{
         proceed: boolean;
-        message?: undefined;
+        message: any;
     } | {
         proceed: boolean;
-        message: any;
     }>;
     addProduct(adminId: string, productBody: IStripeProduct): Promise<any>;
-    getProducts(userId: string, limit: number): Promise<any>;
+    getProducts(userId: string, limit: string): Promise<any>;
     createPrice(userId: string, priceBody: IStripePrice): Promise<void>;
-    getPrices(userId: string, limit: number): Promise<any>;
-    fetchPaymentsRequests(userId: string, status: ETransactionStatus, page: number): Promise<any[]>;
-    approvePayment(userId: string, paymentId: string): Promise<any>;
-    rejectPayment(userId: string, paymentId: string, reason: string): Promise<any>;
+    getPrices(userId: string, limit: string): Promise<any>;
+    fetchPaymentsRequests(userId: string, status: ETransactionStatus, page: string): Promise<any[]>;
+    approvePayment(userId: string, paymentId: string): Promise<import("../transaction/transaction.schema").ITransactionModel>;
+    rejectPayment(userId: string, paymentId: string, reason: string): Promise<import("../transaction/transaction.schema").ITransactionModel>;
     sendEmail(adminId: string, to: string, subject: string, message: string): Promise<void>;
 }
 declare const _default: AdminModel;

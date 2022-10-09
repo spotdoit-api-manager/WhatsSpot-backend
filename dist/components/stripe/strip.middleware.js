@@ -16,7 +16,7 @@ exports.validateStripeEvent = void 0;
 const index_1 = require("./../../config/index");
 const responseHandler_1 = __importDefault(require("../../lib/helpers/responseHandler"));
 const stripe_model_1 = __importDefault(require("./stripe.model"));
-exports.validateStripeEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const validateStripeEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const responseHandler = new responseHandler_1.default();
     const sig = req.header("stripe-signature");
     console.log("signature is ", sig);
@@ -32,4 +32,5 @@ exports.validateStripeEvent = (req, res, next) => __awaiter(void 0, void 0, void
         next(responseHandler.sendError(err));
     }
 });
+exports.validateStripeEvent = validateStripeEvent;
 //# sourceMappingURL=strip.middleware.js.map

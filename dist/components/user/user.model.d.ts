@@ -21,11 +21,11 @@ export declare class UserModel {
     }>;
     createNewUser(phone: string, email: string, userName: string, country: CountryCode): Promise<IUserModel>;
     registerWithPhone(phone: string, email: string, userName: string, country: CountryCode): Promise<{
-        phone: import("libphonenumber-js/types").Tagged<string, "E164Number">;
+        phone: import("libphonenumber-js").E164Number;
         _id: any;
     }>;
     loginWithPhone(phone: string, country: CountryCode): Promise<{
-        phone: import("libphonenumber-js/types").Tagged<string, "E164Number">;
+        phone: import("libphonenumber-js").E164Number;
         _id: any;
     }>;
     resendOTP(id: string, body: any): Promise<{
@@ -107,11 +107,11 @@ export declare class UserModel {
     getAccountMetrics(userId: string): Promise<any>;
     fetchUsersBaseList(): Promise<any[]>;
     userDetailedAccountMetrics(userId: string): Promise<any[]>;
-    updateNotificationSettings(userId: string, notificationSetting: IUserNotificationSettings): Promise<any>;
-    updateProfile(userId: string, profileBody: IUserProfile): Promise<any>;
+    updateNotificationSettings(userId: string, notificationSetting: IUserNotificationSettings): Promise<import("mongoose").LeanDocument<IUserModel>>;
+    updateProfile(userId: string, profileBody: IUserProfile): Promise<import("mongoose").LeanDocument<IUserModel>>;
     sendEmailVerification(userId: string): Promise<void>;
-    verifyEmailOtp(userId: string, otp: string): Promise<any>;
-    getUserById(userId: string): import("mongoose").DocumentQuery<IUserModel, IUserModel, {}>;
+    verifyEmailOtp(userId: string, otp: string): Promise<import("mongoose").LeanDocument<IUserModel>>;
+    getUserById(userId: string): import("mongoose").Query<IUserModel, IUserModel, {}, IUserModel>;
 }
 declare const _default: UserModel;
 export default _default;

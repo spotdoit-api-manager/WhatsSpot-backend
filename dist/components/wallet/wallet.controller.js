@@ -42,7 +42,7 @@ class WalletController {
         this.getRate = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
-                const result = yield exchange_rate_service_1.getRate();
+                const result = yield (0, exchange_rate_service_1.getRate)();
                 responseHandler.reqRes(req, res).onCreate("TRANSACTION_FETCHED", result).send();
             }
             catch (e) {

@@ -61,5 +61,5 @@ TransactionSchema.methods.addTransaction = function () {
         return this.save();
     });
 };
-exports.Transaction = mongoose_1.model("transaction", TransactionSchema);
+exports.Transaction = (0, mongoose_1.model)("transaction", TransactionSchema);
 //# sourceMappingURL=transaction.schema.js.map

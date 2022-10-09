@@ -2,7 +2,11 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -229,7 +233,7 @@ class PaymentHelpers {
         for (const name in formData) {
             formFields += `<input name = "${name}" value="${formData[name]}" type="hidden"></input>`;
         }
-        const html = htmlTemplate_1.paymentTemplate({ final_url: final_url, formFields: formFields });
+        const html = (0, htmlTemplate_1.paymentTemplate)({ final_url: final_url, formFields: formFields });
         return html;
     }
     responseHTMLRender(tableData) {
@@ -243,7 +247,7 @@ class PaymentHelpers {
             <td class="td-content">${tableData[name]}</td>
         </tr>`;
         }
-        const html = htmlTemplate_1.responseTemplate(tableFields);
+        const html = (0, htmlTemplate_1.responseTemplate)(tableFields);
         return html;
     }
 }

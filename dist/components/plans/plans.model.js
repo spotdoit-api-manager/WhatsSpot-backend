@@ -13,6 +13,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PlansModel = void 0;
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 const notify_service_1 = __importDefault(require("../../lib/services/notify.service"));
 const transaction_interface_1 = require("./../transaction/transaction.interface");
 const plans_schema_1 = require("./plans.schema");
@@ -38,7 +40,9 @@ class PlansModel {
         });
     }
     fetchPlanByPlanId(planId) {
-        return plans_schema_1.Plan.findOne({ planId }).lean();
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield plans_schema_1.Plan.findOne({ planId }).lean();
+        });
     }
     addNewPlan(adminId, planBody) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -99,7 +103,7 @@ class PlansModel {
     calculatePlanEndDate(plan) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(plan);
-            let endDate = dayjs_1.default(new Date());
+            let endDate = (0, dayjs_1.default)(new Date());
             if (plan.planId == plans_interface_1.EPLANS.PAYG) {
                 return endDate.toDate();
             }

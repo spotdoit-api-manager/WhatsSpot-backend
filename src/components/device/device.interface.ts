@@ -1,7 +1,7 @@
 import { CountryCode } from "libphonenumber-js/max";
 
 import { IReason } from "./../../lib/services/whatsapp/whatsapp.interface";
-
+import {IApiKeyModal} from "./device.schema";
 
 export interface INewDevice {
     name: string;
@@ -16,11 +16,12 @@ export interface IDevice {
     reason: IReason;
     userId: string;
     isDeleted: IDeviceDeleted;
-    apiKeys: IApiKey[];
+    apiKeys: IApiKey[] | IApiKeyModal[];
 }
 
 export interface IDeviceDeleted {
     status: boolean;
+    deletedAt?:Date
 }
 export interface IApiKey {
     token: string;

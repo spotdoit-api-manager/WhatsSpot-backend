@@ -35,10 +35,10 @@ class PaytmModel {
                 const plan = yield plans_model_1.default.fetchPlanByPlanId(planId);
                 if (planId === plans_interface_1.EPLANS.PAYG) {
                     finalAmount = amount.toString();
-                    indianAmount = (yield exchange_rate_service_1.convertCurrency(currency, "INR", amount));
+                    indianAmount = (yield (0, exchange_rate_service_1.convertCurrency)(currency, "INR", amount));
                 }
                 else {
-                    finalAmount = (yield exchange_rate_service_1.convertCurrency("INR", currency, plan.planAmount)).toString();
+                    finalAmount = (yield (0, exchange_rate_service_1.convertCurrency)("INR", currency, plan.planAmount)).toString();
                     indianAmount = plan.planAmount;
                 }
                 const transactionMessage = planId == plans_interface_1.EPLANS.PAYG ? "Adding money to wallet" : `Buying ${plan.planName} subscription`;

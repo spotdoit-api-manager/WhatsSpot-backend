@@ -14,7 +14,7 @@ const redis = require("async-redis");
 const client = redis.createClient();
 const maxOtpRequest = 3;
 const perNMin = 5;
-exports.otpMiddleWare = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const otpMiddleWare = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { phone } = req.body; // could be ip as well, ip = req.ip;
     const keyName = phone;
     const current = yield client.get(phone);
@@ -29,4 +29,5 @@ exports.otpMiddleWare = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         next();
     }
 });
+exports.otpMiddleWare = otpMiddleWare;
 //# sourceMappingURL=otp.middleware.js.map

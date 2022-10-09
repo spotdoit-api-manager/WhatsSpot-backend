@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { EPayWith } from "./../../core/enums/pay-with.enum";
 import { ITransactionModel } from "./../transaction/transaction.schema";
 import { ETransactionStatus, ETransactionTypes } from "../transaction/transaction.interface";

@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -78,7 +82,7 @@ class DeviceModel {
         return __awaiter(this, void 0, void 0, function* () {
             body.userId = userId;
             yield this.isMaxDeviceLimitReached(userId);
-            const parsedPhone = phone_handler_1.parsePhoneWithCountry(body.phone, body.country).number;
+            const parsedPhone = (0, phone_handler_1.parsePhoneWithCountry)(body.phone, body.country).number;
             const device = yield this.findDeviceByPhone(parsedPhone);
             this.validateDeviceAdd(userId, device);
             yield user_model_1.default.validateDeviceCode(userId, parsedPhone, parseInt(newDeviceCode));
@@ -88,14 +92,14 @@ class DeviceModel {
             const newDeviceData = yield newDevice.saveDevice();
             if (!newDeviceData)
                 throw new httpErrors_1.HTTP400Error("UNKNOWN_ERROR");
-            const expiresOn = dayjs_1.default().add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN || "3d").replace("d", "")), "day").toDate().toUTCString();
+            const expiresOn = (0, dayjs_1.default)().add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN || "3d").replace("d", "")), "day").toDate().toUTCString();
             const keys = yield this.generateNewKey(userId, walletId, newDeviceData._id, { name: process.env.DEFAULT_APIKEY_NAME, expiresOn });
             return newDeviceData;
         });
     }
     isMaxDeviceLimitReached(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const devices = yield device_schema_1.Device.find({ userId: new bson_1.ObjectID(userId), "isDeleted.status": false });
+            const devices = yield device_schema_1.Device.find({ userId: userId, "isDeleted.status": false });
             const userPlan = yield user_model_1.default.fetchUserActivePlan(userId);
             if (userPlan && userPlan.planId) {
                 const plan = yield plans_model_1.default.fetchPlanByPlanId(userPlan.planId);
@@ -111,7 +115,7 @@ class DeviceModel {
     }
     newDeviceCode(userId, walletId, newDeviceBody) {
         return __awaiter(this, void 0, void 0, function* () {
-            const parsedPhone = phone_handler_1.parsePhoneWithCountry(newDeviceBody.phone, newDeviceBody.country).number;
+            const parsedPhone = (0, phone_handler_1.parsePhoneWithCountry)(newDeviceBody.phone, newDeviceBody.country).number;
             const device = yield this.findDeviceByPhone(parsedPhone);
             this.validateDeviceAdd(userId, device);
             const code = yield user_model_1.default.updateDeviceCode(userId, parsedPhone);
@@ -263,12 +267,12 @@ class DeviceModel {
                 let expiresIn = null;
                 let expiresOn;
                 if (body.expiresOn != "NEVER") {
-                    expiresOn = dayjs_1.default(new Date(body.expiresOn));
-                    const diff = expiresOn.diff(dayjs_1.default(), "day", true);
+                    expiresOn = (0, dayjs_1.default)(new Date(body.expiresOn));
+                    const diff = expiresOn.diff((0, dayjs_1.default)(), "day", true);
                     expiresIn = `${Math.floor(diff)}d`;
                 }
                 else {
-                    expiresOn = dayjs_1.default();
+                    expiresOn = (0, dayjs_1.default)();
                     expiresOn.add(50, "year");
                 }
                 const totalAvailableKeys = yield this.getTotalAvailableApiKeys(deviceId);

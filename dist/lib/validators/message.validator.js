@@ -3,15 +3,16 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isWhatsappTemplateMessageType = exports.isWhatsappButtonMessageType = exports.isWhatsappListMessageType = exports.isWhatsappTextMessageType = void 0;
 //validate text message
-exports.isWhatsappTextMessageType = (msg) => {
+const isWhatsappTextMessageType = (msg) => {
     if (!msg)
         return { valid: false, message: "Message is invalid" };
     if (!msg.text || typeof msg.text !== "string")
         return { valid: false, message: "message.text is invalid" };
     return { valid: true };
 };
+exports.isWhatsappTextMessageType = isWhatsappTextMessageType;
 //validate list message
-exports.isWhatsappListMessageType = (msg) => {
+const isWhatsappListMessageType = (msg) => {
     if (!msg)
         return { valid: false, message: "Message is invalid" };
     if (!msg.text || typeof msg.text !== "string")
@@ -26,6 +27,7 @@ exports.isWhatsappListMessageType = (msg) => {
     msg.sections.forEach((section, index) => isSectionValid = validateSection(section, index));
     return isSectionValid;
 };
+exports.isWhatsappListMessageType = isWhatsappListMessageType;
 const validateSection = (section, index) => {
     var _a;
     if (!section.title || typeof section.title !== "string")
@@ -49,7 +51,7 @@ const validateRow = (row, index, sectionIndex) => {
     return { valid: true, index: [], message: "" };
 };
 //validate button message
-exports.isWhatsappButtonMessageType = (msg) => {
+const isWhatsappButtonMessageType = (msg) => {
     if (!msg.text || typeof msg.text != "string")
         return { valid: false, message: "Message Text is invalid" };
     if (msg.footer && typeof msg.footer !== "string")
@@ -62,6 +64,7 @@ exports.isWhatsappButtonMessageType = (msg) => {
     msg.buttons.forEach((button, index) => isButtonValid = validateButton(button, index));
     return isButtonValid;
 };
+exports.isWhatsappButtonMessageType = isWhatsappButtonMessageType;
 const validateButton = (button, index) => {
     if (!button.buttonId || typeof button.buttonId !== "string")
         return { valid: false, message: `message.buttons[${index}].buttonId is missing/invalid`, index: [index] };
@@ -72,7 +75,7 @@ const validateButton = (button, index) => {
     return { valid: true };
 };
 //validate template message type
-exports.isWhatsappTemplateMessageType = (msg) => {
+const isWhatsappTemplateMessageType = (msg) => {
     if (!msg.text || typeof msg.text !== "string")
         return { valid: false, message: "Message Text is invalid" };
     if (msg.footer && typeof msg.footer !== "string")
@@ -83,6 +86,7 @@ exports.isWhatsappTemplateMessageType = (msg) => {
     msg.templateButtons.forEach((button, index) => isTemplateButtonValid = validateTemplateButton(button, index));
     return isTemplateButtonValid;
 };
+exports.isWhatsappTemplateMessageType = isWhatsappTemplateMessageType;
 const validateTemplateButton = (button, index) => {
     if (button.hasOwnProperty("callButton")) {
         const cButton = button;

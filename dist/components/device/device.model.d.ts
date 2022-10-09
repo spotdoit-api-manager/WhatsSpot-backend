@@ -7,9 +7,10 @@ export declare class DeviceModel {
     private isMaxDeviceLimitReached;
     newDeviceCode(userId: string, walletId: string, newDeviceBody: INewDevice): Promise<{
         proceed: boolean;
-        message: any;
+        message?: undefined;
     } | {
         proceed: boolean;
+        message: any;
     }>;
     private validateDeviceAdd;
     getQr(userId: string, deviceId: string): Promise<{
@@ -22,7 +23,7 @@ export declare class DeviceModel {
     removeClient(userId: string, deviceId: string): Promise<{
         message: string;
     }>;
-    fetchAllDevices: (userId: string) => Promise<any>;
+    fetchAllDevices: (userId: string) => Promise<import("mongoose").LeanDocument<IDeviceModel>[]>;
     fetchDevice: (deviceId: string, userId: string) => Promise<any>;
     private fetchDeviceByCondition;
     fetchDevicesMetrics(): Promise<{
@@ -47,7 +48,7 @@ export declare class DeviceModel {
     signDeviceToken: (apiKeyData: IDeviceTokenData, expiresIn: string) => string;
     private getTotalAvailableApiKeys;
     findDeviceByPhone(phone: string): Promise<IDeviceModel>;
-    findDeviceByUseId(userId: string): Promise<any>;
+    findDeviceByUseId(userId: string): Promise<import("mongoose").LeanDocument<IDeviceModel>[]>;
     findDeviceByIdAndUserId(deviceId: string, userId: string): Promise<any>;
     fetchDeviceMetrics(deviceId: string): Promise<any>;
     retryFailedMessage(userId: string, deviceId: string): Promise<{
@@ -58,7 +59,7 @@ export declare class DeviceModel {
     updateDeviceStatus(deviceId: string, status: EDeviceStatus): Promise<IDeviceModel>;
     removeDevice(userId: string, deviceId: string): Promise<void>;
     getDeviceStatus(userId: string, deviceId: string): Promise<any>;
-    fetchDevicesList(): import("mongoose").Query<any>;
+    fetchDevicesList(): import("mongoose").Query<import("mongoose").LeanDocument<IDeviceModel>[], IDeviceModel, {}, IDeviceModel>;
 }
 declare const _default: DeviceModel;
 export default _default;

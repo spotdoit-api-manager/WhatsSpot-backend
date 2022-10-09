@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -39,7 +43,7 @@ class Connection {
     mongoConnection() {
         logger_1.default.info(logFileName, "Connecting to MongoDB...");
         const dbURL = this.mongoUrl;
-        mongoose_1.connect(dbURL, this.mongoOption());
+        (0, mongoose_1.connect)(dbURL, this.mongoOption());
         mongoose_1.connection.on("connected", () => {
             console.log(connected("Mongoose default connection is open to ", dbURL, "\u{1F60D}"));
         });
@@ -76,5 +80,5 @@ class Connection {
         };
     }
 }
-exports.default = new Connection(config_1.mongoUrl());
+exports.default = new Connection((0, config_1.mongoUrl)());
 //# sourceMappingURL=dbConnection.js.map

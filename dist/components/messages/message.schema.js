@@ -128,6 +128,6 @@ messageSchema.methods.addMessage = function () {
         return this.save();
     });
 };
-exports.MessageQueue = mongoose_1.model("MessageQueue", messageSchema);
-exports.FastMessage = mongoose_1.model("FastMessage", messageSchema);
+exports.MessageQueue = (0, mongoose_1.model)("MessageQueue", messageSchema);
+exports.FastMessage = (0, mongoose_1.model)("FastMessage", messageSchema);
 //# sourceMappingURL=message.schema.js.map

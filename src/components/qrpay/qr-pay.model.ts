@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { ETransactionStatus } from "./../transaction/transaction.interface";
 import { HTTP401Error } from "./../../lib/utils/httpErrors";
 import { ITransactionModel } from "../transaction/transaction.schema";

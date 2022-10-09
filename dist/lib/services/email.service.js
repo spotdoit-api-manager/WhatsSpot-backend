@@ -19,7 +19,7 @@ const logger_1 = __importDefault(require("../../core/logger"));
 const config_1 = require("../../config");
 const httpErrors_1 = require("../utils/httpErrors");
 const logFileName = "[EmailService]: ";
-exports.sendMail = (to, subject, text, html = "") => __awaiter(void 0, void 0, void 0, function* () {
+const sendMail = (to, subject, text, html = "") => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const client = new MailazyClient({ accessKey: config_1.mailazyConfig.accessKey, accessSecret: config_1.mailazyConfig.accessSecret });
         const res = yield client.send({
@@ -35,7 +35,8 @@ exports.sendMail = (to, subject, text, html = "") => __awaiter(void 0, void 0, v
         logger_1.default.error(logFileName, `Error in sending mail to ${to}`, e);
     }
 });
-exports.sendNotificationMail = (to, subject, text, html = "") => __awaiter(void 0, void 0, void 0, function* () {
+exports.sendMail = sendMail;
+const sendNotificationMail = (to, subject, text, html = "") => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const client = new MailazyClient({ accessKey: config_1.mailazyConfig.accessKey, accessSecret: config_1.mailazyConfig.accessSecret });
         const res = yield client.send({
@@ -51,7 +52,8 @@ exports.sendNotificationMail = (to, subject, text, html = "") => __awaiter(void 
         logger_1.default.error(logFileName, `Error in sending mail to ${to}`, e);
     }
 });
-exports.sendVerificationMail = (to, subject, text = "", html) => __awaiter(void 0, void 0, void 0, function* () {
+exports.sendNotificationMail = sendNotificationMail;
+const sendVerificationMail = (to, subject, text = "", html) => __awaiter(void 0, void 0, void 0, function* () {
     const client = new MailazyClient({ accessKey: config_1.mailazyConfig.accessKey, accessSecret: config_1.mailazyConfig.accessSecret });
     logger_1.default.info(logFileName, `Sending verification mail to ${to},html: ${html}`);
     let res = yield client.send({
@@ -67,4 +69,5 @@ exports.sendVerificationMail = (to, subject, text = "", html) => __awaiter(void 
     logger_1.default.info(logFileName, `Email to ${to} sent successfully`, res);
     return res;
 });
+exports.sendVerificationMail = sendVerificationMail;
 //# sourceMappingURL=email.service.js.map

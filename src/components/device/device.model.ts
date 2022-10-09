@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { IPlanModel } from "./../plans/plans.schema";
 import { mongoDBProjectFields } from "./../../lib/utils/index";
 import logger from "../../core/logger";
@@ -44,10 +45,10 @@ export class DeviceModel {
     }
 
     private async isMaxDeviceLimitReached(userId: string) {
-        const devices = await Device.find({ userId: new ObjectID(userId), "isDeleted.status": false });
+        const devices = await Device.find({ userId: userId, "isDeleted.status": false });
         const userPlan = await userModel.fetchUserActivePlan(userId);
         if (userPlan && userPlan.planId) {
-            const plan: IPlanModel = await plansModel.fetchPlanByPlanId(userPlan.planId);
+            const plan: IPlanModel = await plansModel.fetchPlanByPlanId(userPlan.planId) as IPlanModel;
                 if (devices.length >= plan.maxDevices) throw new HTTP400Error("MAX_DEVICE_LIMIT_REACHED",`You have reached maximum device limit of ${plan.maxDevices} in your ${plan.planName} plan`);
         }else{
             if (devices.length >= parseInt(process.env.DEFAULT_MAX_DEVICES || "1")) throw new HTTP400Error("MAX_DEVICE_LIMIT_REACHED",`You have reached maximum device limit of ${process.env.DEFAULT_MAX_DEVICES || "1"}`);
@@ -233,7 +234,7 @@ export class DeviceModel {
     public async deleteKey(deviceId: string, keyId: string) {
         try {
             const result = await Device.findOneAndUpdate({ _id: new ObjectID(deviceId) }, { $pull: { apiKeys: { _id: new ObjectID(keyId) } } }, { upsert: false, new: false }).lean();
-            const apiData = result.apiKeys.find((x: IApiKeyModal) => x._id.toString() === keyId);
+            const apiData = result.apiKeys.find((x: IApiKeyModal) => x._id.toString() === keyId) as any;
             if (apiData.status !== EApiKeyStatus.EXPIRED) {
                 await apiBlockListModel.addApiToBlockList(deviceId, apiData);
             }
@@ -256,8 +257,8 @@ export class DeviceModel {
         return keys[0]?.apiKeys || null;
     }
     private async addNewTokenDataToDevice(deviceId: string, tokenData: IApiKey) {
-        const result = await Device.findByIdAndUpdate(deviceId, { $push: { apiKeys: tokenData } }, { "upsert": true, new: true }).lean();
-        await spotSchedular.scheduleApiExpiration(deviceId, result.apiKeys[result.apiKeys.length - 1]);
+        const result = await Device.findByIdAndUpdate(deviceId, { $push: { apiKeys: tokenData } }, { "upsert": true, new: true }).lean() as IDeviceModel;
+        await spotSchedular.scheduleApiExpiration(deviceId, result.apiKeys[result.apiKeys.length - 1] as IApiKeyModal);
     }
 
     private generateDeviceKey(apiKeyData: IDeviceTokenData, expiresIn: string) {

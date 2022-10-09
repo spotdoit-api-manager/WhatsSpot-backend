@@ -62,6 +62,6 @@ groupSchema.methods.saveGroup = function () {
         return this.save();
     });
 };
-exports.Contact = mongoose_1.model("Contact", contactSchema);
-exports.ContactGroup = mongoose_1.model("ContactGroup", groupSchema);
+exports.Contact = (0, mongoose_1.model)("Contact", contactSchema);
+exports.ContactGroup = (0, mongoose_1.model)("ContactGroup", groupSchema);
 //# sourceMappingURL=contact.schema.js.map

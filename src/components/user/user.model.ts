@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { validateEmail } from "./../../lib/utils/index";
 import {  parsePhoneWithCountry } from "./../../lib/utils/phone.handler";
 import { IWalletModel } from "../wallet/wallet.schema";
@@ -264,7 +265,7 @@ export class UserModel {
 
   public async resendOTP(id: string, body: any) {
     const parsedPhone = parsePhoneWithCountry(body.phoneNumber,body.country);
-    const user: IUserModel = await User.findOne({ _id: new ObjectID(id), phone: parsedPhone });
+    const user: IUserModel = await User.findOne({ _id: new ObjectID(id), phone: parsedPhone.number });
     if (!user) throw new HTTP401Error("USER_NOT_FOUND");
     const otp = this.updateOtp(user._id);
     const otpData = await this.sendOtpToMobile(otp, body.phone);

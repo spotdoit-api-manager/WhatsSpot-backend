@@ -8,7 +8,7 @@ export declare class PaytmModel {
     createPaypalOrder(order: any): Promise<any>;
     private getPaypalToken;
     private getOrderDetails;
-    verifyOrder(userId: string, walletId: string, orderId: string, transactionId: string): Promise<any>;
+    verifyOrder(userId: string, walletId: string, orderId: string, transactionId: string): Promise<ITransactionModel>;
 }
 declare const _default: PaytmModel;
 export default _default;

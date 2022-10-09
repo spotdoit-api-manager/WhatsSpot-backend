@@ -71,5 +71,5 @@ deviceSchema.methods.saveDevice = function () {
         return this.save();
     });
 };
-exports.Device = mongoose_1.model("Device", deviceSchema);
+exports.Device = (0, mongoose_1.model)("Device", deviceSchema);
 //# sourceMappingURL=device.schema.js.map

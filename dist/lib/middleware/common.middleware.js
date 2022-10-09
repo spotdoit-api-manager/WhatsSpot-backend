@@ -12,11 +12,12 @@ const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 /* Custom imports */
 const config_1 = require("../../config");
 const requestLogger_1 = require("./requestLogger");
-exports.useHelmet = (router) => {
-    router.use(helmet_1.default());
+const useHelmet = (router) => {
+    router.use((0, helmet_1.default)());
 };
-exports.allowCors = (router) => {
-    router.use(cors_1.default({
+exports.useHelmet = useHelmet;
+const allowCors = (router) => {
+    router.use((0, cors_1.default)({
         origin(origin, callback) {
             if (process.env.NODE_ENV == "development" && !origin) {
                 return callback(null, true);
@@ -28,10 +29,13 @@ exports.allowCors = (router) => {
             return callback(null, true);
         },
         exposedHeaders: config_1.configCors.exposedHeaders,
+        // To enable HTTP cookies over CORS
+        // credentials: true,
     }));
 };
-exports.allowCorsApi = (router) => {
-    router.use(cors_1.default({
+exports.allowCors = allowCors;
+const allowCorsApi = (router) => {
+    router.use((0, cors_1.default)({
         origin(origin, callback) {
             if (!origin) {
                 return callback(null, true);
@@ -43,10 +47,13 @@ exports.allowCorsApi = (router) => {
             return callback(null, true);
         },
         exposedHeaders: config_1.configCors.exposedHeaders,
+        // To enable HTTP cookies over CORS
+        // credentials: true,
     }));
 };
-exports.allowCorsAdmin = (router) => {
-    router.use(cors_1.default({
+exports.allowCorsApi = allowCorsApi;
+const allowCorsAdmin = (router) => {
+    router.use((0, cors_1.default)({
         origin(origin, callback) {
             if (process.env.NODE_ENV == "development" && !origin) {
                 return callback(null, true);
@@ -58,23 +65,29 @@ exports.allowCorsAdmin = (router) => {
             return callback(null, true);
         },
         exposedHeaders: config_1.configCors.exposedHeaders,
+        // To enable HTTP cookies over CORS
+        // credentials: true,
     }));
 };
+exports.allowCorsAdmin = allowCorsAdmin;
 /* here all middleware come. Don't need to do anything in app.js*/
-exports.handleBodyRequestParsing = (router) => {
-    router.use(express_1.urlencoded({ extended: true }));
-    router.use(express_1.json());
+const handleBodyRequestParsing = (router) => {
+    router.use((0, express_1.urlencoded)({ extended: true }));
+    router.use((0, express_1.json)());
 };
+exports.handleBodyRequestParsing = handleBodyRequestParsing;
 // Logging all request in console.
-exports.reqConsoleLogger = (router) => {
+const reqConsoleLogger = (router) => {
     router.use(requestLogger_1.requestLogger);
 };
+exports.reqConsoleLogger = reqConsoleLogger;
 // Compress the payload and send through api
-exports.handleCompression = (router) => {
-    router.use(compression_1.default());
+const handleCompression = (router) => {
+    router.use((0, compression_1.default)());
 };
-exports.requestLimiter = (router) => {
-    const limiter = express_rate_limit_1.default({
+exports.handleCompression = handleCompression;
+const requestLimiter = (router) => {
+    const limiter = (0, express_rate_limit_1.default)({
         windowMs: +config_1.rateLimitConfig.inTime,
         max: +config_1.rateLimitConfig.maxRequest,
         message: {
@@ -87,4 +100,5 @@ exports.requestLimiter = (router) => {
     });
     router.use(limiter);
 };
+exports.requestLimiter = requestLimiter;
 //# sourceMappingURL=common.middleware.js.map

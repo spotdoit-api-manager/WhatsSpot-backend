@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { EPayWith } from "./../../core/enums/pay-with.enum";
 import { ObjectID } from "bson";
 import { HTTP401Error } from "./../../lib/utils/httpErrors";
@@ -9,8 +10,8 @@ import { getSkipLimit } from "../../lib/utils";
 const logFileName = "[TransactionModel] : ";
 export class TransactionModel {
 
-public fetchTransactionById(walletId: string="",transactionId: string){
-        return Transaction.findById(transactionId).lean();
+public async fetchTransactionById(walletId: string="",transactionId: string){
+        return await Transaction.findById(transactionId).lean() as ITransactionModel;
 }
 
 public async fetchTransactionByMethod(method: EPayWith,status: ETransactionStatus|null,page: number=1){
@@ -110,13 +111,13 @@ public async fetchTransactionByMethod(method: EPayWith,status: ETransactionStatu
 
 
     public async updateTransactionStatus(transactionId: string, status: ETransactionStatus) {
-        const updatedTransaction = await Transaction.findByIdAndUpdate(transactionId, { $set: { status: status } },{new:true}).lean();
+        const updatedTransaction = await Transaction.findByIdAndUpdate(transactionId, { $set: { status: status } },{new:true}).lean() as ITransactionModel;
         if (!updatedTransaction) throw new HTTP401Error("ERROR_UPDATING_TRANSACTION_STATUS");
         return updatedTransaction;
     }
 
-    public fetchTransactionByOrderId(orderId: string) {
-        return Transaction.findOne({ orderId: orderId }).lean();
+    public async fetchTransactionByOrderId(orderId: string) {
+        return await Transaction.findOne({ orderId: orderId }).lean() as ITransactionModel;
     }
 }
 

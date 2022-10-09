@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -32,6 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserModel = void 0;
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 const index_1 = require("./../../lib/utils/index");
 const phone_handler_1 = require("./../../lib/utils/phone.handler");
 const message_interface_1 = require("./../messages/message.interface");
@@ -259,9 +264,9 @@ class UserModel {
             try {
                 if (!phone || !email || !userName || !country)
                     throw new httpErrors_1.HTTP400Error("Fields missing or empty { phone,email,userName,country} are required fields");
-                if (!index_1.validateEmail(email))
+                if (!(0, index_1.validateEmail)(email))
                     throw new httpErrors_1.HTTP400Error("INVALID_EMAIL", "Please enter valid email id");
-                const phoneInfo = phone_handler_1.parsePhoneWithCountry(phone, country);
+                const phoneInfo = (0, phone_handler_1.parsePhoneWithCountry)(phone, country);
                 logger_1.default.info("Phone Info is ", phoneInfo);
                 const userExist = yield this.findUserByPhone(phoneInfo.number);
                 if (userExist && userExist.isVerified)
@@ -294,7 +299,7 @@ class UserModel {
     }
     loginWithPhone(phone, country) {
         return __awaiter(this, void 0, void 0, function* () {
-            const parsedPhone = phone_handler_1.parsePhoneWithCountry(phone, country).number;
+            const parsedPhone = (0, phone_handler_1.parsePhoneWithCountry)(phone, country).number;
             const user = yield this.findUserByPhone(parsedPhone);
             if (!user)
                 throw new httpErrors_1.HTTP401Error("USER_NOT_FOUND");
@@ -307,8 +312,8 @@ class UserModel {
     }
     resendOTP(id, body) {
         return __awaiter(this, void 0, void 0, function* () {
-            const parsedPhone = phone_handler_1.parsePhoneWithCountry(body.phoneNumber, body.country);
-            const user = yield user_schema_1.User.findOne({ _id: new bson_1.ObjectID(id), phone: parsedPhone });
+            const parsedPhone = (0, phone_handler_1.parsePhoneWithCountry)(body.phoneNumber, body.country);
+            const user = yield user_schema_1.User.findOne({ _id: new bson_1.ObjectID(id), phone: parsedPhone.number });
             if (!user)
                 throw new httpErrors_1.HTTP401Error("USER_NOT_FOUND");
             const otp = this.updateOtp(user._id);
@@ -413,13 +418,13 @@ class UserModel {
         });
     }
     updateOtp(id) {
-        const otp = helpers_1.otpGenerator();
+        const otp = (0, helpers_1.otpGenerator)();
         user_schema_1.User.findByIdAndUpdate(id, { otp }).then();
         return otp;
     }
     updateDeviceCode(userId, phone) {
         return __awaiter(this, void 0, void 0, function* () {
-            const code = helpers_1.otpGenerator();
+            const code = (0, helpers_1.otpGenerator)();
             const key = `deviceCodes.${phone}`;
             const data = yield user_schema_1.User.findByIdAndUpdate(userId, { [key]: code });
             return code;
@@ -437,7 +442,7 @@ class UserModel {
         return __awaiter(this, void 0, void 0, function* () {
             logger_1.default.debug(logFileName, `send this ${otp} to ${phone}`);
             const message = `Your WhatsSpot login OTP is ${otp}. Please do not share it with anyone.`;
-            return yield otp_handler_1.sendMessage(phone, message);
+            return yield (0, otp_handler_1.sendMessage)(phone, message);
         });
     }
     addNewToken(dataToStore) {
@@ -508,7 +513,7 @@ class UserModel {
     }
     genrateOTP(phone) {
         return __awaiter(this, void 0, void 0, function* () {
-            const otp = helpers_1.otpGenerator();
+            const otp = (0, helpers_1.otpGenerator)();
             const res = yield this.sendOtpToMobile(otp, phone);
             if (res.proceed) {
                 return { res, proceed: true };
@@ -958,7 +963,7 @@ class UserModel {
             const email = user.email;
             if (!email)
                 throw new httpErrors_1.HTTP400Error("USER_EMAIL_FOUND", "User do not have email");
-            const otp = helpers_1.otpGenerator();
+            const otp = (0, helpers_1.otpGenerator)();
             logger_1.default.info(logFileName, `Sending Email OTP ${otp} to ${email}`);
             yield user_schema_1.User.findByIdAndUpdate(userId, { $set: { emailOtp: otp } });
             const res = yield emailService.sendVerificationMail(email, "Email Verification", `Dear ${(user === null || user === void 0 ? void 0 : user.userName) || "User"}, Your OTP for email verification is <b><h2>${otp}</h2></h2></b><br><br> Please do not share this with anyone.`, `Dear ${user.userName}, Your OTP for email verification is <b><h2>${otp}</h2></h2></b>Please do not share this with anyone.`);

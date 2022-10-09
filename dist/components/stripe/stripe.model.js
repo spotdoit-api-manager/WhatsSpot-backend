@@ -13,6 +13,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StripePaymentModel = void 0;
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 const pay_with_enum_1 = require("./../../core/enums/pay-with.enum");
 const plans_interface_1 = require("./../plans/plans.interface");
 const transaction_interface_1 = require("./../transaction/transaction.interface");

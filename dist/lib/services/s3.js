@@ -33,8 +33,8 @@ exports.s3 = new aws_sdk_1.S3({
 //   region: s3Config.region
 // });
 // 'ikcplay-bucket'
-exports.s3UploadMulter = multer_1.default({
-    storage: multer_s3_1.default({
+exports.s3UploadMulter = (0, multer_1.default)({
+    storage: (0, multer_s3_1.default)({
         s3: exports.s3,
         bucket: "ikc-poll",
         acl: "public-read",
@@ -61,7 +61,7 @@ const getSignedUrl = (Key, ContentType) => {
     });
 };
 // Get sign url::
-exports.getSignUrl = (data) => __awaiter(void 0, void 0, void 0, function* () {
+const getSignUrl = (data) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { folder, key, ContentType, userId } = data;
         const Key = (userId ? `${folder}/${userId}-${new Date().getTime()}${path_1.default.extname(key)}` : `${folder}/${new Date().getTime()}${path_1.default.extname(key)}`);
@@ -71,4 +71,5 @@ exports.getSignUrl = (data) => __awaiter(void 0, void 0, void 0, function* () {
         throw new httpErrors_1.HTTP400Error("This url has already been used", "Please create new url then try");
     }
 });
+exports.getSignUrl = getSignUrl;
 //# sourceMappingURL=s3.js.map

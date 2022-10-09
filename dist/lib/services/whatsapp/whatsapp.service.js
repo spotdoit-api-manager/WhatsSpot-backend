@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -55,13 +59,14 @@ class Whatsapp extends events_1.EventEmitter {
             // if(!this.qrRequested) return;
             try {
                 const config = {
-                    logger: pino_1.default({ level: "info" }),
+                    logger: (0, pino_1.default)({ level: "info" }),
                     printQRInTerminal: false,
                     auth: this.state,
                     browser: ["Mac OS", "Chrome", "10.15.3"],
                     downloadHistory: false,
+                    // version: [2,2204,13],
                 };
-                const sock = baileys_md_1.default(config);
+                const sock = (0, baileys_md_1.default)(config);
                 this.client = sock;
                 this.startBasicEventListners();
                 yield this.client.waitForSocketOpen();
@@ -100,9 +105,9 @@ class Whatsapp extends events_1.EventEmitter {
         });
         this.sendAnyMessage = (to, msg) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const jid = whatsapp_utils_1.getSerializedPhone(to);
+                const jid = (0, whatsapp_utils_1.getSerializedPhone)(to);
                 yield this.client.presenceSubscribe(jid);
-                yield baileys_md_1.delay(500);
+                yield (0, baileys_md_1.delay)(500);
                 const result = yield this.client.sendMessage(jid, Object.assign(Object.assign({}, msg), { detectLinks: true }));
                 logger_1.default.debug(logFileName, `Sent  Result client ${this.phone} :`, result);
                 if (result.status != 1) {
@@ -116,8 +121,8 @@ class Whatsapp extends events_1.EventEmitter {
             }
         });
         this._instanceId = instance_provider_1.default.addInstance(this);
-        this.state = baileys_md_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
-        this.saveState = baileys_md_1.useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
+        this.state = (0, baileys_md_1.useSingleFileAuthState)(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
+        this.saveState = (0, baileys_md_1.useSingleFileAuthState)(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
         this.phone = phone;
         this.deviceId = deviceId;
         this.initRefreshInterval();
@@ -224,7 +229,7 @@ class Whatsapp extends events_1.EventEmitter {
     getDeviceStatus() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield this.client.sendPresenceUpdate("available", whatsapp_utils_1.getSerializedPhone("919099858434"));
+                yield this.client.sendPresenceUpdate("available", (0, whatsapp_utils_1.getSerializedPhone)("919099858434"));
                 return { status: true };
             }
             catch (e) {

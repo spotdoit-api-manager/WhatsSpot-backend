@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QrPayModel = void 0;
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 const transaction_interface_1 = require("./../transaction/transaction.interface");
 const httpErrors_1 = require("./../../lib/utils/httpErrors");
 const transaction_interface_2 = require("../transaction/transaction.interface");

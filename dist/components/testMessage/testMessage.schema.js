@@ -27,5 +27,5 @@ testMessageSchema.methods.addTestMessage = function () {
         return this.save();
     });
 };
-exports.TestMessage = mongoose_1.model("TestMessage", testMessageSchema);
+exports.TestMessage = (0, mongoose_1.model)("TestMessage", testMessageSchema);
 //# sourceMappingURL=testMessage.schema.js.map

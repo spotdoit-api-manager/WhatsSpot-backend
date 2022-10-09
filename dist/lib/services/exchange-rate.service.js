@@ -20,9 +20,10 @@ const FETCH_IN_EVRY = 100;
 const logFileName = "[ExchangeRateService]: ";
 const currencyConverter = new CC({ from: "USD", to: "INR", amount: 1, });
 const rates = {};
-exports.getRate = () => {
+const getRate = () => {
     return rates;
 };
+exports.getRate = getRate;
 const fetchRate = () => {
     return new Promise((resolve) => {
         currencyConverter.convert(1).then((response) => {
@@ -36,14 +37,15 @@ const fetchRate = () => {
 //         fetchRate();
 //     },FETCH_IN_EVRY*60 * 1000);
 // };
-exports.startExchangeRateService = () => __awaiter(void 0, void 0, void 0, function* () {
+const startExchangeRateService = () => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.default.info(logFileName, "Starting the Exchange Rate service... at every ", FETCH_IN_EVRY, " minutes");
     return new Promise((resolve) => __awaiter(void 0, void 0, void 0, function* () {
         yield fetchRate(); //fetch rate on server starts
         resolve();
     }));
 });
-exports.convertCurrency = (from = "INR", to, amount = 1) => __awaiter(void 0, void 0, void 0, function* () {
+exports.startExchangeRateService = startExchangeRateService;
+const convertCurrency = (from = "INR", to, amount = 1) => __awaiter(void 0, void 0, void 0, function* () {
     logger_1.default.info(logFileName, "Converting ", amount, " ", from, " to ", to);
     const cc = new CC({ from, to, amount: 1, });
     if (rates[from] && rates[to]) {
@@ -51,7 +53,8 @@ exports.convertCurrency = (from = "INR", to, amount = 1) => __awaiter(void 0, vo
     }
     return cc.convert(amount);
 });
-exports.convertCurrency("INR", "USD", 1).then((res) => {
+exports.convertCurrency = convertCurrency;
+(0, exports.convertCurrency)("INR", "USD", 1).then((res) => {
     console.log(res);
 });
 //# sourceMappingURL=exchange-rate.service.js.map

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { ETransactionStatus } from "./../transaction/transaction.interface";
 import { NextFunction, Request, Response } from "express";
 import ResponseHandler from "../../lib/helpers/responseHandler";
@@ -185,7 +186,7 @@ export class AdminController{
       public getProducts = async (req: Request, res: Response, next: NextFunction) => {
         const responseHandler = new ResponseHandler();
         try {
-          responseHandler.reqRes(req, res).onFetch("PRODUCTS_FETCHED", await adminModel.getProducts(req.userId,req.query.limit)).send();
+          responseHandler.reqRes(req, res).onFetch("PRODUCTS_FETCHED", await adminModel.getProducts(req.userId,req.query.limit as string)).send();
         } catch (e) {
           // send error with next function.
           next(responseHandler.sendError(e));
@@ -205,7 +206,7 @@ export class AdminController{
       public getPrices = async (req: Request, res: Response, next: NextFunction) => {
         const responseHandler = new ResponseHandler();
         try {
-          responseHandler.reqRes(req, res).onFetch("PRICES_FETCHED", await adminModel.getPrices(req.userId,req.query.limit)).send();
+          responseHandler.reqRes(req, res).onFetch("PRICES_FETCHED", await adminModel.getPrices(req.userId,req.query.limit as string)).send();
         } catch (e) {
           // send error with next function.
           next(responseHandler.sendError(e));
@@ -215,7 +216,7 @@ export class AdminController{
       public fetchPaymentRequests = async (req: Request, res: Response, next: NextFunction) => {
         const responseHandler = new ResponseHandler();
         try {
-          responseHandler.reqRes(req, res).onFetch("PAYMENTS_FETCHED", await adminModel.fetchPaymentsRequests(req.userId,req.params.status as ETransactionStatus,req.query.page)).send();
+          responseHandler.reqRes(req, res).onFetch("PAYMENTS_FETCHED", await adminModel.fetchPaymentsRequests(req.userId,req.params.status as ETransactionStatus,req.query.page as string)).send();
         } catch (e) {
           // send error with next function.
           next(responseHandler.sendError(e));

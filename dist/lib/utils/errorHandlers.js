@@ -10,11 +10,12 @@ const logger_1 = __importDefault(require("../../core/logger"));
 const logFileName = "[ErrorHandler] : ";
 // When specific api path is not available then throw 404 error. we are passing
 // the errors to next function.
-exports.notFoundError = () => {
+const notFoundError = () => {
     throw new httpErrors_1.HTTP404Error("Method not found.");
 };
+exports.notFoundError = notFoundError;
 // Handles client side error, If not moved to next function.
-exports.clientError = (err, req, res, next) => {
+const clientError = (err, req, res, next) => {
     const responseHandler = new responseHandler_1.default();
     if (err instanceof httpErrors_1.HTTPClientError) {
         logger_1.default.error(logFileName, err);
@@ -24,8 +25,9 @@ exports.clientError = (err, req, res, next) => {
         next(err);
     }
 };
+exports.clientError = clientError;
 // handles server side error.
-exports.serverError = (err, req, res, next) => {
+const serverError = (err, req, res, next) => {
     const responseHandler = new responseHandler_1.default();
     if (process.env.NODE_ENV === "production") {
         logger_1.default.error(logFileName, err);
@@ -35,4 +37,5 @@ exports.serverError = (err, req, res, next) => {
         res.status(500).send(err.stack);
     }
 };
+exports.serverError = serverError;
 //# sourceMappingURL=errorHandlers.js.map

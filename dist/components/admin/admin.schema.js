@@ -51,5 +51,5 @@ exports.AdminUserSchema.methods.addNewAdmin = function () {
         return this.save();
     });
 };
-exports.AdminUser = mongoose_1.model("AdminUser", exports.AdminUserSchema);
+exports.AdminUser = (0, mongoose_1.model)("AdminUser", exports.AdminUserSchema);
 //# sourceMappingURL=admin.schema.js.map

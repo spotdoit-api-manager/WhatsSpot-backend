@@ -18,17 +18,6 @@ const logFileName = "[App]";
 
 
 
-process.on("uncaughtException", e => {
-    console.log(e);
-  console.log(e.message, "uncaught Exception");
-  process.exit(1);
-});
-
-process.on("unhandledRejection", e => {
-  logger.info(logFileName,e);
-  console.log("unhandled Rejection");
-  process.exit(1);
-});
 
 
 // Initialize express app

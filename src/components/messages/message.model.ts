@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { EPlanStatus } from "./../plans/plans.interface";
 
 import { EWhatsappMessageTypes } from "./../../lib/services/whatsapp/whatsapp.enum";
@@ -24,7 +25,7 @@ const logFileName = "[MessageModel] : ";
 export class MessageModel {
 
     public async retryFailedMessage(userId: string, deviceId: string) {
-        const messages = await MessageQueue.find({ userId: new ObjectID(userId), deviceId: new ObjectID(deviceId), status: EMessageStatus.ERROR });
+        const messages = await MessageQueue.find({ userId: userId, deviceId: deviceId, status: EMessageStatus.ERROR });
         logger.info(logFileName, `Found ${messages.length} Failed Messages for user ${userId}`);
         // messageQueueService.sendErrorMessageForDevice(messages, deviceId);
         if (messages) return { error: false, messageCount: messages.length };

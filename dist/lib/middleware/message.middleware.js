@@ -8,9 +8,9 @@ const httpErrors_1 = require("../utils/httpErrors");
 const message_validator_1 = require("../validators/message.validator");
 const logger_1 = __importDefault(require("../../core/logger"));
 const logFileName = "[MessageMiddleware]";
-exports.validateTextMessage = (req, res, next) => {
+const validateTextMessage = (req, res, next) => {
     const message = req.body.message;
-    const valid = message_validator_1.isWhatsappTextMessageType(message);
+    const valid = (0, message_validator_1.isWhatsappTextMessageType)(message);
     if (valid.valid) {
         next();
     }
@@ -18,7 +18,8 @@ exports.validateTextMessage = (req, res, next) => {
         throw new httpErrors_1.HTTP401Error(valid.message, "Please check provided message format is valid");
     }
 };
-exports.validateListMessage = (req, res, next) => {
+exports.validateTextMessage = validateTextMessage;
+const validateListMessage = (req, res, next) => {
     var _a, _b, _c;
     (_c = (_b = (_a = req.body) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.sections) === null || _c === void 0 ? void 0 : _c.forEach((section, sectionIndex) => {
         var _a;
@@ -27,7 +28,7 @@ exports.validateListMessage = (req, res, next) => {
         });
     });
     const message = req.body.message;
-    const valid = message_validator_1.isWhatsappListMessageType(message);
+    const valid = (0, message_validator_1.isWhatsappListMessageType)(message);
     if (valid.valid) {
         next();
     }
@@ -35,7 +36,8 @@ exports.validateListMessage = (req, res, next) => {
         throw new httpErrors_1.HTTP401Error(valid.message, "Please check provided message format is valid");
     }
 };
-exports.validateBtnMessage = (req, res, next) => {
+exports.validateListMessage = validateListMessage;
+const validateBtnMessage = (req, res, next) => {
     var _a, _b, _c;
     req.body.message.headerType = 1;
     (_c = (_b = (_a = req.body) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.buttons) === null || _c === void 0 ? void 0 : _c.forEach((button, btnIndex) => {
@@ -44,7 +46,7 @@ exports.validateBtnMessage = (req, res, next) => {
     });
     const message = req.body.message;
     logger_1.default.info(logFileName, message);
-    const valid = message_validator_1.isWhatsappButtonMessageType(message);
+    const valid = (0, message_validator_1.isWhatsappButtonMessageType)(message);
     if (valid.valid) {
         next();
     }
@@ -52,13 +54,14 @@ exports.validateBtnMessage = (req, res, next) => {
         throw new httpErrors_1.HTTP401Error(valid.message, "Please check provided message format is valid");
     }
 };
-exports.validateTemplateMessage = (req, res, next) => {
+exports.validateBtnMessage = validateBtnMessage;
+const validateTemplateMessage = (req, res, next) => {
     req.body.message.templateButtons.forEach((button, index) => {
         button.index = index;
     });
     const message = req.body.message;
     logger_1.default.info(message);
-    const valid = message_validator_1.isWhatsappTemplateMessageType(message);
+    const valid = (0, message_validator_1.isWhatsappTemplateMessageType)(message);
     if (valid.valid) {
         next();
     }
@@ -66,4 +69,5 @@ exports.validateTemplateMessage = (req, res, next) => {
         throw new httpErrors_1.HTTP401Error(valid.message, "Please check provided message format is valid");
     }
 };
+exports.validateTemplateMessage = validateTemplateMessage;
 //# sourceMappingURL=message.middleware.js.map

@@ -32,7 +32,7 @@ export class PlanManager{
     }
 
     public async deletePlan(planId: string){
-        const result= await Plan.findOneAndDelete(planId);
+        const result= await Plan.findOneAndDelete({planId});
         return result;
     }
 }

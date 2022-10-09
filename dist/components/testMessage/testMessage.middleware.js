@@ -13,16 +13,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateTestMessageRequest = void 0;
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 const phone_handler_1 = require("./../../lib/utils/phone.handler");
 const httpErrors_1 = require("./../../lib/utils/httpErrors");
 const testMessage_model_1 = __importDefault(require("./testMessage.model"));
 const config_1 = require("../../config");
-exports.validateTestMessageRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const validateTestMessageRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
         const to = (_a = req.body) === null || _a === void 0 ? void 0 : _a.to;
         try {
-            req.body.to = phone_handler_1.parsePhone(to).number;
+            req.body.to = (0, phone_handler_1.parsePhone)(to).number;
         }
         catch (e) {
             const error = new httpErrors_1.HTTP401Error("INVALID_PHONE", "phone number is invalid");
@@ -44,4 +45,5 @@ exports.validateTestMessageRequest = (req, res, next) => __awaiter(void 0, void 
         next(new httpErrors_1.HTTP401Error(e.message));
     }
 });
+exports.validateTestMessageRequest = validateTestMessageRequest;
 //# sourceMappingURL=testMessage.middleware.js.map

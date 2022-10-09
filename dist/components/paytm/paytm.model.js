@@ -58,7 +58,7 @@ class PaytmModel {
                 // let response = await Axios.post(config.TRANSACTION_STATUS_URL, body);
                 // console.log(paytmConfig.TRANSACTION_STATUS_URL);
                 console.log(body);
-                const response = yield axios_1.default({
+                const response = yield (0, axios_1.default)({
                     method: "POST",
                     url: paytm_1.default.TRANSACTION_STATUS_URL,
                     data: Object.assign({}, body)

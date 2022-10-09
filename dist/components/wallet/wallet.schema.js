@@ -56,5 +56,5 @@ const TransactionSchema = new mongoose_1.Schema({
 }, {
     timestamps: true
 });
-exports.Wallet = mongoose_1.model("wallet", WalletSchema);
+exports.Wallet = (0, mongoose_1.model)("wallet", WalletSchema);
 //# sourceMappingURL=wallet.schema.js.map

@@ -7,7 +7,7 @@ import { ITestMessageModel, TestMessage } from "./testMessage.schema";
 
 export class TestMessageModel{
     public async fetchTestMessageByPhoneNumber(phoneNumber: string){
-        return await  TestMessage.findOne({phoneNumber:phoneNumber}).lean();
+        return await  TestMessage.findOne({phoneNumber:phoneNumber}).lean() as ITestMessageModel;
     }
 
     public async sendTestMessage(body: any,testMessageId: string|null){

@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -163,7 +167,7 @@ class AdminModel {
     }
     fetchOnOtp(id, otp) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield admin_schema_1.AdminUser.findOne({ _id: id, otp });
+            return yield admin_schema_1.AdminUser.findOne({ _id: id, otp: otp.toString() });
         });
     }
     verifyOtp(id, otp) {
@@ -192,15 +196,15 @@ class AdminModel {
         return `Authorization=${tokenData.token}; HttpOnly; Max-Age=${tokenData.expiresIn};`;
     }
     updateOtp(id) {
-        const otp = helpers_1.otpGenerator();
-        admin_schema_1.AdminUser.findByIdAndUpdate(id, { otp }).then();
+        const otp = (0, helpers_1.otpGenerator)();
+        admin_schema_1.AdminUser.findByIdAndUpdate(id, { otp: otp.toString() }).then();
         return otp;
     }
     sendOtpToMobile(otp, phone) {
         return __awaiter(this, void 0, void 0, function* () {
             logger_1.default.debug(logFileName, `send this ${otp} to ${phone}`);
             const message = `Your WhatsSpot Admin login OTP is ${otp}.`;
-            return yield otp_handler_1.sendMessage(phone, message);
+            return yield (0, otp_handler_1.sendMessage)(phone, message);
         });
     }
     // !! STRIPE
@@ -212,7 +216,7 @@ class AdminModel {
         });
     }
     getProducts(userId, limit) {
-        return stripe_model_1.default.getProducts(userId, limit);
+        return stripe_model_1.default.getProducts(userId, parseInt(limit));
     }
     createPrice(userId, priceBody) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -221,13 +225,12 @@ class AdminModel {
     }
     getPrices(userId, limit) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield stripe_model_1.default.getPrices(userId, limit);
+            return yield stripe_model_1.default.getPrices(userId, parseInt(limit));
         });
     }
     fetchPaymentsRequests(userId, status, page) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("status", status);
-            return yield transaction_model_1.default.fetchTransactionByMethod(pay_with_enum_1.EPayWith.QR_PAY, status, page);
+            return yield transaction_model_1.default.fetchTransactionByMethod(pay_with_enum_1.EPayWith.QR_PAY, status, parseInt(page));
         });
     }
     approvePayment(userId, paymentId) {

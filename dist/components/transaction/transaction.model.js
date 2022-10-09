@@ -18,7 +18,9 @@ const utils_1 = require("../../lib/utils");
 const logFileName = "[TransactionModel] : ";
 class TransactionModel {
     fetchTransactionById(walletId = "", transactionId) {
-        return transaction_schema_1.Transaction.findById(transactionId).lean();
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield transaction_schema_1.Transaction.findById(transactionId).lean();
+        });
     }
     fetchTransactionByMethod(method, status, page = 1) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -34,6 +36,8 @@ class TransactionModel {
             const result = yield transaction_schema_1.Transaction.aggregate([
                 { $match: condition },
                 { $sort: { createdAt: -1 } },
+                // { $skip: skip },
+                // { $limit: limit }
             ]);
             console.group("result is ", result);
             return result;
@@ -41,7 +45,7 @@ class TransactionModel {
     }
     fetchTransactions(walletId, page) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { skip, limit } = utils_1.getSkipLimit(page);
+            const { skip, limit } = (0, utils_1.getSkipLimit)(page);
             const result = yield transaction_schema_1.Transaction.aggregate([
                 { $match: { walletId: new bson_1.ObjectID(walletId) } },
                 { $sort: { createdAt: -1 } },
@@ -122,7 +126,9 @@ class TransactionModel {
         });
     }
     fetchTransactionByOrderId(orderId) {
-        return transaction_schema_1.Transaction.findOne({ orderId: orderId }).lean();
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield transaction_schema_1.Transaction.findOne({ orderId: orderId }).lean();
+        });
     }
 }
 exports.TransactionModel = TransactionModel;

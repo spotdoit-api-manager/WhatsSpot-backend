@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageModel = void 0;
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 const plans_interface_1 = require("./../plans/plans.interface");
 const whatsapp_enum_1 = require("./../../lib/services/whatsapp/whatsapp.enum");
 const bson_1 = require("bson");
@@ -39,7 +40,7 @@ class MessageModel {
     }
     retryFailedMessage(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const messages = yield message_schema_1.MessageQueue.find({ userId: new bson_1.ObjectID(userId), deviceId: new bson_1.ObjectID(deviceId), status: message_interface_1.EMessageStatus.ERROR });
+            const messages = yield message_schema_1.MessageQueue.find({ userId: userId, deviceId: deviceId, status: message_interface_1.EMessageStatus.ERROR });
             logger_1.default.info(logFileName, `Found ${messages.length} Failed Messages for user ${userId}`);
             // messageQueueService.sendErrorMessageForDevice(messages, deviceId);
             if (messages)
@@ -67,7 +68,7 @@ class MessageModel {
             }
             else {
                 body.numbers.forEach((phone) => {
-                    const parsedPhone = phone_handler_1.parsePhone(phone);
+                    const parsedPhone = (0, phone_handler_1.parsePhone)(phone);
                     numbers.push(parsedPhone.number);
                 });
             }
@@ -135,7 +136,7 @@ class MessageModel {
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const results = [];
-            const parsedNumber = phone_handler_1.parsePhone(numbers).number;
+            const parsedNumber = (0, phone_handler_1.parsePhone)(numbers).number;
             const result = yield this.sendMessage(userId, parsedNumber, message, messageType, deviceId, walletId);
             const newBody = { phone: device.phone, userId, to: parsedNumber, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, messageType: whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
             const saveResult = yield this.saveFastMessage(newBody);
@@ -181,7 +182,7 @@ class MessageModel {
             const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
-            const to = phone_handler_1.parsePhone(body.to).number;
+            const to = (0, phone_handler_1.parsePhone)(body.to).number;
             const msg = { image: body.locationUrl, caption: body.caption || "" };
             const result = yield whatsapp_client_service_1.default.sendImageMessage(device.phone, to, msg);
             // console.log(result);

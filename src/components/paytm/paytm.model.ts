@@ -77,7 +77,7 @@ class PaytmModel {
 
     public async initiatePaytmTransaction(userId: string, walletId: string, planId: EPLANS, amount: number) {
         logger.info(logFileName, planId, amount);
-        const plan: IPlanModel = await plansModel.fetchPlanByPlanId(planId);
+        const plan: IPlanModel = await plansModel.fetchPlanByPlanId(planId) as IPlanModel;
         await userModel.checkIfUserCanActivatePlan(userId, planId);
         if(planId!=EPLANS.PAYG)amount=plan.planAmount;
         const transactionMessage = plan.planId == EPLANS.PAYG ? "Adding money to wallet" : `Buying plan -> ${plan.planName}`;

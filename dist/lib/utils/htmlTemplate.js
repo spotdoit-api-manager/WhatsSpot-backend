@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.responseTemplate = exports.paymentTemplate = void 0;
-exports.paymentTemplate = (data) => {
+const paymentTemplate = (data) => {
     return `<html><head><title>PolBol Paytm Portal</title></head><body><form action="${data.final_url}" method="POST" name="f1">${data.formFields}</form><script type="text/javascript">document.f1.submit()</script></body></html>`;
 };
-exports.responseTemplate = (data) => {
+exports.paymentTemplate = paymentTemplate;
+const responseTemplate = (data) => {
     return `<html>
     <head>
         <title>Merchant Check Out Page</title>
@@ -85,4 +86,5 @@ exports.responseTemplate = (data) => {
     </body>
     </html>`;
 };
+exports.responseTemplate = responseTemplate;
 //# sourceMappingURL=htmlTemplate.js.map

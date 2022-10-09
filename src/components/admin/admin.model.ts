@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { ITransaction } from "./../transaction/transaction.interface";
 import { IStripePrice, IStripeProduct } from "./../stripe/stripe.interface";
 import { commonConfig } from "./../../config/index";
@@ -117,7 +118,7 @@ export class AdminModel {
 
 
     async fetchOnOtp(id: string, otp: number) {
-        return await AdminUser.findOne({ _id: id, otp });
+        return await AdminUser.findOne({ _id: id, otp:otp.toString() });
     }
 
     async verifyOtp(id: string, otp: number) {
@@ -149,7 +150,7 @@ export class AdminModel {
 
     updateOtp(id: string): number {
         const otp = otpGenerator();
-        AdminUser.findByIdAndUpdate(id, { otp }).then();
+        AdminUser.findByIdAndUpdate(id, { otp:otp.toString() }).then();
         return otp;
     }
 
@@ -167,21 +168,20 @@ export class AdminModel {
         return await stripeModel.addProduct(productBody);
     }
 
-    public getProducts(userId: string, limit: number) {
-        return stripeModel.getProducts(userId, limit);
+    public getProducts(userId: string, limit: string) {
+        return stripeModel.getProducts(userId, parseInt(limit));
     }
 
     public async createPrice(userId: string, priceBody: IStripePrice) {
         return await stripeModel.createPrice(userId, priceBody);
     }
 
-    public async getPrices(userId: string, limit: number) {
-        return await stripeModel.getPrices(userId, limit);
+    public async getPrices(userId: string, limit: string) {
+        return await stripeModel.getPrices(userId, parseInt(limit));
     }
 
-    public async fetchPaymentsRequests(userId: string, status: ETransactionStatus,page: number) {
-        console.log("status",status);
-        return await transactionModel.fetchTransactionByMethod(EPayWith.QR_PAY,status,page);
+    public async fetchPaymentsRequests(userId: string, status: ETransactionStatus,page: string) {
+        return await transactionModel.fetchTransactionByMethod(EPayWith.QR_PAY,status,parseInt(page));
     }
 
     public async approvePayment(userId: string,paymentId: string){

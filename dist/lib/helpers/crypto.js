@@ -8,7 +8,7 @@ const crypto_1 = __importDefault(require("crypto"));
 const algorithm = "aes-256-ctr";
 const secretKey = "FADlGT8GnTao13vv6SEZvYF9TCQayNtP";
 const iv = crypto_1.default.randomBytes(16);
-exports.encrypt = (text) => {
+const encrypt = (text) => {
     const cipher = crypto_1.default.createCipheriv(algorithm, secretKey, iv);
     const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
     return {
@@ -16,9 +16,11 @@ exports.encrypt = (text) => {
         content: encrypted.toString("hex")
     };
 };
-exports.decrypt = (hash) => {
+exports.encrypt = encrypt;
+const decrypt = (hash) => {
     const decipher = crypto_1.default.createDecipheriv(algorithm, secretKey, Buffer.from(hash.iv, "hex"));
     const decrpyted = Buffer.concat([decipher.update(Buffer.from(hash.content, "hex")), decipher.final()]);
     return decrpyted.toString();
 };
+exports.decrypt = decrypt;
 //# sourceMappingURL=crypto.js.map

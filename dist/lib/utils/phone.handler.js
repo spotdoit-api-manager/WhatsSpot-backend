@@ -9,9 +9,9 @@ const httpErrors_1 = require("./httpErrors");
 const max_1 = require("libphonenumber-js/max");
 const logger_1 = __importDefault(require("../../core/logger"));
 const logFileName = "[PhoneHandler] : ";
-exports.parsePhoneWithCountry = (phone, country) => {
+const parsePhoneWithCountry = (phone, country) => {
     try {
-        const parsedPhone = max_1.parsePhoneNumberWithError(phone, country);
+        const parsedPhone = (0, max_1.parsePhoneNumberWithError)(phone, country);
         if (!parsedPhone.isValid())
             throw new Error("INVALID_PHONE");
         return { number: parsedPhone.number };
@@ -21,11 +21,12 @@ exports.parsePhoneWithCountry = (phone, country) => {
         throw new httpErrors_1.HTTP400Error(e.message);
     }
 };
-exports.parsePhone = (phone) => {
+exports.parsePhoneWithCountry = parsePhoneWithCountry;
+const parsePhone = (phone) => {
     try {
         // console.log("parsing phone",phone);
-        phone = index_1.deSanatizeMobile(phone);
-        const parsedPhone = max_1.parsePhoneNumber(index_1.deSanatizeMobile(phone));
+        phone = (0, index_1.deSanatizeMobile)(phone);
+        const parsedPhone = (0, max_1.parsePhoneNumber)((0, index_1.deSanatizeMobile)(phone));
         if (!parsedPhone.isValid())
             throw new Error(`Phone ${phone} is invalid`);
         return { number: parsedPhone.number };
@@ -35,4 +36,5 @@ exports.parsePhone = (phone) => {
         throw new httpErrors_1.HTTP400Error(e.message, `Not a valid number at ${phone}`);
     }
 };
+exports.parsePhone = parsePhone;
 //# sourceMappingURL=phone.handler.js.map

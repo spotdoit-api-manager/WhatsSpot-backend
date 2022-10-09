@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { parsePhone } from "./../../lib/utils/phone.handler";
 import { HTTP401Error } from "./../../lib/utils/httpErrors";
 import { Request, Response, NextFunction } from "express";

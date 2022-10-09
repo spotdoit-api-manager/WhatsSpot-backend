@@ -31,7 +31,7 @@ const handleToken = (token) => __awaiter(void 0, void 0, void 0, function* () {
         throw new httpErrors_1.HTTP401Error("Api key not provided");
     }
 });
-exports.DeviceKeyValidator = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const DeviceKeyValidator = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
         if ((_a = req === null || req === void 0 ? void 0 : req.headers) === null || _a === void 0 ? void 0 : _a.authorization) {
@@ -53,4 +53,5 @@ exports.DeviceKeyValidator = (req, res, next) => __awaiter(void 0, void 0, void 
         next(e);
     }
 });
+exports.DeviceKeyValidator = DeviceKeyValidator;
 //# sourceMappingURL=device-key.middleware.js.map

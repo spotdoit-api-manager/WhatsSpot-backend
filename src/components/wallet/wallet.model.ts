@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { ETransactionStatus } from "./../transaction/transaction.interface";
 import { HTTP401Error } from "../../lib/utils/httpErrors";
 import { ObjectID } from "bson";
@@ -11,6 +12,8 @@ import logger from "../../core/logger";
 import { EPayWith } from "../../core/enums/pay-with.enum";
 import notifyService from "../../lib/services/notify.service";
 const logFileName = "[WalletModel] : ";
+
+import { _FilterQuery } from "mongoose";
 export class WalletModel {
 
 
@@ -49,8 +52,8 @@ export class WalletModel {
         return newBalance;
     }
 
-    public async fetchTransactions(userId: string, walletId: string,page: number=1) {
-        const transactions = await transactionModel.fetchTransactions(walletId,page);
+    public async fetchTransactions(userId: string, walletId: string,page: string="1") {
+        const transactions = await transactionModel.fetchTransactions(walletId,parseInt(page));
         return transactions;
     }
 
@@ -80,7 +83,7 @@ export class WalletModel {
         return result[0] || null;
     }
     public async getWalletIdByUserId(userId: string){
-        const wallet: IWalletModel = await Wallet.findOne({userId:new ObjectID(userId)});
+        const wallet: IWalletModel = await Wallet.findOne({userId:userId});
         if(!wallet)throw Error("WALLET_NOT_FOUND");
         return wallet._id;
     }

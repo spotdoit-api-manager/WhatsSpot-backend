@@ -1,3 +1,4 @@
+/// <reference types="mongoose" />
 import { IContact, IContactsGroup } from "./contact.interface";
 import { IContactModel, IContactGroupModel } from "./contact.schema";
 export declare class ContactModal {
@@ -5,7 +6,7 @@ export declare class ContactModal {
     private createNewContact;
     fetchContacts(userId: string): Promise<any[]>;
     fetchGroupContacts(userId: string, groupId: string): Promise<any>;
-    addContactsToGroup(userId: string, groupId: string, contacts: IContact[]): Promise<any>;
+    addContactsToGroup(userId: string, groupId: string, contacts: IContact[]): Promise<import("mongoose").LeanDocument<IContactGroupModel>>;
     fetchGroups(userId: string): Promise<any[]>;
     createNewGroup(userId: string, groupName: string, contacts?: IContactsGroup[]): IContactGroupModel;
     deleteGroup(user: string, groupId: string): Promise<IContactGroupModel>;

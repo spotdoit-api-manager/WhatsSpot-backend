@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { EPayWith } from "./../../core/enums/pay-with.enum";
 import { EPLANS } from "./../plans/plans.interface";
 import { ITransactionModel } from "./../transaction/transaction.schema";

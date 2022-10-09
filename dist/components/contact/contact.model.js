@@ -28,10 +28,10 @@ class ContactModal {
         for (let i = 0; i < contacts.length; i++) {
             const contact = contacts[i];
             if (contact.country && contact.country.length > 0) {
-                contact.phoneNumber = phone_handler_1.parsePhoneWithCountry(contact.phoneNumber, contact.country).number;
+                contact.phoneNumber = (0, phone_handler_1.parsePhoneWithCountry)(contact.phoneNumber, contact.country).number;
             }
             else {
-                contact.phoneNumber = phone_handler_2.parsePhone(contacts[i].phoneNumber).number;
+                contact.phoneNumber = (0, phone_handler_2.parsePhone)(contacts[i].phoneNumber).number;
             }
             if (userId) {
                 contact.userId = userId;

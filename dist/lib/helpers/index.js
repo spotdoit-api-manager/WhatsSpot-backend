@@ -20,13 +20,15 @@ const config_1 = require("../../config");
 /**
  * 4 digit otp generator.
  */
-exports.otpGenerator = () => Math.floor(1000 + Math.random() * 9000);
+const otpGenerator = () => Math.floor(1000 + Math.random() * 9000);
+exports.otpGenerator = otpGenerator;
 /**
  * **Crete new token**
  * ? This will create new jwt token for users every time.
  * @param user user Information here
  */
-exports.generateToken = (user) => __awaiter(void 0, void 0, void 0, function* () { return jsonwebtoken_1.default.sign({ user }, config_1.commonConfig.jwtSecretKey); });
+const generateToken = (user) => __awaiter(void 0, void 0, void 0, function* () { return jsonwebtoken_1.default.sign({ user }, config_1.commonConfig.jwtSecretKey); });
+exports.generateToken = generateToken;
 /**
  * This will convert valid timestamp into h:m AM/PM date MonthName
  * ? for example::  10:47 PM 26 May
@@ -37,14 +39,15 @@ exports.generateToken = (user) => __awaiter(void 0, void 0, void 0, function* ()
 //   const hrs = new Date(time).getHours();
 //   return `${hrs > 12? hrs-12 : hrs}:${new Date(time).getMinutes()} ${hrs > 12 ? "PM" : "AM"}, ${new Date(time).getDate()} ${monthArr[ new Date(time).getMonth()]}`;
 // }
-exports.takeYMD = (time) => {
+const takeYMD = (time) => {
     const date = new Date(time);
     return `${date.getFullYear()}-${checkTime(date.getMonth() + 1)}-${checkTime(date.getDate())}`;
 };
+exports.takeYMD = takeYMD;
 const checkTime = (data) => {
     return data > 9 ? data : `0${data}`;
 };
-exports.imageUrl = (imgPath) => {
+const imageUrl = (imgPath) => {
     const regEx = /^http/i;
     if (!imgPath || regEx.test(imgPath)) {
         return imgPath;
@@ -53,7 +56,8 @@ exports.imageUrl = (imgPath) => {
         `${config_1.s3Config.url}${imgPath}` :
         imgPath.map((el) => regEx.test(el) ? el : `${config_1.s3Config.url}${el}`));
 };
-exports.skipLimitOnPage = (page = 1) => {
+exports.imageUrl = imageUrl;
+const skipLimitOnPage = (page = 1) => {
     if (isNaN(page)) {
         throw new httpErrors_1.HTTP400Error("please provide a paging to this api in query string:: ?page=<positive number>");
     }
@@ -61,19 +65,24 @@ exports.skipLimitOnPage = (page = 1) => {
     const pageLimit = config_1.commonConfig.pageSizeLimit;
     return { skip: pageLimit * (page - 1), limit: pageLimit };
 };
-exports.getTime = (date) => {
+exports.skipLimitOnPage = skipLimitOnPage;
+const getTime = (date) => {
     return new Date(date).toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
 };
-exports.getNextDate = (day = 2) => {
+exports.getTime = getTime;
+const getNextDate = (day = 2) => {
     return new Date(new Date().getTime() + day * 24 * 60 * 60 * 1000);
 };
-exports.isValidMongoId = (str) => {
+exports.getNextDate = getNextDate;
+const isValidMongoId = (str) => {
     return str.match(/^[a-f\d]{24}$/i);
 };
-exports.pruneFields = (body, fields) => {
+exports.isValidMongoId = isValidMongoId;
+const pruneFields = (body, fields) => {
     const fieldsArray = fields.split(" ");
     fieldsArray.forEach(field => {
         delete body[field];
     });
 };
+exports.pruneFields = pruneFields;
 //# sourceMappingURL=index.js.map

@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RazorPayModel = void 0;
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 const pay_with_enum_1 = require("./../../core/enums/pay-with.enum");
 const transaction_interface_1 = require("../transaction/transaction.interface");
 const transaction_model_1 = __importDefault(require("../transaction/transaction.model"));
