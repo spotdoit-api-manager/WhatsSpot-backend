@@ -25,17 +25,6 @@ class TestMessageModel {
     }
     sendTestMessage(body, testMessageId) {
         return __awaiter(this, void 0, void 0, function* () {
-<<<<<<< HEAD
-            const tempMsg = {
-                text: "Welcome to WhatsSpot!!",
-                footer: "This is test template message",
-                templateButtons: [
-                    { index: 1, urlButton: { displayText: "Show Api Documentation", url: "https://www.whatsspot.in/docs/index.html" } },
-                    { index: 3, urlButton: { displayText: "View Plans", url: "https://www.whatsspot.in/#plans" } },
-                ]
-            };
-            const result = yield whatsapp_client_service_1.default.sendTemplateMessage(config_1.testMessageConfig.devicePhone, body.to, tempMsg);
-=======
             const sections = [
                 {
                     title: "Section 1",
@@ -60,7 +49,6 @@ class TestMessageModel {
                 sections
             };
             const result = yield whatsapp_client_service_1.default.sendListMessage(config_1.testMessageConfig.devicePhone, body.to, listMessage);
->>>>>>> shini
             // const textMsg: IWhatsappTextMessage = {
             //     text:"Welcome to WhatsSpot!!\nThis is a test message."
             // };
