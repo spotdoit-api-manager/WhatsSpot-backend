@@ -29,5 +29,8 @@
     "PAYG",
     "Paytm",
     "sanatize"
-  ]
+  ],
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": "file:///d%3A/Projects/Whatsapp%20Sender%20New/whatsapp%20new/whatsapp-sender-backend-multi/.github/workflows/deploy.yml"
+  }
 }
