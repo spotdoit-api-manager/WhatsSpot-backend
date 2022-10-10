@@ -25,19 +25,34 @@ class TestMessageModel {
     }
     sendTestMessage(body, testMessageId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const tempMsg = {
-                text: "Welcome to WhatsSpot!!",
-                footer: "This is test message",
-                templateButtons: [
-                    { index: 1, urlButton: { displayText: "Show Api Documentation", url: "https://www.whatsspot.in/docs/index.html" } },
-                    { index: 3, urlButton: { displayText: "View Plans", url: "https://www.whatsspot.in/#plans" } },
-                ]
+            const sections = [
+                {
+                    title: "Section 1",
+                    rows: [
+                        { title: "Its awesome", rowId: "option1", description: "This is awesome feature" },
+                        { title: "Love It", rowId: "option2", description: "This is a description" }
+                    ]
+                },
+                {
+                    title: "Section 2",
+                    rows: [
+                        { title: "Useful", rowId: "option3" },
+                        { title: "Good", rowId: "option4", }
+                    ]
+                },
+            ];
+            const listMessage = {
+                text: "This is a test message",
+                footer: "nice footer, link: https://whatsspot.in",
+                title: "Welcome to WhatsSpot!!",
+                buttonText: "View Option",
+                sections
             };
-            // const result  = await whatsappClientService.sendTemplateMessage(testMessageConfig.devicePhone,body.to,tempMsg);
-            const textMsg = {
-                text: "Welcome to WhatsSpot!!\nThis is a test message."
-            };
-            const result = yield whatsapp_client_service_1.default.sendTextMessage(config_1.testMessageConfig.devicePhone, body.to, textMsg);
+            const result = yield whatsapp_client_service_1.default.sendListMessage(config_1.testMessageConfig.devicePhone, body.to, listMessage);
+            // const textMsg: IWhatsappTextMessage = {
+            //     text:"Welcome to WhatsSpot!!\nThis is a test message."
+            // };
+            // const result  = await whatsappClientService.sendTextMessage(testMessageConfig.devicePhone,body.to,textMsg);
             if (result.error)
                 throw new httpErrors_1.HTTP401Error(result.message);
             yield this.updateOrCreateTestMessage(body.to, testMessageId);

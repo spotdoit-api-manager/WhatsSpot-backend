@@ -21,6 +21,8 @@ const isWhatsappListMessageType = (msg) => {
         return { valid: false, message: "message.title is missing/invalid" };
     if (msg.footer && typeof msg.footer !== "string")
         return { valid: false, message: "message.footer is missing/invalid" };
+    if (!msg.buttonText || typeof msg.buttonText !== "string")
+        return { valid: false, message: "message.buttonText is missing/invalid" };
     if (!msg.sections || !Array.isArray(msg.sections))
         return { valid: false, message: "message.sections are missing/invalid" };
     let isSectionValid = { valid: false, index: [], message: "message.sections is empty" };
@@ -96,6 +98,7 @@ const validateTemplateButton = (button, index) => {
             return { valid: false, message: `message.templateButtons[${index}].callButton.displayText is missing/invalid`, index: [index] };
         if (!cButton.callButton.phoneNumber || typeof cButton.callButton.phoneNumber !== "string")
             return { valid: false, message: `message.templateButtons[${index}].callButton.phoneNumber is missing/invalid`, index: [index] };
+        // if(!cButton.callButton.id || typeof cButton.callButton.id !== "string") return { valid: false, message: `message.templateButtons[${index}].callButton.phoneNumber is missing/invalid`, index: [index] };
     }
     else if (button.hasOwnProperty("urlButton")) {
         const urlButton = button;

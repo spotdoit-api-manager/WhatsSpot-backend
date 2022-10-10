@@ -1,0 +1,174 @@
+sent msg : {
+    "viewOnceMessage": {
+        "message": {
+            "messageContextInfo": {
+                "deviceListMetadataVersion": 2,
+                "deviceListMetadata": {}
+            },
+            "listMessage": {
+                "title": "Message title here",
+                "description": "Message text here",
+                "buttonText": "Open list button text here",
+                "listType": "SINGLE_SELECT",
+                "sections": [
+                    {
+                        "title": "Section 1",
+                        "rows": [
+                            {
+                                "title": "Option1",
+                                "description": "some description (optional)",
+                                "rowId": "s1r1"
+                            }
+                        ]
+                    }
+                ],
+                "footerText": "footer here (optional)"
+            }
+        }
+    }
+}
+
+sent msg : {
+    "viewOnceMessage": {
+        "message": {
+            "messageContextInfo": {
+                "deviceListMetadataVersion": 2,
+                "deviceListMetadata": {}
+            },
+            "listMessage": {
+                "title": "This is List Message",
+                "description": "Testing List Message",
+                "listType": "SINGLE_SELECT",
+                "sections": [
+                    {
+                        "title": "section 1",
+                        "rows": [
+                            {
+                                "title": "option1",
+                                "description": "description (optional)",
+                                "rowId": "r00"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}
+
+
+
+10-10-2022 16: 49: 55 debug: [MessageModel
+] :  add to queue request {
+    "messageType": "LIST_MESSAGE",
+    "message": {
+        "title": "Message title here",
+        "text": "Message text here",
+        "buttonText": "Open list button text here",
+        "sections": [
+            {
+                "title": "Section 1",
+                "rows": [
+                    {
+                        "title": "Option1",
+                        "rowId": "s1r1",
+                        "description": "some description (optional)"
+                    }
+                ]
+            }
+        ],
+        "footer": "footer here (optional)"
+    },
+    "numbers": [
+        "+919099858434"
+    ]
+}
+
+
+"message": {
+    "title": "From POSTMAN",
+    "text": "Message text here",
+    "buttonText": "Open list button text here",
+    "sections": [
+        {
+            "title": "Section 1",
+            "rows": [
+                {
+                    "title": "Option1",
+                    "rowId": "s1r1",
+                    "description": "some description (optional)"
+                }
+            ]
+        }
+    ],
+    "footer": "footer here (optional)"
+}
+
+"message": {
+    "text": "Testing List Message from api",
+    "title": "This is List Message",
+    "footer": "footer here",
+    "sections": [
+        {
+            "title": "section 1",
+            "rows": [
+                {
+                    "title": "option1",
+                    "description": "description (optional)",
+                    "rowId": "r00"
+                }
+            ]
+        }
+    ]
+}
+//   template msg
+{
+    "messageType": "TEMPLATE_MESSAGE",
+    "message": {
+        "text": "some message here",
+        "footer": "footer here (optional)",
+        "templateButtons": [
+            {
+                "index": 0,
+                "quickReplyButton": {
+                    "displayText": "Quick Reply Button 1",
+                    "id": "button0"
+                }
+            }
+        ]
+    },
+    "numbers": [
+        "+919099858434"
+    ]
+}
+
+
+{
+    "text": "hello",
+    "footer": "footer here (optional)",
+    "templateButtons": [
+        {
+            "urlButton": {
+                "displayText": "Url Button",
+                "url": "https://whtsspot.in",
+                "id": "button1"
+            },
+            "index": 1
+        },
+        {
+            "callButton": {
+                "displayText": "Call Button",
+                "phoneNumber": "7984545163",
+                "id": "button2"
+            },
+            "index": 2
+        },
+        {
+            "quickReplyButton": {
+                "displayText": "Simple reply",
+                "id": "button3"
+            },
+            "index": 3
+        }
+    ]
+}
