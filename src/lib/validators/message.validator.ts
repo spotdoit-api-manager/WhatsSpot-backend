@@ -24,6 +24,8 @@ export const isWhatsappListMessageType = (msg: any): IIsValidMessageType => {
   if (!msg.text || typeof msg.text !== "string") return { valid: false, message: `message.text is missing/invalid` };
   if (!msg.title || typeof msg.title !== "string") return { valid: false, message: "message.title is missing/invalid" };
   if (msg.footer && typeof msg.footer !== "string") return { valid: false, message: "message.footer is missing/invalid" };
+  if (!msg.buttonText || typeof msg.buttonText !== "string") return { valid: false, message: "message.buttonText is missing/invalid" };
+
   if (!msg.sections || !Array.isArray(msg.sections)) return { valid: false, message: "message.sections are missing/invalid" };
   let isSectionValid: IIsValidMessageType = { valid: false, index: [], message: "message.sections is empty" };
   msg.sections.forEach((section: any, index: number) => isSectionValid = validateSection(section, index));
@@ -89,6 +91,7 @@ const validateTemplateButton = (button: ITemplateButtons, index: number): IIsVal
     if (!cButton.callButton || typeof cButton.callButton !== "object") return { valid: false, message: `message.templateButtons[${index}].callButton is missing/invalid`, index: [index] };
     if(!cButton.callButton.displayText || typeof cButton.callButton.displayText !== "string") return { valid: false, message: `message.templateButtons[${index}].callButton.displayText is missing/invalid`, index: [index] };
     if(!cButton.callButton.phoneNumber || typeof cButton.callButton.phoneNumber !== "string") return { valid: false, message: `message.templateButtons[${index}].callButton.phoneNumber is missing/invalid`, index: [index] };
+    // if(!cButton.callButton.id || typeof cButton.callButton.id !== "string") return { valid: false, message: `message.templateButtons[${index}].callButton.phoneNumber is missing/invalid`, index: [index] };
 
   }
   else if (button.hasOwnProperty("urlButton")) {

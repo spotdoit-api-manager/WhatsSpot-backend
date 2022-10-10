@@ -1,4 +1,4 @@
-import { IWhatsappButtonMessage, IWhatsappTemplateMessage, IWhatsappTextMessage } from "./../../lib/services/whatsapp/whatsapp.interface";
+import { IWhatsappButtonMessage, IWhatsappTemplateMessage, IWhatsappTextMessage,IWhatsappListMessage } from "./../../lib/services/whatsapp/whatsapp.interface";
 import { HTTP401Error } from "../../lib/utils/httpErrors";
 import { testMessageConfig } from "../../config";
 import whatsappClientService from "../../lib/services/whatsapp/whatsapp-client.service";
@@ -11,15 +11,31 @@ export class TestMessageModel{
     }
 
     public async sendTestMessage(body: any,testMessageId: string|null){
-        const tempMsg: IWhatsappTemplateMessage = {
-            text: "Welcome to WhatsSpot!!",
-            footer: "This is test template message",
-            templateButtons: [
-                {index: 1, urlButton: {displayText: "Show Api Documentation", url: "https://www.whatsspot.in/docs/index.html"}},
-                {index: 3, urlButton: {displayText: "View Plans",url:"https://www.whatsspot.in/#plans"}},
+        const sections = [
+            {
+            title: "Section 1",
+            rows: [
+                {title: "Its awesome", rowId: "option1",description: "This is awesome feature"},
+                {title: "Love It", rowId: "option2", description: "This is a description"}
             ]
+            },
+           {
+            title: "Section 2",
+            rows: [
+                {title: "Useful", rowId: "option3"},
+                {title: "Good", rowId: "option4", }
+            ]
+            },
+        ];
+        
+        const listMessage:IWhatsappListMessage = {
+          text: "This is a test message",
+          footer: "nice footer, link: https://whatsspot.in",
+          title: "Welcome to WhatsSpot!!",
+          buttonText: "View Option",
+          sections
         };
-            const result  = await whatsappClientService.sendTemplateMessage(testMessageConfig.devicePhone,body.to,tempMsg);
+            const result  = await whatsappClientService.sendListMessage(testMessageConfig.devicePhone,body.to,listMessage);
             // const textMsg: IWhatsappTextMessage = {
             //     text:"Welcome to WhatsSpot!!\nThis is a test message."
             // };

@@ -1,4 +1,4 @@
-import { IWhatsappButtonMessageButton,IWhatsappListSectionRow,IWhatsappListSection, ITemplateButtons } from "./../services/whatsapp/whatsapp.interface";
+import { IWhatsappButtonMessageButton,IWhatsappListSectionRow,IWhatsappListSection, ITemplateButtons, ICallButton, IURLButton, IQuickReplyButton } from "./../services/whatsapp/whatsapp.interface";
 import { NextFunction, Request, Response } from "express";
 import { HTTP401Error } from "../utils/httpErrors";
 import { isWhatsappTextMessageType,isWhatsappButtonMessageType,isWhatsappListMessageType, isWhatsappTemplateMessageType } from "../validators/message.validator";
@@ -50,7 +50,10 @@ export const validateBtnMessage = (req: Request, res: Response, next: NextFuncti
 export const validateTemplateMessage = (req: Request, res: Response, next: NextFunction) => {
 
     req.body.message.templateButtons.forEach((button: ITemplateButtons,index: number)=>{
-        button.index = index;
+        button.index = index+1;
+        if(button.hasOwnProperty("quickReplyButton")){
+            (button as IQuickReplyButton).quickReplyButton.id = `button${index+1}`;
+        }
     });
     const message = req.body.message;
     logger.info(message);

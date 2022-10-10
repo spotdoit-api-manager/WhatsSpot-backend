@@ -57,7 +57,10 @@ const validateBtnMessage = (req, res, next) => {
 exports.validateBtnMessage = validateBtnMessage;
 const validateTemplateMessage = (req, res, next) => {
     req.body.message.templateButtons.forEach((button, index) => {
-        button.index = index;
+        button.index = index + 1;
+        if (button.hasOwnProperty("quickReplyButton")) {
+            button.quickReplyButton.id = `button${index + 1}`;
+        }
     });
     const message = req.body.message;
     logger_1.default.info(message);
