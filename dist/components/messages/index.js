@@ -3,66 +3,73 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const message_middleware_1 = require("./../../lib/middleware/message.middleware");
 const testMessage_middleware_1 = require("./../testMessage/testMessage.middleware");
 const device_key_middleware_1 = require("../../lib/middleware/device-key.middleware");
 const message_controller_1 = __importDefault(require("./message.controller"));
-const message_middleware_1 = require("../../lib/middleware/message.middleware");
+const message_middleware_2 = require("../../lib/middleware/message.middleware");
 exports.default = [
     //queue message
     {
         path: "/message/text",
         method: "post",
         escapeAuth: true,
-        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_1.validateTextMessage, message_controller_1.default.queueTextMessage]
+        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_2.validateTextMessage, message_controller_1.default.queueTextMessage]
     },
     {
         path: "/message/list",
         method: "post",
         escapeAuth: true,
-        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_1.validateListMessage, message_controller_1.default.queueListMessage]
+        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_2.validateListMessage, message_controller_1.default.queueListMessage]
     },
     {
         path: "/message/button",
         method: "post",
         escapeAuth: true,
-        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_1.validateBtnMessage, message_controller_1.default.queueBtnMessage]
+        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_2.validateBtnMessage, message_controller_1.default.queueBtnMessage]
     },
     {
         path: "/message/template",
         method: "post",
         escapeAuth: true,
-        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_1.validateTemplateMessage, message_controller_1.default.queueTemplateMessage]
+        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_2.validateTemplateMessage, message_controller_1.default.queueTemplateMessage]
     },
     // fast messages
     {
         path: "/message/fast/text",
         method: "post",
         escapeAuth: true,
-        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_1.validateTextMessage, message_controller_1.default.fastText]
+        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_2.validateTextMessage, message_controller_1.default.fastText]
     },
     {
         path: "/message/fast/list",
         method: "post",
         escapeAuth: true,
-        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_1.validateListMessage, message_controller_1.default.fastList]
+        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_2.validateListMessage, message_controller_1.default.fastList]
     },
     {
         path: "/message/fast/button",
         method: "post",
         escapeAuth: true,
-        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_1.validateBtnMessage, message_controller_1.default.fastBtn]
+        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_2.validateBtnMessage, message_controller_1.default.fastBtn]
     },
     {
         path: "/message/fast/template",
         method: "post",
         escapeAuth: true,
-        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_1.validateTemplateMessage, message_controller_1.default.fastTemplate]
+        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_2.validateTemplateMessage, message_controller_1.default.fastTemplate]
     },
     {
         path: "/message/fast/image-buttons",
         method: "post",
         escapeAuth: true,
-        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_1.validateImageBtnMessage, message_controller_1.default.fastImageBtn]
+        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_2.validateImageBtnMessage, message_controller_1.default.fastImageBtn]
+    },
+    {
+        path: "/message/fast/image-template",
+        method: "post",
+        escapeAuth: true,
+        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_1.validateImageTemplateMessage, message_controller_1.default.fastImageTemplate]
     },
     {
         path: "/message/testMessage",

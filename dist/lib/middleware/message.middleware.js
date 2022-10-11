@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateImageBtnMessage = exports.validateTemplateMessage = exports.validateBtnMessage = exports.validateListMessage = exports.validateTextMessage = void 0;
+exports.validateImageTemplateMessage = exports.validateImageBtnMessage = exports.validateTemplateMessage = exports.validateBtnMessage = exports.validateListMessage = exports.validateTextMessage = void 0;
 const message_validator_1 = require("./../validators/message.validator");
 const httpErrors_1 = require("../utils/httpErrors");
 const message_validator_2 = require("../validators/message.validator");
@@ -93,4 +93,22 @@ const validateImageBtnMessage = (req, res, next) => {
     }
 };
 exports.validateImageBtnMessage = validateImageBtnMessage;
+const validateImageTemplateMessage = (req, res, next) => {
+    req.body.message.templateButtons.forEach((button, index) => {
+        button.index = index + 1;
+        if (button.hasOwnProperty("quickReplyButton")) {
+            button.quickReplyButton.id = `button${index + 1}`;
+        }
+    });
+    const message = req.body.message;
+    logger_1.default.info(message);
+    const valid = (0, message_validator_1.isWhatsappImageTemplateMessageType)(message);
+    if (valid.valid) {
+        next();
+    }
+    else {
+        throw new httpErrors_1.HTTP401Error(valid.message, "Please check provided message format is valid");
+    }
+};
+exports.validateImageTemplateMessage = validateImageTemplateMessage;
 //# sourceMappingURL=message.middleware.js.map

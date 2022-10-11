@@ -11,6 +11,7 @@ export declare class MessageController {
     fastTemplate: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     sendTextMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     fastImageBtn: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    fastImageTemplate: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     sendTestMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     sendRawMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 }

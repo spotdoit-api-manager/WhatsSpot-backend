@@ -1,7 +1,7 @@
 "use strict";
 /* eslint-disable quotes */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isWhatsappImageBtnMessageType = exports.isWhatsappTemplateMessageType = exports.isWhatsappButtonMessageType = exports.isWhatsappListMessageType = exports.isWhatsappTextMessageType = void 0;
+exports.isWhatsappImageTemplateMessageType = exports.isWhatsappImageBtnMessageType = exports.isWhatsappTemplateMessageType = exports.isWhatsappButtonMessageType = exports.isWhatsappListMessageType = exports.isWhatsappTextMessageType = void 0;
 //validate text message
 const isWhatsappTextMessageType = (msg) => {
     if (!msg)
@@ -134,4 +134,22 @@ const isWhatsappImageBtnMessageType = (msg) => {
     return isButtonValid;
 };
 exports.isWhatsappImageBtnMessageType = isWhatsappImageBtnMessageType;
+const isWhatsappImageTemplateMessageType = (msg) => {
+    if (!msg.text || typeof msg.text != "string")
+        return { valid: false, message: "message.text is  required" };
+    if (!msg.image || typeof msg.image !== "object")
+        return { valid: false, message: "message.image is invalid,must be object with url key" };
+    if (!msg.image.url || typeof msg.image.url !== "string")
+        return { valid: false, message: "message.image.url is invalid,must be url type" };
+    if (msg.caption)
+        return { valid: false, message: "message.caption is not required" };
+    if (msg.templateButtons && typeof msg.templateButtons !== "object")
+        return { valid: false, message: "message.templateButtons is invalid,must be object" };
+    if (msg.footer && typeof msg.footer !== "string")
+        return { valid: false, message: "message.footer is invalid,must be string" };
+    let isButtonValid = { valid: true };
+    msg.templateButtons ? msg.templateButtons.forEach((button, index) => isButtonValid = validateTemplateButton(button, index)) : null;
+    return isButtonValid;
+};
+exports.isWhatsappImageTemplateMessageType = isWhatsappImageTemplateMessageType;
 //# sourceMappingURL=message.validator.js.map

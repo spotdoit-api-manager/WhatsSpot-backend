@@ -1,3 +1,4 @@
+import { validateImageTemplateMessage } from "./../../lib/middleware/message.middleware";
 import { validateTestMessageRequest } from "./../testMessage/testMessage.middleware";
 import { DeviceKeyValidator } from "../../lib/middleware/device-key.middleware";
 import messageController from "./message.controller";
@@ -65,6 +66,13 @@ export default [
         escapeAuth: true,
         
         handler: [DeviceKeyValidator,validateImageBtnMessage, messageController.fastImageBtn]
+    },
+    {
+        path:"/message/fast/image-template",
+        method: "post",
+        escapeAuth: true,
+        
+        handler: [DeviceKeyValidator,validateImageTemplateMessage, messageController.fastImageTemplate]
     },
    
     {
