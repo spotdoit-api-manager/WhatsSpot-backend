@@ -17,4 +17,4 @@ jobs:
           host: ${{ secrets.AWS_HOST }}
           username: ${{ secrets.AWS_USER }}
           key: ${{ secrets.AWS_KEY }}
-          script: sh /home/ubuntu/whatsSpotBackend/deploy.sh
+          script: sh whatsSpotBackend/deploy.sh
