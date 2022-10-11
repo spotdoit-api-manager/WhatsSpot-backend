@@ -221,7 +221,7 @@ class WhatsappClient {
                     const device = devices[i];
                     console.debug(logFileName, `client${i}:${device.phone}`);
                     const client = this.addClient(device._id, device.phone);
-                    yield client.initiClient();
+                    yield client.initiClient(false);
                 }
             }
             else {

@@ -14,11 +14,12 @@ export default class Whatsapp extends EventEmitter {
     _instanceId: number;
     private retryCount;
     private removed;
+    private firstConnect;
     private interval;
     constructor(deviceId: string, phone: string);
     private initRefreshInterval;
     private closeRefreshInterval;
-    initiClient: () => Promise<{
+    initiClient: (notify?: boolean) => Promise<{
         error: boolean;
         message?: undefined;
     } | {

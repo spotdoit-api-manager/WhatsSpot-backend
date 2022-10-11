@@ -33,6 +33,9 @@ export default class Whatsapp extends EventEmitter {
   public _instanceId: number;
   private retryCount =0;
   private removed =false;
+  private firstConnect = false;
+
+  
 private interval;
   constructor(deviceId: string,phone: string) {
     super();
@@ -57,7 +60,8 @@ private interval;
     }
   }
   // start a connection
-  public initiClient = async () => {
+  public initiClient = async (notify:boolean=true) => {
+    this.firstConnect = !notify;
     // if(!this.qrRequested) return;
     try {
       const config: any ={
@@ -214,8 +218,10 @@ private interval;
      deviceUtils.updateDevice(this.deviceId, {
       authState: true, reason: null
     });
-
-    notifyService.deviceAuthorized(this.deviceId);
+      if(!this.firstConnect && !this.authState){
+        this.firstConnect = false;
+        notifyService.deviceAuthorized(this.deviceId);
+      }
      this.authState = true;
   }
 
@@ -232,6 +238,8 @@ private interval;
     const shouldReconnect = (lastDisconnect.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
     if (shouldReconnect) {
       logger.warn(logFileName,"CONNECTION_CLOSED (NOT_LOGGED_OUT) Retrying......");
+      this.authState = false;
+
       return await this.reconnectClient();
     }
     else {
@@ -240,6 +248,7 @@ private interval;
       await deviceUtils.updateDevice(this.deviceId, {
         authState: false, reason
       });
+      this.authState = false;
       notifyService.deviceConnectionClosed(this.deviceId,reason);
 
       this.qrInProcess = false;
