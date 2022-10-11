@@ -3,13 +3,21 @@ export interface IReason {
     message?: string;
     error?: string;
 }
-export declare type IWhatsappMessage = IWhatsappListMessage | IWhatsappTextMessage;
+export declare type IWhatsappMessage = IWhatsappListMessage | IWhatsappTextMessage | IWhatsAppIMageButtonMessage;
 export interface IWhatsappTextMessage {
     text: string;
 }
 export interface IImageMessage {
     image: string;
     caption: string;
+}
+export interface IWhatsAppIMageButtonMessage {
+    image: {
+        url: string;
+    };
+    footer?: string;
+    caption: string;
+    buttons: IWhatsappButtonMessageButton[];
 }
 export interface IWhatsappButtonMessage {
     text: string;

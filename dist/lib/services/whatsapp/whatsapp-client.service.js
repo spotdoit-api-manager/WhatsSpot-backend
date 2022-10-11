@@ -126,6 +126,22 @@ class WhatsappClient {
                 return { error: true, message: e.message };
             }
         });
+        this.sendImageButtonMessage = (from, to, message) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                logger_1.default.info(logFileName, `Sending Template Message to ${to}`);
+                const clientInstance = this.getClientInstanceByPhone(from);
+                if (!clientInstance)
+                    return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+                if (!clientInstance.authState)
+                    return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+                console.log(message);
+                const data = yield clientInstance.sendAnyMessage((0, utils_1.sanatizeMobile)(to), message);
+                return data;
+            }
+            catch (e) {
+                return { error: true, message: e.message };
+            }
+        });
         this.sendImageMessage = (phone, to, msg) => __awaiter(this, void 0, void 0, function* () {
             try {
                 console.debug(logFileName, "sending image message to ", to);
@@ -239,18 +255,9 @@ class WhatsappClient {
                 case whatsapp_enum_1.EWhatsappMessageTypes.BUTTON_MESSAGE:
                     return yield this.sendButtonMessage(from, to, message);
                 case whatsapp_enum_1.EWhatsappMessageTypes.TEMPLATE_MESSAGE:
-                    // const templateButtons = [
-                    //     {index: 1, urlButton: {displayText: "⭐ Star Baileys on GitHub!", url: "https://github.com/adiwajshing/Baileys"}}
-                    //     // ,
-                    //     // {index: 2, callButton: {displayText: "Call me!", phoneNumber: "+1 (234) 5678-901"}},
-                    //     // {index: 3, quickReplyButton: {displayText: "This is a reply, just like normal buttons!", id: "id-like-buttons-message"}},
-                    // ];
-                    // const templateMessage:IWhatsappTemplateMessage = {
-                    //     text: "Hi it's a template message",
-                    //     footer: "",
-                    //     templateButtons: templateButtons
-                    // };
                     return yield this.sendTemplateMessage(from, to, message);
+                case whatsapp_enum_1.EWhatsappMessageTypes.IMAGE_BUTTON_MESSAGE:
+                    return yield this.sendImageButtonMessage(from, to, message);
             }
         });
     }

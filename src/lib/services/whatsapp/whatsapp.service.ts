@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { getSerializedPhone } from "./whatsapp-utils";
-import {  IReason, IWhatsappTextMessage } from "./whatsapp.interface";
+import {  IReason, IWhatsappMessage, IWhatsappTextMessage } from "./whatsapp.interface";
 import { EventEmitter } from "events";
 import P from "pino";
 import { Boom } from "@hapi/boom";
@@ -272,7 +273,7 @@ private interval;
   
   public sendAnyMessage = async (
     to: string,
-    msg: IWhatsappTextMessage,
+    msg: IWhatsappMessage
   ) => {
     try {
       const jid = getSerializedPhone(to);

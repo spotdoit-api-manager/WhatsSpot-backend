@@ -6,7 +6,7 @@ error?: string;
 }
 
 
-export  type IWhatsappMessage = IWhatsappListMessage | IWhatsappTextMessage;
+export  type IWhatsappMessage = IWhatsappListMessage | IWhatsappTextMessage | IWhatsAppIMageButtonMessage;
 export interface IWhatsappTextMessage{
     text:string
 }
@@ -17,6 +17,15 @@ export interface IImageMessage{
     caption: string;
 }
 
+
+export interface IWhatsAppIMageButtonMessage{
+  image:{
+    url: string;
+  },
+  footer?:string,
+  caption:string,
+  buttons:IWhatsappButtonMessageButton[]
+}
 
 // BUTTON_MESSAGE 
 

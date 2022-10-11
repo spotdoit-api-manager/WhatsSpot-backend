@@ -35,6 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 const whatsapp_utils_1 = require("./whatsapp-utils");
 const events_1 = require("events");
 const pino_1 = __importDefault(require("pino"));

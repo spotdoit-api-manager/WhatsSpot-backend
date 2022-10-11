@@ -135,7 +135,7 @@ export class MessageModel {
         
         return results;
     }
-    public async sendMessage(userId: string, to: string, message: IWhatsappTextMessage,messageType: EWhatsappMessageTypes, deviceId: string, walletId: string,transactionId: string=null) {
+    public async sendMessage(userId: string, to: string, message: IWhatsappMessage,messageType: EWhatsappMessageTypes, deviceId: string, walletId: string,transactionId: string=null) {
         try {
             const device = await deviceUtils.findDeviceById(userId,deviceId);
             if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");

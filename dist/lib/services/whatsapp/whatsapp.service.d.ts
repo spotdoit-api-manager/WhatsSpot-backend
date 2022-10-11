@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { IWhatsappTextMessage } from "./whatsapp.interface";
+import { IWhatsappMessage } from "./whatsapp.interface";
 import { EventEmitter } from "events";
 import { AuthenticationState } from "@adiwajshing/baileys";
 export default class Whatsapp extends EventEmitter {
@@ -40,7 +40,7 @@ export default class Whatsapp extends EventEmitter {
     private deleteAuthFile;
     private handleConnectionClose;
     private updateDeviceStatus;
-    sendAnyMessage: (to: string, msg: IWhatsappTextMessage) => Promise<{
+    sendAnyMessage: (to: string, msg: IWhatsappMessage) => Promise<{
         error: boolean;
         message?: undefined;
     } | {

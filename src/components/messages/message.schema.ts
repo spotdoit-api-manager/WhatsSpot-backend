@@ -1,3 +1,4 @@
+import { EWhatsappMessageTypes } from "./../../lib/services/whatsapp/whatsapp.enum";
 
 import { IMessage } from "./message.interface";
 import { Document, Model, model, Schema, SchemaType, SchemaTypes } from "mongoose";
@@ -87,7 +88,7 @@ const messageSchema = new Schema(
     },
     messageType:{
       type:String,
-      enum:["LIST_MESSAGE","TEXT_MESSAGE","BUTTON_MESSAGE","TEMPLATE_MESSAGE"]
+      enum:Object.values(EWhatsappMessageTypes),
     },
     message:{
       type:Schema.Types.Mixed,

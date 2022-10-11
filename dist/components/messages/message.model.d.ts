@@ -48,7 +48,7 @@ export declare class MessageModel {
     fetchGroupMessageSentContacts(messageId: string): Promise<any[]>;
     private hasActivePlan;
     sendFastMessage(userId: string, numbers: string, message: IWhatsappTextMessage, messageType: EWhatsappMessageTypes, deviceId: string, walletId: string): Promise<any[]>;
-    sendMessage(userId: string, to: string, message: IWhatsappTextMessage, messageType: EWhatsappMessageTypes, deviceId: string, walletId: string, transactionId?: string): Promise<{
+    sendMessage(userId: string, to: string, message: IWhatsappMessage, messageType: EWhatsappMessageTypes, deviceId: string, walletId: string, transactionId?: string): Promise<{
         error: boolean;
         creditUsed: number;
         message: any;

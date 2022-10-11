@@ -1,3 +1,5 @@
+import { IWhatsAppIMageButtonMessage } from "./whatsapp.interface";
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { IWhatsappListMessage,IWhatsappButtonMessage, IWhatsappTemplateMessage, IWhatsappMessage } from "./whatsapp.interface";
 
 import socketManager from "./../socket";
@@ -171,6 +173,19 @@ export class WhatsappClient {
         }
     }
 
+    public sendImageButtonMessage = async(from: string,to: string,message: IWhatsAppIMageButtonMessage) => {
+        try {
+            logger.info(logFileName,`Sending Template Message to ${to}`);
+            const clientInstance = this.getClientInstanceByPhone(from);
+            if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+            if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+            console.log(message);
+            const data = await clientInstance.sendAnyMessage(sanatizeMobile(to), message);
+            return data;
+        } catch (e) {
+            return { error: true, message: e.message };
+        }
+    }
     public async sendRawMessage(phone: string,to: string,message: any){
         try {
             logger.info(logFileName,`Sending Raw Message to ${to}`);
@@ -230,19 +245,9 @@ public async sendTypeMessage(messageType: EWhatsappMessageTypes,message: IWhatsa
         case EWhatsappMessageTypes.BUTTON_MESSAGE:
             return await this.sendButtonMessage(from, to, message as IWhatsappButtonMessage);    
         case EWhatsappMessageTypes.TEMPLATE_MESSAGE:
-            // const templateButtons = [
-            //     {index: 1, urlButton: {displayText: "⭐ Star Baileys on GitHub!", url: "https://github.com/adiwajshing/Baileys"}}
-            //     // ,
-            //     // {index: 2, callButton: {displayText: "Call me!", phoneNumber: "+1 (234) 5678-901"}},
-            //     // {index: 3, quickReplyButton: {displayText: "This is a reply, just like normal buttons!", id: "id-like-buttons-message"}},
-            // ];
-            
-            // const templateMessage:IWhatsappTemplateMessage = {
-            //     text: "Hi it's a template message",
-            //     footer: "",
-            //     templateButtons: templateButtons
-            // };
-             return await this.sendTemplateMessage(from, to, message as IWhatsappTemplateMessage);    
+             return await this.sendTemplateMessage(from, to, message as IWhatsappTemplateMessage);  
+        case EWhatsappMessageTypes.IMAGE_BUTTON_MESSAGE:
+             return await this.sendImageButtonMessage(from, to, message as IWhatsAppIMageButtonMessage);    
 
     }
 }

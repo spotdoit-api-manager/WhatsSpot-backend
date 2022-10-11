@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FastMessage = exports.MessageQueue = void 0;
+const whatsapp_enum_1 = require("./../../lib/services/whatsapp/whatsapp.enum");
 const mongoose_1 = require("mongoose");
 const contactSentSchema = new mongoose_1.Schema({
     phoneNumber: {
@@ -85,7 +86,7 @@ const messageSchema = new mongoose_1.Schema({
     },
     messageType: {
         type: String,
-        enum: ["LIST_MESSAGE", "TEXT_MESSAGE", "BUTTON_MESSAGE", "TEMPLATE_MESSAGE"]
+        enum: Object.values(whatsapp_enum_1.EWhatsappMessageTypes),
     },
     message: {
         type: mongoose_1.Schema.Types.Mixed,
