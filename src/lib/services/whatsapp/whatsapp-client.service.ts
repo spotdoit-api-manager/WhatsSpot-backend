@@ -212,7 +212,7 @@ export class WhatsappClient {
             const device = devices[i];
             console.debug(logFileName,`client${i}:${device.phone}`);
             const client =  this.addClient(device._id,device.phone);
-            await client.initiClient();
+            await client.initiClient(false);
         }
         
     }else{

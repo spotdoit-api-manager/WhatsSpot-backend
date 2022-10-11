@@ -54,8 +54,10 @@ class Whatsapp extends events_1.EventEmitter {
         this.qrRequested = false;
         this.retryCount = 0;
         this.removed = false;
+        this.firstConnect = false;
         // start a connection
-        this.initiClient = () => __awaiter(this, void 0, void 0, function* () {
+        this.initiClient = (notify = true) => __awaiter(this, void 0, void 0, function* () {
+            this.firstConnect = !notify;
             // if(!this.qrRequested) return;
             try {
                 const config = {
@@ -253,7 +255,10 @@ class Whatsapp extends events_1.EventEmitter {
             device_utils_1.default.updateDevice(this.deviceId, {
                 authState: true, reason: null
             });
-            notify_service_1.default.deviceAuthorized(this.deviceId);
+            if (!this.firstConnect && !this.authState) {
+                this.firstConnect = false;
+                notify_service_1.default.deviceAuthorized(this.deviceId);
+            }
             this.authState = true;
         });
     }
@@ -274,6 +279,7 @@ class Whatsapp extends events_1.EventEmitter {
             const shouldReconnect = ((_b = (_a = lastDisconnect.error) === null || _a === void 0 ? void 0 : _a.output) === null || _b === void 0 ? void 0 : _b.statusCode) !== baileys_1.DisconnectReason.loggedOut;
             if (shouldReconnect) {
                 logger_1.default.warn(logFileName, "CONNECTION_CLOSED (NOT_LOGGED_OUT) Retrying......");
+                this.authState = false;
                 return yield this.reconnectClient();
             }
             else {
@@ -282,6 +288,7 @@ class Whatsapp extends events_1.EventEmitter {
                 yield device_utils_1.default.updateDevice(this.deviceId, {
                     authState: false, reason
                 });
+                this.authState = false;
                 notify_service_1.default.deviceConnectionClosed(this.deviceId, reason);
                 this.qrInProcess = false;
                 this.qrRequested = false;
