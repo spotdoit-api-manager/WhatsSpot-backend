@@ -2,7 +2,7 @@
 # sudo pm2 kill
 
 echo "Jump to app folder"
-cd /home/ubuntu/whatsSpotBackend
+cd whatsSpotBackend
 
 echo "Update app from Git"
 sudo git pull
