@@ -108,3 +108,15 @@ const validateTemplateButton = (button: ITemplateButtons, index: number): IIsVal
   }
   return { valid: true };
 };
+
+
+export const isWhatsappImageBtnMessageType = (msg: any): IIsValidMessageType => {
+  if(!msg.image || typeof msg.image !== "object") return { valid: false, message: "message.image is invalid,must be object with url key" };
+  if(!msg.image.url || typeof msg.image.url !== "string") return { valid: false, message: "message.image.url is invalid,must be url type" };
+  if((!msg.caption || msg.caption=="") || typeof msg.caption !== "string") return { valid: false, message: "message.caption is required/invalid,must be string" };
+  if(msg.buttons && typeof msg.buttons !== "object") return { valid: false, message: "message.buttons is invalid,must be object" };
+  let isButtonValid = { valid: true };
+  msg.buttons ? msg.buttons.forEach((button: any, index: number) => isButtonValid = validateButton(button, index)): null;
+  if (msg.footer && typeof msg.footer !== "string") return { valid: false, message: "message.footer is invalid,must be string" };
+  return isButtonValid;
+};

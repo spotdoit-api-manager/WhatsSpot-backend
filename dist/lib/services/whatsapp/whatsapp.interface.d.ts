@@ -11,20 +11,6 @@ export interface IImageMessage {
     image: string;
     caption: string;
 }
-export interface IButtonMessage {
-    buttons: [
-        {
-            buttonId: string;
-            buttonText: {
-                displayText: string;
-            };
-            type: number;
-        }
-    ];
-    text: string;
-    footer: string;
-    headerType: number;
-}
 export interface IWhatsappButtonMessage {
     text: string;
     footer: string;

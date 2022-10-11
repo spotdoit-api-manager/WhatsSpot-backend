@@ -10,6 +10,7 @@ export declare class MessageController {
     fastBtn: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     fastTemplate: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     sendTextMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    fastImageBtn: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     sendTestMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     sendRawMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 }

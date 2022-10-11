@@ -3,14 +3,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateTemplateMessage = exports.validateBtnMessage = exports.validateListMessage = exports.validateTextMessage = void 0;
+exports.validateImageBtnMessage = exports.validateTemplateMessage = exports.validateBtnMessage = exports.validateListMessage = exports.validateTextMessage = void 0;
+const message_validator_1 = require("./../validators/message.validator");
 const httpErrors_1 = require("../utils/httpErrors");
-const message_validator_1 = require("../validators/message.validator");
+const message_validator_2 = require("../validators/message.validator");
 const logger_1 = __importDefault(require("../../core/logger"));
 const logFileName = "[MessageMiddleware]";
 const validateTextMessage = (req, res, next) => {
     const message = req.body.message;
-    const valid = (0, message_validator_1.isWhatsappTextMessageType)(message);
+    const valid = (0, message_validator_2.isWhatsappTextMessageType)(message);
     if (valid.valid) {
         next();
     }
@@ -28,7 +29,7 @@ const validateListMessage = (req, res, next) => {
         });
     });
     const message = req.body.message;
-    const valid = (0, message_validator_1.isWhatsappListMessageType)(message);
+    const valid = (0, message_validator_2.isWhatsappListMessageType)(message);
     if (valid.valid) {
         next();
     }
@@ -46,7 +47,7 @@ const validateBtnMessage = (req, res, next) => {
     });
     const message = req.body.message;
     logger_1.default.info(logFileName, message);
-    const valid = (0, message_validator_1.isWhatsappButtonMessageType)(message);
+    const valid = (0, message_validator_2.isWhatsappButtonMessageType)(message);
     if (valid.valid) {
         next();
     }
@@ -64,7 +65,7 @@ const validateTemplateMessage = (req, res, next) => {
     });
     const message = req.body.message;
     logger_1.default.info(message);
-    const valid = (0, message_validator_1.isWhatsappTemplateMessageType)(message);
+    const valid = (0, message_validator_2.isWhatsappTemplateMessageType)(message);
     if (valid.valid) {
         next();
     }
@@ -73,4 +74,23 @@ const validateTemplateMessage = (req, res, next) => {
     }
 };
 exports.validateTemplateMessage = validateTemplateMessage;
+const validateImageBtnMessage = (req, res, next) => {
+    if (req.body.message.buttons) {
+        req.body.message.buttons.forEach((button, index) => {
+            button.buttonId = `${index + 1}`;
+            button.type = 1;
+        });
+    }
+    req.body.message.headerType = 4;
+    const message = req.body.message;
+    logger_1.default.info(message);
+    const valid = (0, message_validator_1.isWhatsappImageBtnMessageType)(message);
+    if (valid.valid) {
+        next();
+    }
+    else {
+        throw new httpErrors_1.HTTP401Error(valid.message, "Please check provided message format is valid");
+    }
+};
+exports.validateImageBtnMessage = validateImageBtnMessage;
 //# sourceMappingURL=message.middleware.js.map

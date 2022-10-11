@@ -131,6 +131,17 @@ class MessageController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.fastImageBtn = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                req.body.messageType = whatsapp_enum_1.EWhatsappMessageTypes.TEMPLATE_MESSAGE;
+                responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", yield message_model_1.default.sendFastMessage(req.userId, req.body.numbers, req.body.message, req.body.messageType, req.deviceId, req.walletId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
         this.sendTestMessage = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {

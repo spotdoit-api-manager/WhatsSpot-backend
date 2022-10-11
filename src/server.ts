@@ -36,8 +36,8 @@ process.on("uncaughtException", function (exception) {
 server.listen(Port, async () => {
   logger.info(`Listening to port ${Port}`);
   await startExchangeRateService();
+  whatsappClientService.initializeAllClients();
   if (process.env.NODE_ENV === "production") {
-    whatsappClientService.initializeAllClients();
     messageQueueService.start();
     spotSchedular.reScheduleAllApiExpiration();
     spotSchedular.reScheduleAllUserPlanExpiration();

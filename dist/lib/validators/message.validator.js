@@ -1,7 +1,7 @@
 "use strict";
 /* eslint-disable quotes */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isWhatsappTemplateMessageType = exports.isWhatsappButtonMessageType = exports.isWhatsappListMessageType = exports.isWhatsappTextMessageType = void 0;
+exports.isWhatsappImageBtnMessageType = exports.isWhatsappTemplateMessageType = exports.isWhatsappButtonMessageType = exports.isWhatsappListMessageType = exports.isWhatsappTextMessageType = void 0;
 //validate text message
 const isWhatsappTextMessageType = (msg) => {
     if (!msg)
@@ -118,4 +118,20 @@ const validateTemplateButton = (button, index) => {
     }
     return { valid: true };
 };
+const isWhatsappImageBtnMessageType = (msg) => {
+    if (!msg.image || typeof msg.image !== "object")
+        return { valid: false, message: "message.image is invalid,must be object with url key" };
+    if (!msg.image.url || typeof msg.image.url !== "string")
+        return { valid: false, message: "message.image.url is invalid,must be url type" };
+    if ((!msg.caption || msg.caption == "") || typeof msg.caption !== "string")
+        return { valid: false, message: "message.caption is required/invalid,must be string" };
+    if (msg.buttons && typeof msg.buttons !== "object")
+        return { valid: false, message: "message.buttons is invalid,must be object" };
+    let isButtonValid = { valid: true };
+    msg.buttons ? msg.buttons.forEach((button, index) => isButtonValid = validateButton(button, index)) : null;
+    if (msg.footer && typeof msg.footer !== "string")
+        return { valid: false, message: "message.footer is invalid,must be string" };
+    return isButtonValid;
+};
+exports.isWhatsappImageBtnMessageType = isWhatsappImageBtnMessageType;
 //# sourceMappingURL=message.validator.js.map

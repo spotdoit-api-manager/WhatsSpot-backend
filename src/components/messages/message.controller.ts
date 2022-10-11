@@ -122,6 +122,17 @@ export class MessageController{
         }
       };
 
+      public fastImageBtn = async (req: Request, res: Response, next: NextFunction) => {
+        const responseHandler = new ResponseHandler();
+        try {
+          req.body.messageType = EWhatsappMessageTypes.TEMPLATE_MESSAGE;    
+          responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendFastMessage(req.userId,req.body.numbers,req.body.message,req.body.messageType,req.deviceId,req.walletId)).send();
+        } catch (e) {
+          // send error with next function.
+          next(responseHandler.sendError(e));
+        }
+      };
+
       public sendTestMessage = async (req: Request, res: Response, next: NextFunction) => {
         const responseHandler = new ResponseHandler();
         try {

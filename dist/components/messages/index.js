@@ -59,6 +59,12 @@ exports.default = [
         handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_1.validateTemplateMessage, message_controller_1.default.fastTemplate]
     },
     {
+        path: "/message/fast/image-buttons",
+        method: "post",
+        escapeAuth: true,
+        handler: [device_key_middleware_1.DeviceKeyValidator, message_middleware_1.validateImageBtnMessage, message_controller_1.default.fastImageBtn]
+    },
+    {
         path: "/message/testMessage",
         method: "post",
         escapeAuth: true,

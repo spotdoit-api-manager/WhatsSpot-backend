@@ -17,20 +17,6 @@ export interface IImageMessage{
     caption: string;
 }
 
-export interface IButtonMessage{
-    buttons: [{ 
-        buttonId:string,
-        buttonText:{
-            displayText:string
-        },
-        type:number
-    }];
-    text: string;
-    footer:string,
-    headerType:number,
-    
-}
-
 
 // BUTTON_MESSAGE 
 

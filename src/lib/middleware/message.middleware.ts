@@ -1,3 +1,4 @@
+import { isWhatsappImageBtnMessageType } from "./../validators/message.validator";
 import { IWhatsappButtonMessageButton,IWhatsappListSectionRow,IWhatsappListSection, ITemplateButtons, ICallButton, IURLButton, IQuickReplyButton } from "./../services/whatsapp/whatsapp.interface";
 import { NextFunction, Request, Response } from "express";
 import { HTTP401Error } from "../utils/httpErrors";
@@ -58,6 +59,28 @@ export const validateTemplateMessage = (req: Request, res: Response, next: NextF
     const message = req.body.message;
     logger.info(message);
     const valid = isWhatsappTemplateMessageType(message);
+    if (valid.valid) {
+        next();
+    }else{
+        throw new HTTP401Error(valid.message,"Please check provided message format is valid");
+    }  
+};
+
+export const validateImageBtnMessage = (req: Request, res: Response, next: NextFunction) => {
+
+    if(req.body.message.buttons){
+
+        req.body.message.buttons.forEach((button: IWhatsappButtonMessageButton,index: number)=>{
+            button.buttonId = `${index+1}`;
+            button.type = 1;
+        });
+    }
+
+    req.body.message.headerType=4;
+
+    const message = req.body.message;
+    logger.info(message);
+    const valid = isWhatsappImageBtnMessageType(message);
     if (valid.valid) {
         next();
     }else{
