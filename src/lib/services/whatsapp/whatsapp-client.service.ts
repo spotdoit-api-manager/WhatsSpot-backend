@@ -1,4 +1,4 @@
-import { IWhatsAppIMageButtonMessage } from "./whatsapp.interface";
+import { IWhatsAppIMageButtonMessage, IWhatsappImageTemplateMessage } from "./whatsapp.interface";
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { IWhatsappListMessage,IWhatsappButtonMessage, IWhatsappTemplateMessage, IWhatsappMessage } from "./whatsapp.interface";
 
@@ -186,6 +186,20 @@ export class WhatsappClient {
             return { error: true, message: e.message };
         }
     }
+
+    public sendImageTemplateMessage = async(from: string,to: string,message: IWhatsappImageTemplateMessage) => {
+        try {
+            logger.info(logFileName,`Sending Image Template Message to ${to}`);
+            const clientInstance = this.getClientInstanceByPhone(from);
+            if (!clientInstance) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+            if (!clientInstance.authState) return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+            console.log(message);
+            const data = await clientInstance.sendAnyMessage(sanatizeMobile(to), message);
+            return data;
+        } catch (e) {
+            return { error: true, message: e.message };
+        }
+    }
     public async sendRawMessage(phone: string,to: string,message: any){
         try {
             logger.info(logFileName,`Sending Raw Message to ${to}`);
@@ -247,7 +261,11 @@ public async sendTypeMessage(messageType: EWhatsappMessageTypes,message: IWhatsa
         case EWhatsappMessageTypes.TEMPLATE_MESSAGE:
              return await this.sendTemplateMessage(from, to, message as IWhatsappTemplateMessage);  
         case EWhatsappMessageTypes.IMAGE_BUTTON_MESSAGE:
-             return await this.sendImageButtonMessage(from, to, message as IWhatsAppIMageButtonMessage);    
+             return await this.sendImageButtonMessage(from, to, message as IWhatsAppIMageButtonMessage);   
+        case EWhatsappMessageTypes.IMAGE_TEMPLATE_MESSAGE:
+            return await this.sendImageTemplateMessage(from, to, message as IWhatsappImageTemplateMessage);     
+        default:
+             return {error: true, message: "INVALID_MESSAGE_TYPE"};      
 
     }
 }

@@ -129,7 +129,7 @@ export class MessageModel {
         const results=[];
             const parsedNumber = parsePhone(numbers).number;
             const result = await this.sendMessage(userId, parsedNumber as string, message,messageType, deviceId, walletId);
-            const newBody: IMessage = { phone: device.phone, userId, to:parsedNumber, reason: result?.message, sendType: ESendType.FAST,messageType:EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT };
+            const newBody: IMessage = { phone: device.phone, userId, to:parsedNumber, reason: result?.message, sendType: ESendType.FAST,messageType, message: message, deviceId: deviceId, status: result.error ? EMessageStatus.ERROR : EMessageStatus.SENT };
             const saveResult = await this.saveFastMessage(newBody);
             results.push({...result,messageInfo:saveResult.data});
         

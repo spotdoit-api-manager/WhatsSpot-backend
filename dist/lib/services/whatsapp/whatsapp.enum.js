@@ -18,5 +18,6 @@ var EWhatsappMessageTypes;
     EWhatsappMessageTypes["TEXT_MESSAGE"] = "TEXT_MESSAGE";
     EWhatsappMessageTypes["TEMPLATE_MESSAGE"] = "TEMPLATE_MESSAGE";
     EWhatsappMessageTypes["IMAGE_BUTTON_MESSAGE"] = "IMAGE_BUTTON_MESSAGE";
+    EWhatsappMessageTypes["IMAGE_TEMPLATE_MESSAGE"] = "IMAGE_TEMPLATE_MESSAGE";
 })(EWhatsappMessageTypes = exports.EWhatsappMessageTypes || (exports.EWhatsappMessageTypes = {}));
 //# sourceMappingURL=whatsapp.enum.js.map

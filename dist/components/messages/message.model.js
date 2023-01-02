@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageModel = void 0;
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 const plans_interface_1 = require("./../plans/plans.interface");
-const whatsapp_enum_1 = require("./../../lib/services/whatsapp/whatsapp.enum");
 const bson_1 = require("bson");
 const httpErrors_1 = require("../../lib/utils/httpErrors");
 const message_interface_1 = require("./message.interface");
@@ -139,7 +138,7 @@ class MessageModel {
             const results = [];
             const parsedNumber = (0, phone_handler_1.parsePhone)(numbers).number;
             const result = yield this.sendMessage(userId, parsedNumber, message, messageType, deviceId, walletId);
-            const newBody = { phone: device.phone, userId, to: parsedNumber, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, messageType: whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE, message: message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
+            const newBody = { phone: device.phone, userId, to: parsedNumber, reason: result === null || result === void 0 ? void 0 : result.message, sendType: message_interface_1.ESendType.FAST, messageType, message: message, deviceId: deviceId, status: result.error ? message_interface_1.EMessageStatus.ERROR : message_interface_1.EMessageStatus.SENT };
             const saveResult = yield this.saveFastMessage(newBody);
             results.push(Object.assign(Object.assign({}, result), { messageInfo: saveResult.data }));
             return results;

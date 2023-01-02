@@ -1,4 +1,3 @@
-/// <reference types="mongoose" />
 import { IStripePrice, IStripeProduct } from "./../stripe/stripe.interface";
 import { IAdminUser, IDataStoredInAdminToken } from "./admin.interface";
 import { IAdminUserModel } from "./admin.schema";
@@ -51,9 +50,10 @@ export declare class AdminModel {
     updateOtp(id: string): number;
     sendOtpToMobile(otp: number, phone: string): Promise<{
         proceed: boolean;
-        message: any;
+        message?: undefined;
     } | {
         proceed: boolean;
+        message: any;
     }>;
     addProduct(adminId: string, productBody: IStripeProduct): Promise<any>;
     getProducts(userId: string, limit: string): Promise<any>;

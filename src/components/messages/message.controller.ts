@@ -78,7 +78,7 @@ export class MessageController{
         const responseHandler = new ResponseHandler();
         try {
           req.body.messageType = EWhatsappMessageTypes.LIST_MESSAGE;    
-          responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendFastMessage(req.userId,req.body.numbers,req.body.message,req.body.messageType,req.deviceId,req.walletId)).send();
+          responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendFastMessage(req.userId,req.body.numbers,req.body.message,EWhatsappMessageTypes.LIST_MESSAGE,req.deviceId,req.walletId)).send();
         } catch (e) {
           // send error with next function.
           next(responseHandler.sendError(e));
@@ -89,7 +89,7 @@ export class MessageController{
         const responseHandler = new ResponseHandler();
         try {
           req.body.messageType = EWhatsappMessageTypes.BUTTON_MESSAGE;    
-          responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendFastMessage(req.userId,req.body.numbers,req.body.message,req.body.messageType,req.deviceId,req.walletId)).send();
+          responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendFastMessage(req.userId,req.body.numbers,req.body.message,EWhatsappMessageTypes.BUTTON_MESSAGE,req.deviceId,req.walletId)).send();
         } catch (e) {
           // send error with next function.
           next(responseHandler.sendError(e));
@@ -100,7 +100,7 @@ export class MessageController{
         const responseHandler = new ResponseHandler();
         try {
           req.body.messageType = EWhatsappMessageTypes.TEMPLATE_MESSAGE;    
-          responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendFastMessage(req.userId,req.body.numbers,req.body.message,req.body.messageType,req.deviceId,req.walletId)).send();
+          responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendFastMessage(req.userId,req.body.numbers,req.body.message,EWhatsappMessageTypes.TEMPLATE_MESSAGE,req.deviceId,req.walletId)).send();
         } catch (e) {
           // send error with next function.
           next(responseHandler.sendError(e));
@@ -115,7 +115,7 @@ export class MessageController{
         try {
           console.log("Send text message request",req.userId,req.walletId,req.deviceId);
     
-          responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendMessage(req.userId,req.body.to,req.body.message,req.body.messageType,req.deviceId,req.walletId)).send();
+          responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendMessage(req.userId,req.body.to,req.body.message,EWhatsappMessageTypes.TEXT_MESSAGE,req.deviceId,req.walletId)).send();
         } catch (e) {
           // send error with next function.
           next(responseHandler.sendError(e));
@@ -126,7 +126,7 @@ export class MessageController{
         const responseHandler = new ResponseHandler();
         try {
           req.body.messageType = EWhatsappMessageTypes.TEMPLATE_MESSAGE;    
-          responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendFastMessage(req.userId,req.body.numbers,req.body.message,req.body.messageType,req.deviceId,req.walletId)).send();
+          responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendFastMessage(req.userId,req.body.numbers,req.body.message,EWhatsappMessageTypes.IMAGE_BUTTON_MESSAGE,req.deviceId,req.walletId)).send();
         } catch (e) {
           // send error with next function.
           next(responseHandler.sendError(e));
@@ -137,8 +137,9 @@ export class MessageController{
         const responseHandler = new ResponseHandler();
         try {
           req.body.messageType = EWhatsappMessageTypes.TEMPLATE_MESSAGE;    
-          responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendFastMessage(req.userId,req.body.numbers,req.body.message,req.body.messageType,req.deviceId,req.walletId)).send();
+          responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendFastMessage(req.userId,req.body.numbers,req.body.message,EWhatsappMessageTypes.IMAGE_TEMPLATE_MESSAGE,req.deviceId,req.walletId)).send();
         } catch (e) {
+          console.log(e);
           // send error with next function.
           next(responseHandler.sendError(e));
         }

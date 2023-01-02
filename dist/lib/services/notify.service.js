@@ -163,7 +163,7 @@ class NotifyService {
                     message_service_1.default.sendWhatsappMessage(userData.phone, `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n Your plan has been expired. Please purchase new plan to continue the services`);
                 }
                 if (this.checkNotificationSettings((_b = userData === null || userData === void 0 ? void 0 : userData.settings) === null || _b === void 0 ? void 0 : _b.notifications, notification_interface_1.ENotificationMainTypes.PLAN, notification_interface_2.ENotificationChannel.EMAIL)) {
-                    emailService.sendNotificationMail(userData.email, "DEVICE UNAUTHORIZED", `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n Your plan has been expired. Please purchase new plan to continue the services`);
+                    emailService.sendNotificationMail(userData.email, "PLAN EXPIRED", `Dear ${(userData === null || userData === void 0 ? void 0 : userData.userName) || "User"}, \n Your plan has been expired. Please purchase new plan to continue the services`);
                 }
             }
             catch (e) {

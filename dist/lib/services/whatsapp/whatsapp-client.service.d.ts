@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { IWhatsAppIMageButtonMessage } from "./whatsapp.interface";
+import { IWhatsAppIMageButtonMessage, IWhatsappImageTemplateMessage } from "./whatsapp.interface";
 import { IWhatsappListMessage, IWhatsappButtonMessage, IWhatsappTemplateMessage, IWhatsappMessage } from "./whatsapp.interface";
 import { EventEmitter } from "events";
 import Whatsapp from "./whatsapp.service";
@@ -33,6 +33,7 @@ export declare class WhatsappClient {
     sendButtonMessage: (from: string, to: string, message: IWhatsappButtonMessage) => Promise<any>;
     sendTemplateMessage: (from: string, to: string, message: IWhatsappTemplateMessage) => Promise<any>;
     sendImageButtonMessage: (from: string, to: string, message: IWhatsAppIMageButtonMessage) => Promise<any>;
+    sendImageTemplateMessage: (from: string, to: string, message: IWhatsappImageTemplateMessage) => Promise<any>;
     sendRawMessage(phone: string, to: string, message: any): Promise<any>;
     sendImageMessage: (phone: string, to: string, msg: IImageMessage) => Promise<any>;
     initializeAllClients(): Promise<void>;

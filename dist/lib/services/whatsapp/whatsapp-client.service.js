@@ -142,6 +142,22 @@ class WhatsappClient {
                 return { error: true, message: e.message };
             }
         });
+        this.sendImageTemplateMessage = (from, to, message) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                logger_1.default.info(logFileName, `Sending Image Template Message to ${to}`);
+                const clientInstance = this.getClientInstanceByPhone(from);
+                if (!clientInstance)
+                    return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+                if (!clientInstance.authState)
+                    return { error: true, message: "CLIENT_NOT_AUTHENTICATED" };
+                console.log(message);
+                const data = yield clientInstance.sendAnyMessage((0, utils_1.sanatizeMobile)(to), message);
+                return data;
+            }
+            catch (e) {
+                return { error: true, message: e.message };
+            }
+        });
         this.sendImageMessage = (phone, to, msg) => __awaiter(this, void 0, void 0, function* () {
             try {
                 console.debug(logFileName, "sending image message to ", to);
@@ -258,6 +274,10 @@ class WhatsappClient {
                     return yield this.sendTemplateMessage(from, to, message);
                 case whatsapp_enum_1.EWhatsappMessageTypes.IMAGE_BUTTON_MESSAGE:
                     return yield this.sendImageButtonMessage(from, to, message);
+                case whatsapp_enum_1.EWhatsappMessageTypes.IMAGE_TEMPLATE_MESSAGE:
+                    return yield this.sendImageTemplateMessage(from, to, message);
+                default:
+                    return { error: true, message: "INVALID_MESSAGE_TYPE" };
             }
         });
     }

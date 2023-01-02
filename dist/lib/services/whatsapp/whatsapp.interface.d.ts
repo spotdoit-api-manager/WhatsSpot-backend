@@ -57,6 +57,14 @@ export interface IWhatsappTemplateMessage {
     footer: string;
     templateButtons: ITemplateButtons[];
 }
+export interface IWhatsappImageTemplateMessage {
+    text: string;
+    footer: string;
+    templateButtons: ITemplateButtons[];
+    image: {
+        url: string;
+    };
+}
 export declare type ITemplateButtons = IURLButton | ICallButton | IQuickReplyButton;
 export declare enum ETemplateButtons {
     URL_BUTTON = "URL_BUTTON",
