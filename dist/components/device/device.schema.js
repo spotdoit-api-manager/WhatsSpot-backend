@@ -12,6 +12,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Device = void 0;
 const mongoose_1 = require("mongoose");
 const utils_1 = require("../../lib/utils");
+const WebHookSchema = new mongoose_1.Schema({
+    url: String,
+    status: Boolean,
+    isDeleted: {
+        type: Boolean,
+        default: false
+    }
+}, { timestamps: true });
 const deviceSchema = new mongoose_1.Schema({
     name: {
         type: String,
@@ -53,6 +61,7 @@ const deviceSchema = new mongoose_1.Schema({
                 reason: String
             }
         }],
+    webHooks: [WebHookSchema],
     deviceStatus: {
         type: String,
         enum: ["SENDING", "IDLE"]

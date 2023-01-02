@@ -9,6 +9,18 @@ export interface IDeviceModel extends IDevice, Document {
 export interface IApiKeyModal extends IApiKey, Document {
 }
 
+const WebHookSchema = new Schema(
+  {
+    url:String,
+    status:Boolean,
+    isDeleted:{
+      type:Boolean,
+      default: false
+    }
+  },
+  { timestamps: true }
+
+);
 
 const deviceSchema = new Schema(
   {
@@ -52,6 +64,7 @@ const deviceSchema = new Schema(
         reason: String
       }
     }],
+    webHooks:[WebHookSchema],
     deviceStatus:{
       type:String,
       enum:["SENDING","IDLE"]

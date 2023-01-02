@@ -23,6 +23,7 @@ const logger_1 = __importDefault(require("../../../core/logger"));
 const httpErrors_1 = require("../../../lib/utils/httpErrors");
 const device_utils_1 = __importDefault(require("../../../components/device/device.utils"));
 const whatsapp_enum_1 = require("./whatsapp.enum");
+const axios_1 = __importDefault(require("axios"));
 const logFileName = "[WhatsappClientService] : ";
 exports.eventEmitter = new events_1.EventEmitter();
 class WhatsappClient {
@@ -242,25 +243,6 @@ class WhatsappClient {
             }
         });
     }
-    initializeAllClients() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (process.env.RECONNECT_CLIENT === "true") {
-                logger_1.default.info(logFileName, "INITIALIZING ALL CLIENTS...");
-                const condition = { authState: true };
-                const devices = yield device_utils_1.default.findDeviceByCondition(condition);
-                logger_1.default.info(logFileName, "Total Clients to Initialize: ", devices.length);
-                for (let i = 0; i < devices.length; i++) {
-                    const device = devices[i];
-                    console.debug(logFileName, `client${i}:${device.phone}`);
-                    const client = this.addClient(device._id, device.phone);
-                    yield client.initiClient(false);
-                }
-            }
-            else {
-                logger_1.default.warn(logFileName, "Client initialization is disabled");
-            }
-        });
-    }
     sendTypeMessage(messageType, message, from, to) {
         return __awaiter(this, void 0, void 0, function* () {
             switch (messageType) {
@@ -279,6 +261,69 @@ class WhatsappClient {
                 default:
                     return { error: true, message: "INVALID_MESSAGE_TYPE" };
             }
+        });
+    }
+    initializeAllClients() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (process.env.RECONNECT_CLIENT === "true") {
+                logger_1.default.info(logFileName, "INITIALIZING ALL CLIENTS...");
+                const condition = { authState: true };
+                const devices = yield device_utils_1.default.findDeviceByCondition(condition);
+                logger_1.default.info(logFileName, "Total Clients to Initialize: ", devices.length);
+                for (let i = 0; i < devices.length; i++) {
+                    const device = devices[i];
+                    console.debug(logFileName, `client${i}:${device.phone}`);
+                    const client = this.addClient(device._id, device.phone);
+                    yield client.initiClient(false);
+                    // filter active webhooks from device and subscribe to client for each
+                    const activeWebHooks = device.webHooks.filter((webHook) => webHook.status);
+                    if (activeWebHooks.length >= 0) {
+                        this.subscribeClientMessage(client, activeWebHooks);
+                    }
+                }
+            }
+            else {
+                logger_1.default.warn(logFileName, "Client initialization is disabled");
+            }
+        });
+    }
+    subscribeNewWebHook(webHook, phone) {
+        const client = this.getClientInstanceByPhone(phone);
+        if (client) {
+            this.subscribeClientMessage(client, [webHook]);
+        }
+    }
+    unsubscribeWebHook(webHook, phone) {
+        const client = this.getClientInstanceByPhone(phone);
+        // if(client){
+        //     client.off("NEW_MESSAGE");
+        // }
+    }
+    subscribeClientMessage(client, webHooks) {
+        logger_1.default.info(logFileName, "Subscribing to client message " + client.phone);
+        client.on("NEW_MESSAGE", (msg) => {
+            console.log("message received in subscribe", msg);
+            const body = {
+                text: msg.message.conversation,
+                from: msg.key.remoteJid.split("@")[0],
+                name: msg.pushName,
+                timestamp: msg.messageTimestamp,
+            };
+            const urls = webHooks.map((webHook) => webHook.url);
+            this.sendWebHookRequest(urls, body);
+        });
+    }
+    sendWebHookRequest(urls, body) {
+        const req = [];
+        for (let i = 0; i < urls.length; i++) {
+            const url = urls[i];
+            req.push(axios_1.default.post(url, body));
+        }
+        axios_1.default.all(req).then(axios_1.default.spread((...responses) => {
+            const res = responses.map((response) => response.data);
+            console.log(res);
+        })).catch(errors => {
+            console.log(errors);
         });
     }
 }

@@ -149,6 +149,9 @@ private interval;
         if (!msg.key.fromMe) {
           logger.info(logFileName,`received msg :${msg.message?.conversation}`);
           logger.info(logFileName,`From: ${msg.key.remoteJid}`);
+          if(msg.message?.conversation){//if it is text type message
+            this.emit("NEW_MESSAGE", msg);
+          }
         } else {
           logger.info(logFileName,`sent msg :${JSON.stringify(msg.message)}`);
           logger.info(logFileName,`to: ${msg.key.remoteJid}`);

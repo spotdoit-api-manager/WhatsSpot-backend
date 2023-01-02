@@ -113,4 +113,9 @@ export default [
         method: "get",
         handler: [deviceController.getDeviceStatus]
     },
+    {
+        path: "/device/:deviceId/webhook/add",
+        method: "post",
+        handler: [deviceController.addWebHook]
+    },
 ];

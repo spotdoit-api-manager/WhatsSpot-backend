@@ -1,4 +1,5 @@
 /// <reference types="node" />
+import { IWebHook } from "./../../../components/device/device.interface";
 import { IWhatsAppIMageButtonMessage, IWhatsappImageTemplateMessage } from "./whatsapp.interface";
 import { IWhatsappListMessage, IWhatsappButtonMessage, IWhatsappTemplateMessage, IWhatsappMessage } from "./whatsapp.interface";
 import { EventEmitter } from "events";
@@ -36,8 +37,12 @@ export declare class WhatsappClient {
     sendImageTemplateMessage: (from: string, to: string, message: IWhatsappImageTemplateMessage) => Promise<any>;
     sendRawMessage(phone: string, to: string, message: any): Promise<any>;
     sendImageMessage: (phone: string, to: string, msg: IImageMessage) => Promise<any>;
-    initializeAllClients(): Promise<void>;
     sendTypeMessage(messageType: EWhatsappMessageTypes, message: IWhatsappMessage, from: string, to: string): Promise<any>;
+    initializeAllClients(): Promise<void>;
+    subscribeNewWebHook(webHook: IWebHook, phone: string): void;
+    unsubscribeWebHook(webHook: IWebHook, phone: string): void;
+    private subscribeClientMessage;
+    private sendWebHookRequest;
 }
 declare const _default: WhatsappClient;
 export default _default;

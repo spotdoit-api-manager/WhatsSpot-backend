@@ -29,3 +29,9 @@ export declare enum ESendType {
     FAST = "FAST",
     QUEUE = "QUEUE"
 }
+export interface IWebHookMessage {
+    text: string;
+    timestamp: number;
+    from: string;
+    name: string;
+}

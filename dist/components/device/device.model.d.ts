@@ -58,7 +58,10 @@ export declare class DeviceModel {
     updateDeviceStatus(deviceId: string, status: EDeviceStatus): Promise<IDeviceModel>;
     removeDevice(userId: string, deviceId: string): Promise<void>;
     getDeviceStatus(userId: string, deviceId: string): Promise<any>;
+    addWebHook(userId: string, deviceId: string, url: string): Promise<void>;
+    removeWebHook(userId: string, deviceId: string, webHookId: string): Promise<void>;
     fetchDevicesList(): import("mongoose").Query<import("mongoose").LeanDocument<IDeviceModel>[], IDeviceModel, {}, IDeviceModel>;
+    private validateWebHook;
 }
 declare const _default: DeviceModel;
 export default _default;

@@ -238,6 +238,16 @@ class DeviceController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.addWebHook = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("WEBHOOK ADDED", yield device_model_1.default.addWebHook(req.userId, req.params.deviceId, req.body.url)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
     }
 }
 exports.DeviceController = DeviceController;

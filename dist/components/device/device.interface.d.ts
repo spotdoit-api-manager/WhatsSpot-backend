@@ -15,6 +15,15 @@ export interface IDevice {
     userId: string;
     isDeleted: IDeviceDeleted;
     apiKeys: IApiKey[] | IApiKeyModal[];
+    webHooks: IWebHook[];
+}
+export interface IWebHook {
+    url: string;
+    status: boolean;
+    isDeleted?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
+    _id?: string;
 }
 export interface IDeviceDeleted {
     status: boolean;

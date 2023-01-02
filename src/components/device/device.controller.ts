@@ -247,6 +247,16 @@ export class DeviceController {
     }
   };
 
+  public addWebHook = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      responseHandler.reqRes(req, res).onFetch("WEBHOOK ADDED", await deviceModel.addWebHook(req.userId,req.params.deviceId,req.body.url)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
 }
 
 

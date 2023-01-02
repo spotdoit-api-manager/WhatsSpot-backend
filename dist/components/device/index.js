@@ -112,5 +112,10 @@ exports.default = [
         method: "get",
         handler: [device_controller_1.default.getDeviceStatus]
     },
+    {
+        path: "/device/:deviceId/webhook/add",
+        method: "post",
+        handler: [device_controller_1.default.addWebHook]
+    },
 ];
 //# sourceMappingURL=index.js.map

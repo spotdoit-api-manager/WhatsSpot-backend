@@ -179,12 +179,15 @@ class Whatsapp extends events_1.EventEmitter {
         }));
         // message upsert
         this.client.ev.on("messages.upsert", (m) => __awaiter(this, void 0, void 0, function* () {
-            var _a;
+            var _a, _b;
             try {
                 const msg = m.messages[0];
                 if (!msg.key.fromMe) {
                     logger_1.default.info(logFileName, `received msg :${(_a = msg.message) === null || _a === void 0 ? void 0 : _a.conversation}`);
                     logger_1.default.info(logFileName, `From: ${msg.key.remoteJid}`);
+                    if ((_b = msg.message) === null || _b === void 0 ? void 0 : _b.conversation) { //if it is text type message
+                        this.emit("NEW_MESSAGE", msg);
+                    }
                 }
                 else {
                     logger_1.default.info(logFileName, `sent msg :${JSON.stringify(msg.message)}`);

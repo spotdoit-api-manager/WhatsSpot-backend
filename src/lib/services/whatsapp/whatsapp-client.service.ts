@@ -1,3 +1,6 @@
+import { IWebHookMessage } from "./../../../components/messages/message.interface";
+import { IWebHook } from "./../../../components/device/device.interface";
+import { IDeviceModel } from "./../../../components/device/device.schema";
 import { IWhatsAppIMageButtonMessage, IWhatsappImageTemplateMessage } from "./whatsapp.interface";
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { IWhatsappListMessage,IWhatsappButtonMessage, IWhatsappTemplateMessage, IWhatsappMessage } from "./whatsapp.interface";
@@ -15,6 +18,8 @@ import logger from "../../../core/logger";
 import { HTTP400Error } from "../../../lib/utils/httpErrors";
 import deviceUtils from "../../../components/device/device.utils";
 import { EWhatsappMessageTypes } from "./whatsapp.enum";
+import axios from "axios";
+
 interface IWhatsappClient {
     [phone: string]: number;
 }
@@ -230,25 +235,6 @@ export class WhatsappClient {
     }
 
 
-    public async initializeAllClients() {
-        if(process.env.RECONNECT_CLIENT === "true"){
-
-            logger.info(logFileName,"INITIALIZING ALL CLIENTS...");
-            const condition = { authState: true };
-            const devices = await deviceUtils.findDeviceByCondition(condition);
-            logger.info(logFileName,"Total Clients to Initialize: ", devices.length);
-        for (let i = 0; i < devices.length; i++) {
-            const device = devices[i];
-            console.debug(logFileName,`client${i}:${device.phone}`);
-            const client =  this.addClient(device._id,device.phone);
-            await client.initiClient(false);
-        }
-        
-    }else{
-        logger.warn(logFileName,"Client initialization is disabled");
-    }
-}
-
 public async sendTypeMessage(messageType: EWhatsappMessageTypes,message: IWhatsappMessage,from: string,to: string){
         
     switch(messageType){
@@ -270,5 +256,74 @@ public async sendTypeMessage(messageType: EWhatsappMessageTypes,message: IWhatsa
     }
 }
 
+
+
+public async initializeAllClients() {
+    if(process.env.RECONNECT_CLIENT === "true"){
+
+        logger.info(logFileName,"INITIALIZING ALL CLIENTS...");
+        const condition = { authState: true };
+        const devices = await deviceUtils.findDeviceByCondition(condition);
+        logger.info(logFileName,"Total Clients to Initialize: ", devices.length);
+    for (let i = 0; i < devices.length; i++) {
+        const device:IDeviceModel = devices[i];
+        console.debug(logFileName,`client${i}:${device.phone}`);
+        const client =  this.addClient(device._id,device.phone);
+        await client.initiClient(false);
+        // filter active webhooks from device and subscribe to client for each
+        
+        const activeWebHooks:IWebHook[] = device.webHooks.filter((webHook: IWebHook) => webHook.status);
+        if(activeWebHooks.length >= 0){
+            this.subscribeClientMessage(client,activeWebHooks);
+        } 
+    }
+    
+}else{
+    logger.warn(logFileName,"Client initialization is disabled");
+}
+
+}
+
+public subscribeNewWebHook(webHook:IWebHook,phone:string){
+    const client = this.getClientInstanceByPhone(phone);
+    if(client){
+        this.subscribeClientMessage(client,[webHook]);
+    }
+}
+
+public unsubscribeWebHook(webHook:IWebHook,phone:string){
+    const client = this.getClientInstanceByPhone(phone);
+    // if(client){
+    //     client.off("NEW_MESSAGE");
+    // }
+}
+private subscribeClientMessage(client: any,webHooks: IWebHook[]) {
+    logger.info(logFileName,"Subscribing to client message "+client.phone);
+    client.on("NEW_MESSAGE", (msg: any) => {
+        console.log("message received in subscribe", msg);
+        const body:IWebHookMessage = {
+            text:msg.message.conversation,
+            from:msg.key.remoteJid.split("@")[0],
+            name:msg.pushName,
+            timestamp:msg.messageTimestamp,
+        };
+        const urls = webHooks.map((webHook: IWebHook) => webHook.url);
+        this.sendWebHookRequest(urls,body);
+    });
+}
+
+private sendWebHookRequest(urls:string[],body:IWebHookMessage){
+    const req = [];
+    for (let i = 0; i < urls.length; i++) {
+        const url = urls[i];
+        req.push(axios.post(url,body));
+    }
+    axios.all(req).then(axios.spread((...responses) => {
+        const res = responses.map((response: any) => response.data);
+        console.log(res);
+    })).catch(errors => {
+        console.log(errors);
+    });
+}
 }
 export default new WhatsappClient();

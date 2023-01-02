@@ -31,3 +31,11 @@ export enum ESendType {
     QUEUE = "QUEUE"
 }
 
+
+export interface IWebHookMessage{
+    text:string,
+    timestamp:number,
+    from:string,
+    name:string
+}
+

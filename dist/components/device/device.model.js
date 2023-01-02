@@ -56,6 +56,7 @@ const phone_handler_1 = require("../../lib/utils/phone.handler");
 const projection_values_1 = require("../../lib/values/projection.values");
 const plans_model_1 = __importDefault(require("../plans/plans.model"));
 const device_utils_1 = __importDefault(require("./device.utils"));
+const axios_1 = __importDefault(require("axios"));
 const logFileName = "[DeviceModal] : ";
 class DeviceModel {
     constructor() {
@@ -508,8 +509,52 @@ class DeviceModel {
             return whatsapp_client_service_1.default.getClientStatus(device.phone);
         });
     }
+    addWebHook(userId, deviceId, url) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!url)
+                throw new httpErrors_1.HTTP400Error("URL_REQUIRED");
+            yield this.validateWebHook(userId, deviceId, url);
+            const device = yield device_schema_1.Device.findOne({}).where("userId").equals(userId).where("_id").equals(deviceId).where("isDeleted.status").equals(false);
+            if (!device)
+                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
+            const result = device.webHooks.find((webHook) => webHook.url === url);
+            if (result)
+                throw new httpErrors_1.HTTP400Error("WEBHOOK_URL_ALREADY_EXISTS");
+            device.webHooks.push({ url: url, status: true });
+            const updatedDevice = yield device.save();
+            whatsapp_client_service_1.default.subscribeNewWebHook(updatedDevice.webHooks[updatedDevice.webHooks.length - 1], device.phone);
+        });
+    }
+    removeWebHook(userId, deviceId, webHookId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const device = yield device_schema_1.Device.findOne({}).where("userId").equals(userId).where("_id").equals(deviceId).where("isDeleted.status").equals(false);
+            if (!device)
+                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
+            //remove webHook from device
+            const webHook = device.webHooks.find((webHook) => webHook._id.toString() === webHookId);
+            if (!webHook)
+                throw new httpErrors_1.HTTP400Error("WEBHOOK_NOT_FOUND");
+            webHook.status = false;
+            webHook.isDeleted = true;
+            yield device.save();
+            //unsubscribe webHook from whatsapp client
+            whatsapp_client_service_1.default.unsubscribeWebHook(webHook, device.phone);
+        });
+    }
     fetchDevicesList() {
         return device_schema_1.Device.find({}).select(projection_values_1.deviceProjection).lean();
+    }
+    validateWebHook(userId, deviceId, url) {
+        return __awaiter(this, void 0, void 0, function* () {
+            //check if url string is valid url using regex
+            const regex = new RegExp(/^(http|https):\/\/[a-zA-Z0-9-\.]+\.[a-z]{2,4}/);
+            if (!regex.test(url))
+                throw new httpErrors_1.HTTP400Error("INVALID_WEBHOOK_URL");
+            //make http request to url and check if it is valid
+            const result = yield axios_1.default.post(url, {});
+            if (result.status !== 200)
+                throw new httpErrors_1.HTTP400Error("INVALID_WEBHOOK_URL");
+        });
     }
 }
 exports.DeviceModel = DeviceModel;

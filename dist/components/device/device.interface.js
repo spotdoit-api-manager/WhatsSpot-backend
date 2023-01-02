@@ -12,17 +12,4 @@ var EDeviceStatus;
     EDeviceStatus["SENDING"] = "SENDING";
     EDeviceStatus["IDLE"] = "IDLE";
 })(EDeviceStatus = exports.EDeviceStatus || (exports.EDeviceStatus = {}));
-// const data = {
-//     "structuredQuery": {
-//         "from": [{ "collectionId": "messages" }],
-//         "orderBy": [
-//             {
-//                 "field": {
-//                     "fieldPath": "submitedOn"
-//                 },
-//                 "direction": "ASCENDING"
-//             }
-//         ]
-//     }
-// };
 //# sourceMappingURL=device.interface.js.map

@@ -17,8 +17,19 @@ export interface IDevice {
     userId: string;
     isDeleted: IDeviceDeleted;
     apiKeys: IApiKey[] | IApiKeyModal[];
+    webHooks:IWebHook[]
 }
 
+
+export interface IWebHook{
+    url:string;
+    status:boolean;
+
+    isDeleted?:boolean;
+    createdAt?:Date;
+    updatedAt?:Date;
+    _id?:string;
+}
 export interface IDeviceDeleted {
     status: boolean;
     deletedAt?:Date
@@ -65,17 +76,4 @@ export enum EDeviceStatus {
     IDLE = "IDLE"
 }
 
-// const data = {
-//     "structuredQuery": {
-//         "from": [{ "collectionId": "messages" }],
-//         "orderBy": [
-//             {
-//                 "field": {
-//                     "fieldPath": "submitedOn"
 
-//                 },
-//                 "direction": "ASCENDING"
-//             }
-//         ]
-//     }
-// };

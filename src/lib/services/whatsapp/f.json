@@ -172,3 +172,67 @@ sent msg : {
         }
     ]
 }
+// received message
+//text
+{
+            key: {
+              remoteJid: '919099858434@s.whatsapp.net',
+              fromMe: false,
+              id: 'B51F6819A9E059494B95AB7CC92AEA20',
+              participant: undefined
+    },
+            messageTimestamp: 1672671462,
+            pushName: 'WhatsSpot',
+            message: Message {
+              conversation: 'Hello',
+              messageContextInfo: MessageContextInfo {
+                deviceListMetadata: [DeviceListMetadata
+            ],
+                deviceListMetadataVersion: 2
+        }
+    }
+}
+//image message
+{
+        key: {
+          remoteJid: '919099858434@s.whatsapp.net',
+          fromMe: false,
+          id: 'BA1B596839964C72B4A5F1283A3953E4',
+          participant: undefined
+    },
+        messageTimestamp: 1672671517,
+        pushName: 'WhatsSpot',
+        message: Message {
+          imageMessage: ImageMessage {
+            interactiveAnnotations: [],
+            scanLengths: [Array
+            ],
+            url: 'https: //mmg.whatsapp.net/d/f/Aoll47wzNuC2JEQlq6F-n32kOvPTO-y6Uj4UPGULyoCV.enc',
+            mimetype: 'image/jpeg',
+            fileSha256: [Uint8Array
+            ],
+            fileLength: [Long
+            ],
+            height: 871,
+            width: 720,
+            mediaKey: [Uint8Array
+            ],
+            fileEncSha256: [Uint8Array
+            ],
+            directPath: '/v/t62.7118-24/30711435_719271709555945_4448580385415557337_n.enc?ccb=11-4&oh=01_AdRdfBI5G7SbWe3ytMXMn6dAHiNEOskG6qPM5lwTM2H9eQ&oe=63DA4C0C',
+            mediaKeyTimestamp: [Long
+            ],
+            jpegThumbnail: [Uint8Array
+            ],
+            scansSidecar: [Uint8Array
+            ],
+            midQualityFileSha256: [Uint8Array
+            ]
+        },
+          messageContextInfo: MessageContextInfo {
+            deviceListMetadata: [DeviceListMetadata
+            ],
+            deviceListMetadataVersion: 2
+        }
+    }
+}
