@@ -133,7 +133,7 @@ export class NotifyService {
             }
 
             if(this.checkNotificationSettings(userData?.settings?.notifications, ENotificationMainTypes.PLAN, ENotificationChannel.EMAIL)){
-                emailService.sendNotificationMail(userData.email, "DEVICE UNAUTHORIZED", `Dear ${userData?.userName || "User"}, \n Your plan has been expired. Please purchase new plan to continue the services`);
+                emailService.sendNotificationMail(userData.email, "PLAN EXPIRED", `Dear ${userData?.userName || "User"}, \n Your plan has been expired. Please purchase new plan to continue the services`);
             }
 
         } catch (e) {
