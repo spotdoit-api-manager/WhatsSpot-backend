@@ -71,7 +71,7 @@ private interval;
         auth: this.state,
         browser:["Mac OS", "Chrome", "10.15.3"],
         downloadHistory: false,
-        // version: [2,2204,13],
+        version: [2,2204,13],
       } ;
       const sock = makeWASocket(config);
       this.client = sock;
