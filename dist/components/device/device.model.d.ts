@@ -1,4 +1,5 @@
 /// <reference types="mongoose" />
+import { IWebHook } from "./device.interface";
 import { EDeviceStatus, IDeviceTokenData, INewDevice } from "../device/device.interface";
 import { IApiKey, IDevice } from "./device.interface";
 import { IDeviceModel } from "./device.schema";
@@ -58,8 +59,10 @@ export declare class DeviceModel {
     updateDeviceStatus(deviceId: string, status: EDeviceStatus): Promise<IDeviceModel>;
     removeDevice(userId: string, deviceId: string): Promise<void>;
     getDeviceStatus(userId: string, deviceId: string): Promise<any>;
-    addWebHook(userId: string, deviceId: string, url: string): Promise<void>;
-    removeWebHook(userId: string, deviceId: string, webHookId: string): Promise<void>;
+    addWebHook(userId: string, deviceId: string, url: string): Promise<IWebHook>;
+    removeWebHook(userId: string, deviceId: string, webHookId: string): Promise<IWebHook>;
+    pauseWebHook(userId: string, deviceId: string, webHookId: string): Promise<IWebHook>;
+    fetchWebHooks(userId: string, deviceId: string): Promise<IWebHook[]>;
     fetchDevicesList(): import("mongoose").Query<import("mongoose").LeanDocument<IDeviceModel>[], IDeviceModel, {}, IDeviceModel>;
     private validateWebHook;
 }

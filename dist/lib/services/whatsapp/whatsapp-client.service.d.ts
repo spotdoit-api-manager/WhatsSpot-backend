@@ -40,7 +40,7 @@ export declare class WhatsappClient {
     sendTypeMessage(messageType: EWhatsappMessageTypes, message: IWhatsappMessage, from: string, to: string): Promise<any>;
     initializeAllClients(): Promise<void>;
     subscribeNewWebHook(webHook: IWebHook, phone: string): void;
-    unsubscribeWebHook(webHook: IWebHook, phone: string): void;
+    unsubscribeWebHook(webHooks: IWebHook[], phone: string): void;
     private subscribeClientMessage;
     private sendWebHookRequest;
 }

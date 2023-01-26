@@ -114,8 +114,23 @@ export default [
         handler: [deviceController.getDeviceStatus]
     },
     {
-        path: "/device/:deviceId/webhook/add",
+        path: "/device/:deviceId/webhooks/add",
         method: "post",
         handler: [deviceController.addWebHook]
+    },
+    {
+        path: "/device/:deviceId/webhooks/:webhookId/remove",
+        method: "delete",
+        handler: [deviceController.removeWebHook]
+    },
+    {
+        path: "/device/:deviceId/webhooks/:webhookId/pause",
+        method: "patch",
+        handler: [deviceController.pauseWebHook]
+    },
+    {
+        path: "/device/:deviceId/webhooks/fetch",
+        method: "get",
+        handler: [deviceController.getWebHooks]
     },
 ];

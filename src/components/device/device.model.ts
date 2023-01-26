@@ -1,3 +1,4 @@
+import { isValidMongoId } from "./../../lib/helpers/index";
 import { IWebHook } from "./device.interface";
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { IPlanModel } from "./../plans/plans.schema";
@@ -75,6 +76,8 @@ export class DeviceModel {
         else if (device && device.userId != userId) throw new HTTP401Error("DEVICE_ALREADY_REGISTERD", "This device is already added by some user");
     }
     public async getQr(userId: string, deviceId: string) {
+        isValidMongoId(deviceId);
+
         const device = await deviceUtils.findDeviceById(userId, deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         if (device.authState) return { error: true, message: "ALREADY_AUTHENTICATED" };
@@ -86,6 +89,8 @@ export class DeviceModel {
     }
 
     public async removeClient(userId: string, deviceId: string) {
+        isValidMongoId(deviceId);
+
         const device = await deviceUtils.findDeviceById(userId, deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const data = whatsappClientService.removeClientInstanceByPhone(device.phone);
@@ -98,11 +103,15 @@ export class DeviceModel {
         return devices;
     }
     public fetchDevice = async (deviceId: string, userId: string) => {
+                isValidMongoId(deviceId);
+
         const device = await this.fetchDeviceByCondition(deviceId, userId);
         return device;
     }
 
     private async fetchDeviceByCondition(deviceId: string, userId: string) {
+        isValidMongoId(deviceId);
+
         const result = await Device.aggregate([
             { $match: { _id: new ObjectID(deviceId), userId: new ObjectID(userId), "isDeleted.status": false } },
             {
@@ -124,7 +133,9 @@ export class DeviceModel {
 
 
     public async fetchPrevMessages(deviceId: string) {
+        isValidMongoId(deviceId);
         try {
+
             const messages = await this.fetchMessagesByStatus(deviceId);
             if (!messages || !messages.length) throw new HTTP400Error("NO_MESSAGES");
             return messages;
@@ -134,6 +145,8 @@ export class DeviceModel {
     }
 
     private async fetchMessagesByStatus(deviceId: string, status: EMessageStatus = null) {
+        isValidMongoId(deviceId);
+
         const condition: any = { _id: new ObjectID(deviceId) };
         if (status) condition.status = status;
         const result = await Device.aggregate([
@@ -182,6 +195,8 @@ export class DeviceModel {
 
 
     public async deleteAuth(userId: string, deviceId: string) {
+        isValidMongoId(deviceId);
+
         console.log("params ", userId, deviceId);
         const device = await deviceUtils.findDeviceById(userId, deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
@@ -193,6 +208,8 @@ export class DeviceModel {
     }
 
     public async logoutDevice(userId: string, deviceId: string) {
+        isValidMongoId(deviceId);
+
         const device = await deviceUtils.findDeviceById(userId, deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
         const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
@@ -205,6 +222,9 @@ export class DeviceModel {
     }
 
     public async generateNewKey(userId: string, walletId: string, deviceId: string, body: any) {
+        isValidMongoId(deviceId);
+        isValidMongoId(walletId);
+
         if (!body.name || !body.expiresOn) throw new HTTP400Error("Fields missing");
         console.log(body);
         try {
@@ -234,6 +254,8 @@ export class DeviceModel {
     }
 
     public async deleteKey(deviceId: string, keyId: string) {
+        isValidMongoId(deviceId);
+
         try {
             const result = await Device.findOneAndUpdate({ _id: new ObjectID(deviceId) }, { $pull: { apiKeys: { _id: new ObjectID(keyId) } } }, { upsert: false, new: false }).lean();
             const apiData = result.apiKeys.find((x: IApiKeyModal) => x._id.toString() === keyId) as any;
@@ -259,6 +281,8 @@ export class DeviceModel {
         return keys[0]?.apiKeys || null;
     }
     private async addNewTokenDataToDevice(deviceId: string, tokenData: IApiKey) {
+        isValidMongoId(deviceId);
+
         const result = await Device.findByIdAndUpdate(deviceId, { $push: { apiKeys: tokenData } }, { "upsert": true, new: true }).lean() as IDeviceModel;
         await spotSchedular.scheduleApiExpiration(deviceId, result.apiKeys[result.apiKeys.length - 1] as IApiKeyModal);
     }
@@ -281,6 +305,8 @@ export class DeviceModel {
 
 
     private async getTotalAvailableApiKeys(deviceId: string) {
+        isValidMongoId(deviceId);
+
         const result: any = await Device.aggregate([
             { $match: { _id: new ObjectID(deviceId) } },
             {
@@ -438,22 +464,29 @@ export class DeviceModel {
 
 
     public async retryFailedMessage(userId: string, deviceId: string) {
+        isValidMongoId(deviceId);
+
         const result: any = await messageModel.retryFailedMessage(userId, deviceId);
         if (result.error) throw new HTTP401Error(result.message);
         return { error: false, message: "RETRY_REQUESTED", messageCount: result.messageCount };
     }
 
     public async updateDeviceStatus(deviceId: string, status: EDeviceStatus) {
+        isValidMongoId(deviceId);
+
         const result = await Device.findByIdAndUpdate(deviceId, { deviceStatus: status });
         return result;
     }
 
     public async removeDevice(userId: string, deviceId: string) {
+        isValidMongoId(deviceId);
+
         await this.logoutDevice(userId, deviceId);
         const result = await Device.findByIdAndUpdate(deviceId, { isDeleted: { status: true, deletedAt: new Date() } });
     }
 
     public async getDeviceStatus(userId: string, deviceId: string) {
+        isValidMongoId(deviceId);
         const device = await Device.findOne({ userId: userId, _id: deviceId, isDeleted: { status: false } });
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
 
@@ -461,6 +494,7 @@ export class DeviceModel {
     }
 
 public async addWebHook(userId: string, deviceId: string, url: string) {
+    isValidMongoId(deviceId);
     if(!url) throw new HTTP400Error("URL_REQUIRED");
     await this.validateWebHook(userId, deviceId, url);
         const device = await Device.findOne({}).where("userId").equals(userId).where("_id").equals(deviceId).where("isDeleted.status").equals(false);
@@ -470,9 +504,13 @@ public async addWebHook(userId: string, deviceId: string, url: string) {
         device.webHooks.push({ url: url,status:true });
        const updatedDevice =  await device.save();
         whatsappClientService.subscribeNewWebHook(updatedDevice.webHooks[updatedDevice.webHooks.length-1],device.phone);
+        return device.webHooks[device.webHooks.length-1];
+        
 } 
 
 public async removeWebHook(userId: string, deviceId: string,webHookId:string) {
+    isValidMongoId(deviceId);
+    isValidMongoId(webHookId);
         const device = await Device.findOne({}).where("userId").equals(userId).where("_id").equals(deviceId).where("isDeleted.status").equals(false);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
       //remove webHook from device
@@ -483,21 +521,51 @@ public async removeWebHook(userId: string, deviceId: string,webHookId:string) {
       
         await device.save();
         //unsubscribe webHook from whatsapp client
-        whatsappClientService.unsubscribeWebHook(webHook,device.phone);
+        whatsappClientService.unsubscribeWebHook(device.webHooks,device.phone);
+        return webHook;
 
         
 }
+
+public async pauseWebHook(userId: string, deviceId: string,webHookId:string) {
+        isValidMongoId(deviceId);
+        isValidMongoId(webHookId);
+        const device = await Device.findOne({}).where("userId").equals(userId).where("_id").equals(deviceId).where("isDeleted.status").equals(false);
+        if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
+        const webHook = device.webHooks.find((webHook:IWebHook) => webHook._id.toString() === webHookId);
+        if (!webHook) throw new HTTP400Error("WEBHOOK_NOT_FOUND");
+        webHook.status = false;
+        await device.save();
+        //unsubscribe webHook from whatsapp client
+        whatsappClientService.unsubscribeWebHook(device.webHooks,device.phone);
+        return webHook;
+}
+
+public async fetchWebHooks(userId: string, deviceId: string) {
+    isValidMongoId(deviceId);
+        const device = await Device.findOne({}).where("userId").equals(userId).where("_id").equals(deviceId);
+        if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
+        return device.webHooks.filter((webHook:IWebHook) => webHook.isDeleted == false);
+}
+    
     public fetchDevicesList() {
         return Device.find({}).select(deviceProjection).lean();
     }
 
     private async validateWebHook(userId: string, deviceId: string, url: string) {
-        //check if url string is valid url using regex
-        const regex = new RegExp(/^(http|https):\/\/[a-zA-Z0-9-\.]+\.[a-z]{2,4}/);
-        if (!regex.test(url)) throw new HTTP400Error("INVALID_WEBHOOK_URL");
-        //make http request to url and check if it is valid
-        const result = await axios.post(url,{});
-        if (result.status !== 200) throw new HTTP400Error("INVALID_WEBHOOK_URL");
+        try{
+
+            //check if url string is valid url using regex
+            const regex = new RegExp(/^(http|https):\/\/[a-zA-Z0-9-\.]+\.[a-z]{2,4}/);
+            if (!regex.test(url)) throw new HTTP400Error("INVALID_WEBHOOK_URL");
+            //make http request to url and check if it is valid
+            const result = await axios.post(url,{});
+            // get error message
+            const errorMessage = result?.data?.message || result?.data?.error || result?.data?.errorMessage || "INVALID_WEBHOOK_URL";
+            if (result.status !== 200) throw new HTTP400Error(errorMessage);
+        }catch(err){
+            throw new HTTP400Error("Webhook url is not valid: "+err.message);
+        }
 
     }
 }

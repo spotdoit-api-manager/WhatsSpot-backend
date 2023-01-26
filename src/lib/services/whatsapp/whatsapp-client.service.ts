@@ -291,11 +291,16 @@ public subscribeNewWebHook(webHook:IWebHook,phone:string){
     }
 }
 
-public unsubscribeWebHook(webHook:IWebHook,phone:string){
+public unsubscribeWebHook(webHooks:IWebHook[],phone:string){
     const client = this.getClientInstanceByPhone(phone);
-    // if(client){
-    //     client.off("NEW_MESSAGE");
-    // }
+    // unsubscribe NEW_MESSAGE event from client
+    if(client){
+        client.off("NEW_MESSAGE");
+        // subscribe to client for remaining webhooks
+        if(webHooks.length > 0){
+            this.subscribeClientMessage(client,webHooks);
+        }
+    }
 }
 private subscribeClientMessage(client: any,webHooks: IWebHook[]) {
     logger.info(logFileName,"Subscribing to client message "+client.phone);
@@ -307,7 +312,10 @@ private subscribeClientMessage(client: any,webHooks: IWebHook[]) {
             name:msg.pushName,
             timestamp:msg.messageTimestamp,
         };
+        // extract url of webhook having isDeleted false and status true
+        webHooks = webHooks.filter((webHook: IWebHook) => webHook.status && !webHook.isDeleted);
         const urls = webHooks.map((webHook: IWebHook) => webHook.url);
+
         this.sendWebHookRequest(urls,body);
     });
 }

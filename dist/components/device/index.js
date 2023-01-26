@@ -113,9 +113,24 @@ exports.default = [
         handler: [device_controller_1.default.getDeviceStatus]
     },
     {
-        path: "/device/:deviceId/webhook/add",
+        path: "/device/:deviceId/webhooks/add",
         method: "post",
         handler: [device_controller_1.default.addWebHook]
+    },
+    {
+        path: "/device/:deviceId/webhooks/:webhookId/remove",
+        method: "delete",
+        handler: [device_controller_1.default.removeWebHook]
+    },
+    {
+        path: "/device/:deviceId/webhooks/:webhookId/pause",
+        method: "patch",
+        handler: [device_controller_1.default.pauseWebHook]
+    },
+    {
+        path: "/device/:deviceId/webhooks/fetch",
+        method: "get",
+        handler: [device_controller_1.default.getWebHooks]
     },
 ];
 //# sourceMappingURL=index.js.map

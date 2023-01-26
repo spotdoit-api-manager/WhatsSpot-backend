@@ -257,6 +257,36 @@ export class DeviceController {
     }
   };
 
+  public removeWebHook = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      responseHandler.reqRes(req, res).onFetch("WEBHOOK REMOVED", await deviceModel.removeWebHook(req.userId,req.params.deviceId,req.params.webhookId)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
+  public pauseWebHook = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      responseHandler.reqRes(req, res).onFetch("WEBHOOK PAUSED", await deviceModel.pauseWebHook(req.userId,req.params.deviceId,req.params.webhookId)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
+  public getWebHooks = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      responseHandler.reqRes(req, res).onFetch("WEBHOOK FETCHED", await deviceModel.fetchWebHooks(req.userId,req.params.deviceId)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
 }
 
 

@@ -36,8 +36,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DeviceModel = void 0;
+const index_1 = require("./../../lib/helpers/index");
 const logger_1 = __importDefault(require("../../core/logger"));
-const index_1 = require("./../../config/index");
+const index_2 = require("./../../config/index");
 const message_interface_1 = require("./../messages/message.interface");
 const httpErrors_1 = require("./../../lib/utils/httpErrors");
 const device_interface_1 = require("./device.interface");
@@ -67,14 +68,15 @@ class DeviceModel {
             return devices;
         });
         this.fetchDevice = (deviceId, userId) => __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
             const device = yield this.fetchDeviceByCondition(deviceId, userId);
             return device;
         });
         this.signDeviceToken = (apiKeyData, expiresIn) => {
             if (!expiresIn) {
-                return jsonwebtoken_1.default.sign(apiKeyData, index_1.deviceKeyConfig.jwtSecretKey, {});
+                return jsonwebtoken_1.default.sign(apiKeyData, index_2.deviceKeyConfig.jwtSecretKey, {});
             }
-            return jsonwebtoken_1.default.sign(apiKeyData, index_1.deviceKeyConfig.jwtSecretKey, {
+            return jsonwebtoken_1.default.sign(apiKeyData, index_2.deviceKeyConfig.jwtSecretKey, {
                 expiresIn: expiresIn,
             });
         };
@@ -132,6 +134,7 @@ class DeviceModel {
     }
     getQr(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
             const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
@@ -146,6 +149,7 @@ class DeviceModel {
     }
     removeClient(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
             const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
@@ -155,6 +159,7 @@ class DeviceModel {
     }
     fetchDeviceByCondition(deviceId, userId) {
         return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
             const result = yield device_schema_1.Device.aggregate([
                 { $match: { _id: new bson_1.ObjectID(deviceId), userId: new bson_1.ObjectID(userId), "isDeleted.status": false } },
                 {
@@ -176,6 +181,7 @@ class DeviceModel {
     }
     fetchPrevMessages(deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
             try {
                 const messages = yield this.fetchMessagesByStatus(deviceId);
                 if (!messages || !messages.length)
@@ -190,6 +196,7 @@ class DeviceModel {
     fetchMessagesByStatus(deviceId, status = null) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
             const condition = { _id: new bson_1.ObjectID(deviceId) };
             if (status)
                 condition.status = status;
@@ -235,6 +242,7 @@ class DeviceModel {
     }
     deleteAuth(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
             console.log("params ", userId, deviceId);
             const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
             if (!device)
@@ -249,6 +257,7 @@ class DeviceModel {
     }
     logoutDevice(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
             const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
@@ -262,6 +271,8 @@ class DeviceModel {
     }
     generateNewKey(userId, walletId, deviceId, body) {
         return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
+            (0, index_1.isValidMongoId)(walletId);
             if (!body.name || !body.expiresOn)
                 throw new httpErrors_1.HTTP400Error("Fields missing");
             console.log(body);
@@ -294,6 +305,7 @@ class DeviceModel {
     }
     deleteKey(deviceId, keyId) {
         return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
             try {
                 const result = yield device_schema_1.Device.findOneAndUpdate({ _id: new bson_1.ObjectID(deviceId) }, { $pull: { apiKeys: { _id: new bson_1.ObjectID(keyId) } } }, { upsert: false, new: false }).lean();
                 const apiData = result.apiKeys.find((x) => x._id.toString() === keyId);
@@ -322,6 +334,7 @@ class DeviceModel {
     }
     addNewTokenDataToDevice(deviceId, tokenData) {
         return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
             const result = yield device_schema_1.Device.findByIdAndUpdate(deviceId, { $push: { apiKeys: tokenData } }, { "upsert": true, new: true }).lean();
             yield schedular_1.default.scheduleApiExpiration(deviceId, result.apiKeys[result.apiKeys.length - 1]);
         });
@@ -332,6 +345,7 @@ class DeviceModel {
     }
     getTotalAvailableApiKeys(deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
             const result = yield device_schema_1.Device.aggregate([
                 { $match: { _id: new bson_1.ObjectID(deviceId) } },
                 {
@@ -483,6 +497,7 @@ class DeviceModel {
     }
     retryFailedMessage(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
             const result = yield message_model_1.default.retryFailedMessage(userId, deviceId);
             if (result.error)
                 throw new httpErrors_1.HTTP401Error(result.message);
@@ -491,18 +506,21 @@ class DeviceModel {
     }
     updateDeviceStatus(deviceId, status) {
         return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
             const result = yield device_schema_1.Device.findByIdAndUpdate(deviceId, { deviceStatus: status });
             return result;
         });
     }
     removeDevice(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
             yield this.logoutDevice(userId, deviceId);
             const result = yield device_schema_1.Device.findByIdAndUpdate(deviceId, { isDeleted: { status: true, deletedAt: new Date() } });
         });
     }
     getDeviceStatus(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
             const device = yield device_schema_1.Device.findOne({ userId: userId, _id: deviceId, isDeleted: { status: false } });
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
@@ -511,6 +529,7 @@ class DeviceModel {
     }
     addWebHook(userId, deviceId, url) {
         return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
             if (!url)
                 throw new httpErrors_1.HTTP400Error("URL_REQUIRED");
             yield this.validateWebHook(userId, deviceId, url);
@@ -523,10 +542,13 @@ class DeviceModel {
             device.webHooks.push({ url: url, status: true });
             const updatedDevice = yield device.save();
             whatsapp_client_service_1.default.subscribeNewWebHook(updatedDevice.webHooks[updatedDevice.webHooks.length - 1], device.phone);
+            return device.webHooks[device.webHooks.length - 1];
         });
     }
     removeWebHook(userId, deviceId, webHookId) {
         return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
+            (0, index_1.isValidMongoId)(webHookId);
             const device = yield device_schema_1.Device.findOne({}).where("userId").equals(userId).where("_id").equals(deviceId).where("isDeleted.status").equals(false);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
@@ -538,22 +560,57 @@ class DeviceModel {
             webHook.isDeleted = true;
             yield device.save();
             //unsubscribe webHook from whatsapp client
-            whatsapp_client_service_1.default.unsubscribeWebHook(webHook, device.phone);
+            whatsapp_client_service_1.default.unsubscribeWebHook(device.webHooks, device.phone);
+            return webHook;
+        });
+    }
+    pauseWebHook(userId, deviceId, webHookId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
+            (0, index_1.isValidMongoId)(webHookId);
+            const device = yield device_schema_1.Device.findOne({}).where("userId").equals(userId).where("_id").equals(deviceId).where("isDeleted.status").equals(false);
+            if (!device)
+                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
+            const webHook = device.webHooks.find((webHook) => webHook._id.toString() === webHookId);
+            if (!webHook)
+                throw new httpErrors_1.HTTP400Error("WEBHOOK_NOT_FOUND");
+            webHook.status = false;
+            yield device.save();
+            //unsubscribe webHook from whatsapp client
+            whatsapp_client_service_1.default.unsubscribeWebHook(device.webHooks, device.phone);
+            return webHook;
+        });
+    }
+    fetchWebHooks(userId, deviceId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
+            const device = yield device_schema_1.Device.findOne({}).where("userId").equals(userId).where("_id").equals(deviceId);
+            if (!device)
+                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
+            return device.webHooks.filter((webHook) => webHook.isDeleted == false);
         });
     }
     fetchDevicesList() {
         return device_schema_1.Device.find({}).select(projection_values_1.deviceProjection).lean();
     }
     validateWebHook(userId, deviceId, url) {
+        var _a, _b, _c;
         return __awaiter(this, void 0, void 0, function* () {
-            //check if url string is valid url using regex
-            const regex = new RegExp(/^(http|https):\/\/[a-zA-Z0-9-\.]+\.[a-z]{2,4}/);
-            if (!regex.test(url))
-                throw new httpErrors_1.HTTP400Error("INVALID_WEBHOOK_URL");
-            //make http request to url and check if it is valid
-            const result = yield axios_1.default.post(url, {});
-            if (result.status !== 200)
-                throw new httpErrors_1.HTTP400Error("INVALID_WEBHOOK_URL");
+            try {
+                //check if url string is valid url using regex
+                const regex = new RegExp(/^(http|https):\/\/[a-zA-Z0-9-\.]+\.[a-z]{2,4}/);
+                if (!regex.test(url))
+                    throw new httpErrors_1.HTTP400Error("INVALID_WEBHOOK_URL");
+                //make http request to url and check if it is valid
+                const result = yield axios_1.default.post(url, {});
+                // get error message
+                const errorMessage = ((_a = result === null || result === void 0 ? void 0 : result.data) === null || _a === void 0 ? void 0 : _a.message) || ((_b = result === null || result === void 0 ? void 0 : result.data) === null || _b === void 0 ? void 0 : _b.error) || ((_c = result === null || result === void 0 ? void 0 : result.data) === null || _c === void 0 ? void 0 : _c.errorMessage) || "INVALID_WEBHOOK_URL";
+                if (result.status !== 200)
+                    throw new httpErrors_1.HTTP400Error(errorMessage);
+            }
+            catch (err) {
+                throw new httpErrors_1.HTTP400Error("Webhook url is not valid: " + err.message);
+            }
         });
     }
 }

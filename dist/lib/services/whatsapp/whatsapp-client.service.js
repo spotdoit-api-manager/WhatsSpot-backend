@@ -293,11 +293,16 @@ class WhatsappClient {
             this.subscribeClientMessage(client, [webHook]);
         }
     }
-    unsubscribeWebHook(webHook, phone) {
+    unsubscribeWebHook(webHooks, phone) {
         const client = this.getClientInstanceByPhone(phone);
-        // if(client){
-        //     client.off("NEW_MESSAGE");
-        // }
+        // unsubscribe NEW_MESSAGE event from client
+        if (client) {
+            client.off("NEW_MESSAGE");
+            // subscribe to client for remaining webhooks
+            if (webHooks.length > 0) {
+                this.subscribeClientMessage(client, webHooks);
+            }
+        }
     }
     subscribeClientMessage(client, webHooks) {
         logger_1.default.info(logFileName, "Subscribing to client message " + client.phone);
@@ -309,6 +314,8 @@ class WhatsappClient {
                 name: msg.pushName,
                 timestamp: msg.messageTimestamp,
             };
+            // extract url of webhook having isDeleted false and status true
+            webHooks = webHooks.filter((webHook) => webHook.status && !webHook.isDeleted);
             const urls = webHooks.map((webHook) => webHook.url);
             this.sendWebHookRequest(urls, body);
         });

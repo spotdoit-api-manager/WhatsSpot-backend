@@ -248,6 +248,36 @@ class DeviceController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.removeWebHook = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("WEBHOOK REMOVED", yield device_model_1.default.removeWebHook(req.userId, req.params.deviceId, req.params.webhookId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.pauseWebHook = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("WEBHOOK PAUSED", yield device_model_1.default.pauseWebHook(req.userId, req.params.deviceId, req.params.webhookId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.getWebHooks = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("WEBHOOK FETCHED", yield device_model_1.default.fetchWebHooks(req.userId, req.params.deviceId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
     }
 }
 exports.DeviceController = DeviceController;

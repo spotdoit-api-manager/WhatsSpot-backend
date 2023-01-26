@@ -53,7 +53,7 @@
         "helmet": "^6.0.0",
         "instance-manager": "^1.1.5",
         "jsonwebtoken": "^8.5.1",
-        "libphonenumber-js": "^1.9.53",
+        "libphonenumber-js": "^1.10.18",
         "link-preview-js": "^2.1.13",
         "mailazy-node": "^0.3.0",
         "moment-timezone": "^0.5.32",

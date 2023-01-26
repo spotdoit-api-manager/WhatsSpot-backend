@@ -9,7 +9,6 @@ import logger from "../../core/logger";
 const logFileName = "[PhoneHandler] : ";
   export const parsePhoneWithCountry = (phone: string,country: CountryCode)=>{
         try{
-
           // special case for brazil for 11 digit numbers
           if(country=="BR"){
             if(phone.length==10){
