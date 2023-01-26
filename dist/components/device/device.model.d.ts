@@ -62,6 +62,7 @@ export declare class DeviceModel {
     addWebHook(userId: string, deviceId: string, url: string): Promise<IWebHook>;
     removeWebHook(userId: string, deviceId: string, webHookId: string): Promise<IWebHook>;
     pauseWebHook(userId: string, deviceId: string, webHookId: string): Promise<IWebHook>;
+    resumeWebHook(userId: string, deviceId: string, webHookId: string): Promise<IWebHook>;
     fetchWebHooks(userId: string, deviceId: string): Promise<IWebHook[]>;
     fetchDevicesList(): import("mongoose").Query<import("mongoose").LeanDocument<IDeviceModel>[], IDeviceModel, {}, IDeviceModel>;
     private validateWebHook;

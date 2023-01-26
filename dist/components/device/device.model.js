@@ -581,6 +581,23 @@ class DeviceModel {
             return webHook;
         });
     }
+    resumeWebHook(userId, deviceId, webHookId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
+            (0, index_1.isValidMongoId)(webHookId);
+            const device = yield device_schema_1.Device.findOne({}).where("userId").equals(userId).where("_id").equals(deviceId).where("isDeleted.status").equals(false);
+            if (!device)
+                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
+            const webHook = device.webHooks.find((webHook) => webHook._id.toString() === webHookId);
+            if (!webHook)
+                throw new httpErrors_1.HTTP400Error("WEBHOOK_NOT_FOUND");
+            webHook.status = true;
+            yield device.save();
+            //unsubscribe webHook from whatsapp client
+            whatsapp_client_service_1.default.subscribeNewWebHook(webHook, device.phone);
+            return webHook;
+        });
+    }
     fetchWebHooks(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
             (0, index_1.isValidMongoId)(deviceId);

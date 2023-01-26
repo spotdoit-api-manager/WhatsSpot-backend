@@ -541,6 +541,21 @@ public async pauseWebHook(userId: string, deviceId: string,webHookId:string) {
         return webHook;
 }
 
+public async resumeWebHook(userId: string, deviceId: string,webHookId:string) {
+    isValidMongoId(deviceId);
+    isValidMongoId(webHookId);
+    const device = await Device.findOne({}).where("userId").equals(userId).where("_id").equals(deviceId).where("isDeleted.status").equals(false);
+    if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
+    const webHook = device.webHooks.find((webHook:IWebHook) => webHook._id.toString() === webHookId);
+    if (!webHook) throw new HTTP400Error("WEBHOOK_NOT_FOUND");
+    webHook.status = true;
+    await device.save();
+    //unsubscribe webHook from whatsapp client
+    whatsappClientService.subscribeNewWebHook(webHook,device.phone);
+    return webHook;
+}
+
+
 public async fetchWebHooks(userId: string, deviceId: string) {
     isValidMongoId(deviceId);
         const device = await Device.findOne({}).where("userId").equals(userId).where("_id").equals(deviceId);

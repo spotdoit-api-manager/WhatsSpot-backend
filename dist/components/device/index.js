@@ -128,6 +128,11 @@ exports.default = [
         handler: [device_controller_1.default.pauseWebHook]
     },
     {
+        path: "/device/:deviceId/webhooks/:webhookId/resume",
+        method: "patch",
+        handler: [device_controller_1.default.resumeWebHook]
+    },
+    {
         path: "/device/:deviceId/webhooks/fetch",
         method: "get",
         handler: [device_controller_1.default.getWebHooks]

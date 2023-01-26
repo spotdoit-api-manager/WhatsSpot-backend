@@ -129,6 +129,11 @@ export default [
         handler: [deviceController.pauseWebHook]
     },
     {
+        path: "/device/:deviceId/webhooks/:webhookId/resume",
+        method: "patch",
+        handler: [deviceController.resumeWebHook]
+    },
+    {
         path: "/device/:deviceId/webhooks/fetch",
         method: "get",
         handler: [deviceController.getWebHooks]

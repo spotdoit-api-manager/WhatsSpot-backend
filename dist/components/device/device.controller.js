@@ -268,6 +268,16 @@ class DeviceController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.resumeWebHook = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("WEBHOOK RESUMED", yield device_model_1.default.resumeWebHook(req.userId, req.params.deviceId, req.params.webhookId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
         this.getWebHooks = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {

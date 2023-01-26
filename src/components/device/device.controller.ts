@@ -277,6 +277,16 @@ export class DeviceController {
     }
   };
 
+  public resumeWebHook = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      responseHandler.reqRes(req, res).onFetch("WEBHOOK RESUMED", await deviceModel.resumeWebHook(req.userId,req.params.deviceId,req.params.webhookId)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
   public getWebHooks = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {

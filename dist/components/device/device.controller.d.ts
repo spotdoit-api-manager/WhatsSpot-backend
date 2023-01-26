@@ -22,6 +22,7 @@ export declare class DeviceController {
     addWebHook: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     removeWebHook: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     pauseWebHook: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    resumeWebHook: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     getWebHooks: (req: Request, res: Response, next: NextFunction) => Promise<void>;
 }
 declare const _default: DeviceController;
