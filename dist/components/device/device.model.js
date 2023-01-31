@@ -36,6 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DeviceModel = void 0;
+const message_schema_1 = require("./../messages/message.schema");
 const index_1 = require("./../../lib/helpers/index");
 const logger_1 = __importDefault(require("../../core/logger"));
 const index_2 = require("./../../config/index");
@@ -46,6 +47,7 @@ const device_schema_1 = require("./device.schema");
 const whatsapp_client_service_1 = __importDefault(require("../../lib/services/whatsapp/whatsapp-client.service"));
 const file_management_1 = __importDefault(require("../../lib/helpers/file.management"));
 const message_model_1 = __importDefault(require("../messages/message.model"));
+const schedule_service_1 = __importDefault(require("../../lib/services/schedule.service"));
 const bson_1 = require("bson");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dayjs_1 = __importDefault(require("dayjs"));
@@ -95,17 +97,23 @@ class DeviceModel {
             const newDeviceData = yield newDevice.saveDevice();
             if (!newDeviceData)
                 throw new httpErrors_1.HTTP400Error("UNKNOWN_ERROR");
-            const expiresOn = (0, dayjs_1.default)().add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN || "3d").replace("d", "")), "day").toDate().toUTCString();
+            const expiresOn = (0, dayjs_1.default)()
+                .add(parseInt((process.env.DEFAULT_APIKEY_EXPIRYES_IN || "3d").replace("d", "")), "day")
+                .toDate()
+                .toUTCString();
             const keys = yield this.generateNewKey(userId, walletId, newDeviceData._id, { name: process.env.DEFAULT_APIKEY_NAME, expiresOn });
             return newDeviceData;
         });
     }
     isMaxDeviceLimitReached(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const devices = yield device_schema_1.Device.find({ userId: userId, "isDeleted.status": false });
+            const devices = yield device_schema_1.Device.find({
+                userId: userId,
+                "isDeleted.status": false,
+            });
             const userPlan = yield user_model_1.default.fetchUserActivePlan(userId);
             if (userPlan && userPlan.planId) {
-                const plan = yield plans_model_1.default.fetchPlanByPlanId(userPlan.planId);
+                const plan = (yield plans_model_1.default.fetchPlanByPlanId(userPlan.planId));
                 if (devices.length >= plan.maxDevices)
                     throw new httpErrors_1.HTTP400Error("MAX_DEVICE_LIMIT_REACHED", `You have reached maximum device limit of ${plan.maxDevices} in your ${plan.planName} plan`);
             }
@@ -161,12 +169,18 @@ class DeviceModel {
         return __awaiter(this, void 0, void 0, function* () {
             (0, index_1.isValidMongoId)(deviceId);
             const result = yield device_schema_1.Device.aggregate([
-                { $match: { _id: new bson_1.ObjectID(deviceId), userId: new bson_1.ObjectID(userId), "isDeleted.status": false } },
+                {
+                    $match: {
+                        _id: new bson_1.ObjectID(deviceId),
+                        userId: new bson_1.ObjectID(userId),
+                        "isDeleted.status": false,
+                    },
+                },
                 {
                     $project: {
-                        apiKeys: 0
-                    }
-                }
+                        apiKeys: 0,
+                    },
+                },
             ]);
             return result[0] || null;
         });
@@ -175,7 +189,9 @@ class DeviceModel {
         return __awaiter(this, void 0, void 0, function* () {
             const totalDevices = yield device_schema_1.Device.countDocuments();
             const activeDevices = yield device_schema_1.Device.countDocuments({ authState: true });
-            const deletedDevices = yield device_schema_1.Device.countDocuments({ "isDeleted.status": true });
+            const deletedDevices = yield device_schema_1.Device.countDocuments({
+                "isDeleted.status": true,
+            });
             return { totalDevices, activeDevices, deletedDevices };
         });
     }
@@ -205,15 +221,15 @@ class DeviceModel {
                 { $set: { _id: { $toObjectId: "$_id" } } },
                 {
                     $project: {
-                        _id: 1
-                    }
+                        _id: 1,
+                    },
                 },
                 {
                     $lookup: {
                         from: "fastmessages",
                         localField: "_id",
                         foreignField: "deviceId",
-                        as: "fastMessages"
+                        as: "fastMessages",
                     },
                 },
                 {
@@ -221,21 +237,21 @@ class DeviceModel {
                         from: "messagequeues",
                         localField: "_id",
                         foreignField: "deviceId",
-                        as: "queueMessages"
+                        as: "queueMessages",
                     },
                 },
                 {
                     $project: {
-                        messages: { $setUnion: ["$fastMessages", "$queueMessages"] }
-                    }
+                        messages: { $setUnion: ["$fastMessages", "$queueMessages"] },
+                    },
                 },
                 { $unwind: "$messages" },
                 {
                     $sort: {
-                        "messages.createdAt": -1
-                    }
+                        "messages.createdAt": -1,
+                    },
                 },
-                { $group: { _id: "$_id", messages: { $push: "$messages" } } }
+                { $group: { _id: "$_id", messages: { $push: "$messages" } } },
             ]);
             return ((_a = result[0]) === null || _a === void 0 ? void 0 : _a.messages) || null;
         });
@@ -269,6 +285,62 @@ class DeviceModel {
             return { message: "DEVICE_LOGGED_OUT", device: device };
         });
     }
+    reScheduleMessage(userId, scheduleTime, deviceId, messageId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
+            (0, index_1.isValidMongoId)(messageId);
+            (0, index_1.isValidMongoId)(userId);
+            try {
+                const newScheduleTime = new Date(scheduleTime);
+                if (!newScheduleTime)
+                    throw new httpErrors_1.HTTP400Error("INVALID_SCHEDULE_TIME", "Schedule time is invalid");
+                const currentTime = new Date();
+                const diff = newScheduleTime.getTime() - currentTime.getTime();
+                const preMin = 1;
+                // if(diff < preMin*60*1000 ) throw new HTTP400Error("INVALID_SCHEDULE_TIME", "Schedule time should be in future and more than 5 minutes");
+                const message = yield message_schema_1.ScheduleMessage.findOne({ _id: messageId, userId, deviceId });
+                if (!message)
+                    throw new httpErrors_1.HTTP400Error("MESSAGE_NOT_FOUND");
+                message.scheduleTime = newScheduleTime;
+                yield message.save();
+                schedule_service_1.default.removeScheduleJob(messageId);
+                schedule_service_1.default.scheduleMessages([message]);
+                return message;
+            }
+            catch (err) {
+                throw new httpErrors_1.HTTP400Error(err.message);
+            }
+        });
+    }
+    fetchScheduledMessages(userId, deviceId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
+            try {
+                // fetch messages from scheduled collection
+                const messages = yield message_schema_1.ScheduleMessage.find({ userId, deviceId });
+                if (!messages || !messages.length)
+                    throw new httpErrors_1.HTTP400Error("NO_MESSAGES");
+                return messages;
+            }
+            catch (err) {
+                throw new httpErrors_1.HTTP400Error(err.message);
+            }
+        });
+    }
+    removeScheduledMessage(userId, deviceId, messageId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            (0, index_1.isValidMongoId)(deviceId);
+            (0, index_1.isValidMongoId)(messageId);
+            try {
+                yield message_schema_1.ScheduleMessage.deleteOne({ userId, deviceId, _id: messageId });
+                schedule_service_1.default.removeScheduleJob(messageId);
+                return { message: "MESSAGE_DELETED" };
+            }
+            catch (err) {
+                throw new httpErrors_1.HTTP400Error(err.message);
+            }
+        });
+    }
     generateNewKey(userId, walletId, deviceId, body) {
         return __awaiter(this, void 0, void 0, function* () {
             (0, index_1.isValidMongoId)(deviceId);
@@ -292,7 +364,13 @@ class DeviceModel {
                 if (totalAvailableKeys < parseInt(process.env.MAX_APIKEY_PER_DEVICE)) {
                     const apiKeyData = { walletId, userId, deviceId };
                     const token = this.generateDeviceKey(apiKeyData, expiresIn);
-                    const tokenData = { name: body.name, createdOn: new Date(), token: token, expiresOn: expiresOn === null || expiresOn === void 0 ? void 0 : expiresOn.toDate(), status: { status: device_interface_1.EApiKeyStatus.ACTIVE, reason: null } };
+                    const tokenData = {
+                        name: body.name,
+                        createdOn: new Date(),
+                        token: token,
+                        expiresOn: expiresOn === null || expiresOn === void 0 ? void 0 : expiresOn.toDate(),
+                        status: { status: device_interface_1.EApiKeyStatus.ACTIVE, reason: null },
+                    };
                     yield this.addNewTokenDataToDevice(deviceId, tokenData);
                     return tokenData;
                 }
@@ -325,9 +403,9 @@ class DeviceModel {
                 { $match: { _id: new bson_1.ObjectID(deviceId) } },
                 {
                     $project: {
-                        apiKeys: 1
-                    }
-                }
+                        apiKeys: 1,
+                    },
+                },
             ]);
             return ((_a = keys[0]) === null || _a === void 0 ? void 0 : _a.apiKeys) || null;
         });
@@ -335,7 +413,7 @@ class DeviceModel {
     addNewTokenDataToDevice(deviceId, tokenData) {
         return __awaiter(this, void 0, void 0, function* () {
             (0, index_1.isValidMongoId)(deviceId);
-            const result = yield device_schema_1.Device.findByIdAndUpdate(deviceId, { $push: { apiKeys: tokenData } }, { "upsert": true, new: true }).lean();
+            const result = (yield device_schema_1.Device.findByIdAndUpdate(deviceId, { $push: { apiKeys: tokenData } }, { upsert: true, new: true }).lean());
             yield schedular_1.default.scheduleApiExpiration(deviceId, result.apiKeys[result.apiKeys.length - 1]);
         });
     }
@@ -350,9 +428,15 @@ class DeviceModel {
                 { $match: { _id: new bson_1.ObjectID(deviceId) } },
                 {
                     $project: {
-                        count: { $cond: { if: { $isArray: "$apiKeys" }, then: { $size: "$apiKeys" }, else: 0 } }
-                    }
-                }
+                        count: {
+                            $cond: {
+                                if: { $isArray: "$apiKeys" },
+                                then: { $size: "$apiKeys" },
+                                else: 0,
+                            },
+                        },
+                    },
+                },
             ]);
             return result[0].count;
         });
@@ -365,7 +449,10 @@ class DeviceModel {
     }
     findDeviceByUseId(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const devices = yield device_schema_1.Device.find({ userId: userId, "isDeleted.status": false }).lean();
+            const devices = yield device_schema_1.Device.find({
+                userId: userId,
+                "isDeleted.status": false,
+            }).lean();
             return devices;
         });
     }
@@ -373,12 +460,13 @@ class DeviceModel {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield device_schema_1.Device.aggregate([
                 {
-                    $match: { _id: new bson_1.ObjectID(deviceId), userId: new bson_1.ObjectID(userId) }
-                }, {
+                    $match: { _id: new bson_1.ObjectID(deviceId), userId: new bson_1.ObjectID(userId) },
+                },
+                {
                     $project: {
-                        _id: 1
-                    }
-                }
+                        _id: 1,
+                    },
+                },
             ]);
             return result[0] || null;
         });
@@ -386,7 +474,10 @@ class DeviceModel {
     fetchDeviceMetrics(deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const condition = { _id: new bson_1.ObjectID(deviceId), "isDeleted.status": false };
+                const condition = {
+                    _id: new bson_1.ObjectID(deviceId),
+                    "isDeleted.status": false,
+                };
                 let result = yield device_schema_1.Device.aggregate([
                     { $match: condition },
                     { $set: { _id: { $toObjectId: "$_id" } } },
@@ -395,7 +486,7 @@ class DeviceModel {
                             from: "fastmessages",
                             localField: "_id",
                             foreignField: "deviceId",
-                            as: "fastMessages"
+                            as: "fastMessages",
                         },
                     },
                     {
@@ -403,7 +494,7 @@ class DeviceModel {
                             from: "messagequeues",
                             localField: "_id",
                             foreignField: "deviceId",
-                            as: "queueMessages"
+                            as: "queueMessages",
                         },
                     },
                     {
@@ -415,46 +506,56 @@ class DeviceModel {
                                         $filter: {
                                             input: "$fastMessages",
                                             as: "fastMessage",
-                                            cond: { "$eq": ["$$fastMessage.status", message_interface_1.EMessageStatus.ERROR] }
-                                        }
-                                    }
+                                            cond: {
+                                                $eq: ["$$fastMessage.status", message_interface_1.EMessageStatus.ERROR],
+                                            },
+                                        },
+                                    },
                                 },
                                 totalFastSuccess: {
                                     $size: {
                                         $filter: {
                                             input: "$fastMessages",
                                             as: "fastMessage",
-                                            cond: { "$eq": ["$$fastMessage.status", message_interface_1.EMessageStatus.SENT] }
-                                        }
-                                    }
+                                            cond: {
+                                                $eq: ["$$fastMessage.status", message_interface_1.EMessageStatus.SENT],
+                                            },
+                                        },
+                                    },
                                 },
                                 totalQueueSuccess: {
                                     $size: {
                                         $filter: {
                                             input: "$queueMessages",
                                             as: "queueMessage",
-                                            cond: { "$eq": ["$$queueMessage.status", message_interface_1.EMessageStatus.SENT] }
-                                        }
-                                    }
+                                            cond: {
+                                                $eq: ["$$queueMessage.status", message_interface_1.EMessageStatus.SENT],
+                                            },
+                                        },
+                                    },
                                 },
                                 totalQueueError: {
                                     $size: {
                                         $filter: {
                                             input: "$queueMessages",
                                             as: "queueMessage",
-                                            cond: { "$eq": ["$$queueMessage.status", message_interface_1.EMessageStatus.ERROR] }
-                                        }
-                                    }
+                                            cond: {
+                                                $eq: ["$$queueMessage.status", message_interface_1.EMessageStatus.ERROR],
+                                            },
+                                        },
+                                    },
                                 },
                                 totalQueuePending: {
                                     $size: {
                                         $filter: {
                                             input: "$queueMessages",
                                             as: "queueMessage",
-                                            cond: { "$eq": ["$$queueMessage.status", message_interface_1.EMessageStatus.PENDING] }
-                                        }
-                                    }
-                                }
+                                            cond: {
+                                                $eq: ["$$queueMessage.status", message_interface_1.EMessageStatus.PENDING],
+                                            },
+                                        },
+                                    },
+                                },
                             },
                             messages: {
                                 fastMessages: "$fastMessages",
@@ -469,9 +570,9 @@ class DeviceModel {
                                 createdAt: "$createdAt",
                                 updatedAt: "$updatedAt",
                                 authState: "$authState",
-                                reason: "$reason"
-                            }
-                        }
+                                reason: "$reason",
+                            },
+                        },
                     },
                 ]);
                 if (!result || !result[0]) {
@@ -482,9 +583,9 @@ class DeviceModel {
                                 totalFastSuccess: 3,
                                 totalQueueError: 0,
                                 totalQueuePending: 2,
-                                totalQueueSuccess: 0
-                            }
-                        }
+                                totalQueueSuccess: 0,
+                            },
+                        },
                     ];
                 }
                 return result[0];
@@ -501,13 +602,19 @@ class DeviceModel {
             const result = yield message_model_1.default.retryFailedMessage(userId, deviceId);
             if (result.error)
                 throw new httpErrors_1.HTTP401Error(result.message);
-            return { error: false, message: "RETRY_REQUESTED", messageCount: result.messageCount };
+            return {
+                error: false,
+                message: "RETRY_REQUESTED",
+                messageCount: result.messageCount,
+            };
         });
     }
     updateDeviceStatus(deviceId, status) {
         return __awaiter(this, void 0, void 0, function* () {
             (0, index_1.isValidMongoId)(deviceId);
-            const result = yield device_schema_1.Device.findByIdAndUpdate(deviceId, { deviceStatus: status });
+            const result = yield device_schema_1.Device.findByIdAndUpdate(deviceId, {
+                deviceStatus: status,
+            });
             return result;
         });
     }
@@ -515,13 +622,19 @@ class DeviceModel {
         return __awaiter(this, void 0, void 0, function* () {
             (0, index_1.isValidMongoId)(deviceId);
             yield this.logoutDevice(userId, deviceId);
-            const result = yield device_schema_1.Device.findByIdAndUpdate(deviceId, { isDeleted: { status: true, deletedAt: new Date() } });
+            const result = yield device_schema_1.Device.findByIdAndUpdate(deviceId, {
+                isDeleted: { status: true, deletedAt: new Date() },
+            });
         });
     }
     getDeviceStatus(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
             (0, index_1.isValidMongoId)(deviceId);
-            const device = yield device_schema_1.Device.findOne({ userId: userId, _id: deviceId, isDeleted: { status: false } });
+            const device = yield device_schema_1.Device.findOne({
+                userId: userId,
+                _id: deviceId,
+                isDeleted: { status: false },
+            });
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             return whatsapp_client_service_1.default.getClientStatus(device.phone);
@@ -533,7 +646,13 @@ class DeviceModel {
             if (!url)
                 throw new httpErrors_1.HTTP400Error("URL_REQUIRED");
             yield this.validateWebHook(userId, deviceId, url);
-            const device = yield device_schema_1.Device.findOne({}).where("userId").equals(userId).where("_id").equals(deviceId).where("isDeleted.status").equals(false);
+            const device = yield device_schema_1.Device.findOne({})
+                .where("userId")
+                .equals(userId)
+                .where("_id")
+                .equals(deviceId)
+                .where("isDeleted.status")
+                .equals(false);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const result = device.webHooks.find((webHook) => webHook.url === url);
@@ -549,7 +668,13 @@ class DeviceModel {
         return __awaiter(this, void 0, void 0, function* () {
             (0, index_1.isValidMongoId)(deviceId);
             (0, index_1.isValidMongoId)(webHookId);
-            const device = yield device_schema_1.Device.findOne({}).where("userId").equals(userId).where("_id").equals(deviceId).where("isDeleted.status").equals(false);
+            const device = yield device_schema_1.Device.findOne({})
+                .where("userId")
+                .equals(userId)
+                .where("_id")
+                .equals(deviceId)
+                .where("isDeleted.status")
+                .equals(false);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             //remove webHook from device
@@ -568,7 +693,14 @@ class DeviceModel {
         return __awaiter(this, void 0, void 0, function* () {
             (0, index_1.isValidMongoId)(deviceId);
             (0, index_1.isValidMongoId)(webHookId);
-            const device = yield device_schema_1.Device.findOne({}).where("userId").equals(userId).where("_id").equals(deviceId).where("isDeleted.status").equals(false);
+            console.log("pauseWebHook");
+            const device = yield device_schema_1.Device.findOne({})
+                .where("userId")
+                .equals(userId)
+                .where("_id")
+                .equals(deviceId)
+                .where("isDeleted.status")
+                .equals(false);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const webHook = device.webHooks.find((webHook) => webHook._id.toString() === webHookId);
@@ -577,7 +709,9 @@ class DeviceModel {
             webHook.status = false;
             yield device.save();
             //unsubscribe webHook from whatsapp client
+            console.log(device.webHooks, device.phone);
             whatsapp_client_service_1.default.unsubscribeWebHook(device.webHooks, device.phone);
+            console.log("pauseWebHook");
             return webHook;
         });
     }
@@ -585,7 +719,13 @@ class DeviceModel {
         return __awaiter(this, void 0, void 0, function* () {
             (0, index_1.isValidMongoId)(deviceId);
             (0, index_1.isValidMongoId)(webHookId);
-            const device = yield device_schema_1.Device.findOne({}).where("userId").equals(userId).where("_id").equals(deviceId).where("isDeleted.status").equals(false);
+            const device = yield device_schema_1.Device.findOne({})
+                .where("userId")
+                .equals(userId)
+                .where("_id")
+                .equals(deviceId)
+                .where("isDeleted.status")
+                .equals(false);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const webHook = device.webHooks.find((webHook) => webHook._id.toString() === webHookId);
@@ -601,7 +741,11 @@ class DeviceModel {
     fetchWebHooks(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
             (0, index_1.isValidMongoId)(deviceId);
-            const device = yield device_schema_1.Device.findOne({}).where("userId").equals(userId).where("_id").equals(deviceId);
+            const device = yield device_schema_1.Device.findOne({})
+                .where("userId")
+                .equals(userId)
+                .where("_id")
+                .equals(deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             return device.webHooks.filter((webHook) => webHook.isDeleted == false);
@@ -621,7 +765,10 @@ class DeviceModel {
                 //make http request to url and check if it is valid
                 const result = yield axios_1.default.post(url, {});
                 // get error message
-                const errorMessage = ((_a = result === null || result === void 0 ? void 0 : result.data) === null || _a === void 0 ? void 0 : _a.message) || ((_b = result === null || result === void 0 ? void 0 : result.data) === null || _b === void 0 ? void 0 : _b.error) || ((_c = result === null || result === void 0 ? void 0 : result.data) === null || _c === void 0 ? void 0 : _c.errorMessage) || "INVALID_WEBHOOK_URL";
+                const errorMessage = ((_a = result === null || result === void 0 ? void 0 : result.data) === null || _a === void 0 ? void 0 : _a.message) ||
+                    ((_b = result === null || result === void 0 ? void 0 : result.data) === null || _b === void 0 ? void 0 : _b.error) ||
+                    ((_c = result === null || result === void 0 ? void 0 : result.data) === null || _c === void 0 ? void 0 : _c.errorMessage) ||
+                    "INVALID_WEBHOOK_URL";
                 if (result.status !== 200)
                     throw new httpErrors_1.HTTP400Error(errorMessage);
             }

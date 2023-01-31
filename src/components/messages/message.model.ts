@@ -1,3 +1,5 @@
+import { isValidMongoId } from "./../../lib/helpers/index";
+import { IScheduleMessageModel } from "./message.schema";
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { EPlanStatus } from "./../plans/plans.interface";
 
@@ -7,8 +9,8 @@ import { IImageMessage, IWhatsappMessage, IWhatsappTextMessage,IWhatsappListMess
 import { sanatizeMobile } from "./../../lib/utils/index";
 import { validateMobile } from "../../lib/utils";
 import { HTTP400Error, HTTP401Error } from "../../lib/utils/httpErrors";
-import { ESendType, IMessage, EMessageStatus } from "./message.interface";
-import { MessageQueue, FastMessage, IMessageModel } from "./message.schema";
+import { ESendType, IMessage, EMessageStatus, IScheduleMessage } from "./message.interface";
+import { MessageQueue, FastMessage, IMessageModel, ScheduleMessage } from "./message.schema";
 import whatsappClientService from "../../lib/services/whatsapp/whatsapp-client.service";
 import walletModel from "../wallet/wallet.model";
 // import messageQueueService from "../../lib/services/whatsapp/message-queue.service";
@@ -21,6 +23,7 @@ import logger from "../../core/logger";
 import { parsePhone } from "../../lib/utils/phone.handler";
 import deviceUtils from "../device/device.utils";
 import messageQueueService from "../../lib/services/whatsapp/message-queue.service";
+import scheduleService from "../../lib/services/schedule.service";
 
 const logFileName = "[MessageModel] : ";
 export class MessageModel {
@@ -36,6 +39,7 @@ export class MessageModel {
     public updateMessageStatus = async (id: string, status: EMessageStatus, reason: string = null) => {
         await MessageQueue.updateOne({ _id: id }, { status: status, reason: reason });
     }
+    
 
     public updateMessageToGroupStatus = async (id: string, contact: IContact, status: EMessageStatus, reason: string = null) => {
         await MessageQueue.updateOne({ _id: id }, { $push: { contactsSent: { phoneNumber: contact.phoneNumber, name: contact?.name, status: status, reason: reason } } });
@@ -80,7 +84,51 @@ export class MessageModel {
         return { error: false, messageInfo: result.result, numbers };
     }
 
+    public async scheduleMessage(userId: string, body: { groups: IGroupList[]; numbers: string | string[]; message: IWhatsappMessage; isGroup: boolean; scheduleTime: Date;messageType: EWhatsappMessageTypes }, deviceId: string) {
+        const scheduleTime = new Date(body.scheduleTime);
+        if(!scheduleTime) throw new HTTP400Error("INVALID_SCHEDULE_TIME", "Schedule time is invalid");
+        const currentTime = new Date();
+        const diff = scheduleTime.getTime() - currentTime.getTime();
+        const preMin = 1;
+        // if(diff < preMin*60*1000 ) throw new HTTP400Error("INVALID_SCHEDULE_TIME", "Schedule time should be in future and more than 5 minutes");
 
+        logger.debug(logFileName,"schedule message request", body, deviceId);
+        const device = await deviceUtils.findDeviceById(userId,deviceId);
+        if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
+
+        const messagesBody: IScheduleMessage[] = [];
+        if (body.isGroup) {
+            body.groups.forEach((group: IGroupList) => {
+                const newBody: IScheduleMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.SCHEDULE, to: group._id,messageType:body.messageType, message: body.message, status: EMessageStatus.PENDING, isGroup: true, scheduleTime };
+                messagesBody.push(newBody);
+            });
+            return await this.addMultipleScheduleMessage(messagesBody);
+        }
+
+        const numbers = [];
+        if (typeof (body.numbers) === "string") {
+            numbers.push(body.numbers);
+        } else {
+            body.numbers.forEach((phone: any) => {
+                const parsedPhone = parsePhone(phone);
+                numbers.push(parsedPhone.number);
+            });
+        }
+
+        for (let i = 0; i < numbers.length; i++) {
+            const to = numbers[i];
+            const newBody: IScheduleMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.SCHEDULE, to,messageType:body.messageType, message: body.message, status: EMessageStatus.PENDING, scheduleTime };
+            messagesBody.push(newBody);
+        }
+
+        const result = await this.addMultipleScheduleMessage(messagesBody);
+        if (result && result.error) {
+            throw new HTTP401Error(result.message);
+        }
+        delete messagesBody[0].to;
+        return { error: false, messageInfo: result.result, numbers };
+    }
+    
     public async addSingleMessageToQueue(messageBody: IMessage) {
         const newMessage = new MessageQueue(messageBody);
         const data = newMessage.addMessage();
@@ -92,6 +140,17 @@ export class MessageModel {
 
     public async addMultipleMessageToQueue(messages: IMessage[]) {
         const result = await MessageQueue.insertMany(messages);
+        if (result) {
+            return { error: false,result };
+        }
+        return { error: true, message: "NOT_ADDED" };
+    }
+
+    public async addMultipleScheduleMessage(messages: IScheduleMessage[]) {
+        const result = await ScheduleMessage.insertMany(messages);
+        // get inserted records
+        const insertedRecords:IScheduleMessageModel[] = await ScheduleMessage.find({ _id: { $in: result.map((item) => item._id) } });
+        scheduleService.scheduleMessages(insertedRecords);
         if (result) {
             return { error: false,result };
         }

@@ -295,7 +295,9 @@ public unsubscribeWebHook(webHooks:IWebHook[],phone:string){
     const client = this.getClientInstanceByPhone(phone);
     // unsubscribe NEW_MESSAGE event from client
     if(client){
-        client.off("NEW_MESSAGE");
+        // unsubscribe to event NEW_MESSAGE
+        client.removeAllListeners("NEW_MESSAGE");
+        // client.off("NEW_MESSAGE");
         // subscribe to client for remaining webhooks
         if(webHooks.length > 0){
             this.subscribeClientMessage(client,webHooks);

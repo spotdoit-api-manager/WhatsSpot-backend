@@ -24,6 +24,7 @@ const socket_1 = __importDefault(require("./lib/services/socket"));
 const schedular_1 = __importDefault(require("./lib/services/schedular"));
 const logger_1 = __importDefault(require("./lib/utils/logger"));
 const message_queue_service_1 = __importDefault(require("./lib/services/whatsapp/message-queue.service"));
+const schedule_service_1 = __importDefault(require("./lib/services/schedule.service"));
 const logFileName = "[Server]: ";
 // Set PORT in .env or use 3000 by default  
 const Port = process.env.PORT ? +process.env.PORT : 8000;
@@ -42,6 +43,7 @@ server.listen(Port, () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, exchange_rate_service_1.startExchangeRateService)();
     whatsapp_client_service_1.default.initializeAllClients();
     message_queue_service_1.default.start();
+    schedule_service_1.default.reScheduleMessages();
     if (process.env.NODE_ENV === "production") {
         schedular_1.default.reScheduleAllApiExpiration();
         schedular_1.default.reScheduleAllUserPlanExpiration();

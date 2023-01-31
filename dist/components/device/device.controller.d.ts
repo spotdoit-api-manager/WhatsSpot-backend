@@ -12,6 +12,10 @@ export declare class DeviceController {
     getKeys: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     deleteKey: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     addMessageToQueue: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    scheduleMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    reScheduleMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    fetchScheduledMessages: (req: Request, res: Response, next: NextFunction) => Promise<void>;
+    removeScheduledMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     retryFailedMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     sendTextMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;
     sendImageMessage: (req: Request, res: Response, next: NextFunction) => Promise<void>;

@@ -21,6 +21,10 @@ export interface IMessage {
     priority?: number
 }
 
+export interface IScheduleMessage extends IMessage{
+    scheduleTime: Date;
+}
+
 export enum EMessageStatus {
     PENDING = "PENDING",
     SENT = "SENT",
@@ -28,7 +32,8 @@ export enum EMessageStatus {
 }
 export enum ESendType {
     FAST = "FAST",
-    QUEUE = "QUEUE"
+    QUEUE = "QUEUE",
+    SCHEDULE = "SCHEDULE"
 }
 
 

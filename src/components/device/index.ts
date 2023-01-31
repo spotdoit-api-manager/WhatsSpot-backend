@@ -72,10 +72,34 @@ export default [
         handler: [deviceController.deleteKey]
     },
     {
-        path: "/device/:deviceId/message/addMessageToQueue", //send by device id
+        path: "/device/:deviceId/message/addMessageToQueue",
         method: "post",
         escapeAuth: false,
         handler: [deviceController.addMessageToQueue]
+    },
+    {
+        path: "/device/:deviceId/message/scheduleMessage", 
+        method: "post",
+        escapeAuth: false,
+        handler: [deviceController.scheduleMessage]
+    },
+    {
+        path: "/device/:deviceId/message/fetchScheduledMessages",
+        method: "get",
+        escapeAuth: false,
+        handler: [deviceController.fetchScheduledMessages]
+    },
+    {
+        path: "/device/:deviceId/message/removeScheduledMessage/:messageId",
+        method: "delete",
+        escapeAuth: false,
+        handler: [deviceController.removeScheduledMessage]
+    },
+    {
+        path: "/device/:deviceId/message/reScheduleMessage/:messageId",
+        method: "patch",
+        escapeAuth: false,
+        handler: [deviceController.reScheduleMessage]
     },
     {
         path: "/device/:deviceId/retryFailed", //send failed message

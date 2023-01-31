@@ -147,6 +147,7 @@ private interval;
       try {
         const msg = m.messages[0];
         if (!msg.key.fromMe) {
+          if(!msg.message?.conversation)return;
           logger.info(logFileName,`received msg :${msg.message?.conversation}`);
           logger.info(logFileName,`From: ${msg.key.remoteJid}`);
           if(msg.message?.conversation){//if it is text type message

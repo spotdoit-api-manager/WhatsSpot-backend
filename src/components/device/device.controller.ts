@@ -161,6 +161,55 @@ export class DeviceController {
     }
   };
 
+  public scheduleMessage = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      console.log("schedule message request ", req.params);
+
+      responseHandler.reqRes(req, res).onFetch("MESSAGE_SCHEDULED", await messageModel.scheduleMessage(req.userId,req.body, req.params.deviceId)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
+  public reScheduleMessage = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      console.log("re schedule message request ", req.params);
+
+      responseHandler.reqRes(req, res).onFetch("MESSAGE_RE_SCHEDULED", await deviceModel.reScheduleMessage(req.userId,req.body.scheduleTime, req.params.deviceId, req.params.messageId)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
+  public fetchScheduledMessages = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      console.log("fetch scheduled message request ", req.params);
+
+      responseHandler.reqRes(req, res).onFetch("SCHEDULED_MESSAGES_FETCHED", await deviceModel.fetchScheduledMessages(req.userId,req.params.deviceId)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
+  public removeScheduledMessage = async (req: Request, res: Response, next: NextFunction) => {
+    const responseHandler = new ResponseHandler();
+    try {
+      console.log("remove scheduled message request ", req.params);
+
+      responseHandler.reqRes(req, res).onFetch("SCHEDULED_MESSAGE_REMOVED", await deviceModel.removeScheduledMessage(req.userId,req.params.deviceId,req.params.messageId)).send();
+    } catch (e) {
+      // send error with next function.
+      next(responseHandler.sendError(e));
+    }
+  };
+
+
   public retryFailedMessage = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {

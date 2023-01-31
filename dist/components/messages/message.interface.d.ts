@@ -20,6 +20,9 @@ export interface IMessage {
     ];
     priority?: number;
 }
+export interface IScheduleMessage extends IMessage {
+    scheduleTime: Date;
+}
 export declare enum EMessageStatus {
     PENDING = "PENDING",
     SENT = "SENT",
@@ -27,7 +30,8 @@ export declare enum EMessageStatus {
 }
 export declare enum ESendType {
     FAST = "FAST",
-    QUEUE = "QUEUE"
+    QUEUE = "QUEUE",
+    SCHEDULE = "SCHEDULE"
 }
 export interface IWebHookMessage {
     text: string;

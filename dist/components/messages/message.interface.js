@@ -11,5 +11,6 @@ var ESendType;
 (function (ESendType) {
     ESendType["FAST"] = "FAST";
     ESendType["QUEUE"] = "QUEUE";
+    ESendType["SCHEDULE"] = "SCHEDULE";
 })(ESendType = exports.ESendType || (exports.ESendType = {}));
 //# sourceMappingURL=message.interface.js.map

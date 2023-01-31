@@ -9,8 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FastMessage = exports.MessageQueue = void 0;
+exports.FastMessage = exports.MessageQueue = exports.ScheduleMessage = void 0;
 const whatsapp_enum_1 = require("./../../lib/services/whatsapp/whatsapp.enum");
+const message_interface_1 = require("./message.interface");
 const mongoose_1 = require("mongoose");
 const contactSentSchema = new mongoose_1.Schema({
     phoneNumber: {
@@ -93,7 +94,7 @@ const messageSchema = new mongoose_1.Schema({
     },
     sendType: {
         type: String,
-        enum: ["FAST", "QUEUE"]
+        enum: Object.values(message_interface_1.ESendType),
     },
     phone: String,
     status: {
@@ -120,7 +121,11 @@ const messageSchema = new mongoose_1.Schema({
         type: Boolean,
         default: false
     },
-    contactsSent: [contactSentSchema]
+    contactsSent: [contactSentSchema],
+    scheduleTime: {
+        type: Date,
+        required: false
+    }
 }, {
     timestamps: true,
 });
@@ -129,6 +134,7 @@ messageSchema.methods.addMessage = function () {
         return this.save();
     });
 };
+exports.ScheduleMessage = (0, mongoose_1.model)("ScheduleMessage", messageSchema);
 exports.MessageQueue = (0, mongoose_1.model)("MessageQueue", messageSchema);
 exports.FastMessage = (0, mongoose_1.model)("FastMessage", messageSchema);
 //# sourceMappingURL=message.schema.js.map

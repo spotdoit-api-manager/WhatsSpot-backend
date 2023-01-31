@@ -1,6 +1,7 @@
+import { IScheduleMessageModel } from "./message.schema";
 import { EWhatsappMessageTypes } from "./../../lib/services/whatsapp/whatsapp.enum";
 import { IWhatsappMessage, IWhatsappTextMessage } from "./../../lib/services/whatsapp/whatsapp.interface";
-import { IMessage, EMessageStatus } from "./message.interface";
+import { IMessage, EMessageStatus, IScheduleMessage } from "./message.interface";
 import { IMessageModel } from "./message.schema";
 import { IContact, IGroupList } from "../contact/contact.interface";
 export declare class MessageModel {
@@ -29,6 +30,26 @@ export declare class MessageModel {
         messageInfo: IMessageModel[];
         numbers: any[];
     }>;
+    scheduleMessage(userId: string, body: {
+        groups: IGroupList[];
+        numbers: string | string[];
+        message: IWhatsappMessage;
+        isGroup: boolean;
+        scheduleTime: Date;
+        messageType: EWhatsappMessageTypes;
+    }, deviceId: string): Promise<{
+        error: boolean;
+        result: IScheduleMessageModel[];
+        message?: undefined;
+    } | {
+        error: boolean;
+        message: string;
+        result?: undefined;
+    } | {
+        error: boolean;
+        messageInfo: IScheduleMessageModel[];
+        numbers: any[];
+    }>;
     addSingleMessageToQueue(messageBody: IMessage): Promise<{
         error: boolean;
         message?: undefined;
@@ -39,6 +60,15 @@ export declare class MessageModel {
     addMultipleMessageToQueue(messages: IMessage[]): Promise<{
         error: boolean;
         result: IMessageModel[];
+        message?: undefined;
+    } | {
+        error: boolean;
+        message: string;
+        result?: undefined;
+    }>;
+    addMultipleScheduleMessage(messages: IScheduleMessage[]): Promise<{
+        error: boolean;
+        result: IScheduleMessageModel[];
         message?: undefined;
     } | {
         error: boolean;

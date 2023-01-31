@@ -14,6 +14,7 @@ import socketManager from "./lib/services/socket";
 import spotSchedular from "./lib/services/schedular";
 import logger from "./lib/utils/logger";
 import messageQueueService from "./lib/services/whatsapp/message-queue.service";
+import scheduleService from "./lib/services/schedule.service";
 
 const logFileName = "[Server]: ";
 // Set PORT in .env or use 3000 by default  
@@ -38,6 +39,7 @@ server.listen(Port, async () => {
   await startExchangeRateService();
   whatsappClientService.initializeAllClients();
   messageQueueService.start();
+  scheduleService.reScheduleMessages();
   if (process.env.NODE_ENV === "production") {
     spotSchedular.reScheduleAllApiExpiration();
     spotSchedular.reScheduleAllUserPlanExpiration();

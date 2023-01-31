@@ -75,7 +75,11 @@ const getNextDate = (day = 2) => {
 };
 exports.getNextDate = getNextDate;
 const isValidMongoId = (str) => {
-    return str.match(/^[a-f\d]{24}$/i);
+    if (!str || typeof str !== "string" || str == "")
+        return false;
+    if (!str.match(/^[a-f\d]{24}$/i))
+        throw new httpErrors_1.HTTP400Error("Invalid Id");
+    return;
 };
 exports.isValidMongoId = isValidMongoId;
 const pruneFields = (body, fields) => {

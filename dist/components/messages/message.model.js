@@ -28,6 +28,7 @@ const logger_1 = __importDefault(require("../../core/logger"));
 const phone_handler_1 = require("../../lib/utils/phone.handler");
 const device_utils_1 = __importDefault(require("../device/device.utils"));
 const message_queue_service_1 = __importDefault(require("../../lib/services/whatsapp/message-queue.service"));
+const schedule_service_1 = __importDefault(require("../../lib/services/schedule.service"));
 const logFileName = "[MessageModel] : ";
 class MessageModel {
     constructor() {
@@ -85,6 +86,50 @@ class MessageModel {
             return { error: false, messageInfo: result.result, numbers };
         });
     }
+    scheduleMessage(userId, body, deviceId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const scheduleTime = new Date(body.scheduleTime);
+            if (!scheduleTime)
+                throw new httpErrors_1.HTTP400Error("INVALID_SCHEDULE_TIME", "Schedule time is invalid");
+            const currentTime = new Date();
+            const diff = scheduleTime.getTime() - currentTime.getTime();
+            const preMin = 1;
+            // if(diff < preMin*60*1000 ) throw new HTTP400Error("INVALID_SCHEDULE_TIME", "Schedule time should be in future and more than 5 minutes");
+            logger_1.default.debug(logFileName, "schedule message request", body, deviceId);
+            const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
+            if (!device)
+                throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
+            const messagesBody = [];
+            if (body.isGroup) {
+                body.groups.forEach((group) => {
+                    const newBody = { phone: device.phone, userId, deviceId: deviceId, sendType: message_interface_1.ESendType.SCHEDULE, to: group._id, messageType: body.messageType, message: body.message, status: message_interface_1.EMessageStatus.PENDING, isGroup: true, scheduleTime };
+                    messagesBody.push(newBody);
+                });
+                return yield this.addMultipleScheduleMessage(messagesBody);
+            }
+            const numbers = [];
+            if (typeof (body.numbers) === "string") {
+                numbers.push(body.numbers);
+            }
+            else {
+                body.numbers.forEach((phone) => {
+                    const parsedPhone = (0, phone_handler_1.parsePhone)(phone);
+                    numbers.push(parsedPhone.number);
+                });
+            }
+            for (let i = 0; i < numbers.length; i++) {
+                const to = numbers[i];
+                const newBody = { phone: device.phone, userId, deviceId: deviceId, sendType: message_interface_1.ESendType.SCHEDULE, to, messageType: body.messageType, message: body.message, status: message_interface_1.EMessageStatus.PENDING, scheduleTime };
+                messagesBody.push(newBody);
+            }
+            const result = yield this.addMultipleScheduleMessage(messagesBody);
+            if (result && result.error) {
+                throw new httpErrors_1.HTTP401Error(result.message);
+            }
+            delete messagesBody[0].to;
+            return { error: false, messageInfo: result.result, numbers };
+        });
+    }
     addSingleMessageToQueue(messageBody) {
         return __awaiter(this, void 0, void 0, function* () {
             const newMessage = new message_schema_1.MessageQueue(messageBody);
@@ -98,6 +143,18 @@ class MessageModel {
     addMultipleMessageToQueue(messages) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield message_schema_1.MessageQueue.insertMany(messages);
+            if (result) {
+                return { error: false, result };
+            }
+            return { error: true, message: "NOT_ADDED" };
+        });
+    }
+    addMultipleScheduleMessage(messages) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield message_schema_1.ScheduleMessage.insertMany(messages);
+            // get inserted records
+            const insertedRecords = yield message_schema_1.ScheduleMessage.find({ _id: { $in: result.map((item) => item._id) } });
+            schedule_service_1.default.scheduleMessages(insertedRecords);
             if (result) {
                 return { error: false, result };
             }

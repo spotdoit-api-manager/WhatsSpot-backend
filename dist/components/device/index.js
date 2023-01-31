@@ -79,6 +79,30 @@ exports.default = [
         handler: [device_controller_1.default.addMessageToQueue]
     },
     {
+        path: "/device/:deviceId/message/scheduleMessage",
+        method: "post",
+        escapeAuth: false,
+        handler: [device_controller_1.default.scheduleMessage]
+    },
+    {
+        path: "/device/:deviceId/message/fetchScheduledMessages",
+        method: "get",
+        escapeAuth: false,
+        handler: [device_controller_1.default.fetchScheduledMessages]
+    },
+    {
+        path: "/device/:deviceId/message/removeScheduledMessage/:messageId",
+        method: "delete",
+        escapeAuth: false,
+        handler: [device_controller_1.default.removeScheduledMessage]
+    },
+    {
+        path: "/device/:deviceId/message/reScheduleMessage/:messageId",
+        method: "patch",
+        escapeAuth: false,
+        handler: [device_controller_1.default.reScheduleMessage]
+    },
+    {
         path: "/device/:deviceId/retryFailed",
         method: "post",
         escapeAuth: false,

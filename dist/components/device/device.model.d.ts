@@ -1,4 +1,5 @@
 /// <reference types="mongoose" />
+import { IScheduleMessageModel } from "./../messages/message.schema";
 import { IWebHook } from "./device.interface";
 import { EDeviceStatus, IDeviceTokenData, INewDevice } from "../device/device.interface";
 import { IApiKey, IDevice } from "./device.interface";
@@ -39,6 +40,11 @@ export declare class DeviceModel {
     logoutDevice(userId: string, deviceId: string): Promise<{
         message: string;
         device: IDeviceModel;
+    }>;
+    reScheduleMessage(userId: string, scheduleTime: Date, deviceId: string, messageId: string): Promise<IScheduleMessageModel>;
+    fetchScheduledMessages(userId: string, deviceId: string): Promise<IScheduleMessageModel[]>;
+    removeScheduledMessage(userId: string, deviceId: string, messageId: string): Promise<{
+        message: string;
     }>;
     generateNewKey(userId: string, walletId: string, deviceId: string, body: any): Promise<IApiKey>;
     deleteKey(deviceId: string, keyId: string): Promise<void>;

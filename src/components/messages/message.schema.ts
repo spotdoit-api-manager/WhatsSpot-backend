@@ -1,11 +1,15 @@
 import { EWhatsappMessageTypes } from "./../../lib/services/whatsapp/whatsapp.enum";
 
-import { IMessage } from "./message.interface";
+import { ESendType, IMessage, IScheduleMessage } from "./message.interface";
 import { Document, Model, model, Schema, SchemaType, SchemaTypes } from "mongoose";
 import { validateMobile } from "../../lib/utils";
 
 export interface IMessageModel extends IMessage, Document {
   addMessage(): any;
+}
+
+export interface IScheduleMessageModel extends IScheduleMessage, Document {
+  addScheduleMessage(): any;
 }
 
 const contactSentSchema = new Schema({
@@ -95,7 +99,7 @@ const messageSchema = new Schema(
     },
     sendType: {
       type: String,
-      enum: ["FAST", "QUEUE"]
+      enum: Object.values(ESendType),
     },
     phone: String,
     status: {
@@ -123,7 +127,11 @@ const messageSchema = new Schema(
       default: false
     },
    
-    contactsSent:[contactSentSchema]
+    contactsSent:[contactSentSchema],
+    scheduleTime: {
+      type: Date,
+      required: false
+    }
   },
   {
     timestamps: true,
@@ -134,5 +142,6 @@ messageSchema.methods.addMessage = async function () {
   return this.save();
 };
 
+export const ScheduleMessage: Model<IScheduleMessageModel> = model<IScheduleMessageModel>("ScheduleMessage", messageSchema);
 export const MessageQueue: Model<IMessageModel> = model<IMessageModel>("MessageQueue", messageSchema);
 export const FastMessage: Model<IMessageModel> = model<IMessageModel>("FastMessage", messageSchema);

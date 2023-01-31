@@ -159,6 +159,50 @@ class DeviceController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.scheduleMessage = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("schedule message request ", req.params);
+                responseHandler.reqRes(req, res).onFetch("MESSAGE_SCHEDULED", yield message_model_1.default.scheduleMessage(req.userId, req.body, req.params.deviceId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.reScheduleMessage = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("re schedule message request ", req.params);
+                responseHandler.reqRes(req, res).onFetch("MESSAGE_RE_SCHEDULED", yield device_model_1.default.reScheduleMessage(req.userId, req.body.scheduleTime, req.params.deviceId, req.params.messageId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.fetchScheduledMessages = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("fetch scheduled message request ", req.params);
+                responseHandler.reqRes(req, res).onFetch("SCHEDULED_MESSAGES_FETCHED", yield device_model_1.default.fetchScheduledMessages(req.userId, req.params.deviceId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.removeScheduledMessage = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                console.log("remove scheduled message request ", req.params);
+                responseHandler.reqRes(req, res).onFetch("SCHEDULED_MESSAGE_REMOVED", yield device_model_1.default.removeScheduledMessage(req.userId, req.params.deviceId, req.params.messageId)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
         this.retryFailedMessage = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
