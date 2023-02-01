@@ -65,7 +65,7 @@
         "lodash": "^4.17.19",
         "mailazy-node": "^0.2.0",
         "moment-timezone": "^0.5.32",
-        "mongoose": "^5.7.5",
+        "mongoose": "^5.13.15",
         "multer": "^1.4.2",
         "multer-s3": "^2.9.0",
         "node-cron": "^2.0.3",
