@@ -5,6 +5,7 @@ export interface IWebHookMessage{
     timestamp:number,
     from:string,
     name:string,
+    deviceId:string,
     status?:EMessageStatus
 }
 

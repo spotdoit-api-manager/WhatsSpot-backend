@@ -313,7 +313,7 @@ private subscribeClientMessage(userId:string,walletId:string,client: any,webHook
     logger.info(logFileName,"Subscribing to client message "+client.phone);
     client.on("NEW_MESSAGE", (msg: any) => {
         // console.log("message received in subscribe", msg);
-        const body:IWebHookMessage = this.whatsAppToWebHookMessage(msg);
+        const body:IWebHookMessage = this.whatsAppToWebHookMessage(client.deviceId,msg);
 
         // extract url of webhook having isDeleted false and status true
         webHooks = webHooks.filter((webHook: IWebHook) => webHook.status && !webHook.isDeleted);
@@ -352,19 +352,20 @@ private async sendWebHookRequest(userId:string,walletId:string,deviceId:string,p
         const res = responses.map((response: any) => response.data);
         console.log("Webhook send successfully to :",urls);
             plansModel.increamentMessageCount(activePlanInfo._id);
-            webhooksModel.createWebhookMessage(userId,deviceId,body);
+            webhooksModel.createWebhookMessage(userId,body);
            return { error: false, creditUsed: 0, message: urls };
     })).catch(errors => {
         console.log("webhook request error: ",errors);
     });
 }
 
-private whatsAppToWebHookMessage(message: any) {
+private whatsAppToWebHookMessage(deviceId:string,message: any) {
     const body:IWebHookMessage = {
         message:message.message?.conversation || message.message?.extendedTextMessage?.text,
         from:message.key.remoteJid.split("@")[0],
         name:message.pushName,
         timestamp:message.messageTimestamp,
+        deviceId
     };
     return body;
 }

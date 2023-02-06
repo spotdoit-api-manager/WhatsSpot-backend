@@ -30,19 +30,16 @@ const WebhookMessageSchema= new Schema({
         enum: Object.values(EMessageStatus),
         default: EMessageStatus.SENT
     },
-   
-    metadata:{
-        userId:{
-            type: Types.ObjectId,
-            ref: "User",
-            required:true
-        },
-        deviceId:{
-            type: Types.ObjectId,
-            required:true,
-            ref: "Device",
-        }
-
+    deviceId:{
+        type: Types.ObjectId,
+        required:true,
+        ref: "Device",
+    },
+    userId:{
+        type: Types.ObjectId,
+        required:true,
+        ref: "User",
+    
     },
     reason: {
         type: String,
