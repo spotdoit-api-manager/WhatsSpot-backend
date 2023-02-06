@@ -35,6 +35,15 @@ export class PlanManager{
         const result= await Plan.findOneAndDelete({planId});
         return result;
     }
+
+    public async hasActivePlan(userId: string) {
+        const userCurrentPlan: IUserPlanModel|null = await userModel.fetchUserActivePlan(userId);
+        if (userCurrentPlan) {
+            const isMessageOver = userCurrentPlan.planStatus==EPlanStatus.EXHAUSTED;
+            return { hasActivePlan: true, isMessageOver:isMessageOver, activePlanInfo: userCurrentPlan};
+        }
+        return { hasActivePlan: false };
+    }
 }
 
 export default new PlanManager();

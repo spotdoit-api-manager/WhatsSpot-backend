@@ -1,3 +1,4 @@
+import planManagerService  from "../../lib/services/plan.manager.service";
 import { IScheduleMessageModel, ScheduleMessage } from "./../messages/message.schema";
 import { isValidMongoId } from "./../../lib/helpers/index";
 import { IWebHook } from "./device.interface";
@@ -649,7 +650,7 @@ export class DeviceModel {
     return whatsappClientService.getClientStatus(device.phone);
   }
 
-  public async addWebHook(userId: string, deviceId: string, url: string) {
+  public async addWebHook(userId: string,walletId:string, deviceId: string, url: string) {
     isValidMongoId(deviceId);
     if (!url) throw new HTTP400Error("URL_REQUIRED");
     await this.validateWebHook(userId, deviceId, url);
@@ -661,11 +662,13 @@ export class DeviceModel {
       .where("isDeleted.status")
       .equals(false);
     if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-    const result = device.webHooks.find((webHook) => webHook.url === url);
-    if (result) throw new HTTP400Error("WEBHOOK_URL_ALREADY_EXISTS");
+    const result = device.webHooks.find((webHook) => webHook.url === url && !webHook?.isDeleted);
+    if (result) throw new HTTP400Error("Webhook URL already exists");
     device.webHooks.push({ url: url, status: true });
     const updatedDevice = await device.save();
     whatsappClientService.subscribeNewWebHook(
+      userId,
+      walletId,
       updatedDevice.webHooks[updatedDevice.webHooks.length - 1],
       device.phone
     );
@@ -674,6 +677,7 @@ export class DeviceModel {
 
   public async removeWebHook(
     userId: string,
+    walletId:string,
     deviceId: string,
     webHookId: string
   ) {
@@ -697,12 +701,13 @@ export class DeviceModel {
 
     await device.save();
     //unsubscribe webHook from whatsapp client
-    whatsappClientService.unsubscribeWebHook(device.webHooks, device.phone);
+    whatsappClientService.unsubscribeWebHook(userId,walletId,device.webHooks, device.phone);
     return webHook;
   }
 
   public async pauseWebHook(
     userId: string,
+    walletId:string,
     deviceId: string,
     webHookId: string
   ) {
@@ -725,13 +730,14 @@ export class DeviceModel {
     await device.save();
     //unsubscribe webHook from whatsapp client
     console.log(device.webHooks, device.phone);
-    whatsappClientService.unsubscribeWebHook(device.webHooks, device.phone);
+    whatsappClientService.unsubscribeWebHook(userId,walletId,device.webHooks, device.phone);
     console.log("pauseWebHook");
     return webHook;
   }
 
   public async resumeWebHook(
     userId: string,
+    walletId:string,
     deviceId: string,
     webHookId: string
   ) {
@@ -749,10 +755,19 @@ export class DeviceModel {
       (webHook: IWebHook) => webHook._id.toString() === webHookId
     );
     if (!webHook) throw new HTTP400Error("WEBHOOK_NOT_FOUND");
+    const {hasActivePlan,isMessageOver} = await planManagerService.hasActivePlan(userId);
+    if(!hasActivePlan || isMessageOver){ 
+      webHook.status = false;
+      webHook.reason = "No active plan found or message limit exceeded for this plan";
+      await device.save();
+      throw new HTTP400Error("No active plan found or message limit exceeded for this plan","Webhook requires active plan to resume");
+    }
+   
     webHook.status = true;
+    webHook.reason = "";
     await device.save();
     //unsubscribe webHook from whatsapp client
-    whatsappClientService.subscribeNewWebHook(webHook, device.phone);
+    whatsappClientService.subscribeNewWebHook(userId,walletId,webHook, device.phone);
     return webHook;
   }
 

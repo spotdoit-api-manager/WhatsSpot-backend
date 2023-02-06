@@ -36,11 +36,3 @@ export enum ESendType {
     SCHEDULE = "SCHEDULE"
 }
 
-
-export interface IWebHookMessage{
-    text:string,
-    timestamp:number,
-    from:string,
-    name:string
-}
-

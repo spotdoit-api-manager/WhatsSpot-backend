@@ -46,3 +46,4 @@ sessions
 config.env.prod
 prod-sessions
 dist/*
+dist

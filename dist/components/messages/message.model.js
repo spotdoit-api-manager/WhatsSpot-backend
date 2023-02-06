@@ -13,22 +13,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageModel = void 0;
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-const plans_interface_1 = require("./../plans/plans.interface");
 const bson_1 = require("bson");
 const httpErrors_1 = require("../../lib/utils/httpErrors");
 const message_interface_1 = require("./message.interface");
 const message_schema_1 = require("./message.schema");
 const whatsapp_client_service_1 = __importDefault(require("../../lib/services/whatsapp/whatsapp-client.service"));
 const wallet_model_1 = __importDefault(require("../wallet/wallet.model"));
-// import messageQueueService from "../../lib/services/whatsapp/message-queue.service";
-const user_model_1 = __importDefault(require("../user/user.model"));
 const plans_model_1 = __importDefault(require("../plans/plans.model"));
 const logger_1 = __importDefault(require("../../core/logger"));
 const phone_handler_1 = require("../../lib/utils/phone.handler");
 const device_utils_1 = __importDefault(require("../device/device.utils"));
 const message_queue_service_1 = __importDefault(require("../../lib/services/whatsapp/message-queue.service"));
 const schedule_service_1 = __importDefault(require("../../lib/services/schedule.service"));
+const plan_manager_service_1 = __importDefault(require("../../lib/services/plan.manager.service"));
 const logFileName = "[MessageModel] : ";
 class MessageModel {
     constructor() {
@@ -175,16 +172,6 @@ class MessageModel {
             return result;
         });
     }
-    hasActivePlan(userId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const userCurrentPlan = yield user_model_1.default.fetchUserActivePlan(userId);
-            if (userCurrentPlan) {
-                const isMessageOver = userCurrentPlan.planStatus == plans_interface_1.EPlanStatus.EXHAUSTED;
-                return { hasActivePlan: true, isMessageOver: isMessageOver, activePlanInfo: userCurrentPlan };
-            }
-            return { hasActivePlan: false };
-        });
-    }
     sendFastMessage(userId, numbers, message, messageType, deviceId, walletId) {
         return __awaiter(this, void 0, void 0, function* () {
             if (typeof numbers !== "string")
@@ -207,7 +194,7 @@ class MessageModel {
                 const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
                 if (!device)
                     throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
-                const { hasActivePlan, isMessageOver, activePlanInfo } = yield this.hasActivePlan(userId);
+                const { hasActivePlan, isMessageOver, activePlanInfo } = yield plan_manager_service_1.default.hasActivePlan(userId);
                 if (isMessageOver)
                     throw new httpErrors_1.HTTP400Error("MESSAGES_EXHAUSTED", "message exhausted for your active plan");
                 if (!hasActivePlan) {

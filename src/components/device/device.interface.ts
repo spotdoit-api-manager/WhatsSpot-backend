@@ -29,6 +29,7 @@ export interface IWebHook{
     createdAt?:Date;
     updatedAt?:Date;
     _id?:string;
+    reason?:string
 }
 export interface IDeviceDeleted {
     status: boolean;

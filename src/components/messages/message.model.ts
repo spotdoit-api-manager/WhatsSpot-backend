@@ -24,6 +24,7 @@ import { parsePhone } from "../../lib/utils/phone.handler";
 import deviceUtils from "../device/device.utils";
 import messageQueueService from "../../lib/services/whatsapp/message-queue.service";
 import scheduleService from "../../lib/services/schedule.service";
+import planManagerService from "../../lib/services/plan.manager.service";
 
 const logFileName = "[MessageModel] : ";
 export class MessageModel {
@@ -169,14 +170,7 @@ export class MessageModel {
         return result;
     }
 
-    private async hasActivePlan(userId: string) {
-        const userCurrentPlan: IUserPlanModel|null = await userModel.fetchUserActivePlan(userId);
-        if (userCurrentPlan) {
-            const isMessageOver = userCurrentPlan.planStatus==EPlanStatus.EXHAUSTED;
-            return { hasActivePlan: true, isMessageOver:isMessageOver, activePlanInfo: userCurrentPlan};
-        }
-        return { hasActivePlan: false };
-    }
+
 
     
 
@@ -198,7 +192,7 @@ export class MessageModel {
         try {
             const device = await deviceUtils.findDeviceById(userId,deviceId);
             if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-            const { hasActivePlan, isMessageOver, activePlanInfo } = await this.hasActivePlan(userId);
+            const { hasActivePlan, isMessageOver, activePlanInfo } = await planManagerService.hasActivePlan(userId);
             if (isMessageOver) throw new HTTP400Error("MESSAGES_EXHAUSTED", "message exhausted for your active plan");
             if (!hasActivePlan) {
                 const { isValidAmount, balance } = await walletModel.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));

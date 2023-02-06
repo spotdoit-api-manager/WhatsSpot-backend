@@ -146,11 +146,13 @@ private interval;
     this.client.ev.on("messages.upsert", async (m: any) => {
       try {
         const msg = m.messages[0];
+        // console.log("msg",JSON.stringify(msg,null,2));
         if (!msg.key.fromMe) {
-          if(!msg.message?.conversation)return;
-          logger.info(logFileName,`received msg :${msg.message?.conversation}`);
+          if(!msg.message?.conversation && !msg.message.extendedTextMessage)return;
+          const msgText = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
+          logger.info(logFileName,`received msg :${msgText}`);
           logger.info(logFileName,`From: ${msg.key.remoteJid}`);
-          if(msg.message?.conversation){//if it is text type message
+          if(msgText){//if it is text type message
             this.emit("NEW_MESSAGE", msg);
           }
         } else {

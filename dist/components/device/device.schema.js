@@ -15,6 +15,7 @@ const utils_1 = require("../../lib/utils");
 const WebHookSchema = new mongoose_1.Schema({
     url: String,
     status: Boolean,
+    reason: String,
     isDeleted: {
         type: Boolean,
         default: false

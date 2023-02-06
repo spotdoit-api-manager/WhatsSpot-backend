@@ -179,15 +179,17 @@ class Whatsapp extends events_1.EventEmitter {
         }));
         // message upsert
         this.client.ev.on("messages.upsert", (m) => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c;
+            var _a, _b, _c, _d;
             try {
                 const msg = m.messages[0];
+                // console.log("msg",JSON.stringify(msg,null,2));
                 if (!msg.key.fromMe) {
-                    if (!((_a = msg.message) === null || _a === void 0 ? void 0 : _a.conversation))
+                    if (!((_a = msg.message) === null || _a === void 0 ? void 0 : _a.conversation) && !msg.message.extendedTextMessage)
                         return;
-                    logger_1.default.info(logFileName, `received msg :${(_b = msg.message) === null || _b === void 0 ? void 0 : _b.conversation}`);
+                    const msgText = ((_b = msg.message) === null || _b === void 0 ? void 0 : _b.conversation) || ((_d = (_c = msg.message) === null || _c === void 0 ? void 0 : _c.extendedTextMessage) === null || _d === void 0 ? void 0 : _d.text);
+                    logger_1.default.info(logFileName, `received msg :${msgText}`);
                     logger_1.default.info(logFileName, `From: ${msg.key.remoteJid}`);
-                    if ((_c = msg.message) === null || _c === void 0 ? void 0 : _c.conversation) { //if it is text type message
+                    if (msgText) { //if it is text type message
                         this.emit("NEW_MESSAGE", msg);
                     }
                 }

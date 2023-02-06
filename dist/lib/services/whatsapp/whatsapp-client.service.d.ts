@@ -39,10 +39,11 @@ export declare class WhatsappClient {
     sendImageMessage: (phone: string, to: string, msg: IImageMessage) => Promise<any>;
     sendTypeMessage(messageType: EWhatsappMessageTypes, message: IWhatsappMessage, from: string, to: string): Promise<any>;
     initializeAllClients(): Promise<void>;
-    subscribeNewWebHook(webHook: IWebHook, phone: string): void;
-    unsubscribeWebHook(webHooks: IWebHook[], phone: string): void;
+    subscribeNewWebHook(userId: string, walletId: string, webHook: IWebHook, phone: string): void;
+    unsubscribeWebHook(userId: string, walletId: string, webHooks: IWebHook[], phone: string): void;
     private subscribeClientMessage;
     private sendWebHookRequest;
+    private whatsAppToWebHookMessage;
 }
 declare const _default: WhatsappClient;
 export default _default;

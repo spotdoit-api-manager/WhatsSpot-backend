@@ -13,6 +13,7 @@ const WebHookSchema = new Schema(
   {
     url:String,
     status:Boolean,
+    reason:String,
     isDeleted:{
       type:Boolean,
       default: false

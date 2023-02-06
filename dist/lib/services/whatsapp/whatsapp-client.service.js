@@ -24,6 +24,10 @@ const httpErrors_1 = require("../../../lib/utils/httpErrors");
 const device_utils_1 = __importDefault(require("../../../components/device/device.utils"));
 const whatsapp_enum_1 = require("./whatsapp.enum");
 const axios_1 = __importDefault(require("axios"));
+const wallet_model_1 = __importDefault(require("../../../components/wallet/wallet.model"));
+const plan_manager_service_1 = __importDefault(require("../plan.manager.service"));
+const plans_model_1 = __importDefault(require("../../../components/plans/plans.model"));
+const webhooks_model_1 = __importDefault(require("../../../components/webhooks/webhooks.model"));
 const logFileName = "[WhatsappClientService] : ";
 exports.eventEmitter = new events_1.EventEmitter();
 class WhatsappClient {
@@ -272,13 +276,14 @@ class WhatsappClient {
                 logger_1.default.info(logFileName, "Total Clients to Initialize: ", devices.length);
                 for (let i = 0; i < devices.length; i++) {
                     const device = devices[i];
+                    const walletId = yield wallet_model_1.default.getWalletIdByUserId(device.userId);
                     console.debug(logFileName, `client${i}:${device.phone}`);
                     const client = this.addClient(device._id, device.phone);
                     yield client.initiClient(false);
                     // filter active webhooks from device and subscribe to client for each
                     const activeWebHooks = device.webHooks.filter((webHook) => webHook.status);
                     if (activeWebHooks.length >= 0) {
-                        this.subscribeClientMessage(client, activeWebHooks);
+                        this.subscribeClientMessage(device.userId, walletId, client, activeWebHooks);
                     }
                 }
             }
@@ -287,13 +292,13 @@ class WhatsappClient {
             }
         });
     }
-    subscribeNewWebHook(webHook, phone) {
+    subscribeNewWebHook(userId, walletId, webHook, phone) {
         const client = this.getClientInstanceByPhone(phone);
         if (client) {
-            this.subscribeClientMessage(client, [webHook]);
+            this.subscribeClientMessage(userId, walletId, client, [webHook]);
         }
     }
-    unsubscribeWebHook(webHooks, phone) {
+    unsubscribeWebHook(userId, walletId, webHooks, phone) {
         const client = this.getClientInstanceByPhone(phone);
         // unsubscribe NEW_MESSAGE event from client
         if (client) {
@@ -302,38 +307,68 @@ class WhatsappClient {
             // client.off("NEW_MESSAGE");
             // subscribe to client for remaining webhooks
             if (webHooks.length > 0) {
-                this.subscribeClientMessage(client, webHooks);
+                this.subscribeClientMessage(userId, walletId, client, webHooks);
             }
         }
     }
-    subscribeClientMessage(client, webHooks) {
+    subscribeClientMessage(userId, walletId, client, webHooks) {
         logger_1.default.info(logFileName, "Subscribing to client message " + client.phone);
         client.on("NEW_MESSAGE", (msg) => {
-            console.log("message received in subscribe", msg);
-            const body = {
-                text: msg.message.conversation,
-                from: msg.key.remoteJid.split("@")[0],
-                name: msg.pushName,
-                timestamp: msg.messageTimestamp,
-            };
+            // console.log("message received in subscribe", msg);
+            const body = this.whatsAppToWebHookMessage(msg);
             // extract url of webhook having isDeleted false and status true
             webHooks = webHooks.filter((webHook) => webHook.status && !webHook.isDeleted);
-            const urls = webHooks.map((webHook) => webHook.url);
-            this.sendWebHookRequest(urls, body);
+            if (webHooks.length === 0) {
+                return this.unsubscribeWebHook(userId, walletId, webHooks, client.phone);
+            }
+            this.sendWebHookRequest(userId, walletId, client.deviceId, client.phone, webHooks, body);
         });
     }
-    sendWebHookRequest(urls, body) {
-        const req = [];
-        for (let i = 0; i < urls.length; i++) {
-            const url = urls[i];
-            req.push(axios_1.default.post(url, body));
-        }
-        axios_1.default.all(req).then(axios_1.default.spread((...responses) => {
-            const res = responses.map((response) => response.data);
-            console.log(res);
-        })).catch(errors => {
-            console.log(errors);
+    sendWebHookRequest(userId, walletId, deviceId, phone, webHooks, body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const totalAmount = webHooks.length * parseFloat(process.env.WEBHOOK_REQUEST_RATE || "0.2");
+            const urls = webHooks.map((webHook) => webHook.url);
+            const { hasActivePlan, isMessageOver, activePlanInfo } = yield plan_manager_service_1.default.hasActivePlan(userId);
+            if (!hasActivePlan || isMessageOver) {
+                //   pause webhooks
+                console.log("Webhook paused for device: ", deviceId, " due to NO_ACTIVE_PLAN", urls);
+                this.unsubscribeWebHook(userId, walletId, webHooks, phone);
+                const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
+                device.webHooks = device.webHooks.map((webHook) => {
+                    if (webHook.url === urls[0]) {
+                        webHook.status = false;
+                        webHook.reason = "NO_ACTIVE_PLAN";
+                    }
+                    return webHook;
+                });
+                yield device.save();
+                return;
+            }
+            const req = [];
+            for (let i = 0; i < urls.length; i++) {
+                const url = urls[i];
+                req.push(axios_1.default.post(url, body));
+            }
+            axios_1.default.all(req).then(axios_1.default.spread((...responses) => {
+                const res = responses.map((response) => response.data);
+                console.log("Webhook send successfully to :", urls);
+                plans_model_1.default.increamentMessageCount(activePlanInfo._id);
+                webhooks_model_1.default.createWebhookMessage(userId, deviceId, body);
+                return { error: false, creditUsed: 0, message: urls };
+            })).catch(errors => {
+                console.log("webhook request error: ", errors);
+            });
         });
+    }
+    whatsAppToWebHookMessage(message) {
+        var _a, _b, _c;
+        const body = {
+            message: ((_a = message.message) === null || _a === void 0 ? void 0 : _a.conversation) || ((_c = (_b = message.message) === null || _b === void 0 ? void 0 : _b.extendedTextMessage) === null || _c === void 0 ? void 0 : _c.text),
+            from: message.key.remoteJid.split("@")[0],
+            name: message.pushName,
+            timestamp: message.messageTimestamp,
+        };
+        return body;
     }
 }
 exports.WhatsappClient = WhatsappClient;

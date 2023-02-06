@@ -299,7 +299,7 @@ export class DeviceController {
   public addWebHook = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-      responseHandler.reqRes(req, res).onFetch("WEBHOOK ADDED", await deviceModel.addWebHook(req.userId,req.params.deviceId,req.body.url)).send();
+      responseHandler.reqRes(req, res).onFetch("WEBHOOK ADDED", await deviceModel.addWebHook(req.userId,req.walletId,req.params.deviceId,req.body.url)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -309,7 +309,7 @@ export class DeviceController {
   public removeWebHook = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-      responseHandler.reqRes(req, res).onFetch("WEBHOOK REMOVED", await deviceModel.removeWebHook(req.userId,req.params.deviceId,req.params.webhookId)).send();
+      responseHandler.reqRes(req, res).onFetch("WEBHOOK REMOVED", await deviceModel.removeWebHook(req.userId,req.walletId,req.params.deviceId,req.params.webhookId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -319,7 +319,7 @@ export class DeviceController {
   public pauseWebHook = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-      responseHandler.reqRes(req, res).onFetch("WEBHOOK PAUSED", await deviceModel.pauseWebHook(req.userId,req.params.deviceId,req.params.webhookId)).send();
+      responseHandler.reqRes(req, res).onFetch("WEBHOOK PAUSED", await deviceModel.pauseWebHook(req.userId,req.walletId,req.params.deviceId,req.params.webhookId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));
@@ -329,7 +329,7 @@ export class DeviceController {
   public resumeWebHook = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-      responseHandler.reqRes(req, res).onFetch("WEBHOOK RESUMED", await deviceModel.resumeWebHook(req.userId,req.params.deviceId,req.params.webhookId)).send();
+      responseHandler.reqRes(req, res).onFetch("WEBHOOK RESUMED", await deviceModel.resumeWebHook(req.userId,req.walletId,req.params.deviceId,req.params.webhookId)).send();
     } catch (e) {
       // send error with next function.
       next(responseHandler.sendError(e));

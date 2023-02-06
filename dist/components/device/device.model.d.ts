@@ -65,10 +65,10 @@ export declare class DeviceModel {
     updateDeviceStatus(deviceId: string, status: EDeviceStatus): Promise<IDeviceModel>;
     removeDevice(userId: string, deviceId: string): Promise<void>;
     getDeviceStatus(userId: string, deviceId: string): Promise<any>;
-    addWebHook(userId: string, deviceId: string, url: string): Promise<IWebHook>;
-    removeWebHook(userId: string, deviceId: string, webHookId: string): Promise<IWebHook>;
-    pauseWebHook(userId: string, deviceId: string, webHookId: string): Promise<IWebHook>;
-    resumeWebHook(userId: string, deviceId: string, webHookId: string): Promise<IWebHook>;
+    addWebHook(userId: string, walletId: string, deviceId: string, url: string): Promise<IWebHook>;
+    removeWebHook(userId: string, walletId: string, deviceId: string, webHookId: string): Promise<IWebHook>;
+    pauseWebHook(userId: string, walletId: string, deviceId: string, webHookId: string): Promise<IWebHook>;
+    resumeWebHook(userId: string, walletId: string, deviceId: string, webHookId: string): Promise<IWebHook>;
     fetchWebHooks(userId: string, deviceId: string): Promise<IWebHook[]>;
     fetchDevicesList(): import("mongoose").Query<import("mongoose").LeanDocument<IDeviceModel>[], IDeviceModel, {}, IDeviceModel>;
     private validateWebHook;

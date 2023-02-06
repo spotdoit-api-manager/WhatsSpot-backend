@@ -50,6 +50,16 @@ class PlanManager {
             return result;
         });
     }
+    hasActivePlan(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const userCurrentPlan = yield user_model_1.default.fetchUserActivePlan(userId);
+            if (userCurrentPlan) {
+                const isMessageOver = userCurrentPlan.planStatus == plans_interface_1.EPlanStatus.EXHAUSTED;
+                return { hasActivePlan: true, isMessageOver: isMessageOver, activePlanInfo: userCurrentPlan };
+            }
+            return { hasActivePlan: false };
+        });
+    }
 }
 exports.PlanManager = PlanManager;
 exports.default = new PlanManager();
