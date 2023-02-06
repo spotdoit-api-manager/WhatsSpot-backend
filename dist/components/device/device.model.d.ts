@@ -9,9 +9,10 @@ export declare class DeviceModel {
     private isMaxDeviceLimitReached;
     newDeviceCode(userId: string, walletId: string, newDeviceBody: INewDevice): Promise<{
         proceed: boolean;
-        message: any;
+        message?: undefined;
     } | {
         proceed: boolean;
+        message: any;
     }>;
     private validateDeviceAdd;
     getQr(userId: string, deviceId: string): Promise<{

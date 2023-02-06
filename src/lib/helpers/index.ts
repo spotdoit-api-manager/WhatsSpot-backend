@@ -66,10 +66,11 @@ export const getNextDate = (day: number = 2) => {
 };
 
 export const isValidMongoId = (str: string) => {
-  if(!str || typeof str !== "string" || str=="") return false;
+  if(!str || typeof str !== "string" || str=="") throw new HTTP400Error("Invalid Id");
   if(!str.match(/^[a-f\d]{24}$/i)) throw new HTTP400Error("Invalid Id");
   return ;
 };
+
 
 export const pruneFields = (body: any, fields: string) => {
   const fieldsArray = fields.split(" ");

@@ -3,10 +3,6 @@ import { EMessageStatus } from "../messages/message.interface";
 import { IWebHookMessage } from "./webhooks.interface";
 
 export interface IWebhookMessageModel extends IWebHookMessage, Document {
-    metadata:{
-        userId:string,
-        deviceId:string
-    },
     status: EMessageStatus,
 }
 
@@ -40,6 +36,10 @@ const WebhookMessageSchema= new Schema({
         required:true,
         ref: "User",
     
+    },
+    urls:{
+        type: [String],
+        required:true,
     },
     reason: {
         type: String,

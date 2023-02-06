@@ -1,3 +1,4 @@
+import { EMessageStatus } from "./../../../components/messages/message.interface";
 import { IWebHookMessage } from "./../../../components/webhooks/webhooks.interface";
 import { IWebHook } from "./../../../components/device/device.interface";
 import { IDeviceModel } from "./../../../components/device/device.schema";
@@ -313,7 +314,8 @@ private subscribeClientMessage(userId:string,walletId:string,client: any,webHook
     logger.info(logFileName,"Subscribing to client message "+client.phone);
     client.on("NEW_MESSAGE", (msg: any) => {
         // console.log("message received in subscribe", msg);
-        const body:IWebHookMessage = this.whatsAppToWebHookMessage(client.deviceId,msg);
+        const urls = webHooks.map((webHook: IWebHook) => webHook.url);
+        const body:IWebHookMessage = this.whatsAppToWebHookMessage(client.deviceId,msg,urls);
 
         // extract url of webhook having isDeleted false and status true
         webHooks = webHooks.filter((webHook: IWebHook) => webHook.status && !webHook.isDeleted);
@@ -352,20 +354,23 @@ private async sendWebHookRequest(userId:string,walletId:string,deviceId:string,p
         const res = responses.map((response: any) => response.data);
         console.log("Webhook send successfully to :",urls);
             plansModel.increamentMessageCount(activePlanInfo._id);
-            webhooksModel.createWebhookMessage(userId,body);
+            webhooksModel.createWebhookMessage(userId,body,EMessageStatus.ERROR);
            return { error: false, creditUsed: 0, message: urls };
     })).catch(errors => {
         console.log("webhook request error: ",errors);
+        webhooksModel.createWebhookMessage(userId,body,EMessageStatus.ERROR);
+
     });
 }
 
-private whatsAppToWebHookMessage(deviceId:string,message: any) {
+private whatsAppToWebHookMessage(deviceId:string,message: any,urls:string[]) {
     const body:IWebHookMessage = {
         message:message.message?.conversation || message.message?.extendedTextMessage?.text,
         from:message.key.remoteJid.split("@")[0],
         name:message.pushName,
         timestamp:message.messageTimestamp,
-        deviceId
+        deviceId,
+        urls
     };
     return body;
 }

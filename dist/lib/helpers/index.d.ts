@@ -21,5 +21,5 @@ export declare const skipLimitOnPage: (page?: number) => {
 };
 export declare const getTime: (date: string) => string;
 export declare const getNextDate: (day?: number) => Date;
-export declare const isValidMongoId: (str: string) => boolean;
+export declare const isValidMongoId: (str: string) => void;
 export declare const pruneFields: (body: any, fields: string) => void;

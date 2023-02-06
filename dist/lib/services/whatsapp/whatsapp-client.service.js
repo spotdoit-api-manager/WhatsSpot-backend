@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WhatsappClient = exports.eventEmitter = void 0;
+const message_interface_1 = require("./../../../components/messages/message.interface");
 const socket_1 = __importDefault(require("./../socket"));
 const events_1 = require("events");
 const clients_data_1 = __importDefault(require("../../../data/clients.data"));
@@ -315,7 +316,8 @@ class WhatsappClient {
         logger_1.default.info(logFileName, "Subscribing to client message " + client.phone);
         client.on("NEW_MESSAGE", (msg) => {
             // console.log("message received in subscribe", msg);
-            const body = this.whatsAppToWebHookMessage(client.deviceId, msg);
+            const urls = webHooks.map((webHook) => webHook.url);
+            const body = this.whatsAppToWebHookMessage(client.deviceId, msg, urls);
             // extract url of webhook having isDeleted false and status true
             webHooks = webHooks.filter((webHook) => webHook.status && !webHook.isDeleted);
             if (webHooks.length === 0) {
@@ -353,21 +355,23 @@ class WhatsappClient {
                 const res = responses.map((response) => response.data);
                 console.log("Webhook send successfully to :", urls);
                 plans_model_1.default.increamentMessageCount(activePlanInfo._id);
-                webhooks_model_1.default.createWebhookMessage(userId, body);
+                webhooks_model_1.default.createWebhookMessage(userId, body, message_interface_1.EMessageStatus.ERROR);
                 return { error: false, creditUsed: 0, message: urls };
             })).catch(errors => {
                 console.log("webhook request error: ", errors);
+                webhooks_model_1.default.createWebhookMessage(userId, body, message_interface_1.EMessageStatus.ERROR);
             });
         });
     }
-    whatsAppToWebHookMessage(deviceId, message) {
+    whatsAppToWebHookMessage(deviceId, message, urls) {
         var _a, _b, _c;
         const body = {
             message: ((_a = message.message) === null || _a === void 0 ? void 0 : _a.conversation) || ((_c = (_b = message.message) === null || _b === void 0 ? void 0 : _b.extendedTextMessage) === null || _c === void 0 ? void 0 : _c.text),
             from: message.key.remoteJid.split("@")[0],
             name: message.pushName,
             timestamp: message.messageTimestamp,
-            deviceId
+            deviceId,
+            urls
         };
         return body;
     }
