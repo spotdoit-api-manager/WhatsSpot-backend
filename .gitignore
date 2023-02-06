@@ -44,3 +44,5 @@ yarn.lock
 dist/sessions
 sessions
 config.env.prod
+prod-sessions
+dist/*
