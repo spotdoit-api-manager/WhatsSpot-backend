@@ -56,22 +56,32 @@ class Whatsapp extends events_1.EventEmitter {
         this.retryCount = 0;
         this.removed = false;
         this.firstConnect = false;
+        this.logger = (0, pino_1.default)({ level: "info" });
         // start a connection
         this.initiClient = (notify = true) => __awaiter(this, void 0, void 0, function* () {
             this.firstConnect = !notify;
             // if(!this.qrRequested) return;
             try {
+                const cred = yield (0, baileys_1.useMultiFileAuthState)(`${this.phone}_cred`);
+                this.state = cred.state;
+                this.saveState = cred.saveCreds;
+                const { version, isLatest } = yield (0, baileys_1.fetchLatestBaileysVersion)();
+                console.log(`using WA v${version.join(".")}, isLatest: ${isLatest}`);
                 const config = {
-                    logger: (0, pino_1.default)({ level: "info" }),
+                    version,
+                    logger: this.logger,
                     printQRInTerminal: false,
-                    auth: this.state,
-                    browser: ["Mac OS", "Chrome", "10.15.3"],
+                    auth: {
+                        creds: this.state.creds,
+                        /** caching makes the store faster to send/recv messages */
+                        keys: (0, baileys_1.makeCacheableSignalKeyStore)(this.state.keys, this.logger),
+                    },
+                    // browser:["Mac OS", "Chrome", "10.15.3"],
                     downloadHistory: false,
-                    version: [2, 2204, 13],
                 };
                 const sock = (0, baileys_1.default)(config);
                 this.client = sock;
-                this.startBasicEventListners();
+                sock.ev.process((ev) => __awaiter(this, void 0, void 0, function* () { return yield this.handleSockEvents(ev); }));
                 yield this.client.waitForSocketOpen();
                 return { error: false };
             }
@@ -106,6 +116,31 @@ class Whatsapp extends events_1.EventEmitter {
                 }
             }));
         });
+        this.handleConnectionEvent = (update) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { connection, lastDisconnect } = update;
+                if (connection == "connecting")
+                    return;
+                if (connection === "open")
+                    yield this.handleConnectionOpen();
+                else if (connection === "close")
+                    this.handleConnectionClose(lastDisconnect);
+                else {
+                    const reason = this.getDisconnectReason(lastDisconnect);
+                    logger_1.default.debug(logFileName, "connection update (not open| not close)", update, reason);
+                    if (update.qr) {
+                        this.updateDeviceStatus(false, reason);
+                    }
+                    // else{
+                    //   this.reconnectClient();
+                    // }
+                    this.qrInProcess = true;
+                }
+            }
+            catch (err) {
+                logger_1.default.error(logFileName, `Error in handling connection Update ${this.phone}`, err);
+            }
+        });
         this.sendAnyMessage = (to, msg) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const jid = (0, whatsapp_utils_1.getSerializedPhone)(to);
@@ -124,8 +159,6 @@ class Whatsapp extends events_1.EventEmitter {
             }
         });
         this._instanceId = instance_provider_1.default.addInstance(this);
-        this.state = (0, baileys_1.useSingleFileAuthState)(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
-        this.saveState = (0, baileys_1.useSingleFileAuthState)(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
         this.phone = phone;
         this.deviceId = deviceId;
         this.initRefreshInterval();
@@ -150,36 +183,22 @@ class Whatsapp extends events_1.EventEmitter {
         }
         false;
     }
-    startBasicEventListners() {
-        // this.client.ev.removeAllListeners();
-        //cred update listner
-        this.client.ev.on("creds.update", this.saveState);
-        //connection update
-        this.client.ev.on("connection.update", (update) => __awaiter(this, void 0, void 0, function* () {
-            try {
-                const { connection, lastDisconnect } = update;
-                if (connection == "connecting")
-                    return;
-                if (connection === "open")
-                    yield this.handleConnectionOpen();
-                else if (connection === "close")
-                    this.handleConnectionClose(lastDisconnect);
-                else {
-                    const reason = this.getDisconnectReason(lastDisconnect);
-                    logger_1.default.debug(logFileName, "connection update (not open| not close)", update, reason);
-                    if (update.qr) {
-                        this.updateDeviceStatus(false, reason);
-                    }
-                    this.qrInProcess = true;
-                }
+    handleSockEvents(events) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (events["creds.update"]) {
+                yield this.saveState();
             }
-            catch (err) {
-                logger_1.default.error(logFileName, `Error in handling connection Update ${this.phone}`, err);
+            else if (events["connection.update"]) {
+                yield this.handleConnectionEvent(events["connection.update"]);
             }
-        }));
-        // message upsert
-        this.client.ev.on("messages.upsert", (m) => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c, _d;
+            else if (events["messages.upsert"]) {
+                yield this.handleMessageEvent(events["messages.upsert"]);
+            }
+        });
+    }
+    handleMessageEvent(m) {
+        var _a, _b, _c, _d;
+        return __awaiter(this, void 0, void 0, function* () {
             try {
                 const msg = m.messages[0];
                 // console.log("msg",JSON.stringify(msg,null,2));
@@ -199,9 +218,14 @@ class Whatsapp extends events_1.EventEmitter {
                 }
             }
             catch (err) {
-                logger_1.default.error(logFileName, `Error in message upsert for client ${this.phone}`, err);
+                logger_1.default.error(logFileName, `Error in message upsert for client ${this.phone}`);
+                console.log(err);
             }
-        }));
+        });
+    }
+    startBasicEventListners() {
+        // this.client.ev.removeAllListeners();
+        //cred update listner
     }
     isMaxRetryReached() {
         if (this.retryCount > parseInt(process.env.MAX_WHATSAPP_RETRY)) {

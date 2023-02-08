@@ -15,6 +15,7 @@ export default class Whatsapp extends EventEmitter {
     private retryCount;
     private removed;
     private firstConnect;
+    private logger;
     private interval;
     constructor(deviceId: string, phone: string);
     private initRefreshInterval;
@@ -28,6 +29,9 @@ export default class Whatsapp extends EventEmitter {
     }>;
     getQr: () => Promise<void>;
     private checkIfQrRetryExceeded;
+    private handleSockEvents;
+    private handleConnectionEvent;
+    private handleMessageEvent;
     private startBasicEventListners;
     private isMaxRetryReached;
     private reconnectClient;

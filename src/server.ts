@@ -7,10 +7,12 @@ process.on("unhandledRejection", (reason, p) => {
 process.on("uncaughtException", function (exception) {
   console.log(exception);
 });
+// run example
+import {startSock} from "./example";
+// startSock();
 
 import { startExchangeRateService } from "./lib/services/exchange-rate.service";
 import { config } from "dotenv";
-import { Server } from "socket.io";
 import { createServer } from "http";
 
 

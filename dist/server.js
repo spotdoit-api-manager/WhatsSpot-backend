@@ -19,6 +19,7 @@ process.on("unhandledRejection", (reason, p) => {
 process.on("uncaughtException", function (exception) {
     console.log(exception);
 });
+// startSock();
 const exchange_rate_service_1 = require("./lib/services/exchange-rate.service");
 const dotenv_1 = require("dotenv");
 const http_1 = require("http");

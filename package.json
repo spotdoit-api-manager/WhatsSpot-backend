@@ -27,7 +27,7 @@
         "postinstall": "node patch.js"
     },
     "dependencies": {
-        "@adiwajshing/baileys": "^4.4.0",
+        "@adiwajshing/baileys": "^5.0.0",
         "@hapi/boom": "^10.0.0",
         "@types/bcrypt": "^5.0.0",
         "@types/events": "^3.0.0",
@@ -54,7 +54,7 @@
         "instance-manager": "^1.1.5",
         "jsonwebtoken": "^8.5.1",
         "libphonenumber-js": "^1.10.18",
-        "link-preview-js": "^2.1.13",
+        "link-preview-js": "3.0.0",
         "mailazy-node": "^0.3.0",
         "moment-timezone": "^0.5.32",
         "mongoose": "^5.7.5",

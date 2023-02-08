@@ -1,3 +1,4 @@
+/// <reference types="mongoose" />
 import { IStripePrice, IStripeProduct } from "./../stripe/stripe.interface";
 import { IAdminUser, IDataStoredInAdminToken } from "./admin.interface";
 import { IAdminUserModel } from "./admin.schema";

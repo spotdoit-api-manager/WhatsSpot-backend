@@ -7,18 +7,20 @@ import { Boom } from "@hapi/boom";
 import makeWASocket, {
   DisconnectReason,
   delay,
-  useSingleFileAuthState,
+  useMultiFileAuthState,
   AuthenticationState,
-  
+  makeCacheableSignalKeyStore,
+  BaileysEventMap,
+  fetchLatestBaileysVersion,
 } from "@adiwajshing/baileys";
 
-import path from "path";
 import instanceProvider from "./instance.provider";
 import logger from "../../../core/logger";
 import notifyService from "../notify.service";
 import fileManagement from "../../../lib/helpers/file.management";
-import { EWhatsappMessageTypes } from "./whatsapp.enum";
 import deviceUtils from "../../../components/device/device.utils";
+ 
+
 
 const logFileName = "[WhatsappService] : ";
 const refreshInterval = 1800; //in seconds
@@ -36,13 +38,13 @@ export default class Whatsapp extends EventEmitter {
   private removed =false;
   private firstConnect = false;
 
+  private logger = P({ level: "info" });
   
 private interval;
   constructor(deviceId: string,phone: string) {
     super();
     this._instanceId = instanceProvider.addInstance(this);
-    this.state = useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
-    this.saveState = useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
+   
     this.phone = phone;
     this.deviceId = deviceId;
     this.initRefreshInterval();
@@ -65,17 +67,30 @@ private interval;
     this.firstConnect = !notify;
     // if(!this.qrRequested) return;
     try {
+      const cred = await useMultiFileAuthState(`${this.phone}_cred`);
+      this.state =  cred.state;
+      this.saveState = cred.saveCreds;
+      const { version, isLatest } = await fetchLatestBaileysVersion();
+      console.log(`using WA v${version.join(".")}, isLatest: ${isLatest}`);
+
       const config: any ={
-        logger: P({ level: "info" }), //silent
+        
+        version,
+        logger: this.logger, //`silent`
         printQRInTerminal: false,
-        auth: this.state,
-        browser:["Mac OS", "Chrome", "10.15.3"],
+        auth: {
+          creds: this.state.creds,
+          /** caching makes the store faster to send/recv messages */
+          keys: makeCacheableSignalKeyStore(this.state.keys,this.logger),
+        },
+        // browser:["Mac OS", "Chrome", "10.15.3"],
         downloadHistory: false,
-        version: [2,2204,13],
+
       } ;
       const sock = makeWASocket(config);
       this.client = sock;
-      this.startBasicEventListners();
+      sock.ev.process(async(ev)=>await this.handleSockEvents(ev));
+
       await this.client.waitForSocketOpen();
       return { error: false };
     } catch (err) {
@@ -108,6 +123,7 @@ private interval;
     });
   };
 
+  
   private checkIfQrRetryExceeded(lastDisconnect) {
     if (lastDisconnect && (lastDisconnect.error as Boom)?.output?.payload.message ==
       "QR refs attempts ended") {
@@ -116,55 +132,72 @@ private interval;
     false;
   }
 
+  private async handleSockEvents(events:Partial<BaileysEventMap>){
+    if(events["creds.update"]) {
+      await this.saveState();
+    }else if(events["connection.update"]){
+      await this.handleConnectionEvent(events["connection.update"]);
+    }else if(events["messages.upsert"]){
+      await this.handleMessageEvent(events["messages.upsert"]);
+    }
+  }
+
+  private handleConnectionEvent = async (update: any) => {
+    try {
+      const { connection, lastDisconnect } = update;
+      if(connection=="connecting") return;
+      if (connection === "open") await this.handleConnectionOpen();
+      else if (connection === "close") this.handleConnectionClose(lastDisconnect);
+      else{
+        const reason: IReason = this.getDisconnectReason(lastDisconnect);
+        logger.debug(logFileName,"connection update (not open| not close)", update, reason);
+        if(update.qr){
+          this.updateDeviceStatus(false,reason);
+        }
+        // else{
+        //   this.reconnectClient();
+        // }
+
+        this.qrInProcess = true;
+      }
+    } catch (err) {
+      logger.error(logFileName,`Error in handling connection Update ${this.phone}`,err);
+    }
+  }
+
+
+  private async handleMessageEvent(m: any) {
+    try {
+      const msg = m.messages[0];
+      // console.log("msg",JSON.stringify(msg,null,2));
+      if (!msg.key.fromMe) {
+        if(!msg.message?.conversation && !msg.message.extendedTextMessage)return;
+        const msgText = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
+        logger.info(logFileName,`received msg :${msgText}`);
+        logger.info(logFileName,`From: ${msg.key.remoteJid}`);
+        if(msgText){//if it is text type message
+          this.emit("NEW_MESSAGE", msg);
+        }
+      } else {
+        logger.info(logFileName,`sent msg :${JSON.stringify(msg.message)}`);
+        logger.info(logFileName,`to: ${msg.key.remoteJid}`);
+      }
+     
+    } catch (err) {
+      logger.error(logFileName,`Error in message upsert for client ${this.phone}`);
+      console.log(err);
+    }
+  }
+
   private startBasicEventListners() {
     // this.client.ev.removeAllListeners();
     //cred update listner
-    this.client.ev.on("creds.update", this.saveState);
+   
 
-    //connection update
-    this.client.ev.on("connection.update", async (update: any) => {
-      try {
-        const { connection, lastDisconnect } = update;
-        if(connection=="connecting") return;
-        if (connection === "open") await this.handleConnectionOpen();
-        else if (connection === "close") this.handleConnectionClose(lastDisconnect);
-        else{
-          const reason: IReason = this.getDisconnectReason(lastDisconnect);
-          logger.debug(logFileName,"connection update (not open| not close)", update, reason);
-          if(update.qr){
-            this.updateDeviceStatus(false,reason);
-          }
 
-          this.qrInProcess = true;
-        }
-      } catch (err) {
-        logger.error(logFileName,`Error in handling connection Update ${this.phone}`,err);
-      }
-    });
-
-    // message upsert
-    this.client.ev.on("messages.upsert", async (m: any) => {
-      try {
-        const msg = m.messages[0];
-        // console.log("msg",JSON.stringify(msg,null,2));
-        if (!msg.key.fromMe) {
-          if(!msg.message?.conversation && !msg.message.extendedTextMessage)return;
-          const msgText = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
-          logger.info(logFileName,`received msg :${msgText}`);
-          logger.info(logFileName,`From: ${msg.key.remoteJid}`);
-          if(msgText){//if it is text type message
-            this.emit("NEW_MESSAGE", msg);
-          }
-        } else {
-          logger.info(logFileName,`sent msg :${JSON.stringify(msg.message)}`);
-          logger.info(logFileName,`to: ${msg.key.remoteJid}`);
-        }
-       
-      } catch (err) {
-        logger.error(logFileName,`Error in message upsert for client ${this.phone}`,err);
-      }
-    });
   }
+
+
 
   private isMaxRetryReached(){
     if(this.retryCount>parseInt(process.env.MAX_WHATSAPP_RETRY)){
