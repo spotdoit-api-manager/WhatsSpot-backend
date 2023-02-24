@@ -25,4 +25,15 @@ export declare const getSkipLimit: (pageNo?: number) => {
     skip: number;
     limit: number;
 };
+export declare const createPaginationData: (data: any, page: number, total: number, limit: number) => {
+    data: any;
+    pagination: {
+        currentPage: number;
+        total: number;
+        limit: number;
+        totalPages: number;
+        hasNext: boolean;
+        hasPrev: boolean;
+    };
+};
 export {};

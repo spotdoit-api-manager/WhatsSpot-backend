@@ -8,7 +8,7 @@ export class WebhookController{
         const responseHandler = new ResponseHandler();
         
         try {
-         const result =  await webhooksModel.fetchWebhookMessages(req.userId,req.query?.deviceId as string);
+         const result =  await webhooksModel.fetchWebhookMessages(req.userId,req.query?.deviceId as string,parseInt((req.query?.page as string) ||"1"));
           responseHandler.reqRes(req, res).onCreate("WEBHOOK_MESSAGES_FETCHED",result).send();
         } catch (e) {
           next(responseHandler.sendError(e));

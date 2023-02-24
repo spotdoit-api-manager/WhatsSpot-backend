@@ -23,7 +23,8 @@ import deviceUtils from "../../../components/device/device.utils";
 
 
 const logFileName = "[WhatsappService] : ";
-const refreshInterval = 1800; //in seconds
+const refreshInterval = 300;// 1800; //in seconds
+// 5 minutes in seconds is 300
 export default class Whatsapp extends EventEmitter {
   client: any;
   phone: string;
@@ -37,6 +38,7 @@ export default class Whatsapp extends EventEmitter {
   private retryCount =0;
   private removed =false;
   private firstConnect = false;
+  private lastStatus = false;
 
   private logger = P({ level: "info" });
   
@@ -67,7 +69,7 @@ private interval;
     this.firstConnect = !notify;
     // if(!this.qrRequested) return;
     try {
-      const cred = await useMultiFileAuthState(`${this.phone}_cred`);
+      const cred = await useMultiFileAuthState(`${process.env.SESSIONS_FOLDER}/${this.phone}_cred`);
       this.state =  cred.state;
       this.saveState = cred.saveCreds;
       const { version, isLatest } = await fetchLatestBaileysVersion();
@@ -83,8 +85,30 @@ private interval;
           /** caching makes the store faster to send/recv messages */
           keys: makeCacheableSignalKeyStore(this.state.keys,this.logger),
         },
-        // browser:["Mac OS", "Chrome", "10.15.3"],
+        browser:["Mac OS", "Chrome", "10.15.3"],
         downloadHistory: false,
+        patchMessageBeforeSending: (message) => {
+          const requiresPatch = !!(
+              message.buttonsMessage ||
+              // || message.templateMessage
+              message.listMessage
+          );
+          if (requiresPatch) {
+              message = {
+                  viewOnceMessage: {
+                      message: {
+                          messageContextInfo: {
+                              deviceListMetadataVersion: 2,
+                              deviceListMetadata: {},
+                          },
+                          ...message,
+                      },
+                  },
+              };
+          }
+
+          return message;
+      },
 
       } ;
       const sock = makeWASocket(config);
@@ -144,6 +168,7 @@ private interval;
 
   private handleConnectionEvent = async (update: any) => {
     try {
+      console.log("connection update: ", update);
       const { connection, lastDisconnect } = update;
       if(connection=="connecting") return;
       if (connection === "open") await this.handleConnectionOpen();
@@ -171,7 +196,11 @@ private interval;
       const msg = m.messages[0];
       // console.log("msg",JSON.stringify(msg,null,2));
       if (!msg.key.fromMe) {
-        if(!msg.message?.conversation && !msg.message.extendedTextMessage)return;
+        if(!msg.message?.conversation && !msg.message?.extendedTextMessage){
+          logger.info(logFileName,`received other msg :${msg[Object.keys(msg)[0]]}`);
+          logger.info(logFileName,`From: ${msg.key.remoteJid}`);
+          return;
+        }
         const msgText = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
         logger.info(logFileName,`received msg :${msgText}`);
         logger.info(logFileName,`From: ${msg.key.remoteJid}`);
@@ -254,21 +283,26 @@ private interval;
      logger.info(logFileName,"CONNECTION_OPENED");
     this.qrRequested = true;
     this.qrInProcess = false;
+    this.retryCount = 0;
     this.emit("authenticated", { phone: this.phone });
      deviceUtils.updateDevice(this.deviceId, {
       authState: true, reason: null
     });
-      if(!this.firstConnect && !this.authState){
+      if(!this.firstConnect && !this.authState && !this.lastStatus){
         this.firstConnect = false;
         notifyService.deviceAuthorized(this.deviceId);
       }
      this.authState = true;
+     this.lastStatus = true;
+
   }
 
   private async deleteAuthFile(){
     try{
       const authFilePath = `${process.env.SESSIONS_FOLDER}/${this.phone}_cred.json`;
+      const newAuthFile = `${process.env.SESSIONS_FOLDER}/${this.phone}_cred`;
       await fileManagement.deleteFile(authFilePath);
+      await fileManagement.deleteFolder(newAuthFile);
     }catch(e){
       logger.error(`Error in deleting auth file for ${this.phone}: `,e);
     }
@@ -295,6 +329,7 @@ private interval;
       this.qrRequested = false;
       logger.warn(logFileName,"CONNECTION_CLOSED (LOGGEDOUT)", reason, this.phone);
       this.emit("LOGGEDOUT", { phone: this.phone, reason: reason?.message });
+      this.lastStatus = false;
       this.closeRefreshInterval();
     }
   }

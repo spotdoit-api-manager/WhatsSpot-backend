@@ -29,19 +29,32 @@ const wallet_model_1 = __importDefault(require("../../../components/wallet/walle
 const plan_manager_service_1 = __importDefault(require("../plan.manager.service"));
 const plans_model_1 = __importDefault(require("../../../components/plans/plans.model"));
 const webhooks_model_1 = __importDefault(require("../../../components/webhooks/webhooks.model"));
+const file_management_1 = __importDefault(require("../../../lib/helpers/file.management"));
+const whatsapp_service_old_1 = __importDefault(require("./whatsapp.service.old"));
 const logFileName = "[WhatsappClientService] : ";
 exports.eventEmitter = new events_1.EventEmitter();
 class WhatsappClient {
     constructor() {
         this.clients = clients_data_1.default;
-        this.addClient = (deviceId, phone) => {
-            const clientInstance = new whatsapp_service_1.default(deviceId, phone);
+        this.addClient = (deviceId, phone) => __awaiter(this, void 0, void 0, function* () {
+            // const check if session folder contains phon_cred.json
+            let clientInstance;
+            const isOld = yield this.checkIfOldSessionPresent(phone);
+            console.log("isOld===> ", isOld);
+            if (isOld) {
+                console.log("------------------OLD SESSION INSTANCE------------------");
+                clientInstance = new whatsapp_service_old_1.default(deviceId, phone);
+            }
+            else {
+                console.log("---------------NEW SESSION INSTANCE-------------------");
+                clientInstance = new whatsapp_service_1.default(deviceId, phone);
+            }
             const instaceId = instance_provider_1.default.getInstanceId(clientInstance);
             logger_1.default.info(logFileName, `Adding client ${phone}`);
             clients_data_1.default[phone] = instaceId;
             console.info(logFileName, `Number of instance present = ${Object.keys(this.clients).length}`);
             return clientInstance;
-        };
+        });
         this.getClientInstanceByInstanceId = (instanceId) => {
             try {
                 const instance = instance_provider_1.default.getClassInstance(whatsapp_service_1.default, instanceId);
@@ -54,7 +67,7 @@ class WhatsappClient {
         };
         this.getClientQr = (deviceId, phone) => __awaiter(this, void 0, void 0, function* () {
             this.removeClientInstanceByPhone(phone);
-            const client = this.addClient(deviceId, phone);
+            const client = yield this.addClient(deviceId, phone);
             client.on("qr", (qrData) => {
                 console.debug(logFileName, "got qr ", qrData.qr);
                 socket_1.default.sendQrCode(phone, qrData);
@@ -279,7 +292,7 @@ class WhatsappClient {
                     const device = devices[i];
                     const walletId = yield wallet_model_1.default.getWalletIdByUserId(device.userId);
                     console.debug(logFileName, `client${i}:${device.phone}`);
-                    const client = this.addClient(device._id, device.phone);
+                    const client = yield this.addClient(device._id, device.phone);
                     yield client.initiClient(false);
                     // filter active webhooks from device and subscribe to client for each
                     const activeWebHooks = device.webHooks.filter((webHook) => webHook.status);
@@ -374,6 +387,13 @@ class WhatsappClient {
             urls
         };
         return body;
+    }
+    checkIfOldSessionPresent(phone) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const authFilePath = `${process.env.SESSIONS_FOLDER}/${phone}_cred.json`;
+            const isPresent = yield file_management_1.default.isFilePresent(authFilePath);
+            return isPresent;
+        });
     }
 }
 exports.WhatsappClient = WhatsappClient;

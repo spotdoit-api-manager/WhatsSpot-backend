@@ -6,7 +6,17 @@ export declare class WalletModel {
     getTotalWalletBalance(): Promise<any>;
     updateWalletBalance(walletId: string, balance: number): Promise<IWalletModel>;
     addBalanceToWallet(userId: string, walletId: string, amount: number, currency?: string): Promise<IWalletModel>;
-    fetchTransactions(userId: string, walletId: string, page?: string): Promise<any[]>;
+    fetchTransactions(userId: string, walletId: string, page?: number): Promise<{
+        data: any;
+        pagination: {
+            currentPage: number;
+            total: number;
+            limit: number;
+            totalPages: number;
+            hasNext: boolean;
+            hasPrev: boolean;
+        };
+    }>;
     private fetchWallet;
     fetchWalletByUserId(userId: string): Promise<any>;
     getWalletIdByUserId(userId: string): Promise<any>;

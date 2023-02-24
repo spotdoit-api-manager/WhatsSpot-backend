@@ -1,3 +1,4 @@
+import { createPaginationData } from "./../../lib/utils/index";
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { EPayWith } from "./../../core/enums/pay-with.enum";
 import { ObjectID } from "bson";
@@ -36,8 +37,9 @@ public async fetchTransactionByMethod(method: EPayWith,status: ETransactionStatu
 
     public async fetchTransactions(walletId: string,page: number) {
         const {skip,limit} = getSkipLimit(page);
+        const q:any = {walletId: new ObjectID(walletId)};
         const result = await Transaction.aggregate([
-            { $match: { walletId: new ObjectID(walletId) } },
+            { $match: q },
             { $sort: { createdAt: -1 } },
             {
                 $project: {
@@ -53,7 +55,8 @@ public async fetchTransactionByMethod(method: EPayWith,status: ETransactionStatu
            {$skip:skip},
            {$limit:limit},
         ]);
-        return result;
+        const total = await Transaction.countDocuments(q);
+        return createPaginationData(result,page,total,limit);
     }
 
     

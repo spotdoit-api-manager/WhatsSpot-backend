@@ -46,7 +46,8 @@ const notify_service_1 = __importDefault(require("../notify.service"));
 const file_management_1 = __importDefault(require("../../../lib/helpers/file.management"));
 const device_utils_1 = __importDefault(require("../../../components/device/device.utils"));
 const logFileName = "[WhatsappService] : ";
-const refreshInterval = 1800; //in seconds
+const refreshInterval = 300; // 1800; //in seconds
+// 5 minutes in seconds is 300
 class Whatsapp extends events_1.EventEmitter {
     constructor(deviceId, phone) {
         super();
@@ -56,13 +57,14 @@ class Whatsapp extends events_1.EventEmitter {
         this.retryCount = 0;
         this.removed = false;
         this.firstConnect = false;
+        this.lastStatus = false;
         this.logger = (0, pino_1.default)({ level: "info" });
         // start a connection
         this.initiClient = (notify = true) => __awaiter(this, void 0, void 0, function* () {
             this.firstConnect = !notify;
             // if(!this.qrRequested) return;
             try {
-                const cred = yield (0, baileys_1.useMultiFileAuthState)(`${this.phone}_cred`);
+                const cred = yield (0, baileys_1.useMultiFileAuthState)(`${process.env.SESSIONS_FOLDER}/${this.phone}_cred`);
                 this.state = cred.state;
                 this.saveState = cred.saveCreds;
                 const { version, isLatest } = yield (0, baileys_1.fetchLatestBaileysVersion)();
@@ -76,8 +78,24 @@ class Whatsapp extends events_1.EventEmitter {
                         /** caching makes the store faster to send/recv messages */
                         keys: (0, baileys_1.makeCacheableSignalKeyStore)(this.state.keys, this.logger),
                     },
-                    // browser:["Mac OS", "Chrome", "10.15.3"],
+                    browser: ["Mac OS", "Chrome", "10.15.3"],
                     downloadHistory: false,
+                    patchMessageBeforeSending: (message) => {
+                        const requiresPatch = !!(message.buttonsMessage ||
+                            // || message.templateMessage
+                            message.listMessage);
+                        if (requiresPatch) {
+                            message = {
+                                viewOnceMessage: {
+                                    message: Object.assign({ messageContextInfo: {
+                                            deviceListMetadataVersion: 2,
+                                            deviceListMetadata: {},
+                                        } }, message),
+                                },
+                            };
+                        }
+                        return message;
+                    },
                 };
                 const sock = (0, baileys_1.default)(config);
                 this.client = sock;
@@ -118,6 +136,7 @@ class Whatsapp extends events_1.EventEmitter {
         });
         this.handleConnectionEvent = (update) => __awaiter(this, void 0, void 0, function* () {
             try {
+                console.log("connection update: ", update);
                 const { connection, lastDisconnect } = update;
                 if (connection == "connecting")
                     return;
@@ -197,15 +216,18 @@ class Whatsapp extends events_1.EventEmitter {
         });
     }
     handleMessageEvent(m) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e;
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const msg = m.messages[0];
                 // console.log("msg",JSON.stringify(msg,null,2));
                 if (!msg.key.fromMe) {
-                    if (!((_a = msg.message) === null || _a === void 0 ? void 0 : _a.conversation) && !msg.message.extendedTextMessage)
+                    if (!((_a = msg.message) === null || _a === void 0 ? void 0 : _a.conversation) && !((_b = msg.message) === null || _b === void 0 ? void 0 : _b.extendedTextMessage)) {
+                        logger_1.default.info(logFileName, `received other msg :${msg[Object.keys(msg)[0]]}`);
+                        logger_1.default.info(logFileName, `From: ${msg.key.remoteJid}`);
                         return;
-                    const msgText = ((_b = msg.message) === null || _b === void 0 ? void 0 : _b.conversation) || ((_d = (_c = msg.message) === null || _c === void 0 ? void 0 : _c.extendedTextMessage) === null || _d === void 0 ? void 0 : _d.text);
+                    }
+                    const msgText = ((_c = msg.message) === null || _c === void 0 ? void 0 : _c.conversation) || ((_e = (_d = msg.message) === null || _d === void 0 ? void 0 : _d.extendedTextMessage) === null || _e === void 0 ? void 0 : _e.text);
                     logger_1.default.info(logFileName, `received msg :${msgText}`);
                     logger_1.default.info(logFileName, `From: ${msg.key.remoteJid}`);
                     if (msgText) { //if it is text type message
@@ -283,22 +305,26 @@ class Whatsapp extends events_1.EventEmitter {
             logger_1.default.info(logFileName, "CONNECTION_OPENED");
             this.qrRequested = true;
             this.qrInProcess = false;
+            this.retryCount = 0;
             this.emit("authenticated", { phone: this.phone });
             device_utils_1.default.updateDevice(this.deviceId, {
                 authState: true, reason: null
             });
-            if (!this.firstConnect && !this.authState) {
+            if (!this.firstConnect && !this.authState && !this.lastStatus) {
                 this.firstConnect = false;
                 notify_service_1.default.deviceAuthorized(this.deviceId);
             }
             this.authState = true;
+            this.lastStatus = true;
         });
     }
     deleteAuthFile() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const authFilePath = `${process.env.SESSIONS_FOLDER}/${this.phone}_cred.json`;
+                const newAuthFile = `${process.env.SESSIONS_FOLDER}/${this.phone}_cred`;
                 yield file_management_1.default.deleteFile(authFilePath);
+                yield file_management_1.default.deleteFolder(newAuthFile);
             }
             catch (e) {
                 logger_1.default.error(`Error in deleting auth file for ${this.phone}: `, e);
@@ -326,6 +352,7 @@ class Whatsapp extends events_1.EventEmitter {
                 this.qrRequested = false;
                 logger_1.default.warn(logFileName, "CONNECTION_CLOSED (LOGGEDOUT)", reason, this.phone);
                 this.emit("LOGGEDOUT", { phone: this.phone, reason: reason === null || reason === void 0 ? void 0 : reason.message });
+                this.lastStatus = false;
                 this.closeRefreshInterval();
             }
         });

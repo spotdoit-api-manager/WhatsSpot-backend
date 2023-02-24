@@ -1,4 +1,3 @@
-/// <reference types="mongoose" />
 import { IStripePrice, IStripeProduct } from "./../stripe/stripe.interface";
 import { IAdminUser, IDataStoredInAdminToken } from "./admin.interface";
 import { IAdminUserModel } from "./admin.schema";
@@ -7,7 +6,17 @@ import { ETransactionStatus } from "../transaction/transaction.interface";
 export declare class AdminModel {
     fetch(id: string): Promise<IAdminUserModel>;
     updateUserWalletBalance(walletId: string, balance: number): Promise<import("../wallet/wallet.schema").IWalletModel>;
-    walletTransactions(walletId: string): Promise<any[]>;
+    walletTransactions(walletId: string): Promise<{
+        data: any;
+        pagination: {
+            currentPage: number;
+            total: number;
+            limit: number;
+            totalPages: number;
+            hasNext: boolean;
+            hasPrev: boolean;
+        };
+    }>;
     metrics(): Promise<{
         devicesMetrics: {
             totalDevices: number;
@@ -62,7 +71,7 @@ export declare class AdminModel {
     fetchPaymentsRequests(userId: string, status: ETransactionStatus, page: string): Promise<any[]>;
     approvePayment(userId: string, paymentId: string): Promise<import("../transaction/transaction.schema").ITransactionModel>;
     rejectPayment(userId: string, paymentId: string, reason: string): Promise<import("../transaction/transaction.schema").ITransactionModel>;
-    sendEmail(adminId: string, to: string, subject: string, message: string): Promise<void>;
+    sendEmail(adminId: string, to: string, subject: string, message: string): Promise<import("winston").Logger>;
 }
 declare const _default: AdminModel;
 export default _default;

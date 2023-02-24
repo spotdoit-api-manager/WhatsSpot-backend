@@ -20,6 +20,8 @@ const config_1 = require("../../config");
 const httpErrors_1 = require("../utils/httpErrors");
 const logFileName = "[EmailService]: ";
 const sendMail = (to, subject, text, html = "") => __awaiter(void 0, void 0, void 0, function* () {
+    if (process.env.NODE_ENV === "development")
+        return logger_1.default.info(logFileName, `Email to ${to} sent successfully`);
     try {
         const client = new MailazyClient({ accessKey: config_1.mailazyConfig.accessKey, accessSecret: config_1.mailazyConfig.accessSecret });
         const res = yield client.send({
@@ -37,6 +39,8 @@ const sendMail = (to, subject, text, html = "") => __awaiter(void 0, void 0, voi
 });
 exports.sendMail = sendMail;
 const sendNotificationMail = (to, subject, text, html = "") => __awaiter(void 0, void 0, void 0, function* () {
+    if (process.env.NODE_ENV === "development")
+        return logger_1.default.info(logFileName, `Email to ${to} sent successfully`);
     try {
         const client = new MailazyClient({ accessKey: config_1.mailazyConfig.accessKey, accessSecret: config_1.mailazyConfig.accessSecret });
         const res = yield client.send({
@@ -54,6 +58,8 @@ const sendNotificationMail = (to, subject, text, html = "") => __awaiter(void 0,
 });
 exports.sendNotificationMail = sendNotificationMail;
 const sendVerificationMail = (to, subject, text = "", html) => __awaiter(void 0, void 0, void 0, function* () {
+    if (process.env.NODE_ENV === "development")
+        return logger_1.default.info(logFileName, `Email to ${to} sent successfully`);
     const client = new MailazyClient({ accessKey: config_1.mailazyConfig.accessKey, accessSecret: config_1.mailazyConfig.accessSecret });
     logger_1.default.info(logFileName, `Sending verification mail to ${to},html: ${html}`);
     let res = yield client.send({

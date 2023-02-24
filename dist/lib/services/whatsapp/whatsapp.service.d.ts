@@ -15,6 +15,7 @@ export default class Whatsapp extends EventEmitter {
     private retryCount;
     private removed;
     private firstConnect;
+    private lastStatus;
     private logger;
     private interval;
     constructor(deviceId: string, phone: string);

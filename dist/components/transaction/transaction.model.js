@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TransactionModel = void 0;
+const index_1 = require("./../../lib/utils/index");
 const bson_1 = require("bson");
 const httpErrors_1 = require("./../../lib/utils/httpErrors");
 const transaction_schema_1 = require("./transaction.schema");
@@ -46,8 +47,9 @@ class TransactionModel {
     fetchTransactions(walletId, page) {
         return __awaiter(this, void 0, void 0, function* () {
             const { skip, limit } = (0, utils_1.getSkipLimit)(page);
+            const q = { walletId: new bson_1.ObjectID(walletId) };
             const result = yield transaction_schema_1.Transaction.aggregate([
-                { $match: { walletId: new bson_1.ObjectID(walletId) } },
+                { $match: q },
                 { $sort: { createdAt: -1 } },
                 {
                     $project: {
@@ -61,7 +63,8 @@ class TransactionModel {
                 { $skip: skip },
                 { $limit: limit },
             ]);
-            return result;
+            const total = yield transaction_schema_1.Transaction.countDocuments(q);
+            return (0, index_1.createPaginationData)(result, page, total, limit);
         });
     }
     createTransactionForPlan(planId, orderId, userId, walletId, type, amount, description, method) {

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSkipLimit = exports.validateEmail = exports.deSanatizeMobile = exports.sanatizeMobile = exports.validateMobile = exports.getPaginationInfo = exports.mongoDBProjectFields = exports.applyRoutes = exports.applyMiddleware = void 0;
+exports.createPaginationData = exports.getSkipLimit = exports.validateEmail = exports.deSanatizeMobile = exports.sanatizeMobile = exports.validateMobile = exports.getPaginationInfo = exports.mongoDBProjectFields = exports.applyRoutes = exports.applyMiddleware = void 0;
 const auth_middleware_1 = require("../middleware/auth.middleware");
 // load all middleware with this function call
 const applyMiddleware = (middlewareWrappers, router) => {
@@ -74,4 +74,18 @@ const getSkipLimit = (pageNo = 1) => {
     return { skip, limit };
 };
 exports.getSkipLimit = getSkipLimit;
+const createPaginationData = (data, page, total, limit) => {
+    return {
+        data,
+        pagination: {
+            currentPage: page,
+            total,
+            limit,
+            totalPages: Math.ceil(total / limit),
+            hasNext: page < Math.ceil(total / limit),
+            hasPrev: page > 1
+        }
+    };
+};
+exports.createPaginationData = createPaginationData;
 //# sourceMappingURL=index.js.map

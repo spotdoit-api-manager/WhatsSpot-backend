@@ -260,12 +260,13 @@ class DeviceModel {
     deleteAuth(userId, deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
             (0, index_1.isValidMongoId)(deviceId);
-            console.log("params ", userId, deviceId);
             const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
+            const authFileNew = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred_new`;
             const res = yield file_management_1.default.deleteFile(authFilePath);
+            yield file_management_1.default.deleteFolder(authFileNew);
             if (res.error)
                 throw new httpErrors_1.HTTP401Error(res.message);
             yield device_utils_1.default.updateDevice(device._id, { reason: null });
@@ -281,16 +282,22 @@ class DeviceModel {
             const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
             yield file_management_1.default.deleteFile(authFilePath);
             const data = yield whatsapp_client_service_1.default.logoutClient(device.phone);
+            console.log("data ", data);
             if (data.error)
                 throw new httpErrors_1.HTTP400Error(data.message);
+            device.authState = false;
+            device.reason = {
+                message: "Logged out",
+            };
+            yield device.save();
             return { message: "DEVICE_LOGGED_OUT", device: device };
         });
     }
     reScheduleMessage(userId, scheduleTime, deviceId, messageId) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log("deviceId", deviceId, " messageId", messageId, " userId", userId, " scheduleTime", scheduleTime);
             (0, index_1.isValidMongoId)(deviceId);
             (0, index_1.isValidMongoId)(messageId);
-            (0, index_1.isValidMongoId)(userId);
             try {
                 const newScheduleTime = new Date(scheduleTime);
                 if (!newScheduleTime)
@@ -298,7 +305,8 @@ class DeviceModel {
                 const currentTime = new Date();
                 const diff = newScheduleTime.getTime() - currentTime.getTime();
                 const preMin = 1;
-                // if(diff < preMin*60*1000 ) throw new HTTP400Error("INVALID_SCHEDULE_TIME", "Schedule time should be in future and more than 5 minutes");
+                if (diff < preMin * 60 * 1000)
+                    throw new httpErrors_1.HTTP400Error("INVALID_SCHEDULE_TIME", "Schedule time should be in future and more than 5 minutes");
                 const message = yield message_schema_1.ScheduleMessage.findOne({ _id: messageId, userId, deviceId });
                 if (!message)
                     throw new httpErrors_1.HTTP400Error("MESSAGE_NOT_FOUND");

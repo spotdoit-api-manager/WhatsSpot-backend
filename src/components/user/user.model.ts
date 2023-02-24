@@ -528,7 +528,6 @@ export class UserModel {
     return { proceed: false };
   }
   public async getAccountMetrics(userId: string) {
-    console.log("user id is ", userId);
 
     const result = await User.aggregate([
       { $match: { _id: new ObjectID(userId) } },
@@ -569,7 +568,7 @@ export class UserModel {
           authState: "$devices.authState"
         }
       },
-      { $set: { deviceId: { $toString: "$deviceId" } } },
+      // { $set: { deviceId: { $toString: "$deviceId" } } },
       {
         $lookup: {
           from: "fastmessages",
@@ -647,9 +646,9 @@ export class UserModel {
           _id: "$_id",
           totalDevices: { $sum: 1 },
           activeDevices: {
-            "$sum": {
-              "$cond": [
-                { "$eq": ["$authState", true] },
+            $sum: {
+              $cond: [
+                { $eq: ["$authState", true] },
                 1,
                 0
               ]
@@ -658,8 +657,8 @@ export class UserModel {
           totalFastSuccess: { $sum: "$metrics.totalFastSuccess" },
           totalFastError: { $sum: "$metrics.totalFastError" },
           totalQueueSuccess: { $sum: "$metrics.totalQueueSuccess" },
-          totalQueueError: { $sum: "$metrics.totalQueueError" }
-
+          totalQueueError: { $sum: "$metrics.totalQueueError" },
+          totalQueuePending: { $sum: "$metrics.totalQueuePending" }
         }
       },
       {
@@ -672,7 +671,8 @@ export class UserModel {
             totalFastSuccess: "$totalFastSuccess",
             totalFastError: "$totalFastError",
             totalQueueSuccess: "$totalQueueSuccess",
-            totalQueueError: "$totalQueueError"
+            totalQueueError: "$totalQueueError",
+            totalQueuePending: "$totalQueuePending"
           }
         }
       }

@@ -65,9 +65,9 @@ class WalletModel {
             return newBalance;
         });
     }
-    fetchTransactions(userId, walletId, page = "1") {
+    fetchTransactions(userId, walletId, page = 1) {
         return __awaiter(this, void 0, void 0, function* () {
-            const transactions = yield transaction_model_1.default.fetchTransactions(walletId, parseInt(page));
+            const transactions = yield transaction_model_1.default.fetchTransactions(walletId, page);
             return transactions;
         });
     }

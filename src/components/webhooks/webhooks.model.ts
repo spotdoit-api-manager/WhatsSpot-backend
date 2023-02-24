@@ -1,3 +1,5 @@
+import { IPaginationData } from "./../../lib/interfaces/response.interface";
+import { createPaginationData } from "./../../lib/utils/index";
 import { isValidMongoId } from "./../../lib/helpers/index";
 import { EMessageStatus } from "./../messages/message.interface";
 import { IWebHookMessage } from "./webhooks.interface";
@@ -8,13 +10,16 @@ export class WebhookModel{
         return await newMessage.save();
     }
 
-    public fetchWebhookMessages(userId:string,deviceId?:string): Promise<IWebhookMessageModel[]> {
+    public async fetchWebhookMessages(userId:string,deviceId?:string,page=1): Promise<IPaginationData<IWebhookMessageModel[]>> {
+        const limit = 20;
         const q:any = {userId};
         if(deviceId && deviceId!=="undefined" || deviceId!=="null"){
             isValidMongoId(deviceId);
             q.deviceId = deviceId;
         } 
-        return WebhookMessage.find(q).sort({createdAt: -1}).select("-message").lean().exec();
+        const result = await WebhookMessage.find(q).sort({createdAt: -1}).skip((page-1)*limit).limit(limit).lean().exec();
+        const total = await WebhookMessage.countDocuments(q);
+        return createPaginationData(result,page,total,limit);
     }
 }
 

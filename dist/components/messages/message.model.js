@@ -91,7 +91,8 @@ class MessageModel {
             const currentTime = new Date();
             const diff = scheduleTime.getTime() - currentTime.getTime();
             const preMin = 1;
-            // if(diff < preMin*60*1000 ) throw new HTTP400Error("INVALID_SCHEDULE_TIME", "Schedule time should be in future and more than 5 minutes");
+            if (diff < preMin * 60 * 1000)
+                throw new httpErrors_1.HTTP400Error("INVALID_SCHEDULE_TIME", "Schedule time should be in future and more than 5 minutes");
             logger_1.default.debug(logFileName, "schedule message request", body, deviceId);
             const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
             if (!device)

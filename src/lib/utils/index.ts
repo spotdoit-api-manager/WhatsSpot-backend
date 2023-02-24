@@ -96,3 +96,18 @@ export const getSkipLimit = (pageNo: number=1)=>{
   const skip = (pageNo-1)*limit;
   return {skip,limit};
 };
+
+export const createPaginationData = (data:any,page:number,total:number,limit:number)=>{
+  return {
+    data,
+    pagination:{
+      currentPage:page,
+      total,
+    limit,
+    totalPages:Math.ceil(total/limit),
+    hasNext:page<Math.ceil(total/limit),
+    hasPrev:page>1
+    }
+  };
+  
+};

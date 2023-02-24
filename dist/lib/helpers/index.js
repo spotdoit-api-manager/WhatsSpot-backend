@@ -75,8 +75,9 @@ const getNextDate = (day = 2) => {
 };
 exports.getNextDate = getNextDate;
 const isValidMongoId = (str) => {
+    console.log("str id is: ", str, " str type ", typeof str);
     if (!str || typeof str !== "string" || str == "")
-        throw new httpErrors_1.HTTP400Error("Invalid Id");
+        throw new httpErrors_1.HTTP400Error("Invalid Id Type");
     if (!str.match(/^[a-f\d]{24}$/i))
         throw new httpErrors_1.HTTP400Error("Invalid Id");
     return;

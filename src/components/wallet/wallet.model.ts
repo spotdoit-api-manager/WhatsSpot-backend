@@ -52,8 +52,8 @@ export class WalletModel {
         return newBalance;
     }
 
-    public async fetchTransactions(userId: string, walletId: string,page: string="1") {
-        const transactions = await transactionModel.fetchTransactions(walletId,parseInt(page));
+    public async fetchTransactions(userId: string, walletId: string,page=1) {
+        const transactions = await transactionModel.fetchTransactions(walletId,page);
         return transactions;
     }
 

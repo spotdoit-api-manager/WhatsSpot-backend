@@ -32,7 +32,7 @@ class WalletController {
         this.fetchTransactions = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
-                const result = yield wallet_model_1.default.fetchTransactions(req.userId, req.walletId, req.query.page);
+                const result = yield wallet_model_1.default.fetchTransactions(req.userId, req.walletId, parseInt(req.query.page || "1"));
                 responseHandler.reqRes(req, res).onCreate("TRANSACTION_FETCHED", result).send();
             }
             catch (e) {

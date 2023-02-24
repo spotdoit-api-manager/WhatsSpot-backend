@@ -24,6 +24,8 @@ import walletModel from "../../../components/wallet/wallet.model";
 import planManagerService from "../plan.manager.service";
 import plansModel from "../../../components/plans/plans.model";
 import webhooksModel from "../../../components/webhooks/webhooks.model";
+import fileManagement from "../../../lib/helpers/file.management";
+import WhatsappOld from "./whatsapp.service.old";
 
 interface IWhatsappClient {
     [phone: string]: number;
@@ -38,8 +40,19 @@ export class WhatsappClient {
     clients: IWhatsappClient = clients;
 
 
-    public addClient = (deviceId: string,phone: string) => {
-        const clientInstance = new Whatsapp(deviceId,phone);
+    public addClient = async (deviceId: string,phone: string) => {
+        // const check if session folder contains phon_cred.json
+        let clientInstance;
+        const isOld =  await this.checkIfOldSessionPresent(phone);
+        console.log("isOld===> ",isOld);
+       if(isOld){
+        console.log("------------------OLD SESSION INSTANCE------------------");
+        clientInstance = new WhatsappOld(deviceId,phone);
+       }else{
+        console.log("---------------NEW SESSION INSTANCE-------------------");
+           clientInstance = new Whatsapp(deviceId,phone);
+        }
+
         const instaceId = instanceProvider.getInstanceId(clientInstance); 
         logger.info(logFileName,`Adding client ${phone}`);
         clients[phone] = instaceId;    
@@ -86,7 +99,7 @@ export class WhatsappClient {
   
     public getClientQr = async (deviceId: string,phone: string) => {
         this.removeClientInstanceByPhone(phone);
-        const client = this.addClient(deviceId,phone);
+        const client = await this.addClient(deviceId,phone);
         client.on("qr", (qrData) => {
             console.debug(logFileName,"got qr ", qrData.qr);
             socketManager.sendQrCode(phone, qrData);
@@ -274,7 +287,7 @@ public async initializeAllClients() {
         const device:IDeviceModel = devices[i];
         const walletId:string = await walletModel.getWalletIdByUserId(device.userId);
         console.debug(logFileName,`client${i}:${device.phone}`);
-        const client =  this.addClient(device._id,device.phone);
+        const client =  await this.addClient(device._id,device.phone);
         await client.initiClient(false);
         // filter active webhooks from device and subscribe to client for each
         
@@ -373,6 +386,12 @@ private whatsAppToWebHookMessage(deviceId:string,message: any,urls:string[]) {
         urls
     };
     return body;
+}
+
+private async checkIfOldSessionPresent(phone: string) {
+    const authFilePath = `${process.env.SESSIONS_FOLDER}/${phone}_cred.json`;
+    const isPresent = await fileManagement.isFilePresent(authFilePath);
+    return isPresent;
 }
 }
 export default new WhatsappClient();

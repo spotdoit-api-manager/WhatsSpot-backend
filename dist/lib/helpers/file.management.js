@@ -31,6 +31,26 @@ class FileManagement {
             });
         });
     }
+    deleteFolder(folderPath) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve) => {
+                try {
+                    fs_1.default.rmdir(folderPath, { recursive: true }, () => {
+                        resolve({ error: false });
+                    });
+                }
+                catch (e) {
+                    console.log("error in deleting folder ", e);
+                    resolve({ error: true, message: e.message });
+                }
+            });
+        });
+    }
+    isFilePresent(filePath) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return fs_1.default.existsSync(filePath);
+        });
+    }
 }
 exports.FileManagement = FileManagement;
 exports.default = new FileManagement();

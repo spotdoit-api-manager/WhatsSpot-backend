@@ -8,6 +8,7 @@ const logFileName="[EmailService]: ";
 
 
 export const sendMail = async(to: string,subject: string,text: string,html: string="")=>{
+    if(process.env.NODE_ENV==="development") return logger.info(logFileName,`Email to ${to} sent successfully`);
     try {
         const client = new MailazyClient({ accessKey: mailazyConfig.accessKey, accessSecret: mailazyConfig.accessSecret });
         const res = await client.send({
@@ -25,6 +26,8 @@ export const sendMail = async(to: string,subject: string,text: string,html: stri
 
 
 export const sendNotificationMail = async(to: string,subject: string,text: string,html: string="")=>{
+    if(process.env.NODE_ENV==="development") return logger.info(logFileName,`Email to ${to} sent successfully`);
+
     try {
         const client = new MailazyClient({ accessKey: mailazyConfig.accessKey, accessSecret: mailazyConfig.accessSecret });
         const res = await client.send({
@@ -43,6 +46,8 @@ export const sendNotificationMail = async(to: string,subject: string,text: strin
 
 
 export const sendVerificationMail = async(to: string,subject: string,text: string="",html: string)=>{
+    if(process.env.NODE_ENV==="development") return logger.info(logFileName,`Email to ${to} sent successfully`);
+
     const client = new MailazyClient({ accessKey: mailazyConfig.accessKey, accessSecret: mailazyConfig.accessSecret });
     logger.info(logFileName,`Sending verification mail to ${to},html: ${html}`);
         let res = await client.send({
@@ -59,3 +64,4 @@ export const sendVerificationMail = async(to: string,subject: string,text: strin
         return res;
   
 };
+
