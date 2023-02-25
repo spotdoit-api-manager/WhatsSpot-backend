@@ -328,7 +328,7 @@ private interval;
       this.qrInProcess = false;
       this.qrRequested = false;
       logger.warn(logFileName,"CONNECTION_CLOSED (LOGGEDOUT)", reason, this.phone);
-      this.emit("LOGGEDOUT", { phone: this.phone, reason: reason?.message });
+      this.emit("LOGGED_OUT", { phone: this.phone, reason: reason?.message });
       this.lastStatus = false;
       this.closeRefreshInterval();
     }

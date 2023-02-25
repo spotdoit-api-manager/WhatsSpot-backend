@@ -137,6 +137,8 @@ export class DeviceModel {
     //     return { message: "DEVICE_LOGGED_OUT" };
     // }
     const data = whatsappClientService.getClientQr(deviceId, device.phone);
+    device.lastUsed = new Date();
+    await device.save();
     return { message: "QR_REQUESTED" };
   }
 
@@ -273,7 +275,6 @@ export class DeviceModel {
     const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
     await fileManagement.deleteFile(authFilePath);
     const data = await whatsappClientService.logoutClient(device.phone);
-    console.log("data ", data);
     if (data.error) throw new HTTP400Error(data.message);
     device.authState = false;
     device.reason = {

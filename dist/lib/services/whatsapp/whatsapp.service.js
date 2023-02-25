@@ -351,7 +351,7 @@ class Whatsapp extends events_1.EventEmitter {
                 this.qrInProcess = false;
                 this.qrRequested = false;
                 logger_1.default.warn(logFileName, "CONNECTION_CLOSED (LOGGEDOUT)", reason, this.phone);
-                this.emit("LOGGEDOUT", { phone: this.phone, reason: reason === null || reason === void 0 ? void 0 : reason.message });
+                this.emit("LOGGED_OUT", { phone: this.phone, reason: reason === null || reason === void 0 ? void 0 : reason.message });
                 this.lastStatus = false;
                 this.closeRefreshInterval();
             }

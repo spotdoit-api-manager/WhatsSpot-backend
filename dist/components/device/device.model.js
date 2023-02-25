@@ -153,6 +153,8 @@ class DeviceModel {
             //     return { message: "DEVICE_LOGGED_OUT" };
             // }
             const data = whatsapp_client_service_1.default.getClientQr(deviceId, device.phone);
+            device.lastUsed = new Date();
+            yield device.save();
             return { message: "QR_REQUESTED" };
         });
     }
@@ -282,7 +284,6 @@ class DeviceModel {
             const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
             yield file_management_1.default.deleteFile(authFilePath);
             const data = yield whatsapp_client_service_1.default.logoutClient(device.phone);
-            console.log("data ", data);
             if (data.error)
                 throw new httpErrors_1.HTTP400Error(data.message);
             device.authState = false;

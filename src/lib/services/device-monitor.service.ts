@@ -47,6 +47,7 @@ export class DeviceMonitor {
         message: "Device is not used for 15 days",
         error: "Device is not used for 15 days",
       };
+      device.lastUsed = new Date();
       await notifyService.deviceUnAuthorizedDueToNotUsed(device._id);
       await device.save();
     });
