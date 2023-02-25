@@ -1,3 +1,5 @@
+/// <reference types="qs" />
+/// <reference types="express" />
 declare const _default: ({
     path: string;
     method: string;
