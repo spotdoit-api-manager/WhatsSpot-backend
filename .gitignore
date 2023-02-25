@@ -37,13 +37,13 @@ Thumbs.db
 
 # Ignore built ts files
 # dist/**/*
-dist/sessions
-dist
+# dist/sessions
+# dist
 # ignore yarn.lock
 yarn.lock
-dist/sessions
+# dist/sessions
 sessions
 config.env.prod
 prod-sessions
-dist/*
-dist
+# dist/*
+# dist
