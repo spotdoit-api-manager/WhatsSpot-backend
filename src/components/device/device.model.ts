@@ -794,6 +794,9 @@ export class DeviceModel {
     return Device.find({}).select(deviceProjection).lean();
   }
 
+  public getDevicesByAuthState(authState: boolean) {
+    return Device.find({ authState: authState }).select(deviceProjection).lean();
+  }
   private async validateWebHook(userId: string, deviceId: string, url: string) {
     try {
       //check if url string is valid url using regex

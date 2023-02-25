@@ -123,6 +123,12 @@ export default [
         handler:[adminController.fetchPaymentRequests]
       },
       {
+        path:"/transactions",
+        method:"get",
+        role:"admin",
+        handler:[adminController.fetchAllTransactions]
+      },
+      {
         path:"/payments/:paymentId/approve",
         method:"post",
         role:"admin",
@@ -139,5 +145,11 @@ export default [
         method:"post",
         role:"admin",
         handler:[adminController.sendEmail]
+      },
+      {
+        path:"/email/fetch?active=:active",
+        method:"get",
+        role:"admin",
+        handler:[adminController.fetchEmails]
       }
 ];

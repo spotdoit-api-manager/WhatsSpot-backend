@@ -1,3 +1,4 @@
+import { ETransactionStatus } from "./../transaction/transaction.interface";
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { ITransaction } from "./../transaction/transaction.interface";
 import { IStripePrice, IStripeProduct } from "./../stripe/stripe.interface";
@@ -18,10 +19,10 @@ import walletModel from "../wallet/wallet.model";
 import stripeModel from "../stripe/stripe.model";
 import transactionModel from "../transaction/transaction.model";
 import { EPayWith } from "../../core/enums/pay-with.enum";
-import { ETransactionStatus } from "../transaction/transaction.interface";
 import qrPayModel from "../qrpay/qr-pay.model";
 import * as emailService from "../../lib/services/email.service";
 import adminUtils from "./admin.utils";
+import { Device } from "../device/device.schema";
 
 const logFileName = "[AdminModel] : ";
 export class AdminModel {
@@ -195,6 +196,23 @@ export class AdminModel {
     public async sendEmail(adminId: string,to: string,subject: string,message: string){
         if (!await adminUtils.isSuperAdmin(adminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can send email");
         return await emailService.sendMail(to,subject,message);
+    }
+
+    public async fetchEmails(adminId: string,active:string){
+        if (!await adminUtils.isSuperAdmin(adminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can fetch emails");
+        // get device with authState true and then by using device.userId get user email
+        const isActive = active!==null;
+       const devices = await deviceModel.getDevicesByAuthState(isActive);
+         const userIds = devices.map(device => device.userId);
+            const users = await userModel.getUsersMailByIds(userIds);
+            const emails = users.map(user => user.email);
+            return emails;
+    }
+
+
+    public async fetchAllTransactions(adminId:string,status:ETransactionStatus,page:number=1){
+        if(Object.values(ETransactionStatus).indexOf(status)===-1) throw new HTTP400Error("INVALID_STATUS","Invalid Status");
+        return await transactionModel.fetchAllTransactions(status,page);
     }
 
 }

@@ -960,6 +960,10 @@ public getUserById(userId: string){
   return User.findById(userId);
 }
 
+public getUsersMailByIds(userIds: string[]){
+  return User.find({_id:{$in:userIds}}).select("email");
+}
+
 
 }
 
