@@ -112,6 +112,7 @@ export declare class UserModel {
     sendEmailVerification(userId: string): Promise<void>;
     verifyEmailOtp(userId: string, otp: string): Promise<import("mongoose").LeanDocument<IUserModel>>;
     getUserById(userId: string): import("mongoose").Query<IUserModel, IUserModel, {}, IUserModel>;
+    getUsersMailByIds(userIds: string[]): import("mongoose").Query<IUserModel[], IUserModel, {}, IUserModel>;
 }
 declare const _default: UserModel;
 export default _default;

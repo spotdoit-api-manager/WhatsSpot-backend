@@ -772,6 +772,9 @@ class DeviceModel {
     fetchDevicesList() {
         return device_schema_1.Device.find({}).select(projection_values_1.deviceProjection).lean();
     }
+    getDevicesByAuthState(authState) {
+        return device_schema_1.Device.find({ authState: authState }).select(projection_values_1.deviceProjection).lean();
+    }
     validateWebHook(userId, deviceId, url) {
         var _a, _b, _c;
         return __awaiter(this, void 0, void 0, function* () {

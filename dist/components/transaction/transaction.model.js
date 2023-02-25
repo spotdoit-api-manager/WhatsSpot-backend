@@ -133,6 +133,21 @@ class TransactionModel {
             return yield transaction_schema_1.Transaction.findOne({ orderId: orderId }).lean();
         });
     }
+    fetchAllTransactions(status, type, method, page = 1) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const limit = 10;
+            const q = status ? { status: status } : {};
+            if (type) {
+                q["type"] = type;
+            }
+            if (method) {
+                q["method"] = method;
+            }
+            const transactions = yield transaction_schema_1.Transaction.find(q).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean();
+            const total = yield transaction_schema_1.Transaction.countDocuments(q);
+            return (0, index_1.createPaginationData)(transactions, page, total, limit);
+        });
+    }
 }
 exports.TransactionModel = TransactionModel;
 exports.default = new TransactionModel();

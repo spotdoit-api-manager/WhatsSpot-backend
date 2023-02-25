@@ -1,8 +1,9 @@
+import { EPayWith } from "./../../core/enums/pay-with.enum";
+import { ETransactionStatus, ETransactionTypes } from "./../transaction/transaction.interface";
 import { IStripePrice, IStripeProduct } from "./../stripe/stripe.interface";
 import { IAdminUser, IDataStoredInAdminToken } from "./admin.interface";
 import { IAdminUserModel } from "./admin.schema";
 import { ITokenData } from "../user/user.interface";
-import { ETransactionStatus } from "../transaction/transaction.interface";
 export declare class AdminModel {
     fetch(id: string): Promise<IAdminUserModel>;
     updateUserWalletBalance(walletId: string, balance: number): Promise<import("../wallet/wallet.schema").IWalletModel>;
@@ -60,10 +61,9 @@ export declare class AdminModel {
     updateOtp(id: string): number;
     sendOtpToMobile(otp: number, phone: string): Promise<{
         proceed: boolean;
-        message?: undefined;
+        message: any;
     } | {
         proceed: boolean;
-        message: any;
     }>;
     addProduct(adminId: string, productBody: IStripeProduct): Promise<any>;
     getProducts(userId: string, limit: string): Promise<any>;
@@ -73,6 +73,18 @@ export declare class AdminModel {
     approvePayment(userId: string, paymentId: string): Promise<import("../transaction/transaction.schema").ITransactionModel>;
     rejectPayment(userId: string, paymentId: string, reason: string): Promise<import("../transaction/transaction.schema").ITransactionModel>;
     sendEmail(adminId: string, to: string, subject: string, message: string): Promise<import("winston").Logger>;
+    fetchEmails(adminId: string, active: string): Promise<string[]>;
+    fetchAllTransactions(adminId: string, status?: ETransactionStatus, type?: ETransactionTypes, method?: EPayWith, page?: number): Promise<{
+        data: any;
+        pagination: {
+            currentPage: number;
+            total: number;
+            limit: number;
+            totalPages: number;
+            hasNext: boolean;
+            hasPrev: boolean;
+        };
+    }>;
 }
 declare const _default: AdminModel;
 export default _default;

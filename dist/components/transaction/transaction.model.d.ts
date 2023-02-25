@@ -19,6 +19,17 @@ export declare class TransactionModel {
     createTransactionForWallet(walletId: string, userId: string, type: ETransactionTypes, amount: number, description: string, metaData: Record<string, any>, method: EPayWith): Promise<ITransactionModel>;
     updateTransactionStatus(transactionId: string, status: ETransactionStatus): Promise<ITransactionModel>;
     fetchTransactionByOrderId(orderId: string): Promise<ITransactionModel>;
+    fetchAllTransactions(status?: ETransactionStatus, type?: ETransactionTypes, method?: EPayWith, page?: number): Promise<{
+        data: any;
+        pagination: {
+            currentPage: number;
+            total: number;
+            limit: number;
+            totalPages: number;
+            hasNext: boolean;
+            hasPrev: boolean;
+        };
+    }>;
 }
 declare const _default: TransactionModel;
 export default _default;

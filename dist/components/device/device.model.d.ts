@@ -9,9 +9,10 @@ export declare class DeviceModel {
     private isMaxDeviceLimitReached;
     newDeviceCode(userId: string, walletId: string, newDeviceBody: INewDevice): Promise<{
         proceed: boolean;
-        message: any;
+        message?: undefined;
     } | {
         proceed: boolean;
+        message: any;
     }>;
     private validateDeviceAdd;
     getQr(userId: string, deviceId: string): Promise<{
@@ -71,6 +72,7 @@ export declare class DeviceModel {
     resumeWebHook(userId: string, walletId: string, deviceId: string, webHookId: string): Promise<IWebHook>;
     fetchWebHooks(userId: string, deviceId: string): Promise<IWebHook[]>;
     fetchDevicesList(): import("mongoose").Query<import("mongoose").LeanDocument<IDeviceModel>[], IDeviceModel, {}, IDeviceModel>;
+    getDevicesByAuthState(authState: boolean): import("mongoose").Query<import("mongoose").LeanDocument<IDeviceModel>[], IDeviceModel, {}, IDeviceModel>;
     private validateWebHook;
 }
 declare const _default: DeviceModel;

@@ -1,3 +1,5 @@
+import { EPayWith } from "./../../core/enums/pay-with.enum";
+import { ETransactionTypes } from "./../transaction/transaction.interface";
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { ETransactionStatus } from "./../transaction/transaction.interface";
 import { NextFunction, Request, Response } from "express";
@@ -265,7 +267,7 @@ export class AdminController{
       public fetchAllTransactions = async (req: Request, res: Response, next: NextFunction) => {
         const responseHandler = new ResponseHandler();
         try {
-          responseHandler.reqRes(req, res).onFetch("TRANSACTION FETCHED", await adminModel.fetchAllTransactions(req.userId,req.query.status as ETransactionStatus,parseInt(req.query.page as string || "1"))).send();
+          responseHandler.reqRes(req, res).onFetch("TRANSACTION FETCHED", await adminModel.fetchAllTransactions(req.userId,req.query.status as ETransactionStatus,req.query.type as ETransactionTypes,req.query.method as EPayWith,parseInt(req.query.page as string || "1"))).send();
         } catch (e) {
           // send error with next function.
           next(responseHandler.sendError(e));

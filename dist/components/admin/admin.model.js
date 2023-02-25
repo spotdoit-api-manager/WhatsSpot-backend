@@ -36,6 +36,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminModel = void 0;
+const pay_with_enum_1 = require("./../../core/enums/pay-with.enum");
+const transaction_interface_1 = require("./../transaction/transaction.interface");
 const index_1 = require("./../../config/index");
 const httpErrors_1 = require("./../../lib/utils/httpErrors");
 const otp_handler_1 = require("../../lib/services/otp-handler");
@@ -49,7 +51,6 @@ const user_model_1 = __importDefault(require("../user/user.model"));
 const wallet_model_1 = __importDefault(require("../wallet/wallet.model"));
 const stripe_model_1 = __importDefault(require("../stripe/stripe.model"));
 const transaction_model_1 = __importDefault(require("../transaction/transaction.model"));
-const pay_with_enum_1 = require("../../core/enums/pay-with.enum");
 const qr_pay_model_1 = __importDefault(require("../qrpay/qr-pay.model"));
 const emailService = __importStar(require("../../lib/services/email.service"));
 const admin_utils_1 = __importDefault(require("./admin.utils"));
@@ -248,6 +249,28 @@ class AdminModel {
             if (!(yield admin_utils_1.default.isSuperAdmin(adminId)))
                 throw new httpErrors_2.HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can send email");
             return yield emailService.sendMail(to, subject, message);
+        });
+    }
+    fetchEmails(adminId, active) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const isActive = active !== null && active !== undefined && active.toLowerCase() === "true";
+            console.log(active, isActive);
+            const devices = yield device_model_1.default.getDevicesByAuthState(isActive);
+            const userIds = devices.map(device => device.userId);
+            const users = yield user_model_1.default.getUsersMailByIds(userIds);
+            const emails = users.map(user => user.email);
+            return emails;
+        });
+    }
+    fetchAllTransactions(adminId, status, type, method, page = 1) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (status && Object.values(transaction_interface_1.ETransactionStatus).indexOf(status) === -1)
+                throw new httpErrors_1.HTTP400Error("INVALID_STATUS", "Invalid Status");
+            if (type && Object.values(transaction_interface_1.ETransactionTypes).indexOf(type) === -1)
+                throw new httpErrors_1.HTTP400Error("INVALID_TYPE", "Invalid Type");
+            if (method && Object.values(pay_with_enum_1.EPayWith).indexOf(method) === -1)
+                throw new httpErrors_1.HTTP400Error("INVALID_METHOD", "Invalid Method");
+            return yield transaction_model_1.default.fetchAllTransactions(status, type, method, page);
         });
     }
 }

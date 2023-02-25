@@ -267,6 +267,26 @@ class AdminController {
                 next(responseHandler.sendError(e));
             }
         });
+        this.fetchEmails = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("MAIL SENT", yield admin_model_1.default.fetchEmails(req.userId, req.query.active)).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
+        this.fetchAllTransactions = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const responseHandler = new responseHandler_1.default();
+            try {
+                responseHandler.reqRes(req, res).onFetch("TRANSACTION FETCHED", yield admin_model_1.default.fetchAllTransactions(req.userId, req.query.status, req.query.type, req.query.method, parseInt(req.query.page || "1"))).send();
+            }
+            catch (e) {
+                // send error with next function.
+                next(responseHandler.sendError(e));
+            }
+        });
     }
 }
 exports.AdminController = AdminController;

@@ -19,7 +19,7 @@ export const mongoUrl = (): string => {
 export const configCors = {
   // Allow your domains to restrict ill apis.
   adminAllowOrigin:[
-    "http://localhost:56217", 
+    "http://localhost:4200", 
     "https://admin.whatsspot.in",
   ],
   allowOrigin: [

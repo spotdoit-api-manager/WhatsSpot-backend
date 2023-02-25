@@ -127,6 +127,12 @@ exports.default = [
         handler: [admin_controller_1.default.fetchPaymentRequests]
     },
     {
+        path: "/transactions/fetchAll",
+        method: "get",
+        role: "admin",
+        handler: [admin_controller_1.default.fetchAllTransactions]
+    },
+    {
         path: "/payments/:paymentId/approve",
         method: "post",
         role: "admin",
@@ -143,6 +149,12 @@ exports.default = [
         method: "post",
         role: "admin",
         handler: [admin_controller_1.default.sendEmail]
+    },
+    {
+        path: "/email/fetchAll",
+        method: "get",
+        role: "admin",
+        handler: [admin_controller_1.default.fetchEmails]
     }
 ];
 //# sourceMappingURL=index.js.map

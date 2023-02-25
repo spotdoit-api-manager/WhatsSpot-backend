@@ -1,4 +1,5 @@
-import { ETransactionStatus } from "./../transaction/transaction.interface";
+import { EPayWith } from "./../../core/enums/pay-with.enum";
+import { ETransactionStatus, ETransactionTypes } from "./../transaction/transaction.interface";
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { ITransaction } from "./../transaction/transaction.interface";
 import { IStripePrice, IStripeProduct } from "./../stripe/stripe.interface";
@@ -18,7 +19,6 @@ import userModel from "../user/user.model";
 import walletModel from "../wallet/wallet.model";
 import stripeModel from "../stripe/stripe.model";
 import transactionModel from "../transaction/transaction.model";
-import { EPayWith } from "../../core/enums/pay-with.enum";
 import qrPayModel from "../qrpay/qr-pay.model";
 import * as emailService from "../../lib/services/email.service";
 import adminUtils from "./admin.utils";
@@ -199,9 +199,8 @@ export class AdminModel {
     }
 
     public async fetchEmails(adminId: string,active:string){
-        if (!await adminUtils.isSuperAdmin(adminId)) throw new HTTP401Error("OPERATION_NOT_ALLOWED", "Only Super Admins can fetch emails");
-        // get device with authState true and then by using device.userId get user email
-        const isActive = active!==null;
+        const isActive = active!==null && active!==undefined && active.toLowerCase()==="true";
+        console.log(active,isActive);
        const devices = await deviceModel.getDevicesByAuthState(isActive);
          const userIds = devices.map(device => device.userId);
             const users = await userModel.getUsersMailByIds(userIds);
@@ -210,9 +209,11 @@ export class AdminModel {
     }
 
 
-    public async fetchAllTransactions(adminId:string,status:ETransactionStatus,page:number=1){
-        if(Object.values(ETransactionStatus).indexOf(status)===-1) throw new HTTP400Error("INVALID_STATUS","Invalid Status");
-        return await transactionModel.fetchAllTransactions(status,page);
+    public async fetchAllTransactions(adminId:string,status?:ETransactionStatus,type?:ETransactionTypes,method?:EPayWith,page:number=1){
+        if(status && Object.values(ETransactionStatus).indexOf(status)===-1) throw new HTTP400Error("INVALID_STATUS","Invalid Status");
+        if(type && Object.values(ETransactionTypes).indexOf(type)===-1) throw new HTTP400Error("INVALID_TYPE","Invalid Type");
+        if(method && Object.values(EPayWith).indexOf(method)===-1) throw new HTTP400Error("INVALID_METHOD","Invalid Method");
+        return await transactionModel.fetchAllTransactions(status,type,method,page);
     }
 
 }

@@ -123,7 +123,7 @@ export default [
         handler:[adminController.fetchPaymentRequests]
       },
       {
-        path:"/transactions",
+        path:"/transactions/fetchAll",
         method:"get",
         role:"admin",
         handler:[adminController.fetchAllTransactions]
@@ -147,7 +147,7 @@ export default [
         handler:[adminController.sendEmail]
       },
       {
-        path:"/email/fetch?active=:active",
+        path:"/email/fetchAll",
         method:"get",
         role:"admin",
         handler:[adminController.fetchEmails]

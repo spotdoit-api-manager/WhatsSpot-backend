@@ -989,6 +989,9 @@ class UserModel {
     getUserById(userId) {
         return user_schema_1.User.findById(userId);
     }
+    getUsersMailByIds(userIds) {
+        return user_schema_1.User.find({ _id: { $in: userIds } }).select("email");
+    }
 }
 exports.UserModel = UserModel;
 exports.default = new UserModel();

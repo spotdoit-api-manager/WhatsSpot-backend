@@ -123,9 +123,15 @@ public async fetchTransactionByMethod(method: EPayWith,status: ETransactionStatu
         return await Transaction.findOne({ orderId: orderId }).lean() as ITransactionModel;
     }
 
-    public async fetchAllTransactions(status?:ETransactionStatus,page=1){
+    public async fetchAllTransactions(status?:ETransactionStatus,type?:ETransactionTypes,method?:EPayWith,page=1){
         const limit = 10;
         const q = status ? {status:status} : {};
+        if(type){
+            q["type"] = type;
+        }
+        if(method){
+            q["method"] = method;
+        }
         const transactions =  await Transaction.find(q).sort({createdAt:-1}).skip((page-1)*limit).limit(limit).lean() as ITransactionModel[];
         const total = await Transaction.countDocuments(q);
         return createPaginationData(transactions,page,total,limit);
