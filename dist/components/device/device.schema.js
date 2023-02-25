@@ -67,6 +67,7 @@ const deviceSchema = new mongoose_1.Schema({
         type: String,
         enum: ["SENDING", "IDLE"]
     },
+    lastUsed: Date,
     authState: Boolean,
     reason: {
         statusCode: Number,

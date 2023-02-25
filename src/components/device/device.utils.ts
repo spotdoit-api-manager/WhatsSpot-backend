@@ -22,6 +22,10 @@ export class DeviceUtils{
         return { error: false };
     }
 
+    public async updateDeviceLastUsed(deviceId:string){
+        await Device.findByIdAndUpdate(deviceId,{lastUsed:new Date()});
+    }
+
 }
 
 export default new DeviceUtils();

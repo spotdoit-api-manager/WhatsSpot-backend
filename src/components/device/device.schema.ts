@@ -70,6 +70,7 @@ const deviceSchema = new Schema(
       type:String,
       enum:["SENDING","IDLE"]
     },
+    lastUsed:Date,
     authState: Boolean,
     reason: {
       statusCode: Number,

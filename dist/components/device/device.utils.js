@@ -35,6 +35,11 @@ class DeviceUtils {
             return { error: false };
         });
     }
+    updateDeviceLastUsed(deviceId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield device_schema_1.Device.findByIdAndUpdate(deviceId, { lastUsed: new Date() });
+        });
+    }
 }
 exports.DeviceUtils = DeviceUtils;
 exports.default = new DeviceUtils();

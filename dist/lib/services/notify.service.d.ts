@@ -5,6 +5,7 @@ export declare class NotifyService {
     private clearDeviceCache;
     private checkNotificationSettings;
     deviceUnAuthorized(deviceId: string): Promise<void>;
+    deviceUnAuthorizedDueToNotUsed(deviceId: string): Promise<void>;
     deviceAuthorized(deviceId: string): Promise<void>;
     deviceConnectionClosed(deviceId: string, reason: IReason): Promise<void>;
     deviceMaxRetryReached(deviceId: string): Promise<void>;

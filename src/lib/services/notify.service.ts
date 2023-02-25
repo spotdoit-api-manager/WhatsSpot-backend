@@ -1,3 +1,4 @@
+import { commonConfig } from "./../../config/index";
 import { EPLANS } from "../../components/plans/plans.interface";
 import { ENotificationMainTypes } from "../interfaces/notification.interface";
 import { User } from "../../components/user/user.schema";
@@ -51,6 +52,29 @@ export class NotifyService {
 
             if (this.checkNotificationSettings(deviceIdPhoneMap[deviceId].notificationSettings, ENotificationMainTypes.DEVICE, ENotificationChannel.EMAIL)) {
                 emailService.sendNotificationMail(deviceIdPhoneMap[deviceId].email, "DEVICE UNAUTHORIZED", `Your device with Phone ${deviceIdPhoneMap[deviceId].devicePhone} is unauthorized.`);
+            }
+
+        } catch (e) {
+            logger.error(`Error sending DEVICE_UNAUTHORIZED notification for device ${deviceId}`, e.message);
+        }
+
+    }
+
+    public async deviceUnAuthorizedDueToNotUsed(deviceId: string) {
+        try {
+            logger.info(`Sending DEVICE_UNAUTHORIZED_DUE_TO_NOT_USED notification for device ${deviceId}`);
+            if (!deviceIdPhoneMap[deviceId]) {
+                const device = (await Device.findById(deviceId).select("userId phone").lean());
+                const userData = (await User.findById(device.userId).select("phone email userName settings").lean());
+                deviceIdPhoneMap[deviceId] = { notificationSettings: userData?.settings?.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
+            }
+
+            if (this.checkNotificationSettings(deviceIdPhoneMap[deviceId].notificationSettings, ENotificationMainTypes.DEVICE, ENotificationChannel.WHATSAPP)) {
+                messageService.sendWhatsappMessage(deviceIdPhoneMap[deviceId].phone, `Your device with Phone ${deviceIdPhoneMap[deviceId].devicePhone} is unAuthorized due to not used for ${commonConfig.deviceNotUsedMaxDay} days.You can authorize it again by logging in to your account.`);
+            }
+
+            if (this.checkNotificationSettings(deviceIdPhoneMap[deviceId].notificationSettings, ENotificationMainTypes.DEVICE, ENotificationChannel.EMAIL)) {
+                emailService.sendNotificationMail(deviceIdPhoneMap[deviceId].email, "DEVICE UNAUTHORIZED", `Your device with Phone ${deviceIdPhoneMap[deviceId].devicePhone} is unauthorized due to not used for ${commonConfig.deviceNotUsedMaxDay} days.You can authorize it again by logging in to your account.`);
             }
 
         } catch (e) {

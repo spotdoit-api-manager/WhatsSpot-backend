@@ -192,6 +192,8 @@ export class MessageModel {
         try {
             const device = await deviceUtils.findDeviceById(userId,deviceId);
             if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
+            device.lastUsed = new Date();
+            device.save();
             const { hasActivePlan, isMessageOver, activePlanInfo } = await planManagerService.hasActivePlan(userId);
             if (isMessageOver) throw new HTTP400Error("MESSAGES_EXHAUSTED", "message exhausted for your active plan");
             if (!hasActivePlan) {

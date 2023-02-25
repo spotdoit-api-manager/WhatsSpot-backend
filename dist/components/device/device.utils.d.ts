@@ -8,6 +8,7 @@ export declare class DeviceUtils {
         error: boolean;
         message?: undefined;
     }>;
+    updateDeviceLastUsed(deviceId: string): Promise<void>;
 }
 declare const _default: DeviceUtils;
 export default _default;

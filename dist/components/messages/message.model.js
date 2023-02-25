@@ -195,6 +195,8 @@ class MessageModel {
                 const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
                 if (!device)
                     throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
+                device.lastUsed = new Date();
+                device.save();
                 const { hasActivePlan, isMessageOver, activePlanInfo } = yield plan_manager_service_1.default.hasActivePlan(userId);
                 if (isMessageOver)
                     throw new httpErrors_1.HTTP400Error("MESSAGES_EXHAUSTED", "message exhausted for your active plan");

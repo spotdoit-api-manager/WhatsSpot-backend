@@ -42,7 +42,8 @@ exports.commonConfig = {
     jwtSecretKey: process.env.SECRET_KEY || "some-secret-key",
     pageSizeLimit: 15,
     domain: process.env.NODE_ENV === "production" ? "https://dashboard.whatsspot.in" : "http://localhost:4200",
-    backendUrl: process.env.NODE_ENV === "production" ? "https://backend.whatsspot.in" : "http://localhost:4250"
+    backendUrl: process.env.NODE_ENV === "production" ? "https://backend.whatsspot.in" : "http://localhost:4250",
+    deviceNotUsedMaxDay: 15,
 };
 exports.deviceKeyConfig = {
     jwtSecretKey: process.env.SECRET_KEY || "some-secret-key",

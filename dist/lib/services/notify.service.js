@@ -36,6 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotifyService = void 0;
+const index_1 = require("./../../config/index");
 const notification_interface_1 = require("../interfaces/notification.interface");
 const user_schema_1 = require("../../components/user/user.schema");
 const message_service_1 = __importDefault(require("./message.service"));
@@ -78,6 +79,28 @@ class NotifyService {
                 }
                 if (this.checkNotificationSettings(deviceIdPhoneMap[deviceId].notificationSettings, notification_interface_1.ENotificationMainTypes.DEVICE, notification_interface_2.ENotificationChannel.EMAIL)) {
                     emailService.sendNotificationMail(deviceIdPhoneMap[deviceId].email, "DEVICE UNAUTHORIZED", `Your device with Phone ${deviceIdPhoneMap[deviceId].devicePhone} is unauthorized.`);
+                }
+            }
+            catch (e) {
+                logger_1.default.error(`Error sending DEVICE_UNAUTHORIZED notification for device ${deviceId}`, e.message);
+            }
+        });
+    }
+    deviceUnAuthorizedDueToNotUsed(deviceId) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                logger_1.default.info(`Sending DEVICE_UNAUTHORIZED_DUE_TO_NOT_USED notification for device ${deviceId}`);
+                if (!deviceIdPhoneMap[deviceId]) {
+                    const device = (yield device_schema_1.Device.findById(deviceId).select("userId phone").lean());
+                    const userData = (yield user_schema_1.User.findById(device.userId).select("phone email userName settings").lean());
+                    deviceIdPhoneMap[deviceId] = { notificationSettings: (_a = userData === null || userData === void 0 ? void 0 : userData.settings) === null || _a === void 0 ? void 0 : _a.notifications, devicePhone: device.phone, phone: userData.phone, email: userData.email };
+                }
+                if (this.checkNotificationSettings(deviceIdPhoneMap[deviceId].notificationSettings, notification_interface_1.ENotificationMainTypes.DEVICE, notification_interface_2.ENotificationChannel.WHATSAPP)) {
+                    message_service_1.default.sendWhatsappMessage(deviceIdPhoneMap[deviceId].phone, `Your device with Phone ${deviceIdPhoneMap[deviceId].devicePhone} is unAuthorized due to not used for ${index_1.commonConfig.deviceNotUsedMaxDay} days.You can authorize it again by logging in to your account.`);
+                }
+                if (this.checkNotificationSettings(deviceIdPhoneMap[deviceId].notificationSettings, notification_interface_1.ENotificationMainTypes.DEVICE, notification_interface_2.ENotificationChannel.EMAIL)) {
+                    emailService.sendNotificationMail(deviceIdPhoneMap[deviceId].email, "DEVICE UNAUTHORIZED", `Your device with Phone ${deviceIdPhoneMap[deviceId].devicePhone} is unauthorized due to not used for ${index_1.commonConfig.deviceNotUsedMaxDay} days.You can authorize it again by logging in to your account.`);
                 }
             }
             catch (e) {

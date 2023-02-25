@@ -16,6 +16,7 @@ export interface IDevice {
     isDeleted: IDeviceDeleted;
     apiKeys: IApiKey[] | IApiKeyModal[];
     webHooks: IWebHook[];
+    lastUsed: Date;
 }
 export interface IWebHook {
     url: string;

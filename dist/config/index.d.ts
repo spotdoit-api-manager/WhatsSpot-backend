@@ -15,6 +15,7 @@ export declare const commonConfig: {
     pageSizeLimit: number;
     domain: string;
     backendUrl: string;
+    deviceNotUsedMaxDay: number;
 };
 export declare const deviceKeyConfig: {
     jwtSecretKey: string;
