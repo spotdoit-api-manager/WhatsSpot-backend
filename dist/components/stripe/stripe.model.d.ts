@@ -13,7 +13,7 @@ export declare class StripePaymentModel {
     validateSession(userId: string, walletId: string, sessionId: string): Promise<void>;
     fetchSession(userId: string, sessionId: string): Promise<any>;
     expireSession(userId: string, sessionId: string): Promise<any>;
-    stripeEvent(event: any): void;
+    stripeEvent(event: any): void | Promise<void>;
     private sessionSucceed;
     private sessionFailed;
     private sessionCancelled;

@@ -112,18 +112,18 @@ class StripePaymentModel {
         // console.log("stripe event",body);
         switch (event.type) {
             case "checkout.session.completed":
-                this.sessionSucceed(event);
+                return this.sessionSucceed(event);
                 break;
             case "checkout.session.canceled":
-                this.sessionCancelled(event);
+                return this.sessionCancelled(event);
                 break;
             case "checkout.session.payment_failed":
-                this.sessionFailed(event);
+                return this.sessionFailed(event);
                 break;
             case "checkout.session.expired":
-                this.sessionExpired(event);
+                return this.sessionExpired(event);
             default:
-                console.log("unknown event", event.type);
+                return console.log("unknown event", event.type);
         }
     }
     sessionSucceed(event) {

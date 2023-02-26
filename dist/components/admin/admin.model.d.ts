@@ -1,4 +1,3 @@
-/// <reference types="mongoose" />
 import { EPayWith } from "./../../core/enums/pay-with.enum";
 import { ETransactionStatus, ETransactionTypes } from "./../transaction/transaction.interface";
 import { IStripePrice, IStripeProduct } from "./../stripe/stripe.interface";
