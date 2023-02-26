@@ -45,15 +45,16 @@ userApiRouter.all("*", (req, res, next) => {
   responseHandler.reqRes(req, res).onFetch("API IS ACTIVE","Hurray!! Everything seems to be fine on WhatsSpot Server").send();
 });
 
+const stripeEventsRouter = express.Router();
+
+app.use("/stripe-event", applyRoutes(stripeEvents, stripeEventsRouter)); // base app api
+
 
 //!APP BASE ROUTER
 const baseAppRouter = express.Router();
 applyMiddleware([allowCors],baseAppRouter); //apply cors to only base endpoints
 app.use("/", applyRoutes(routes, baseAppRouter)); // base app api
 
-const stripeEventsRouter = express.Router();
-
-app.use("/stripe-event", applyRoutes(stripeEvents, stripeEventsRouter)); // base app api
 
 //!ADMIN ROUTER
 const adminRouter = express.Router();
