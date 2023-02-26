@@ -116,13 +116,11 @@ export class StripePaymentModel {
 
   private async sessionSucceed(event: any) {
     const session = event.data.object;
-    console.log("session succeeded", session);
-    console.log("session succeeded", session.metadata);
+   
     const ordinalSession = await this.fetchSession(session.metadata.userId, session.id);
     if (!ordinalSession) throw new HTTP401Error("INVALID_SESSION", "The session you are trying to validate is not valid");
     const transaction: ITransactionModel = await transactionModel.fetchTransactionByOrderId(session.id);
-    console.log("original session is ", ordinalSession);
-    console.log("transaction is ", transaction);
+   
     if (transaction.status !== ETransactionStatus.PENDING) throw new HTTP401Error("INVALID_SESSION", "The session you are trying to validate is already validated");
     if (transaction.metaData.planId === EPLANS.PAYG) {
       await walletModel.addBalanceToWallet(transaction.userId,transaction.walletId, transaction.amount);

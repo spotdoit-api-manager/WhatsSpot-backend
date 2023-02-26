@@ -129,14 +129,10 @@ class StripePaymentModel {
     sessionSucceed(event) {
         return __awaiter(this, void 0, void 0, function* () {
             const session = event.data.object;
-            console.log("session succeeded", session);
-            console.log("session succeeded", session.metadata);
             const ordinalSession = yield this.fetchSession(session.metadata.userId, session.id);
             if (!ordinalSession)
                 throw new httpErrors_1.HTTP401Error("INVALID_SESSION", "The session you are trying to validate is not valid");
             const transaction = yield transaction_model_1.default.fetchTransactionByOrderId(session.id);
-            console.log("original session is ", ordinalSession);
-            console.log("transaction is ", transaction);
             if (transaction.status !== transaction_interface_1.ETransactionStatus.PENDING)
                 throw new httpErrors_1.HTTP401Error("INVALID_SESSION", "The session you are trying to validate is already validated");
             if (transaction.metaData.planId === plans_interface_1.EPLANS.PAYG) {
