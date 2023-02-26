@@ -289,15 +289,20 @@ class WhatsappClient {
                 const devices = yield device_utils_1.default.findDeviceByCondition(condition);
                 logger_1.default.info(logFileName, "Total Clients to Initialize: ", devices.length);
                 for (let i = 0; i < devices.length; i++) {
-                    const device = devices[i];
-                    const walletId = yield wallet_model_1.default.getWalletIdByUserId(device.userId);
-                    console.debug(logFileName, `client${i}:${device.phone}`);
-                    const client = yield this.addClient(device._id, device.phone);
-                    yield client.initiClient(false);
-                    // filter active webhooks from device and subscribe to client for each
-                    const activeWebHooks = device.webHooks.filter((webHook) => webHook.status);
-                    if (activeWebHooks.length >= 0) {
-                        this.subscribeClientMessage(device.userId, walletId, client, activeWebHooks);
+                    try {
+                        const device = devices[i];
+                        const walletId = yield wallet_model_1.default.getWalletIdByUserId(device.userId);
+                        console.debug(logFileName, `client${i}:${device.phone}`);
+                        const client = yield this.addClient(device._id, device.phone);
+                        yield client.initiClient(false);
+                        // filter active webhooks from device and subscribe to client for each
+                        const activeWebHooks = device.webHooks.filter((webHook) => webHook.status);
+                        if (activeWebHooks.length >= 0) {
+                            this.subscribeClientMessage(device.userId, walletId, client, activeWebHooks);
+                        }
+                    }
+                    catch (e) {
+                        logger_1.default.error(logFileName, "Error in initializing client", e);
                     }
                 }
             }

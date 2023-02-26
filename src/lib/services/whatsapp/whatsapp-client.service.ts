@@ -283,17 +283,22 @@ public async initializeAllClients() {
         const devices = await deviceUtils.findDeviceByCondition(condition);
         logger.info(logFileName,"Total Clients to Initialize: ", devices.length);
     for (let i = 0; i < devices.length; i++) {
-        const device:IDeviceModel = devices[i];
-        const walletId:string = await walletModel.getWalletIdByUserId(device.userId);
-        console.debug(logFileName,`client${i}:${device.phone}`);
-        const client =  await this.addClient(device._id,device.phone);
-        await client.initiClient(false);
-        // filter active webhooks from device and subscribe to client for each
-        
-        const activeWebHooks:IWebHook[] = device.webHooks.filter((webHook: IWebHook) => webHook.status);
-        if(activeWebHooks.length >= 0){
-            this.subscribeClientMessage(device.userId,walletId,client,activeWebHooks);
-        } 
+        try{
+
+            const device:IDeviceModel = devices[i];
+            const walletId:string = await walletModel.getWalletIdByUserId(device.userId);
+            console.debug(logFileName,`client${i}:${device.phone}`);
+            const client =  await this.addClient(device._id,device.phone);
+            await client.initiClient(false);
+            // filter active webhooks from device and subscribe to client for each
+            
+            const activeWebHooks:IWebHook[] = device.webHooks.filter((webHook: IWebHook) => webHook.status);
+            if(activeWebHooks.length >= 0){
+                this.subscribeClientMessage(device.userId,walletId,client,activeWebHooks);
+            } 
+        }catch(e){
+            logger.error(logFileName,"Error in initializing client",e);
+        }
     }
     
 }else{
