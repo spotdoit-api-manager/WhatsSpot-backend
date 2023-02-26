@@ -29,7 +29,8 @@ exports.configCors = {
         "https://dashboard.whatsspot.in",
         "https://whatsspot.in",
         "https://admin.whatsspot.in",
-        //add your origin
+        "https://api.stripe.com",
+        "https://hooks.stripe.com",
     ],
     // Expose additional which are restricted.
     exposedHeaders: ["X-Auth", "Set-Cookie"]
