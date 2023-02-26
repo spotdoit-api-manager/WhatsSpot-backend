@@ -24,6 +24,7 @@ const allowCors = (router) => {
             }
             if (config_1.configCors.allowOrigin.indexOf(origin) === -1) {
                 const msg = `The CORS policy for this site does not allow access from the specified Origin to WhatsSpot. Origin: ${origin}`;
+                console.log("Request from unauthorised origin: ", origin);
                 return callback(new Error(msg), false);
             }
             return callback(null, true);
