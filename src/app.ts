@@ -14,6 +14,7 @@ import { schedule } from "node-cron";
 import logger from "./core/logger";
 import { allowCors, allowCorsAdmin, allowCorsApi } from "./lib/middleware/common.middleware";
 import ResponseHandler from "./lib/helpers/responseHandler";
+import stripeEvents from "./components/stripe/stripe.events";
 const logFileName = "[App]";
 
 
@@ -50,7 +51,9 @@ const baseAppRouter = express.Router();
 applyMiddleware([allowCors],baseAppRouter); //apply cors to only base endpoints
 app.use("/", applyRoutes(routes, baseAppRouter)); // base app api
 
+const stripeEventsRouter = express.Router();
 
+app.use("/stripe-event", applyRoutes(stripeEvents, stripeEventsRouter)); // base app api
 
 //!ADMIN ROUTER
 const adminRouter = express.Router();

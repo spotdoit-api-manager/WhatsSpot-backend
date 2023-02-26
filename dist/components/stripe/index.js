@@ -16,13 +16,6 @@ exports.default = [
         handler: [stripe_controller_1.default.validateSession]
     },
     {
-        path: "/stripe/event",
-        method: "post",
-        escapeAuth: true,
-        handler: [stripe_controller_1.default.stripeEvent]
-        // validateStripeEvent,
-    },
-    {
         path: "/stripe/sessions/fetch",
         method: "get",
         handler: [stripe_controller_1.default.fetchSession]

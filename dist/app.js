@@ -16,6 +16,7 @@ const errorHandlers_middleware_1 = __importDefault(require("./lib/middleware/err
 const dbConnection_1 = __importDefault(require("./lib/helpers/dbConnection"));
 const common_middleware_1 = require("./lib/middleware/common.middleware");
 const responseHandler_1 = __importDefault(require("./lib/helpers/responseHandler"));
+const stripe_events_1 = __importDefault(require("./components/stripe/stripe.events"));
 const logFileName = "[App]";
 // Initialize express app
 const app = (0, express_1.default)();
@@ -40,6 +41,8 @@ userApiRouter.all("*", (req, res, next) => {
 const baseAppRouter = express_1.default.Router();
 (0, utils_1.applyMiddleware)([common_middleware_1.allowCors], baseAppRouter); //apply cors to only base endpoints
 app.use("/", (0, utils_1.applyRoutes)(routes_1.default, baseAppRouter)); // base app api
+const stripeEventsRouter = express_1.default.Router();
+app.use("/stripe-event", (0, utils_1.applyRoutes)(stripe_events_1.default, stripeEventsRouter)); // base app api
 //!ADMIN ROUTER
 const adminRouter = express_1.default.Router();
 (0, utils_1.applyMiddleware)([common_middleware_1.allowCorsAdmin], adminRouter); //apply cors to admin api
