@@ -36,6 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpotSchedular = void 0;
+const plans_interface_1 = require("./../../components/plans/plans.interface");
 const scheduler = __importStar(require("node-schedule"));
 const device_interface_1 = require("../../components/device/device.interface");
 const device_schema_1 = require("../../components/device/device.schema");
@@ -49,7 +50,9 @@ class SpotSchedular {
         return __awaiter(this, void 0, void 0, function* () {
             logger_1.default.info(logFileName, "Rescheduling all user plan expiration");
             const userPlans = yield plans_schema_1.UserPlan.aggregate([
-                { $match: {} }
+                { $match: {
+                        planStatus: plans_interface_1.EPlanStatus.ACTIVE
+                    } }
             ]);
             for (const plan of userPlans) {
                 try {
@@ -86,7 +89,9 @@ class SpotSchedular {
             for (const deviceApi of apiKeys) {
                 for (const api of deviceApi.apiKeys) {
                     try {
-                        yield this.scheduleApiExpiration(deviceApi._id, api);
+                        if (api.status == device_interface_1.EApiKeyStatus.ACTIVE) {
+                            yield this.scheduleApiExpiration(deviceApi._id, api);
+                        }
                     }
                     catch (e) {
                         logger_1.default.error(logFileName, `Error in  api expire scheduling of device ${deviceApi._id} for api ${api._id}`);
@@ -110,7 +115,7 @@ class SpotSchedular {
     expireApiKey(deviceId, apiKey) {
         return __awaiter(this, void 0, void 0, function* () {
             logger_1.default.info(logFileName, `Expiring api key ${apiKey._id}`);
-            const result = yield device_schema_1.Device.findOneAndUpdate({
+            yield device_schema_1.Device.findOneAndUpdate({
                 _id: new bson_1.ObjectID(deviceId),
                 "apiKeys._id": new bson_1.ObjectID(apiKey._id),
             }, { $set: { "apiKeys.$.status.status": device_interface_1.EApiKeyStatus.EXPIRED } }, {

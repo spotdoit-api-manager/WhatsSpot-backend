@@ -1,3 +1,4 @@
+import { EPlanStatus } from "./../../components/plans/plans.interface";
 import { IUserPlanModel } from "./../../components/plans/plans.schema";
 import * as scheduler from "node-schedule";
 import deviceModel from ".../../../components/device/device.model";
@@ -15,7 +16,9 @@ export class SpotSchedular{
     public async reScheduleAllUserPlanExpiration(){
         logger.info(logFileName,"Rescheduling all user plan expiration");
         const userPlans= await UserPlan.aggregate([
-            { $match: {}}
+            { $match: {
+                planStatus:EPlanStatus.ACTIVE
+            }}
         ]);
 
         for(const plan of userPlans) {
@@ -52,7 +55,9 @@ export class SpotSchedular{
         for(const deviceApi of apiKeys) {
             for(const api of deviceApi.apiKeys) {
               try{
+                if(api.status==EApiKeyStatus.ACTIVE){
                     await this.scheduleApiExpiration(deviceApi._id,api);
+                }
               }  catch(e){
                   logger.error(logFileName,`Error in  api expire scheduling of device ${deviceApi._id} for api ${api._id}`);
               }
@@ -73,7 +78,7 @@ export class SpotSchedular{
 
     public async expireApiKey(deviceId: string, apiKey: IApiKeyModal) {
         logger.info(logFileName, `Expiring api key ${apiKey._id}`);
-        const result = await Device.findOneAndUpdate({
+        await Device.findOneAndUpdate({
             _id: new ObjectID(deviceId),
             "apiKeys._id": new ObjectID(apiKey._id),
         },
