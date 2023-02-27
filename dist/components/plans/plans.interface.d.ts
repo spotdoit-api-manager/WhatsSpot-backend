@@ -26,6 +26,7 @@ export interface IUserPlan {
     startDate: Date;
     endDate: Date;
     planStatus: EPlanStatus;
+    webHookRequest: number;
 }
 export declare enum EPlanStatus {
     ACTIVE = "ACTIVE",

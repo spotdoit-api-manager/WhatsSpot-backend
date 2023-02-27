@@ -14,6 +14,7 @@ export declare class PlansModel {
     private exhaustActivePlan;
     expirePlan(plan: IUserPlanModel): Promise<void>;
     increamentMessageCount(activePlanId: string): Promise<IUserPlanModel>;
+    increamentWebhookMessageCount(activePlanId: string): Promise<IUserPlanModel>;
 }
 declare const _default: PlansModel;
 export default _default;

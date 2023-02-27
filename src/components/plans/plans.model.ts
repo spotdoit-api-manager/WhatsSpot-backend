@@ -70,7 +70,7 @@ public async activatePlan(userId: string,planId: string,planTransactionId: strin
     if(!plan) throw new Error("INVALID_PLAN"); 
     const startDate = new Date();
     const endDate = await this.calculatePlanEndDate(plan);
-    const planBody: IUserPlan = {planName:plan.planName,userId,planId,planTransactionId,startDate,endDate,sentMessageCount:0,planStatus:EPlanStatus.ACTIVE};
+    const planBody: IUserPlan = {planName:plan.planName,userId,planId,planTransactionId,startDate,endDate,sentMessageCount:0,webHookRequest:0,planStatus:EPlanStatus.ACTIVE};
     const newActivePlan: IUserPlanModel = new UserPlan(planBody);
     const activatedPlan: IUserPlanModel = await newActivePlan.savePlan();
     await userModel.addPlanToUser(userId,activatedPlan.planName,activatedPlan._id);
@@ -110,6 +110,15 @@ public async expirePlan(plan: IUserPlanModel){
 
 public async increamentMessageCount(activePlanId: string){
     const activePlanStats = await UserPlan.findByIdAndUpdate(activePlanId,{$inc:{sentMessageCount:1}},{new:true}).select("sentMessageCount planId");
+    const planInfo = await Plan.findOne({planId:activePlanStats.planId}).select("planMaxMessage").lean();
+    if(Number(planInfo.planMaxMessage) && Number(activePlanStats.sentMessageCount)>=Number(planInfo.planMaxMessage)){
+        await this.exhaustActivePlan(activePlanId);
+    }
+    return activePlanStats;
+}
+
+public async increamentWebhookMessageCount(activePlanId: string){
+    const activePlanStats = await UserPlan.findByIdAndUpdate(activePlanId,{$inc:{webHookRequest:1}},{new:true}).select("sentMessageCount webHookRequest planId");
     const planInfo = await Plan.findOne({planId:activePlanStats.planId}).select("planMaxMessage").lean();
     if(Number(planInfo.planMaxMessage) && Number(activePlanStats.sentMessageCount)>=Number(planInfo.planMaxMessage)){
         await this.exhaustActivePlan(activePlanId);
