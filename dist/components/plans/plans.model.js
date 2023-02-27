@@ -93,7 +93,7 @@ class PlansModel {
                 throw new Error("INVALID_PLAN");
             const startDate = new Date();
             const endDate = yield this.calculatePlanEndDate(plan);
-            const planBody = { planName: plan.planName, userId, planId, planTransactionId, startDate, endDate, sentMessageCount: 0, planStatus: plans_interface_1.EPlanStatus.ACTIVE };
+            const planBody = { planName: plan.planName, userId, planId, planTransactionId, startDate, endDate, sentMessageCount: 0, webHookRequest: 0, planStatus: plans_interface_1.EPlanStatus.ACTIVE };
             const newActivePlan = new plans_schema_1.UserPlan(planBody);
             const activatedPlan = yield newActivePlan.savePlan();
             yield user_model_1.default.addPlanToUser(userId, activatedPlan.planName, activatedPlan._id);
@@ -137,6 +137,16 @@ class PlansModel {
     increamentMessageCount(activePlanId) {
         return __awaiter(this, void 0, void 0, function* () {
             const activePlanStats = yield plans_schema_1.UserPlan.findByIdAndUpdate(activePlanId, { $inc: { sentMessageCount: 1 } }, { new: true }).select("sentMessageCount planId");
+            const planInfo = yield plans_schema_1.Plan.findOne({ planId: activePlanStats.planId }).select("planMaxMessage").lean();
+            if (Number(planInfo.planMaxMessage) && Number(activePlanStats.sentMessageCount) >= Number(planInfo.planMaxMessage)) {
+                yield this.exhaustActivePlan(activePlanId);
+            }
+            return activePlanStats;
+        });
+    }
+    increamentWebhookMessageCount(activePlanId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const activePlanStats = yield plans_schema_1.UserPlan.findByIdAndUpdate(activePlanId, { $inc: { webHookRequest: 1 } }, { new: true }).select("sentMessageCount webHookRequest planId");
             const planInfo = yield plans_schema_1.Plan.findOne({ planId: activePlanStats.planId }).select("planMaxMessage").lean();
             if (Number(planInfo.planMaxMessage) && Number(activePlanStats.sentMessageCount) >= Number(planInfo.planMaxMessage)) {
                 yield this.exhaustActivePlan(activePlanId);

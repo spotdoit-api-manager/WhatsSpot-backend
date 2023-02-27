@@ -369,9 +369,11 @@ private async sendWebHookRequest(userId:string,walletId:string,deviceId:string,p
     }
     axios.all(req).then(axios.spread((...responses) => {
         const res = responses.map((response: any) => response.data);
-        console.log("Webhook send successfully to :",urls);
-            plansModel.increamentMessageCount(activePlanInfo._id);
-            webhooksModel.createWebhookMessage(userId,body,EMessageStatus.ERROR);
+        // get count of success response
+        const successCount = res.filter((r: any) => r.error === false).length;
+        console.log("Webhook send successfully to :",urls," successCount: ",successCount);
+            plansModel.increamentWebhookMessageCount(activePlanInfo._id);
+            webhooksModel.createWebhookMessage(userId,body,EMessageStatus.SENT);
            return { error: false, creditUsed: 0, message: urls };
     })).catch(errors => {
         console.log("webhook request error: ",errors);

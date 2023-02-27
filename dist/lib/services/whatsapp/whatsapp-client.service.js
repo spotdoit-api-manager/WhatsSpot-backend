@@ -371,9 +371,11 @@ class WhatsappClient {
             }
             axios_1.default.all(req).then(axios_1.default.spread((...responses) => {
                 const res = responses.map((response) => response.data);
-                console.log("Webhook send successfully to :", urls);
-                plans_model_1.default.increamentMessageCount(activePlanInfo._id);
-                webhooks_model_1.default.createWebhookMessage(userId, body, message_interface_1.EMessageStatus.ERROR);
+                // get count of success response
+                const successCount = res.filter((r) => r.error === false).length;
+                console.log("Webhook send successfully to :", urls, " successCount: ", successCount);
+                plans_model_1.default.increamentWebhookMessageCount(activePlanInfo._id);
+                webhooks_model_1.default.createWebhookMessage(userId, body, message_interface_1.EMessageStatus.SENT);
                 return { error: false, creditUsed: 0, message: urls };
             })).catch(errors => {
                 console.log("webhook request error: ", errors);

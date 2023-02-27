@@ -660,13 +660,13 @@ export class DeviceModel {
     isValidMongoId(deviceId);
     if (!url) throw new HTTP400Error("URL_REQUIRED");
     await this.validateWebHook(userId, deviceId, url);
-    const device = await Device.findById(deviceId);
-      // .where("userId")
-      // .equals(userId)
-      // .where("_id")
-      // .equals(deviceId)
-      // .where("isDeleted.status")
-      // .equals(false);
+    const device = await Device.findOne({})
+      .where("userId")
+      .equals(userId)
+      .where("_id")
+      .equals(deviceId)
+      .where("isDeleted.status")
+      .equals(false);
     if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
     const result = device.webHooks.find((webHook) => webHook.url === url && !webHook?.isDeleted);
     if (result) throw new HTTP400Error("Webhook URL already exists");

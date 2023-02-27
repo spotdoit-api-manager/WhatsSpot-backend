@@ -90,6 +90,11 @@ const userPlanSchema: Schema = new Schema({
         required: true,
         default: 0
     },
+    webHookRequest:{
+        type:Number,
+        required:true,
+        default:0
+    },
 
     startDate: {
         type: Date,

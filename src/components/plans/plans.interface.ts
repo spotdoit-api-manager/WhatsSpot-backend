@@ -31,6 +31,7 @@ export interface IUserPlan{
     startDate: Date;
     endDate: Date;
     planStatus: EPlanStatus;
+    webHookRequest: number;
 }
 
 export enum EPlanStatus{
