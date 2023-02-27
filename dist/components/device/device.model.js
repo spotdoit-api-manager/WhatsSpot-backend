@@ -656,13 +656,13 @@ class DeviceModel {
             if (!url)
                 throw new httpErrors_1.HTTP400Error("URL_REQUIRED");
             yield this.validateWebHook(userId, deviceId, url);
-            const device = yield device_schema_1.Device.findById(deviceId);
-            // .where("userId")
-            // .equals(userId)
-            // .where("_id")
-            // .equals(deviceId)
-            // .where("isDeleted.status")
-            // .equals(false);
+            const device = yield device_schema_1.Device.findOne({})
+                .where("userId")
+                .equals(userId)
+                .where("_id")
+                .equals(deviceId)
+                .where("isDeleted.status")
+                .equals(false);
             if (!device)
                 throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");
             const result = device.webHooks.find((webHook) => webHook.url === url && !(webHook === null || webHook === void 0 ? void 0 : webHook.isDeleted));
