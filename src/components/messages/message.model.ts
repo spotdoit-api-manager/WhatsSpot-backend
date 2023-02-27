@@ -1,3 +1,4 @@
+import { messagePriceConfig } from "./../../config/index";
 import { isValidMongoId } from "./../../lib/helpers/index";
 import { IScheduleMessageModel } from "./message.schema";
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
@@ -188,7 +189,7 @@ export class MessageModel {
         
         return results;
     }
-    public async sendMessage(userId: string, to: string, message: IWhatsappMessage,messageType: EWhatsappMessageTypes, deviceId: string, walletId: string,transactionId: string=null) {
+    public async sendMessage(userId: string, to: string, message: IWhatsappMessage,messageType: EWhatsappMessageTypes, deviceId: string, walletId: string,isFast =false) {
         try {
             const device = await deviceUtils.findDeviceById(userId,deviceId);
             if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
@@ -197,7 +198,8 @@ export class MessageModel {
             const { hasActivePlan, isMessageOver, activePlanInfo } = await planManagerService.hasActivePlan(userId);
             if (isMessageOver) throw new HTTP400Error("MESSAGES_EXHAUSTED", "message exhausted for your active plan");
             if (!hasActivePlan) {
-                const { isValidAmount, balance } = await walletModel.validateTransactionAmount(walletId, parseFloat(process.env.TEXT_MESSAGE_RATE));
+                const validAmount = this.getMessageRate(messageType,isFast);  
+                const { isValidAmount, balance } = await walletModel.validateTransactionAmount(walletId, validAmount);
                 if (!isValidAmount) throw new Error("NOT_ENOUGH_BALANCE");
             }
             const result = await whatsappClientService.sendTypeMessage(messageType,message,device.phone,to);
@@ -236,6 +238,29 @@ export class MessageModel {
         return { error: true, message: "NOT_ADDED" };
     }
 
+    private getMessageRate(messageType:EWhatsappMessageTypes,isFast=false):number{
+        const PRICE = isFast?messagePriceConfig.fastMessage:messagePriceConfig.queueMessage;
+        let amount = PRICE.text;
+        switch(messageType){
+            case EWhatsappMessageTypes.TEXT_MESSAGE:
+                amount =  PRICE.text;
+            case EWhatsappMessageTypes.TEMPLATE_MESSAGE:
+                amount= PRICE.template;                 
+            case EWhatsappMessageTypes.LIST_MESSAGE:
+                amount= PRICE.list;
+            case EWhatsappMessageTypes.BUTTON_MESSAGE:
+                amount= PRICE.btn;
+            case EWhatsappMessageTypes.IMAGE_TEMPLATE_MESSAGE:
+                amount= PRICE.imageTemplate;  
+            case EWhatsappMessageTypes.IMAGE_BUTTON_MESSAGE:
+                amount= PRICE.imageBtn;
+            default:
+                amount= PRICE.text;
+
+        }
+
+        return amount;
+    }
    
 
 }

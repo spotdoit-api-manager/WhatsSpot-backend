@@ -62,6 +62,26 @@ export const deviceKeyConfig = {
   expiresIn: process.env.JWT_EXPIRES_IN,
 };
 
+export const messagePriceConfig = {
+  fastMessage:{
+    text:0.2,
+    list:0.2,
+    btn:0.2,
+    template:0.2,
+    imageBtn:0.2,
+    imageTemplate:0.2,
+    image:0.2,
+  },
+  queueMessage:{
+    text:0.2,
+    list:0.2,
+    btn:0.2,
+    template:0.2,
+    imageBtn:0.2,
+    imageTemplate:0.2,
+    image:0.2,
+  }
+};
 
 export const textLocalConfig = {
   apiKey: process.env.TEXTLOCAL_KEY
