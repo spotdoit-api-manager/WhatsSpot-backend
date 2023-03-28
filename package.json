@@ -28,7 +28,6 @@
     },
     "dependencies": {
         "@adiwajshing/baileys": "^5.0.0",
-        "@baileys/old": "npm:@adiwajshing/baileys@4.1.0",
         "@hapi/boom": "^10.0.0",
         "@types/bcrypt": "^5.0.0",
         "@types/events": "^3.0.0",

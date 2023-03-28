@@ -10,6 +10,7 @@ import Stripe from "../components/stripe";
 import paypal from "../components/paypal";
 import qrPay from "../components/qrpay";
 import webhooks from "../components/webhooks";
+import Configs from "../components/configs";
 
 export default [
     ...user,
@@ -23,5 +24,6 @@ export default [
     ...Stripe,
     ...paypal,
     ...qrPay,
-    ...webhooks
+    ...webhooks,
+    ...Configs
 ];

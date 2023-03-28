@@ -263,6 +263,7 @@ class WhatsappClient {
     }
     sendTypeMessage(messageType, message, from, to) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log("message type ", messageType);
             switch (messageType) {
                 case whatsapp_enum_1.EWhatsappMessageTypes.TEXT_MESSAGE:
                     return yield this.sendTextMessage(from, to, message);

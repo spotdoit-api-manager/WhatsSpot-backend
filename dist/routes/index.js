@@ -14,6 +14,7 @@ const stripe_1 = __importDefault(require("../components/stripe"));
 const paypal_1 = __importDefault(require("../components/paypal"));
 const qrpay_1 = __importDefault(require("../components/qrpay"));
 const webhooks_1 = __importDefault(require("../components/webhooks"));
+const configs_1 = __importDefault(require("../components/configs"));
 exports.default = [
     ...user_1.default,
     ...contact_1.default,
@@ -26,6 +27,7 @@ exports.default = [
     ...stripe_1.default,
     ...paypal_1.default,
     ...qrpay_1.default,
-    ...webhooks_1.default
+    ...webhooks_1.default,
+    ...configs_1.default
 ];
 //# sourceMappingURL=index.js.map

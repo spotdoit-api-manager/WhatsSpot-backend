@@ -254,6 +254,7 @@ export class WhatsappClient {
 
 
 public async sendTypeMessage(messageType: EWhatsappMessageTypes,message: IWhatsappMessage,from: string,to: string){
+    console.log("message type ",messageType);
     switch(messageType){
         case EWhatsappMessageTypes.TEXT_MESSAGE:
             return await this.sendTextMessage(from, to, message as IWhatsappTextMessage);

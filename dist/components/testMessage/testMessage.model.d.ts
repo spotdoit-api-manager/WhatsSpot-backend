@@ -4,6 +4,11 @@ export declare class TestMessageModel {
     sendTestMessage(body: any, testMessageId: string | null): Promise<void>;
     sendRawMessage(to: string, message: any): Promise<void>;
     private updateOrCreateTestMessage;
+    private getMessageBody;
+    private getTemplateMessage;
+    private getButtonMessage;
+    private getTextMessage;
+    private getListMessage;
 }
 declare const _default: TestMessageModel;
 export default _default;

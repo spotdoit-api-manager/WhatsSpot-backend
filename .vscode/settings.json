@@ -32,5 +32,8 @@
   ],
   "yaml.schemas": {
     "https://json.schemastore.org/github-workflow.json": "file:///d%3A/Projects/Whatsapp%20Sender%20New/whatsapp%20new/whatsapp-sender-backend-multi/.github/workflows/deploy.yml"
-  }
+  },
+  "C_Cpp.default.forcedInclude": [
+    "c:\\Users\\samee\\.vscode\\extensions\\l-i-v.mql-tools-2.0.0\\data\\mql5_en.mqh"
+  ]
 }
