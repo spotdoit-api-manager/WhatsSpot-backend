@@ -150,10 +150,10 @@ class AdminModel {
             if (!adminUser)
                 throw new httpErrors_2.HTTP401Error("ADMIN_USER_NOT_FOUND", "Contact Super Admin to add you as admin");
             const otp = this.updateOtp(adminUser._id);
-            const otpData = yield this.sendOtpToMobile(otp, phoneNumber);
-            if (otpData.proceed) {
-                return { phoneNumber, _id: adminUser.id };
-            }
+            this.sendOtpToMobile(otp, phoneNumber);
+            // if (otpData.proceed) {
+            // }
+            return { phoneNumber, _id: adminUser.id };
         });
     }
     addNewToken(dataToStore) {

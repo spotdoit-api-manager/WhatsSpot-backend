@@ -25,7 +25,7 @@ const sendMessage = (to, message) => __awaiter(void 0, void 0, void 0, function*
     if (env == "development")
         return { proceed: true };
     if (phone.country == "IN") {
-        return yield message_service_1.default.sendFast2Sms((0, index_1.sanatizeMobile)(phone.phone), message);
+        message_service_1.default.sendFast2Sms((0, index_1.sanatizeMobile)(phone.phone), message);
     }
     else {
         logger_1.default.info(`Mobile SMS not supported for ${phone === null || phone === void 0 ? void 0 : phone.country}`);

@@ -275,16 +275,16 @@ class UserModel {
                     const otp = this.updateOtp(userExist._id);
                     const otpData = yield this.sendOtpToMobile(otp, phoneInfo.number);
                     if (otpData === null || otpData === void 0 ? void 0 : otpData.proceed) {
-                        return { phone: phoneInfo.number, _id: userExist.id };
                     }
+                    return { phone: phoneInfo.number, _id: userExist.id };
                 }
                 else {
                     const user = yield this.createNewUser(phoneInfo.number, email, userName, country);
                     const otp = this.updateOtp(user._id);
-                    const otpData = yield this.sendOtpToMobile(otp, phoneInfo.number);
-                    if (otpData === null || otpData === void 0 ? void 0 : otpData.proceed) {
-                        return { phone: phoneInfo.number, _id: user.id };
-                    }
+                    this.sendOtpToMobile(otp, phoneInfo.number);
+                    // if (otpData?.proceed) {
+                    // }
+                    return { phone: phoneInfo.number, _id: user.id };
                 }
                 throw new httpErrors_1.HTTP400Error("SOME_ERROR_OCCURRED");
             }
@@ -304,10 +304,10 @@ class UserModel {
             if (!user)
                 throw new httpErrors_1.HTTP401Error("USER_NOT_FOUND");
             const otp = this.updateOtp(user._id);
-            const otpData = yield this.sendOtpToMobile(otp, parsedPhone);
-            if (otpData.proceed) {
-                return { phone: parsedPhone, _id: user.id };
-            }
+            this.sendOtpToMobile(otp, parsedPhone);
+            // if (otpData.proceed) {
+            // }
+            return { phone: parsedPhone, _id: user.id };
         });
     }
     resendOTP(id, body) {

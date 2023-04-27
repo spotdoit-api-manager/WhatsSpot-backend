@@ -62,9 +62,6 @@ export declare class AdminModel {
     updateOtp(id: string): number;
     sendOtpToMobile(otp: number, phone: string): Promise<{
         proceed: boolean;
-        message: any;
-    } | {
-        proceed: boolean;
     }>;
     addProduct(adminId: string, productBody: IStripeProduct): Promise<any>;
     getProducts(userId: string, limit: string): Promise<any>;

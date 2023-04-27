@@ -1,13 +1,9 @@
 export declare const sendMessage: (to: string, message: string) => Promise<{
     proceed: boolean;
-    message: any;
-} | {
-    proceed: boolean;
 }>;
 export declare const sendNewDeviceCode: (to: string, otp: number) => Promise<{
     proceed: boolean;
-    message?: undefined;
+    message: any;
 } | {
     proceed: boolean;
-    message: any;
 }>;
