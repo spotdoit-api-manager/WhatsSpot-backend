@@ -95,8 +95,8 @@ export class AdminModel {
         const otp = this.updateOtp(adminUser._id);
         const otpData = await this.sendOtpToMobile(otp, phoneNumber);
         if (otpData.proceed) {
-            return { phoneNumber, _id: adminUser.id };
         }
+        return { phoneNumber, _id: adminUser.id };
     }
 
     public signToken = (dataToStore: IDataStoredInAdminToken) => {

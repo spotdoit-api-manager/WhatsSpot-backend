@@ -231,15 +231,15 @@ export class UserModel {
         const otp = this.updateOtp(userExist._id);
         const otpData = await this.sendOtpToMobile(otp, phoneInfo.number);
         if (otpData?.proceed) {
-          return { phone:phoneInfo.number, _id: userExist.id };
         }
+        return { phone:phoneInfo.number, _id: userExist.id };
       }else{
         const user: IUserModel = await this.createNewUser(phoneInfo.number,email,userName,country);
         const otp = this.updateOtp(user._id);
         const otpData = await this.sendOtpToMobile(otp, phoneInfo.number);
         if (otpData?.proceed) {
-          return { phone:phoneInfo.number, _id: user.id };
         }
+        return { phone:phoneInfo.number, _id: user.id };
       }
      
       throw new HTTP400Error("SOME_ERROR_OCCURRED");
@@ -258,9 +258,9 @@ export class UserModel {
     if (!user) throw new HTTP401Error("USER_NOT_FOUND");
     const otp = this.updateOtp(user._id);
     const otpData = await this.sendOtpToMobile(otp, parsedPhone);
-    if (otpData.proceed) {
-      return { phone: parsedPhone, _id: user.id };
-    }
+    // if (otpData.proceed) {
+    // }
+    return { phone: parsedPhone, _id: user.id };
   }
 
   public async resendOTP(id: string, body: any) {
