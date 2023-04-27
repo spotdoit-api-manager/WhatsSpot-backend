@@ -236,9 +236,9 @@ export class UserModel {
       }else{
         const user: IUserModel = await this.createNewUser(phoneInfo.number,email,userName,country);
         const otp = this.updateOtp(user._id);
-        const otpData = await this.sendOtpToMobile(otp, phoneInfo.number);
-        if (otpData?.proceed) {
-        }
+         this.sendOtpToMobile(otp, phoneInfo.number);
+        // if (otpData?.proceed) {
+        // }
         return { phone:phoneInfo.number, _id: user.id };
       }
      
@@ -257,7 +257,7 @@ export class UserModel {
     const user: IUserModel = await this.findUserByPhone(parsedPhone);
     if (!user) throw new HTTP401Error("USER_NOT_FOUND");
     const otp = this.updateOtp(user._id);
-    const otpData = await this.sendOtpToMobile(otp, parsedPhone);
+   this.sendOtpToMobile(otp, parsedPhone);
     // if (otpData.proceed) {
     // }
     return { phone: parsedPhone, _id: user.id };
