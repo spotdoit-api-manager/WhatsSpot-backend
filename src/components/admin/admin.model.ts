@@ -93,10 +93,10 @@ export class AdminModel {
         const adminUser: IAdminUserModel = await this.findAdminUserByPhone(phoneNumber);
         if (!adminUser) throw new HTTP401Error("ADMIN_USER_NOT_FOUND", "Contact Super Admin to add you as admin");
         const otp = this.updateOtp(adminUser._id);
-        const otpData = await this.sendOtpToMobile(otp, phoneNumber);
-        if (otpData.proceed) {
-            return { phoneNumber, _id: adminUser.id };
-        }
+        this.sendOtpToMobile(otp, phoneNumber);
+        // if (otpData.proceed) {
+        // }
+        return { phoneNumber, _id: adminUser.id };
     }
 
     public signToken = (dataToStore: IDataStoredInAdminToken) => {
