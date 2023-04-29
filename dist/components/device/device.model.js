@@ -354,6 +354,7 @@ class DeviceModel {
     generateNewKey(userId, walletId, deviceId, body) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log("device id is:", deviceId);
+            console.log("walllet id is:", walletId);
             (0, index_1.isValidMongoId)(deviceId);
             (0, index_1.isValidMongoId)(walletId);
             if (!body.name || !body.expiresOn)

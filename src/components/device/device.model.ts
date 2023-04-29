@@ -342,6 +342,8 @@ export class DeviceModel {
     body: any
     ) {
       console.log("device id is:",deviceId);
+      console.log("walllet id is:",walletId);
+
       isValidMongoId(deviceId);
       isValidMongoId(walletId);
 
