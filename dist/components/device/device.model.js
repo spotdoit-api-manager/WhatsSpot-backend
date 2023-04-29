@@ -353,6 +353,7 @@ class DeviceModel {
     }
     generateNewKey(userId, walletId, deviceId, body) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log("device id is:", deviceId);
             (0, index_1.isValidMongoId)(deviceId);
             (0, index_1.isValidMongoId)(walletId);
             if (!body.name || !body.expiresOn)
@@ -381,7 +382,7 @@ class DeviceModel {
                         expiresOn: expiresOn === null || expiresOn === void 0 ? void 0 : expiresOn.toDate(),
                         status: { status: device_interface_1.EApiKeyStatus.ACTIVE, reason: null },
                     };
-                    yield this.addNewTokenDataToDevice(deviceId, tokenData);
+                    yield this.addNewTokenDataToDevice(deviceId.toString(), tokenData);
                     return tokenData;
                 }
                 throw new httpErrors_1.HTTP400Error("MAX_API_KEY_REACHED");

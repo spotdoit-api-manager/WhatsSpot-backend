@@ -340,9 +340,10 @@ export class DeviceModel {
     walletId: string,
     deviceId: string,
     body: any
-  ) {
-    isValidMongoId(deviceId);
-    isValidMongoId(walletId);
+    ) {
+      console.log("device id is:",deviceId);
+      isValidMongoId(deviceId);
+      isValidMongoId(walletId);
 
     if (!body.name || !body.expiresOn) throw new HTTP400Error("Fields missing");
     console.log(body);
@@ -369,7 +370,7 @@ export class DeviceModel {
           expiresOn: expiresOn?.toDate(),
           status: { status: EApiKeyStatus.ACTIVE, reason: null },
         };
-        await this.addNewTokenDataToDevice(deviceId, tokenData);
+        await this.addNewTokenDataToDevice(deviceId.toString(), tokenData);
         return tokenData;
       }
       throw new HTTP400Error("MAX_API_KEY_REACHED");
