@@ -123,6 +123,7 @@ export class DeviceController {
 
       responseHandler.reqRes(req, res).onFetch("KEY_GENERATED", await deviceModel.generateNewKey(req.userId,req.walletId,req.params.deviceId, req.body)).send();
     } catch (e) {
+      console.log(e);
       // send error with next function.
       next(responseHandler.sendError(e));
     }

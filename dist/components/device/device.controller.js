@@ -122,6 +122,7 @@ class DeviceController {
                 responseHandler.reqRes(req, res).onFetch("KEY_GENERATED", yield device_model_1.default.generateNewKey(req.userId, req.walletId, req.params.deviceId, req.body)).send();
             }
             catch (e) {
+                console.log(e);
                 // send error with next function.
                 next(responseHandler.sendError(e));
             }
