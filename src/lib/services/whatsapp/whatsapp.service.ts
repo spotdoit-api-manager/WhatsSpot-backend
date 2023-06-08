@@ -77,7 +77,7 @@ private interval;
 
       const config: any ={
         
-        version,
+        version:[2,2323,4],
         logger: this.logger, //`silent`
         printQRInTerminal: false,
         auth: {
@@ -86,6 +86,7 @@ private interval;
           keys: makeCacheableSignalKeyStore(this.state.keys,this.logger),
         },
         browser:["Mac OS", "Chrome", "10.15.3"],
+
         downloadHistory: false,
         patchMessageBeforeSending: (message) => {
           const requiresPatch = !!(
