@@ -70,7 +70,7 @@ class Whatsapp extends events_1.EventEmitter {
                 const { version, isLatest } = yield (0, baileys_1.fetchLatestBaileysVersion)();
                 console.log(`using WA v${version.join(".")}, isLatest: ${isLatest}`);
                 const config = {
-                    version: [2, 2323, 4],
+                    // version:[2,2323,4],
                     logger: this.logger,
                     printQRInTerminal: false,
                     auth: {
@@ -80,22 +80,29 @@ class Whatsapp extends events_1.EventEmitter {
                     },
                     browser: ["Mac OS", "Chrome", "10.15.3"],
                     downloadHistory: false,
-                    patchMessageBeforeSending: (message) => {
-                        const requiresPatch = !!(message.buttonsMessage ||
-                            // || message.templateMessage
-                            message.listMessage);
-                        if (requiresPatch) {
-                            message = {
-                                viewOnceMessage: {
-                                    message: Object.assign({ messageContextInfo: {
-                                            deviceListMetadataVersion: 2,
-                                            deviceListMetadata: {},
-                                        } }, message),
-                                },
-                            };
-                        }
-                        return message;
-                    },
+                    shouldSyncHistoryMessage: false,
+                    syncFullHistory: false,
+                    //   patchMessageBeforeSending: (message) => {
+                    //     const requiresPatch = !!(
+                    //         message.buttonsMessage ||
+                    //         // || message.templateMessage
+                    //         message.listMessage
+                    //     );
+                    //     if (requiresPatch) {
+                    //         message = {
+                    //             viewOnceMessage: {
+                    //                 message: {
+                    //                     messageContextInfo: {
+                    //                         deviceListMetadataVersion: 2,
+                    //                         deviceListMetadata: {},
+                    //                     },
+                    //                     ...message,
+                    //                 },
+                    //             },
+                    //         };
+                    //     }
+                    //     return message;
+                    // },
                 };
                 const sock = (0, baileys_1.default)(config);
                 this.client = sock;

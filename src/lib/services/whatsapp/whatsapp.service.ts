@@ -77,7 +77,7 @@ private interval;
 
       const config: any ={
         
-        version:[2,2323,4],
+        // version:[2,2323,4],
         logger: this.logger, //`silent`
         printQRInTerminal: false,
         auth: {
@@ -88,28 +88,30 @@ private interval;
         browser:["Mac OS", "Chrome", "10.15.3"],
 
         downloadHistory: false,
-        patchMessageBeforeSending: (message) => {
-          const requiresPatch = !!(
-              message.buttonsMessage ||
-              // || message.templateMessage
-              message.listMessage
-          );
-          if (requiresPatch) {
-              message = {
-                  viewOnceMessage: {
-                      message: {
-                          messageContextInfo: {
-                              deviceListMetadataVersion: 2,
-                              deviceListMetadata: {},
-                          },
-                          ...message,
-                      },
-                  },
-              };
-          }
+        shouldSyncHistoryMessage:false,
+        syncFullHistory:false,
+      //   patchMessageBeforeSending: (message) => {
+      //     const requiresPatch = !!(
+      //         message.buttonsMessage ||
+      //         // || message.templateMessage
+      //         message.listMessage
+      //     );
+      //     if (requiresPatch) {
+      //         message = {
+      //             viewOnceMessage: {
+      //                 message: {
+      //                     messageContextInfo: {
+      //                         deviceListMetadataVersion: 2,
+      //                         deviceListMetadata: {},
+      //                     },
+      //                     ...message,
+      //                 },
+      //             },
+      //         };
+      //     }
 
-          return message;
-      },
+      //     return message;
+      // },
 
       } ;
       const sock = makeWASocket(config);
