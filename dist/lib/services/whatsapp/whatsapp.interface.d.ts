@@ -3,7 +3,7 @@ export interface IReason {
     message?: string;
     error?: string;
 }
-export declare type IWhatsappMessage = IWhatsappListMessage | IWhatsappTextMessage | IWhatsAppIMageButtonMessage;
+export type IWhatsappMessage = IWhatsappListMessage | IWhatsappTextMessage | IWhatsAppIMageButtonMessage;
 export interface IWhatsappTextMessage {
     text: string;
 }
@@ -65,7 +65,7 @@ export interface IWhatsappImageTemplateMessage {
         url: string;
     };
 }
-export declare type ITemplateButtons = IURLButton | ICallButton | IQuickReplyButton;
+export type ITemplateButtons = IURLButton | ICallButton | IQuickReplyButton;
 export declare enum ETemplateButtons {
     URL_BUTTON = "URL_BUTTON",
     CALL_BUTTON = "CALL_BUTTON",

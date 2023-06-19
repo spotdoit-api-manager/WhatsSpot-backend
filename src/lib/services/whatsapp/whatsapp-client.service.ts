@@ -25,7 +25,6 @@ import planManagerService from "../plan.manager.service";
 import plansModel from "../../../components/plans/plans.model";
 import webhooksModel from "../../../components/webhooks/webhooks.model";
 import fileManagement from "../../../lib/helpers/file.management";
-import WhatsappOld from "./whatsapp.service.old";
 
 interface IWhatsappClient {
     [phone: string]: number;
@@ -42,16 +41,8 @@ export class WhatsappClient {
 
     public addClient = async (deviceId: string,phone: string) => {
         // const check if session folder contains phon_cred.json
-        let clientInstance;
-        const isOld =  await this.checkIfOldSessionPresent(phone);
-        console.log("isOld===> ",isOld);
-       if(isOld){
-        console.log("------------------OLD SESSION INSTANCE------------------");
-        clientInstance = new WhatsappOld(deviceId,phone);
-       }else{
-        console.log("---------------NEW SESSION INSTANCE-------------------");
-           clientInstance = new Whatsapp(deviceId,phone);
-        }
+        const clientInstance = new Whatsapp(deviceId,phone);
+        
 
         const instaceId = instanceProvider.getInstanceId(clientInstance); 
         logger.info(logFileName,`Adding client ${phone}`);
