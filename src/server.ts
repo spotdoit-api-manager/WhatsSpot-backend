@@ -38,7 +38,7 @@ socketManager.socketServer(server);
 
 
 server.listen(Port, async () => {
-  logger.info(`Listening to port ${Port}`);
+  console.log(`Listening to port ${Port}`);
   await startExchangeRateService();
   whatsappClientService.initializeAllClients();
   messageQueueService.start();

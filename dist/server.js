@@ -40,7 +40,7 @@ const Port = process.env.PORT ? +process.env.PORT : 8000;
 const server = (0, http_1.createServer)(app_1.app);
 socket_1.default.socketServer(server);
 server.listen(Port, () => __awaiter(void 0, void 0, void 0, function* () {
-    logger_1.default.info(`Listening to port ${Port}`);
+    console.log(`Listening to port ${Port}`);
     yield (0, exchange_rate_service_1.startExchangeRateService)();
     whatsapp_client_service_1.default.initializeAllClients();
     message_queue_service_1.default.start();
