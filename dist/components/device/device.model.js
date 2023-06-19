@@ -61,6 +61,7 @@ const projection_values_1 = require("../../lib/values/projection.values");
 const plans_model_1 = __importDefault(require("../plans/plans.model"));
 const device_utils_1 = __importDefault(require("./device.utils"));
 const axios_1 = __importDefault(require("axios"));
+const moment_1 = __importDefault(require("moment"));
 const logFileName = "[DeviceModal] : ";
 class DeviceModel {
     constructor() {
@@ -744,11 +745,16 @@ class DeviceModel {
             if (!webHook)
                 throw new httpErrors_1.HTTP400Error("WEBHOOK_NOT_FOUND");
             const { hasActivePlan, isMessageOver } = yield plan_manager_service_1.default.hasActivePlan(userId);
-            if (!hasActivePlan || isMessageOver) {
+            // get user created date
+            const user = yield user_model_1.default.getUserById(userId).lean();
+            // calculate total days from user created date
+            const totalDays = (0, moment_1.default)().diff((0, moment_1.default)(user.createdAt), "days");
+            console.log("totalDays", totalDays);
+            if (!hasActivePlan && totalDays > 7) {
                 webHook.status = false;
-                webHook.reason = "No active plan found or message limit exceeded for this plan";
+                webHook.reason = "No active plan found";
                 yield device.save();
-                throw new httpErrors_1.HTTP400Error("No active plan found or message limit exceeded for this plan", "Webhook requires active plan to resume");
+                throw new httpErrors_1.HTTP400Error("No active plan found", "Webhook requires active plan to resume.7 days free trial is over.");
             }
             webHook.status = true;
             webHook.reason = "";

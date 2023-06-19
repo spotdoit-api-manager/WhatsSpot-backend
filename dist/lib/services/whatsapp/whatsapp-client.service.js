@@ -340,7 +340,7 @@ class WhatsappClient {
             const urls = webHooks.map((webHook) => webHook.url);
             const { hasActivePlan, isMessageOver, activePlanInfo } = yield plan_manager_service_1.default.hasActivePlan(userId);
             if (!hasActivePlan || isMessageOver) {
-                //   pause webhooks
+                //   pause webhooks if no active plan or plan limit is over
                 console.log("Webhook paused for device: ", deviceId, " due to NO_ACTIVE_PLAN", urls);
                 this.unsubscribeWebHook(userId, walletId, webHooks, phone);
                 const device = yield device_utils_1.default.findDeviceById(userId, deviceId);

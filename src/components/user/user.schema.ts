@@ -9,6 +9,8 @@ export interface IUserModel extends IUser,Document{
   addNewUser(): any;
   correctPassword(pass1: string, pass2: string): boolean;
   sendOtpToMobile(): any;
+  createdAt?:Date;
+  updatedAt?:Date;
 }
 const planRef: Schema = new Schema({
   planName:{

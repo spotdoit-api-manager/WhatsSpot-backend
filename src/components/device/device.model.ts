@@ -34,6 +34,8 @@ import { deviceProjection } from "../../lib/values/projection.values";
 import plansModel from "../plans/plans.model";
 import deviceUtils from "./device.utils";
 import axios from "axios";
+import moment from "moment";
+import { IUserModel } from "../user/user.schema";
 const logFileName = "[DeviceModal] : ";
 export class DeviceModel {
   public async newDevice(
@@ -765,11 +767,16 @@ export class DeviceModel {
     );
     if (!webHook) throw new HTTP400Error("WEBHOOK_NOT_FOUND");
     const {hasActivePlan,isMessageOver} = await planManagerService.hasActivePlan(userId);
-    if(!hasActivePlan || isMessageOver){ 
+    // get user created date
+    const user:IUserModel  = await userModel.getUserById(userId).lean();
+    // calculate total days from user created date
+    const totalDays = moment().diff(moment(user.createdAt), "days");
+      console.log("totalDays",totalDays);
+    if(!hasActivePlan && totalDays > 7){ 
       webHook.status = false;
-      webHook.reason = "No active plan found or message limit exceeded for this plan";
+      webHook.reason = "No active plan found";
       await device.save();
-      throw new HTTP400Error("No active plan found or message limit exceeded for this plan","Webhook requires active plan to resume");
+      throw new HTTP400Error("No active plan found","Webhook requires active plan to resume.7 days free trial is over.");
     }
    
     webHook.status = true;
