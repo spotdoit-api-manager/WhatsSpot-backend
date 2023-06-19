@@ -12,7 +12,7 @@ import makeWASocket, {
   makeCacheableSignalKeyStore,
   BaileysEventMap,
   fetchLatestBaileysVersion,
-} from "@adiwajshing/baileys";
+} from "@whiskeysockets/baileys";
 
 import instanceProvider from "./instance.provider";
 import logger from "../../../core/logger";
