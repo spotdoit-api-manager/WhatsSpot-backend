@@ -30,7 +30,6 @@ const plan_manager_service_1 = __importDefault(require("../plan.manager.service"
 const plans_model_1 = __importDefault(require("../../../components/plans/plans.model"));
 const webhooks_model_1 = __importDefault(require("../../../components/webhooks/webhooks.model"));
 const file_management_1 = __importDefault(require("../../../lib/helpers/file.management"));
-const whatsapp_service_old_1 = __importDefault(require("./whatsapp.service.old"));
 const logFileName = "[WhatsappClientService] : ";
 exports.eventEmitter = new events_1.EventEmitter();
 class WhatsappClient {
@@ -38,17 +37,7 @@ class WhatsappClient {
         this.clients = clients_data_1.default;
         this.addClient = (deviceId, phone) => __awaiter(this, void 0, void 0, function* () {
             // const check if session folder contains phon_cred.json
-            let clientInstance;
-            const isOld = yield this.checkIfOldSessionPresent(phone);
-            console.log("isOld===> ", isOld);
-            if (isOld) {
-                console.log("------------------OLD SESSION INSTANCE------------------");
-                clientInstance = new whatsapp_service_old_1.default(deviceId, phone);
-            }
-            else {
-                console.log("---------------NEW SESSION INSTANCE-------------------");
-                clientInstance = new whatsapp_service_1.default(deviceId, phone);
-            }
+            const clientInstance = new whatsapp_service_1.default(deviceId, phone);
             const instaceId = instance_provider_1.default.getInstanceId(clientInstance);
             logger_1.default.info(logFileName, `Adding client ${phone}`);
             clients_data_1.default[phone] = instaceId;

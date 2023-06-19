@@ -3,6 +3,7 @@ import { IWebHook } from "./../../../components/device/device.interface";
 import { IWhatsAppIMageButtonMessage, IWhatsappImageTemplateMessage } from "./whatsapp.interface";
 import { IWhatsappListMessage, IWhatsappButtonMessage, IWhatsappTemplateMessage, IWhatsappMessage } from "./whatsapp.interface";
 import { EventEmitter } from "events";
+import Whatsapp from "./whatsapp.service";
 import { IImageMessage, IWhatsappTextMessage } from "./whatsapp.interface";
 import { EWhatsappMessageTypes } from "./whatsapp.enum";
 interface IWhatsappClient {
@@ -11,7 +12,7 @@ interface IWhatsappClient {
 export declare const eventEmitter: EventEmitter;
 export declare class WhatsappClient {
     clients: IWhatsappClient;
-    addClient: (deviceId: string, phone: string) => Promise<any>;
+    addClient: (deviceId: string, phone: string) => Promise<Whatsapp>;
     getClientStatus(phone: string): any;
     getClientInstanceByPhone(phone: string): any;
     getClientInstanceByInstanceId: (instanceId: number) => any;

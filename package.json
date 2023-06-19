@@ -27,12 +27,12 @@
         "postinstall": "node patch.js"
     },
     "dependencies": {
-        "@adiwajshing/baileys": "^5.0.0",
         "@hapi/boom": "^10.0.0",
         "@types/bcrypt": "^5.0.0",
         "@types/events": "^3.0.0",
         "@types/mongoose": "^5.11.97",
         "@types/node-schedule": "^2.1.0",
+        "@whiskeysockets/baileys": "github:WhiskeySockets/Baileys",
         "async": "^3.1.0",
         "async-redis": "^2.0.0",
         "aws-sdk": "^2.820.0",

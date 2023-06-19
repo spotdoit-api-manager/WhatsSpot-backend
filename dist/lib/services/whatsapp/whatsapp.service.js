@@ -39,7 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const whatsapp_utils_1 = require("./whatsapp-utils");
 const events_1 = require("events");
 const pino_1 = __importDefault(require("pino"));
-const baileys_1 = __importStar(require("@adiwajshing/baileys"));
+const baileys_1 = __importStar(require("@whiskeysockets/baileys"));
 const instance_provider_1 = __importDefault(require("./instance.provider"));
 const logger_1 = __importDefault(require("../../../core/logger"));
 const notify_service_1 = __importDefault(require("../notify.service"));
@@ -70,7 +70,7 @@ class Whatsapp extends events_1.EventEmitter {
                 const { version, isLatest } = yield (0, baileys_1.fetchLatestBaileysVersion)();
                 console.log(`using WA v${version.join(".")}, isLatest: ${isLatest}`);
                 const config = {
-                    version: [2,2323,4],
+                    version: [2, 2323, 4],
                     logger: this.logger,
                     printQRInTerminal: false,
                     auth: {

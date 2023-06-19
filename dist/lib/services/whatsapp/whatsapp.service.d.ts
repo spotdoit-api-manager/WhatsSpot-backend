@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { IWhatsappMessage } from "./whatsapp.interface";
 import { EventEmitter } from "events";
-import { AuthenticationState } from "@adiwajshing/baileys";
+import { AuthenticationState } from "@whiskeysockets/baileys";
 export default class Whatsapp extends EventEmitter {
     client: any;
     phone: string;

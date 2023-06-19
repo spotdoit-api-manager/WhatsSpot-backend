@@ -14,12 +14,7 @@ export declare class ContactModal {
     editGroupContacts(userId: string, groupId: string, contacts: IContactModel[]): Promise<{
         message: string;
     }>;
-    deleteContacts(userId: string, contactsId: string[]): Promise<{
-        ok?: number;
-        n?: number;
-    } & {
-        deletedCount?: number;
-    }>;
+    deleteContacts(userId: string, contactsId: string[]): Promise<any>;
     deleteGroupContacts(userId: string, groupId: string, contactsId: string[]): Promise<any[]>;
 }
 declare const _default: ContactModal;
