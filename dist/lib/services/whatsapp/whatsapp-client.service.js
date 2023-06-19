@@ -30,6 +30,8 @@ const plan_manager_service_1 = __importDefault(require("../plan.manager.service"
 const plans_model_1 = __importDefault(require("../../../components/plans/plans.model"));
 const webhooks_model_1 = __importDefault(require("../../../components/webhooks/webhooks.model"));
 const file_management_1 = __importDefault(require("../../../lib/helpers/file.management"));
+const moment_1 = __importDefault(require("moment"));
+const user_model_1 = __importDefault(require("../../../components/user/user.model"));
 const logFileName = "[WhatsappClientService] : ";
 exports.eventEmitter = new events_1.EventEmitter();
 class WhatsappClient {
@@ -339,7 +341,9 @@ class WhatsappClient {
             const totalAmount = webHooks.length * parseFloat(process.env.WEBHOOK_REQUEST_RATE || "0.2");
             const urls = webHooks.map((webHook) => webHook.url);
             const { hasActivePlan, isMessageOver, activePlanInfo } = yield plan_manager_service_1.default.hasActivePlan(userId);
-            if (!hasActivePlan || isMessageOver) {
+            const user = yield user_model_1.default.getUserById(userId);
+            const totalDays = (0, moment_1.default)().diff((0, moment_1.default)(user.createdAt), "days");
+            if (!hasActivePlan && totalDays > 7) {
                 //   pause webhooks if no active plan or plan limit is over
                 console.log("Webhook paused for device: ", deviceId, " due to NO_ACTIVE_PLAN", urls);
                 this.unsubscribeWebHook(userId, walletId, webHooks, phone);

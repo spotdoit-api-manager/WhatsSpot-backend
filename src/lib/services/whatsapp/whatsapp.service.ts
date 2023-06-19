@@ -77,7 +77,7 @@ private interval;
 
       const config: any ={
         
-        // version:[2,2323,4],
+         version,//:[2,2323,4],
         logger: this.logger, //`silent`
         printQRInTerminal: false,
         auth: {

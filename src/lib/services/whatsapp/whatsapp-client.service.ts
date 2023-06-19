@@ -25,6 +25,8 @@ import planManagerService from "../plan.manager.service";
 import plansModel from "../../../components/plans/plans.model";
 import webhooksModel from "../../../components/webhooks/webhooks.model";
 import fileManagement from "../../../lib/helpers/file.management";
+import moment from "moment";
+import userModel from "../../../components/user/user.model";
 
 interface IWhatsappClient {
     [phone: string]: number;
@@ -339,7 +341,10 @@ private async sendWebHookRequest(userId:string,walletId:string,deviceId:string,p
     const totalAmount = webHooks.length * parseFloat(process.env.WEBHOOK_REQUEST_RATE || "0.2");
     const urls = webHooks.map((webHook: IWebHook) => webHook.url);
     const { hasActivePlan, isMessageOver, activePlanInfo } = await planManagerService.hasActivePlan(userId);
-    if (!hasActivePlan || isMessageOver) {
+    const user = await userModel.getUserById(userId);
+    const totalDays = moment().diff(moment(user.createdAt), "days");
+
+    if (!hasActivePlan && totalDays > 7) {
     //   pause webhooks if no active plan or plan limit is over
     console.log("Webhook paused for device: ",deviceId," due to NO_ACTIVE_PLAN",urls);
     this.unsubscribeWebHook(userId,walletId,webHooks,phone);

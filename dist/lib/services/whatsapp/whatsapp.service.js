@@ -70,7 +70,7 @@ class Whatsapp extends events_1.EventEmitter {
                 const { version, isLatest } = yield (0, baileys_1.fetchLatestBaileysVersion)();
                 console.log(`using WA v${version.join(".")}, isLatest: ${isLatest}`);
                 const config = {
-                    // version:[2,2323,4],
+                    version,
                     logger: this.logger,
                     printQRInTerminal: false,
                     auth: {

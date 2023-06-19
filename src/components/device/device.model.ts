@@ -771,7 +771,7 @@ export class DeviceModel {
     const user:IUserModel  = await userModel.getUserById(userId).lean();
     // calculate total days from user created date
     const totalDays = moment().diff(moment(user.createdAt), "days");
-      console.log("totalDays",totalDays);
+
     if(!hasActivePlan && totalDays > 7){ 
       webHook.status = false;
       webHook.reason = "No active plan found";
