@@ -17,6 +17,7 @@ export declare class MessageModel {
         message: IWhatsappMessage;
         isGroup: boolean;
         messageType: EWhatsappMessageTypes;
+        messageGap?: number;
     }, deviceId: string): Promise<{
         error: boolean;
         result: IMessageModel[];
@@ -37,6 +38,7 @@ export declare class MessageModel {
         isGroup: boolean;
         scheduleTime: Date;
         messageType: EWhatsappMessageTypes;
+        messageGap?: number;
     }, deviceId: string): Promise<{
         error: boolean;
         result: IScheduleMessageModel[];

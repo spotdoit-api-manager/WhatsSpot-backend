@@ -6,7 +6,7 @@ import { EPlanStatus } from "./../plans/plans.interface";
 import { EWhatsappMessageTypes } from "./../../lib/services/whatsapp/whatsapp.enum";
 import { ObjectID } from "bson";
 import { IImageMessage, IWhatsappMessage, IWhatsappTextMessage,IWhatsappListMessage, IWhatsappButtonMessage, IWhatsappTemplateMessage } from "./../../lib/services/whatsapp/whatsapp.interface";
-import { sanatizeMobile } from "./../../lib/utils/index";
+import { getRandomNumber, sanatizeMobile } from "./../../lib/utils/index";
 import { validateMobile } from "../../lib/utils";
 import { HTTP400Error, HTTP401Error } from "../../lib/utils/httpErrors";
 import { ESendType, IMessage, EMessageStatus, IScheduleMessage } from "./message.interface";
@@ -25,6 +25,7 @@ import deviceUtils from "../device/device.utils";
 import messageQueueService from "../../lib/services/whatsapp/message-queue.service";
 import scheduleService from "../../lib/services/schedule.service";
 import planManagerService from "../../lib/services/plan.manager.service";
+import { groupMessageDefaultGap } from "../../config";
 
 const logFileName = "[MessageModel] : ";
 export class MessageModel {
@@ -43,20 +44,21 @@ export class MessageModel {
     
 
     public updateMessageToGroupStatus = async (id: string, contact: IContact, status: EMessageStatus, reason: string = null) => {
-        await MessageQueue.updateOne({ _id: id }, { $push: { contactsSent: { phoneNumber: contact.phoneNumber, name: contact?.name, status: status, reason: reason } } });
+        await MessageQueue.updateOne({ _id: id,"contactsSent.phoneNumber":{$ne:contact.phoneNumber} }, { $addToSet: { contactsSent: { phoneNumber: contact.phoneNumber, name: contact?.name, status: status, reason: reason } } });
     }
 
 
-    public async addMessageToQueue(userId: string, body: { groups: IGroupList[]; numbers: string | string[]; message: IWhatsappMessage; isGroup: boolean;messageType: EWhatsappMessageTypes }, deviceId: string) {
+    public async addMessageToQueue(userId: string, body: { groups: IGroupList[]; numbers: string | string[]; message: IWhatsappMessage; isGroup: boolean;messageType: EWhatsappMessageTypes,messageGap?:number }, deviceId: string) {
         logger.debug(logFileName,"add to queue request", body, deviceId);
         const device = await deviceUtils.findDeviceById(userId,deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-
         const messagesBody: IMessage[] = [];
         if (body.isGroup) {
             body.groups.forEach((group: IGroupList) => {
-                const newBody: IMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.QUEUE, to: group._id,messageType:body.messageType, message: body.message, status: EMessageStatus.PENDING, isGroup: true };
+                const newBody: IMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.QUEUE, to: group._id,messageType:body.messageType, message: body.message, status: EMessageStatus.PENDING, isGroup: true ,messageGap:body?.messageGap || groupMessageDefaultGap};
                 messagesBody.push(newBody);
+                console.log("newBody",newBody);
+                return;
             });
             return await this.addMultipleMessageToQueue(messagesBody);
         }
@@ -65,7 +67,7 @@ export class MessageModel {
         if (typeof (body.numbers) === "string") {
             numbers.push(body.numbers);
         } else {
-            body.numbers.forEach((phone: any) => {
+            (body.numbers as string[]).forEach((phone: any) => {
                const parsedPhone = parsePhone(phone);
                 numbers.push(parsedPhone.number);
             });
@@ -73,7 +75,7 @@ export class MessageModel {
 
         for (let i = 0; i < numbers.length; i++) {
             const to = numbers[i];
-            const newBody: IMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.QUEUE, to,messageType:body.messageType, message: body.message, status: EMessageStatus.PENDING };
+            const newBody: IMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.QUEUE, to,messageType:body.messageType, message: body.message, status: EMessageStatus.PENDING,messageGap:body.messageGap || groupMessageDefaultGap };
             messagesBody.push(newBody);
         }
 
@@ -85,7 +87,7 @@ export class MessageModel {
         return { error: false, messageInfo: result.result, numbers };
     }
 
-    public async scheduleMessage(userId: string, body: { groups: IGroupList[]; numbers: string | string[]; message: IWhatsappMessage; isGroup: boolean; scheduleTime: Date;messageType: EWhatsappMessageTypes }, deviceId: string) {
+    public async scheduleMessage(userId: string, body: { groups: IGroupList[]; numbers: string | string[]; message: IWhatsappMessage; isGroup: boolean; scheduleTime: Date;messageType: EWhatsappMessageTypes,messageGap?:number}, deviceId: string) {
         const scheduleTime = new Date(body.scheduleTime);
         if(!scheduleTime) throw new HTTP400Error("INVALID_SCHEDULE_TIME", "Schedule time is invalid");
         const currentTime = new Date();
@@ -100,7 +102,7 @@ export class MessageModel {
         const messagesBody: IScheduleMessage[] = [];
         if (body.isGroup) {
             body.groups.forEach((group: IGroupList) => {
-                const newBody: IScheduleMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.SCHEDULE, to: group._id,messageType:body.messageType, message: body.message, status: EMessageStatus.PENDING, isGroup: true, scheduleTime };
+                const newBody: IScheduleMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.SCHEDULE, to: group._id,messageType:body.messageType, message: body.message, status: EMessageStatus.PENDING, isGroup: true, scheduleTime,messageGap:body?.messageGap || groupMessageDefaultGap };
                 messagesBody.push(newBody);
             });
             return await this.addMultipleScheduleMessage(messagesBody);
@@ -118,7 +120,7 @@ export class MessageModel {
 
         for (let i = 0; i < numbers.length; i++) {
             const to = numbers[i];
-            const newBody: IScheduleMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.SCHEDULE, to,messageType:body.messageType, message: body.message, status: EMessageStatus.PENDING, scheduleTime };
+            const newBody: IScheduleMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.SCHEDULE, to,messageType:body.messageType, message: body.message, status: EMessageStatus.PENDING, scheduleTime,messageGap:body.messageGap || groupMessageDefaultGap};
             messagesBody.push(newBody);
         }
 
@@ -190,6 +192,7 @@ export class MessageModel {
     }
     public async sendMessage(userId: string, to: string, message: IWhatsappMessage,messageType: EWhatsappMessageTypes, deviceId: string, walletId: string,transactionId: string=null) {
         try {
+            console.log("Sending message to: ", to);
             const device = await deviceUtils.findDeviceById(userId,deviceId);
             if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
             device.lastUsed = new Date();

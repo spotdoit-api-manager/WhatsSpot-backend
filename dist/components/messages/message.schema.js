@@ -125,6 +125,11 @@ const messageSchema = new mongoose_1.Schema({
     scheduleTime: {
         type: Date,
         required: false
+    },
+    messageGap: {
+        type: Number,
+        required: false,
+        default: 10
     }
 }, {
     timestamps: true,

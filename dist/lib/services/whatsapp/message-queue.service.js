@@ -22,9 +22,11 @@ const message_schema_1 = require("./../../../components/messages/message.schema"
 const socket_1 = __importDefault(require("../socket"));
 const contact_model_1 = __importDefault(require("../../../components/contact/contact.model"));
 const logger_1 = __importDefault(require("../../../core/logger"));
+const utils_1 = require("../../../lib/utils");
 const FETCH_PENDING_INTERVAL = 10;
 const logFileName = "[MessageQueueService] : ";
-const MGCSPF = process.env.MGCSPF || 2; //mag group contact send per fetch;
+// making it 1 so that there can be added delay in sending messages to group
+const MGCSPF = 1; //+process.env.MGCSPF || 2;//mag group contact send per fetch;
 class MessageQueueService {
     constructor() {
         this.MGCSPF_Counter = 0;
@@ -43,19 +45,69 @@ class MessageQueueService {
             }, FETCH_PENDING_INTERVAL * 1000);
         });
     }
-    getPendingMessagesToGroup(limit = 1) {
+    getPendingMessagesToGroup(limit = 20) {
         return __awaiter(this, void 0, void 0, function* () {
-            const pendingMessagesToGroup = yield message_schema_1.MessageQueue.find({ status: message_interface_1.EMessageStatus.PENDING, isGroup: true }).sort({ _id: 1, priority: 1 }).limit(limit);
-            logger_1.default.info(logFileName, `FOUND ${pendingMessagesToGroup.length} PENDING MESSAGES TO GROUP`);
-            const resultGroupContact = yield this.sendPendingMessageToGroup(pendingMessagesToGroup);
-            setTimeout(() => {
-                this.getPendingMessagesToGroup();
-            }, FETCH_PENDING_INTERVAL * 1000);
+            // i have updatedAt field and timeGapInSecs field fetch all messages where updatedAt is less than or equal to current time - timeGapInSecs
+            try {
+                const r = (0, utils_1.getRandomNumber)(5, 20);
+                console.log("Random Number is ", r);
+                const pendingMessagesToGroup = yield message_schema_1.MessageQueue.aggregate([
+                    {
+                        $addFields: {
+                            timeDifferenceInSeconds: {
+                                $divide: [{ $subtract: [{ $toLong: new Date() }, { $toLong: { $toDate: "$updatedAt" } },] }, 1000],
+                            },
+                            randomGap: {
+                                $add: ["$messageGap", (0, utils_1.getRandomNumber)(5, 20)],
+                            },
+                        }
+                    },
+                    {
+                        $addFields: {
+                            isEligible: {
+                                $cond: {
+                                    if: { $gte: ["$timeDifferenceInSeconds", "$randomGap"] },
+                                    then: true,
+                                    else: false,
+                                }
+                            }
+                        }
+                    },
+                    {
+                        $match: {
+                            status: message_interface_1.EMessageStatus.PENDING,
+                            isGroup: true,
+                            isEligible: true
+                            // timeDifferenceInSeconds: { $gte: "$messageGap" },
+                            // updatedAt: { $lte: "$thresholdTime" }
+                            // updatedAt: {  $lt: new Date(new Date().getTime() - groupMessageDefaultGap * 1000) }
+                        }
+                    },
+                    {
+                        $sort: { _id: 1, priority: 1 }
+                    },
+                    {
+                        $limit: limit
+                    }
+                ]);
+                // console.log(pendingMessagesToGroup);
+                // const pendingMessagesToGroup = await MessageQueue.find({ status: EMessageStatus.PENDING,isGroup: true,...updateAtQuery}).sort({ _id: 1,priority:1 }).limit(limit);
+                logger_1.default.info(logFileName, `FOUND ${pendingMessagesToGroup.length} PENDING MESSAGES TO GROUP`);
+                const resultGroupContact = yield this.sendPendingMessageToGroup(pendingMessagesToGroup);
+            }
+            catch (e) {
+                console.log(e);
+            }
+            finally {
+                setTimeout(() => {
+                    this.getPendingMessagesToGroup();
+                }, FETCH_PENDING_INTERVAL * 1000);
+            }
         });
     }
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     sendPendingMessageToGroup(pendingMessages) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.MGCSPF_Counter = 0;
             for (let i = 0; i < pendingMessages.length; i++) {
                 const message = pendingMessages[i];
                 const groupId = message.to;
@@ -65,19 +117,21 @@ class MessageQueueService {
                 const contactsSent = message.contactsSent || [];
                 yield this.updateMessagePriority(message._id, (message === null || message === void 0 ? void 0 : message.priority) || 0);
                 let anyContactError = false;
+                this.MGCSPF_Counter = 0;
                 for (let c = 0; c < groupContacts.length; c++) {
-                    if (this.MGCSPF_Counter > MGCSPF) {
-                        logger_1.default.info(logFileName, `SENDING PENDING MESSAGE TO GROUP ${groupId} CONTACT REACHED ${MGCSPF} LIMIT`);
+                    if (this.MGCSPF_Counter >= MGCSPF) {
+                        console.log(logFileName, `SENDING PENDING MESSAGE TO GROUP ${groupId} CONTACT REACHED ${MGCSPF} LIMIT`);
                         break;
                     }
                     const contact = groupContacts[c];
                     const idx = contactsSent.findIndex((c) => c.phoneNumber == contact.phoneNumber);
-                    if (idx > -1 && contactsSent[idx].status == message_interface_1.EMessageStatus.SENT)
+                    if (idx > -1 && (contactsSent[idx].status == message_interface_1.EMessageStatus.SENT))
                         continue;
                     this.MGCSPF_Counter++;
                     try {
                         const body = { to: contact.phoneNumber, message: message.message };
                         const result = yield message_model_1.default.sendMessage(message.userId, body.to, body.message, message.messageType, message.deviceId, walletId);
+                        console.log(logFileName, `SENDING PENDING MESSAGE TO GROUP ${groupId} CONTACT ${contact.phoneNumber}`);
                         if (result.error) {
                             anyContactError = true;
                             yield message_model_1.default.updateMessageToGroupStatus(message._id, contact, message_interface_1.EMessageStatus.ERROR, result.message);
@@ -91,6 +145,9 @@ class MessageQueueService {
                         anyContactError = true;
                         yield message_model_1.default.updateMessageToGroupStatus(message._id, contact, message_interface_1.EMessageStatus.ERROR, e.message);
                         continue;
+                    }
+                    finally {
+                        // await delay(messageGap);
                     }
                 }
                 if (contactsSent.length == groupContacts.length) {

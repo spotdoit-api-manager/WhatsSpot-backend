@@ -19,6 +19,7 @@ export interface IMessage {
         }
     ];
     priority?: number;
+    messageGap?: number;
 }
 export interface IScheduleMessage extends IMessage {
     scheduleTime: Date;

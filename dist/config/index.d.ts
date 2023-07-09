@@ -1,6 +1,7 @@
 import { PlivoCredentials, Fast2SmsCredentials } from "./../lib/interfaces/providers.interface";
 import { ITestMessageConfig } from "./config.interface";
 export declare const mongoUrl: () => string;
+export declare const groupMessageDefaultGap = 10;
 export declare const configCors: {
     adminAllowOrigin: string[];
     allowOrigin: string[];

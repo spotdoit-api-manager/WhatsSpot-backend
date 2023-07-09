@@ -43,9 +43,12 @@ server.listen(Port, () => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`Listening to port ${Port}`);
     yield (0, exchange_rate_service_1.startExchangeRateService)();
     whatsapp_client_service_1.default.initializeAllClients();
-    message_queue_service_1.default.start();
-    schedule_service_1.default.reScheduleMessages();
-    device_monitor_service_1.default.init();
+    setTimeout(() => {
+        // 
+        schedule_service_1.default.reScheduleMessages();
+        device_monitor_service_1.default.init();
+        message_queue_service_1.default.start();
+    }, 10000);
     if (process.env.NODE_ENV === "production") {
         schedular_1.default.reScheduleAllApiExpiration();
         schedular_1.default.reScheduleAllUserPlanExpiration();

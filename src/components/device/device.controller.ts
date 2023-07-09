@@ -153,7 +153,7 @@ export class DeviceController {
   public addMessageToQueue = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-      console.log("add to queue request ", req.params);
+      console.log("add to queue request new ", req.body);
 
       responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE", await messageModel.addMessageToQueue(req.userId,req.body, req.params.deviceId)).send();
     } catch (e) {

@@ -18,7 +18,8 @@ export interface IMessage {
          status:EMessageStatus,
          reason?:string
     }],
-    priority?: number
+    priority?: number,
+    messageGap?: number
 }
 
 export interface IScheduleMessage extends IMessage{

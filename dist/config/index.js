@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.testMessageConfig = exports.fast2SmsConfig = exports.pilvoConfig = exports.razorPaySecrets = exports.googleOAuth = exports.paginationConfig = exports.s3Config = exports.stripeConfig = exports.mailazyConfig = exports.textLocalConfig = exports.deviceKeyConfig = exports.commonConfig = exports.rateLimitConfig = exports.configCors = exports.mongoUrl = void 0;
+exports.testMessageConfig = exports.fast2SmsConfig = exports.pilvoConfig = exports.razorPaySecrets = exports.googleOAuth = exports.paginationConfig = exports.s3Config = exports.stripeConfig = exports.mailazyConfig = exports.textLocalConfig = exports.deviceKeyConfig = exports.commonConfig = exports.rateLimitConfig = exports.configCors = exports.groupMessageDefaultGap = exports.mongoUrl = void 0;
 const mongoUrl = () => {
     const configs = {
         dbAccess: process.env.DB_ACCESS || "local",
@@ -15,6 +15,7 @@ const mongoUrl = () => {
     return `mongodb+srv://${configs.user}:${configs.pass}@${configs.cluster}.mongodb.net/${configs.db}?retryWrites=true`;
 };
 exports.mongoUrl = mongoUrl;
+exports.groupMessageDefaultGap = 10;
 exports.configCors = {
     // Allow your domains to restrict ill apis.
     adminAllowOrigin: [

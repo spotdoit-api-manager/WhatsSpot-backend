@@ -152,7 +152,7 @@ class DeviceController {
         this.addMessageToQueue = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
             const responseHandler = new responseHandler_1.default();
             try {
-                console.log("add to queue request ", req.params);
+                console.log("add to queue request new ", req.body);
                 responseHandler.reqRes(req, res).onFetch("ADDED_TO_QUEUE", yield message_model_1.default.addMessageToQueue(req.userId, req.body, req.params.deviceId)).send();
             }
             catch (e) {

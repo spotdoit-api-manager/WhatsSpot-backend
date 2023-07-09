@@ -15,6 +15,8 @@ export const mongoUrl = (): string => {
   return `mongodb+srv://${configs.user}:${configs.pass}@${configs.cluster}.mongodb.net/${configs.db}?retryWrites=true`;
 };
 
+export const groupMessageDefaultGap = 10;
+
 
 export const configCors = {
   // Allow your domains to restrict ill apis.

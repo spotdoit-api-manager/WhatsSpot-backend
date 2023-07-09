@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createPaginationData = exports.getSkipLimit = exports.validateEmail = exports.deSanatizeMobile = exports.sanatizeMobile = exports.validateMobile = exports.getPaginationInfo = exports.mongoDBProjectFields = exports.applyRoutes = exports.applyMiddleware = void 0;
+exports.getRandomNumber = exports.delay = exports.createPaginationData = exports.getSkipLimit = exports.validateEmail = exports.deSanatizeMobile = exports.sanatizeMobile = exports.validateMobile = exports.getPaginationInfo = exports.mongoDBProjectFields = exports.applyRoutes = exports.applyMiddleware = void 0;
 const auth_middleware_1 = require("../middleware/auth.middleware");
 // load all middleware with this function call
 const applyMiddleware = (middlewareWrappers, router) => {
@@ -88,4 +88,10 @@ const createPaginationData = (data, page, total, limit) => {
     };
 };
 exports.createPaginationData = createPaginationData;
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+exports.delay = delay;
+const getRandomNumber = (min = 1, max = 100000000) => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+exports.getRandomNumber = getRandomNumber;
 //# sourceMappingURL=index.js.map

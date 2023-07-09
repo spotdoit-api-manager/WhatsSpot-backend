@@ -41,9 +41,13 @@ server.listen(Port, async () => {
   console.log(`Listening to port ${Port}`);
   await startExchangeRateService();
   whatsappClientService.initializeAllClients();
-  messageQueueService.start();
-  scheduleService.reScheduleMessages();
-  deviceMonitorService.init();
+  setTimeout(() => {
+    // 
+    scheduleService.reScheduleMessages();
+    deviceMonitorService.init();
+    messageQueueService.start();
+  }, 10000);
+
   if (process.env.NODE_ENV === "production") {
     spotSchedular.reScheduleAllApiExpiration();
     spotSchedular.reScheduleAllUserPlanExpiration();

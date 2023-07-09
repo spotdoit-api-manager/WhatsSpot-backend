@@ -26,6 +26,7 @@ const device_utils_1 = __importDefault(require("../device/device.utils"));
 const message_queue_service_1 = __importDefault(require("../../lib/services/whatsapp/message-queue.service"));
 const schedule_service_1 = __importDefault(require("../../lib/services/schedule.service"));
 const plan_manager_service_1 = __importDefault(require("../../lib/services/plan.manager.service"));
+const config_1 = require("../../config");
 const logFileName = "[MessageModel] : ";
 class MessageModel {
     constructor() {
@@ -33,7 +34,7 @@ class MessageModel {
             yield message_schema_1.MessageQueue.updateOne({ _id: id }, { status: status, reason: reason });
         });
         this.updateMessageToGroupStatus = (id, contact, status, reason = null) => __awaiter(this, void 0, void 0, function* () {
-            yield message_schema_1.MessageQueue.updateOne({ _id: id }, { $push: { contactsSent: { phoneNumber: contact.phoneNumber, name: contact === null || contact === void 0 ? void 0 : contact.name, status: status, reason: reason } } });
+            yield message_schema_1.MessageQueue.updateOne({ _id: id, "contactsSent.phoneNumber": { $ne: contact.phoneNumber } }, { $addToSet: { contactsSent: { phoneNumber: contact.phoneNumber, name: contact === null || contact === void 0 ? void 0 : contact.name, status: status, reason: reason } } });
         });
     }
     retryFailedMessage(userId, deviceId) {
@@ -55,8 +56,10 @@ class MessageModel {
             const messagesBody = [];
             if (body.isGroup) {
                 body.groups.forEach((group) => {
-                    const newBody = { phone: device.phone, userId, deviceId: deviceId, sendType: message_interface_1.ESendType.QUEUE, to: group._id, messageType: body.messageType, message: body.message, status: message_interface_1.EMessageStatus.PENDING, isGroup: true };
+                    const newBody = { phone: device.phone, userId, deviceId: deviceId, sendType: message_interface_1.ESendType.QUEUE, to: group._id, messageType: body.messageType, message: body.message, status: message_interface_1.EMessageStatus.PENDING, isGroup: true, messageGap: (body === null || body === void 0 ? void 0 : body.messageGap) || config_1.groupMessageDefaultGap };
                     messagesBody.push(newBody);
+                    console.log("newBody", newBody);
+                    return;
                 });
                 return yield this.addMultipleMessageToQueue(messagesBody);
             }
@@ -72,7 +75,7 @@ class MessageModel {
             }
             for (let i = 0; i < numbers.length; i++) {
                 const to = numbers[i];
-                const newBody = { phone: device.phone, userId, deviceId: deviceId, sendType: message_interface_1.ESendType.QUEUE, to, messageType: body.messageType, message: body.message, status: message_interface_1.EMessageStatus.PENDING };
+                const newBody = { phone: device.phone, userId, deviceId: deviceId, sendType: message_interface_1.ESendType.QUEUE, to, messageType: body.messageType, message: body.message, status: message_interface_1.EMessageStatus.PENDING, messageGap: body.messageGap || config_1.groupMessageDefaultGap };
                 messagesBody.push(newBody);
             }
             const result = yield this.addMultipleMessageToQueue(messagesBody);
@@ -100,7 +103,7 @@ class MessageModel {
             const messagesBody = [];
             if (body.isGroup) {
                 body.groups.forEach((group) => {
-                    const newBody = { phone: device.phone, userId, deviceId: deviceId, sendType: message_interface_1.ESendType.SCHEDULE, to: group._id, messageType: body.messageType, message: body.message, status: message_interface_1.EMessageStatus.PENDING, isGroup: true, scheduleTime };
+                    const newBody = { phone: device.phone, userId, deviceId: deviceId, sendType: message_interface_1.ESendType.SCHEDULE, to: group._id, messageType: body.messageType, message: body.message, status: message_interface_1.EMessageStatus.PENDING, isGroup: true, scheduleTime, messageGap: (body === null || body === void 0 ? void 0 : body.messageGap) || config_1.groupMessageDefaultGap };
                     messagesBody.push(newBody);
                 });
                 return yield this.addMultipleScheduleMessage(messagesBody);
@@ -117,7 +120,7 @@ class MessageModel {
             }
             for (let i = 0; i < numbers.length; i++) {
                 const to = numbers[i];
-                const newBody = { phone: device.phone, userId, deviceId: deviceId, sendType: message_interface_1.ESendType.SCHEDULE, to, messageType: body.messageType, message: body.message, status: message_interface_1.EMessageStatus.PENDING, scheduleTime };
+                const newBody = { phone: device.phone, userId, deviceId: deviceId, sendType: message_interface_1.ESendType.SCHEDULE, to, messageType: body.messageType, message: body.message, status: message_interface_1.EMessageStatus.PENDING, scheduleTime, messageGap: body.messageGap || config_1.groupMessageDefaultGap };
                 messagesBody.push(newBody);
             }
             const result = yield this.addMultipleScheduleMessage(messagesBody);
@@ -192,6 +195,7 @@ class MessageModel {
     sendMessage(userId, to, message, messageType, deviceId, walletId, transactionId = null) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                console.log("Sending message to: ", to);
                 const device = yield device_utils_1.default.findDeviceById(userId, deviceId);
                 if (!device)
                     throw new httpErrors_1.HTTP400Error("DEVICE_NOT_FOUND");

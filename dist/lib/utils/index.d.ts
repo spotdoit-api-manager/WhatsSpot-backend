@@ -36,4 +36,6 @@ export declare const createPaginationData: (data: any, page: number, total: numb
         hasPrev: boolean;
     };
 };
+export declare const delay: (ms: number) => Promise<unknown>;
+export declare const getRandomNumber: (min?: number, max?: number) => number;
 export {};
