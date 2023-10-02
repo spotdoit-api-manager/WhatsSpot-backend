@@ -36,6 +36,7 @@ export default class Whatsapp extends EventEmitter {
   qrRequested = false;
   public _instanceId: number;
   private retryCount =0;
+  private isMaxRetryDone = false;
   private removed =false;
   private firstConnect = false;
   private lastStatus = false;
@@ -245,8 +246,10 @@ private interval;
     if(this.isMaxRetryReached()){
       this.retryCount = 0;
       logger.warn(logFileName,`[${this.phone}] Max Connection Retry Reached....`);
+      this.destroyClient();
+      if(this.isMaxRetryDone) return;
       notifyService.deviceMaxRetryReached(this.deviceId);
-      // this.destroyClient();
+      this.isMaxRetryDone =   true;
       return;
     }
 
@@ -262,8 +265,16 @@ private interval;
     return reason;
   }
 
-  private destroyClient(){
-    return;
+  private async destroyClient(){
+    try{
+      await this.removeAllListeners();
+      await this.client?.ev?.removeAllListeners();
+      await this.client?.end();
+      this.closeRefreshInterval();
+
+    }catch(e){
+
+    }
   }
 
   public async getDeviceStatus(){
