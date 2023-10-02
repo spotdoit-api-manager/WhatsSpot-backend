@@ -13,6 +13,7 @@ export default class Whatsapp extends EventEmitter {
     qrRequested: boolean;
     _instanceId: number;
     private retryCount;
+    private isMaxRetryDone;
     private removed;
     private firstConnect;
     private lastStatus;

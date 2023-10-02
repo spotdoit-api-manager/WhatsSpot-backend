@@ -55,6 +55,7 @@ class Whatsapp extends events_1.EventEmitter {
         this.qrInProcess = false;
         this.qrRequested = false;
         this.retryCount = 0;
+        this.isMaxRetryDone = false;
         this.removed = false;
         this.firstConnect = false;
         this.lastStatus = false;
@@ -270,8 +271,11 @@ class Whatsapp extends events_1.EventEmitter {
             if (this.isMaxRetryReached()) {
                 this.retryCount = 0;
                 logger_1.default.warn(logFileName, `[${this.phone}] Max Connection Retry Reached....`);
+                this.destroyClient();
+                if (this.isMaxRetryDone)
+                    return;
                 notify_service_1.default.deviceMaxRetryReached(this.deviceId);
-                // this.destroyClient();
+                this.isMaxRetryDone = true;
                 return;
             }
             this.client.ev.removeAllListeners();
@@ -287,7 +291,17 @@ class Whatsapp extends events_1.EventEmitter {
         return reason;
     }
     destroyClient() {
-        return;
+        var _a, _b, _c;
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.removeAllListeners();
+                yield ((_b = (_a = this.client) === null || _a === void 0 ? void 0 : _a.ev) === null || _b === void 0 ? void 0 : _b.removeAllListeners());
+                yield ((_c = this.client) === null || _c === void 0 ? void 0 : _c.end());
+                this.closeRefreshInterval();
+            }
+            catch (e) {
+            }
+        });
     }
     getDeviceStatus() {
         return __awaiter(this, void 0, void 0, function* () {
