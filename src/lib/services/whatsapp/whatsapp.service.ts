@@ -1,3 +1,4 @@
+import { sendMessage } from './../otp-handler';
 import { getSerializedPhone } from "./whatsapp-utils";
 import { IButtonMessage, IImageMessage, IReason, IWhatsappListMessage, IWhatsappTextMessage } from "./whatsapp.interface";
 import { EventEmitter } from "events";
@@ -9,19 +10,19 @@ import makeWASocket, {
   delay,
 
   WABrowserDescription,
-  useSingleFileAuthState,
   AuthenticationState,
   SocketConfig,
-  CommonSocketConfig,
-} from "@adiwajshing/baileys";
+  useMultiFileAuthState,
+  makeCacheableSignalKeyStore,
+} from "@whiskeysockets/baileys";
 
 import deviceModel from "./../../../components/device/device.model";
-import path from "path";
 import instanceProvider from "./instance.provider";
 import logger from "../../../core/logger";
 import notifyService from "../notify.service";
 import fileManagement from "../../../lib/helpers/file.management";
 import { EWhatsappMessageTypes } from "./whatsapp.enum";
+import NodeCache from "node-cache";
 
 const logFileName = "[WhatsappService] : ";
 export default class Whatsapp extends EventEmitter {
@@ -37,22 +38,38 @@ export default class Whatsapp extends EventEmitter {
   private retryCount =0;
   private removed =false;
 
+  private logger;
+
+  private msgRetryCounterCache ;
+
   constructor(deviceId: string,phone: string) {
     super();
-    this._instanceId = instanceProvider.addInstance(this);
-    this.state = useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
-    this.saveState = useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
     this.phone = phone;
     this.deviceId = deviceId;
+    this._instanceId = instanceProvider.addInstance(this);
+    this.logger = P({ timestamp: () => `,"time":"${new Date().toJSON()}"` }, P.destination("./wa-logs.txt"));
+    this.msgRetryCounterCache = new NodeCache();
+    this.initialSetup();
+  }
+
+  async initialSetup(){
+    const { state, saveCreds } = await useMultiFileAuthState(`${process.env.SESSIONS_FOLDER}/${this.phone}_cred`);
+
+    this.state = state;
+    this.saveState = saveCreds;
   }
   // start a connection
   public initiClient = async () => {
+    console.log("Initialize new client...");
     // if(!this.qrRequested) return;
     try {
       const sock = makeWASocket({
-        logger: P({ level: "info" }), //silent
+        logger: this.logger, //silent
         printQRInTerminal: false,
-        auth: this.state,
+        auth: {
+          creds:this.state.creds,
+          keys:makeCacheableSignalKeyStore(this.state.keys, this.logger),
+        },
         browser:["Mac OS", "Chrome", "10.15.3"]
         // version: [2,2204,13],
       });
@@ -125,12 +142,22 @@ export default class Whatsapp extends EventEmitter {
     });
 
     // message upsert
-    this.client.ev.on("messages.upsert", async (m: any) => {
+    this.client.ev.on("messages.upsert", async (m) => {
       try {
         const msg = m.messages[0];
+
         if (!msg.key.fromMe) {
-          logger.info(logFileName,`received msg :${msg.message?.conversation}`);
+          const text = msg?.message?.extendedTextMessage?.text?.toLowerCase(); 
+          const jid = msg.key.remoteJid;
+          logger.info(logFileName,`received msg :${text}`);
           logger.info(logFileName,`From: ${msg.key.remoteJid}`);
+          switch(text){
+            case "hi":
+              await this.client.sendMessage(jid,{text:"Hello !"});
+              break;
+            case "image":
+              await this.client.sendMessage(jid,{caption:"Image Works!", image:{url:"https://images.pexels.com/photos/3225517/pexels-photo-3225517.jpeg"}});
+          }
         } else {
           logger.info(logFileName,`sent msg :${JSON.stringify(msg.message)}`);
           logger.info(logFileName,`to: ${msg.key.remoteJid}`);

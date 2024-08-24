@@ -16,6 +16,9 @@ declare namespace Express {
         testMessageId?:string|null,
         file:{
             location: string
+        },
+        query:{
+            [string]:any
         }
     }
 }

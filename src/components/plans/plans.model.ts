@@ -4,7 +4,7 @@ import { ITransactionModel } from "./../transaction/transaction.schema";
 import {  IPlanModel, IUserPlanModel, Plan, UserPlan } from "./plans.schema";
 import { EPLANS, EPlanStatus, IPLAN, IUserPlan } from "./plans.interface";
 import { HTTP401Error } from "../../lib/utils/httpErrors";
-import dayjs from "dayjs";
+import dayjs, { ManipulateType } from "dayjs";
 import userModel from "../user/user.model";
 import planManagerService from "../../lib/services/plan.manager.service";
 import transactionModel from "../transaction/transaction.model";
@@ -81,7 +81,7 @@ private async calculatePlanEndDate(plan: IPLAN){
        return endDate.toDate();
     }
     else{
-       endDate = endDate.add(plan.planPeriod,plan.planPeriodUnit);
+       endDate = endDate.add(plan.planPeriod,plan.planPeriodUnit as ManipulateType);
        console.log(`End Date: ${endDate.toDate()}`);
        return endDate.toDate();
    }
