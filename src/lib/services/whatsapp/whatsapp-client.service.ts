@@ -85,11 +85,13 @@ export class WhatsappClient {
         });
 
         await delay(500);
-       const result: any =  await client.initiClient();
-       if(result.error) {
-        console.log("Error in getting QR ",result);
-        return result;
-       };
+        const result: any =  await client.initiClient();
+        if(result.error) {
+            console.log("Error in getting QR ",result);
+            return result;
+        };
+        await delay(100);
+
         client.getQr();
     }
 
@@ -119,8 +121,11 @@ export class WhatsappClient {
 
     public sendTextMessage = async (from: string, to: string, message: IWhatsappTextMessage) => {
         try {
+            console.log(logFileName,`Sending Text Message to ${to} | from: ${from}`);
+
             logger.info(logFileName,`Sending Text Message to ${to} | from: ${from}`);
             const clientInstance = this.getClientInstanceByPhone(from);
+            console.log("clientInstance is ",clientInstance)
             if (!clientInstance){
                 logger.error(logFileName,`Client not found ${from}`);
                 return { error: true, message: "CLIENT_NOT_FOUND" };

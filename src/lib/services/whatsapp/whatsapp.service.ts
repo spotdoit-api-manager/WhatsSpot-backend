@@ -23,6 +23,8 @@ import notifyService from "../notify.service";
 import fileManagement from "../../../lib/helpers/file.management";
 import { EWhatsappMessageTypes } from "./whatsapp.enum";
 import NodeCache from "node-cache";
+import socketManager from "./../socket";
+
 
 const logFileName = "[WhatsappService] : ";
 export default class Whatsapp extends EventEmitter {
@@ -84,13 +86,15 @@ export default class Whatsapp extends EventEmitter {
 
   public getQr = async () => {
     this.qrRequested = true;
-    if(this.qrInProcess) return;
+    if(this.qrInProcess) return console.log("QR Already in process..");
     this.qrInProcess = true;
     this.client.ev.on("connection.update", async (update: any) => {
       try {
+        console.log("Connection update 2 ",update);
         const { connection, lastDisconnect, qr } = update;
         if (connection === "connecting") return;
         if (qr) {
+          logger.info("QR Code Generated");
           this.emit("qr", { qr: update.qr, error: false });
           return;
         };
@@ -124,7 +128,12 @@ export default class Whatsapp extends EventEmitter {
     this.client.ev.on("connection.update", async (update: any) => {
       try {
         const { connection, lastDisconnect } = update;
-        if(connection=="connecting") return;
+        if(connection=="connecting") {
+          console.log("Connectiong....");
+          // return this.emit("CONNECTING", { phone: this.phone });
+          socketManager.sendConnecting({ phone: this.phone });
+
+        };
         if (connection === "open") await this.handleConnectionOpen();
         else if (connection === "close") this.handleConnectionClose(lastDisconnect);
         else{
@@ -134,7 +143,7 @@ export default class Whatsapp extends EventEmitter {
             this.updateDeviceStatus(false,reason);
           }
 
-          this.qrInProcess = true;
+          // this.qrInProcess = true;
         }
       } catch (err) {
         logger.error(logFileName,`Error in handling connection Update ${this.phone}`,err);
@@ -221,7 +230,9 @@ export default class Whatsapp extends EventEmitter {
      logger.info(logFileName,"CONNECTION_OPENED");
     this.qrRequested = true;
     this.qrInProcess = false;
-    this.emit("authenticated", { phone: this.phone });
+    // this.emit("authenticated", { phone: this.phone });
+    socketManager.sendAuthenticated(this.phone );
+
      deviceModel.updateDevice(this.deviceId, {
       authState: true, reason: null
     });
@@ -230,24 +241,26 @@ export default class Whatsapp extends EventEmitter {
      this.authState = true;
   }
 
-  private async deleteAuthFile(){
+  private async deleteAuthFiles(){
     try{
-      const authFilePath = `${process.env.SESSIONS_FOLDER}/${this.phone}_cred.json`;
-      await fileManagement.deleteFile(authFilePath);
+      const authFilesPath = `${process.env.SESSIONS_FOLDER}/${this.phone}_cred`;
+      await fileManagement.deleteFolder(authFilesPath);
     }catch(e){
       logger.error(`Error in deleting auth file for ${this.phone}: `,e);
     }
   }
 
   private async handleConnectionClose(lastDisconnect){
+    logger.warn(logFileName,"CONNECTION_CLOSED");
+    console.log("close ",JSON.stringify(lastDisconnect,null,2));
     const shouldReconnect = (lastDisconnect.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
     if (shouldReconnect) {
-      logger.warn(logFileName,"CONNECTION_CLOSED (NOT_LOGGED_OUT) Retrying......");
+      logger.warn(logFileName,"(NOT_LOGGED_OUT) Retrying......");
       return await this.reconnectClient();
     }
     else {
       const reason = this.getDisconnectReason(lastDisconnect);
-      this.deleteAuthFile();
+      await this.deleteAuthFiles();
       await deviceModel.updateDevice(this.deviceId, {
         authState: false, reason
       });
@@ -256,7 +269,9 @@ export default class Whatsapp extends EventEmitter {
       this.qrInProcess = false;
       this.qrRequested = false;
       logger.warn(logFileName,"CONNECTION_CLOSED (LOGGEDOUT)", reason, this.phone);
-      this.emit("LOGGEDOUT", { phone: this.phone, reason: reason?.message });
+      socketManager.sendLoggedout({ phone: this.phone, reason: reason?.message });
+      // this.emit("LOGGEDOUT", { phone: this.phone, reason: reason?.message });
+
     }
   }
 
@@ -276,11 +291,12 @@ export default class Whatsapp extends EventEmitter {
     msg: IWhatsappTextMessage,
   ) => {
     try {
+      console.log("Sending message ",msg)
       const jid = getSerializedPhone(to);
       await this.client.presenceSubscribe(jid);
       await delay(500);
       const result = await this.client.sendMessage(jid, {
-        ...msg, detectLinks: true,
+        ...msg
       });
       logger.debug(logFileName,`Sent  Result client ${this.phone} :`,result);
 

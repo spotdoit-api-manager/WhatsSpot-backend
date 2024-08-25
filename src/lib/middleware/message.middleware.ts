@@ -6,6 +6,18 @@ import { EWhatsappMessageTypes } from "./../services/whatsapp/whatsapp.enum";
 import logger from "../../core/logger";
 
 const logFileName = "[MessageMiddleware]";
+
+export const validateAnyMessage =  (req: Request, res: Response, next: NextFunction) => {
+    const messageType = req.query.messageType ?? req.body.messageType;
+    switch(messageType){
+        case EWhatsappMessageTypes.TEXT_MESSAGE:
+            return validateTextMessage(req,res,next);
+            break;
+        default:
+            throw new HTTP401Error("Invalid Message Type",`Message Type can be one of ${Object.values(EWhatsappMessageTypes).join(",")}`);
+
+    }
+}
 export const validateTextMessage = (req: Request, res: Response, next: NextFunction) => {
     const message = req.body.message;
     const valid = isWhatsappTextMessageType(message);

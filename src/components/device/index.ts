@@ -1,3 +1,4 @@
+import { validateAnyMessage } from './../../lib/middleware/message.middleware';
 import { DeviceKeyValidator } from "../../lib/middleware/device-key.middleware";
 import { s3UploadMulter } from "../../lib/services/s3";
 import deviceController from "./device.controller";
@@ -75,7 +76,7 @@ export default [
         path: "/device/:deviceId/message/addMessageToQueue", //send by device id
         method: "post",
         escapeAuth: false,
-        handler: [deviceController.addMessageToQueue]
+        handler: [validateAnyMessage,deviceController.addMessageToQueue]
     },
     {
         path: "/device/:deviceId/retryFailed", //send failed message
@@ -88,7 +89,7 @@ export default [
         path: "/device/:deviceId/send/textMessage",
         method: "post",
         escapeAuth: false,
-        handler: [deviceController.sendTextMessage]
+        handler: [validateAnyMessage,deviceController.sendTextMessage]
     },
 
     {

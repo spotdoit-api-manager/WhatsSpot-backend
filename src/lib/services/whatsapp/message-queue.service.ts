@@ -11,7 +11,7 @@ import { IContact } from "../../../components/contact/contact.interface";
 import logger from "../../../core/logger";
 const FETCH_PENDING_INTERVAL = 10;
 const logFileName = "[MessageQueueService] : ";
-const MGCSPF= process.env.MGCSPF || 2;//mag group contact send per fetch;
+const MGCSPF= +process.env.MGCSPF || 2;//mag group contact send per fetch;
 export class MessageQueueService {
 
     constructor(){
