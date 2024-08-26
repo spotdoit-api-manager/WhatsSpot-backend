@@ -24,7 +24,7 @@ process.on("uncaughtException", e => {
 });
 
 process.on("unhandledRejection", e => {
-  logger.info(logFileName,e);
+  console.log(logFileName,e);
   console.log("unhandled Rejection");
   process.exit(1);
 });

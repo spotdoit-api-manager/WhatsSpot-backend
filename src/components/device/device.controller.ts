@@ -1,3 +1,4 @@
+import { EWhatsappMessageTypes } from './../../lib/services/whatsapp/whatsapp.enum';
 import { IMessage } from "./../messages/message.interface";
 import { NextFunction, Request, Response } from "express";
 import ResponseHandler from "../../lib/helpers/responseHandler";
@@ -107,8 +108,6 @@ export class DeviceController {
   public logoutDevice = async (req: Request, res: Response, next: NextFunction) => {
     const responseHandler = new ResponseHandler();
     try {
-      console.log("qr request");
-
       responseHandler.reqRes(req, res).onFetch("DEVICE_LOGGEDOUT", await deviceModel.logoutDevice(req.userId,req.params.deviceId)).send();
     } catch (e) {
       // send error with next function.
@@ -179,8 +178,9 @@ export class DeviceController {
     try {
       console.log("Send text message request");
 
-      responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendMessage(req.userId,req.body.to,req.body.message,req.body.messageType, req.params.deviceId,req.walletId)).send();
+      responseHandler.reqRes(req, res).onFetch("MESSAGE_SENT", await messageModel.sendMessage(req.userId,req.body.to,req.body.message,EWhatsappMessageTypes.TEXT_MESSAGE, req.params.deviceId,req.walletId)).send();
     } catch (e) {
+      console.log("error in send text message ",e)
       // send error with next function.
       next(responseHandler.sendError(e));
     }

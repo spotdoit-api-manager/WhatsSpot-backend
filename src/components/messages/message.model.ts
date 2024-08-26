@@ -32,6 +32,7 @@ export class MessageModel {
     }
 
     public updateMessageStatus = async (id: string, status: EMessageStatus, reason: string = null) => {
+        console.log("Update message status ",status);
         await MessageQueue.updateOne({ _id: id }, { status: status, reason: reason });
     }
 
@@ -164,7 +165,8 @@ export class MessageModel {
                 if (!isValidAmount) throw new Error("NOT_ENOUGH_BALANCE");
             }
             const result = await this.sendTypeMessage(messageType,message,device.phone,to);
-            if(result.error) throw Error(result.message);
+            console.log("Send result ",result);
+            if(result?.error) throw Error(result.message);
             if (hasActivePlan) {
                  plansModel.increamentMessageCount(activePlanInfo._id);
                 return { error: false, creditUsed: 0, message: result.message };
@@ -200,16 +202,18 @@ export class MessageModel {
     }
 
     public async sendTypeMessage(messageType: EWhatsappMessageTypes,message: IWhatsappMessage,from: string,to: string){
-        
+        logger.debug(`Sending Message Type: ${messageType}`)
         switch(messageType){
             case EWhatsappMessageTypes.TEXT_MESSAGE:
                 return await whatsappClientService.sendTextMessage(from, to, message as IWhatsappTextMessage);
-            case EWhatsappMessageTypes.LIST_MESSAGE:
-                return await whatsappClientService.sendListMessage(from, to, message as IWhatsappListMessage);    
-            case EWhatsappMessageTypes.BUTTON_MESSAGE:
-                return await whatsappClientService.sendButtonMessage(from, to, message as IWhatsappButtonMessage);    
-            case EWhatsappMessageTypes.TEMPLATE_MESSAGE:
-                 return await whatsappClientService.sendTemplateMessage(from, to, message as IWhatsappTemplateMessage);    
+            // case EWhatsappMessageTypes.LIST_MESSAGE:
+            //     return await whatsappClientService.sendListMessage(from, to, message as IWhatsappListMessage);    
+            // case EWhatsappMessageTypes.BUTTON_MESSAGE:
+            //     return await whatsappClientService.sendButtonMessage(from, to, message as IWhatsappButtonMessage);    
+            // case EWhatsappMessageTypes.TEMPLATE_MESSAGE:
+            //      return await whatsappClientService.sendTemplateMessage(from, to, message as IWhatsappTemplateMessage);    
+            default:
+                logger.info(`Invalid Message Type: `,messageType)     
 
         }
     }

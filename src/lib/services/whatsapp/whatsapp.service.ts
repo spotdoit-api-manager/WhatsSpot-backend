@@ -1,3 +1,4 @@
+import { sendMessage } from './../otp-handler';
 import { getSerializedPhone } from "./whatsapp-utils";
 import { IButtonMessage, IImageMessage, IReason, IWhatsappListMessage, IWhatsappTextMessage } from "./whatsapp.interface";
 import { EventEmitter } from "events";
@@ -9,19 +10,21 @@ import makeWASocket, {
   delay,
 
   WABrowserDescription,
-  useSingleFileAuthState,
   AuthenticationState,
   SocketConfig,
-  CommonSocketConfig,
-} from "@adiwajshing/baileys";
+  useMultiFileAuthState,
+  makeCacheableSignalKeyStore,
+} from "@whiskeysockets/baileys";
 
 import deviceModel from "./../../../components/device/device.model";
-import path from "path";
 import instanceProvider from "./instance.provider";
 import logger from "../../../core/logger";
 import notifyService from "../notify.service";
 import fileManagement from "../../../lib/helpers/file.management";
 import { EWhatsappMessageTypes } from "./whatsapp.enum";
+import NodeCache from "node-cache";
+import socketManager from "./../socket";
+
 
 const logFileName = "[WhatsappService] : ";
 export default class Whatsapp extends EventEmitter {
@@ -37,22 +40,38 @@ export default class Whatsapp extends EventEmitter {
   private retryCount =0;
   private removed =false;
 
+  private logger;
+
+  private msgRetryCounterCache ;
+
   constructor(deviceId: string,phone: string) {
     super();
-    this._instanceId = instanceProvider.addInstance(this);
-    this.state = useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).state;
-    this.saveState = useSingleFileAuthState(`${process.env.SESSIONS_FOLDER}/${phone}_cred.json`).saveState;
     this.phone = phone;
     this.deviceId = deviceId;
+    this._instanceId = instanceProvider.addInstance(this);
+    this.logger = P({ timestamp: () => `,"time":"${new Date().toJSON()}"` }, P.destination("./wa-logs.txt"));
+    this.msgRetryCounterCache = new NodeCache();
+    this.initialSetup();
+  }
+
+  async initialSetup(){
+    const { state, saveCreds } = await useMultiFileAuthState(`${process.env.SESSIONS_FOLDER}/${this.phone}_cred`);
+
+    this.state = state;
+    this.saveState = saveCreds;
   }
   // start a connection
   public initiClient = async () => {
+    console.log("Initialize new client...");
     // if(!this.qrRequested) return;
     try {
       const sock = makeWASocket({
-        logger: P({ level: "info" }), //silent
+        logger: this.logger, //silent
         printQRInTerminal: false,
-        auth: this.state,
+        auth: {
+          creds:this.state.creds,
+          keys:makeCacheableSignalKeyStore(this.state.keys, this.logger),
+        },
         browser:["Mac OS", "Chrome", "10.15.3"]
         // version: [2,2204,13],
       });
@@ -67,13 +86,15 @@ export default class Whatsapp extends EventEmitter {
 
   public getQr = async () => {
     this.qrRequested = true;
-    if(this.qrInProcess) return;
+    if(this.qrInProcess) return console.log("QR Already in process..");
     this.qrInProcess = true;
     this.client.ev.on("connection.update", async (update: any) => {
       try {
+        console.log("Connection update 2 ",update);
         const { connection, lastDisconnect, qr } = update;
         if (connection === "connecting") return;
         if (qr) {
+          logger.info("QR Code Generated");
           this.emit("qr", { qr: update.qr, error: false });
           return;
         };
@@ -107,7 +128,12 @@ export default class Whatsapp extends EventEmitter {
     this.client.ev.on("connection.update", async (update: any) => {
       try {
         const { connection, lastDisconnect } = update;
-        if(connection=="connecting") return;
+        if(connection=="connecting") {
+          console.log("Connectiong....");
+          // return this.emit("CONNECTING", { phone: this.phone });
+          socketManager.sendConnecting({ phone: this.phone });
+
+        };
         if (connection === "open") await this.handleConnectionOpen();
         else if (connection === "close") this.handleConnectionClose(lastDisconnect);
         else{
@@ -117,7 +143,7 @@ export default class Whatsapp extends EventEmitter {
             this.updateDeviceStatus(false,reason);
           }
 
-          this.qrInProcess = true;
+          // this.qrInProcess = true;
         }
       } catch (err) {
         logger.error(logFileName,`Error in handling connection Update ${this.phone}`,err);
@@ -125,12 +151,22 @@ export default class Whatsapp extends EventEmitter {
     });
 
     // message upsert
-    this.client.ev.on("messages.upsert", async (m: any) => {
+    this.client.ev.on("messages.upsert", async (m) => {
       try {
         const msg = m.messages[0];
+
         if (!msg.key.fromMe) {
-          logger.info(logFileName,`received msg :${msg.message?.conversation}`);
+          const text = msg?.message?.extendedTextMessage?.text?.toLowerCase(); 
+          const jid = msg.key.remoteJid;
+          logger.info(logFileName,`received msg :${text}`);
           logger.info(logFileName,`From: ${msg.key.remoteJid}`);
+          switch(text){
+            case "hi":
+              await this.client.sendMessage(jid,{text:"Hello !"});
+              break;
+            case "image":
+              await this.client.sendMessage(jid,{caption:"Image Works!", image:{url:"https://images.pexels.com/photos/3225517/pexels-photo-3225517.jpeg"}});
+          }
         } else {
           logger.info(logFileName,`sent msg :${JSON.stringify(msg.message)}`);
           logger.info(logFileName,`to: ${msg.key.remoteJid}`);
@@ -194,7 +230,9 @@ export default class Whatsapp extends EventEmitter {
      logger.info(logFileName,"CONNECTION_OPENED");
     this.qrRequested = true;
     this.qrInProcess = false;
-    this.emit("authenticated", { phone: this.phone });
+    // this.emit("authenticated", { phone: this.phone });
+    socketManager.sendAuthenticated(this.phone );
+
      deviceModel.updateDevice(this.deviceId, {
       authState: true, reason: null
     });
@@ -203,24 +241,26 @@ export default class Whatsapp extends EventEmitter {
      this.authState = true;
   }
 
-  private async deleteAuthFile(){
+  private async deleteAuthFiles(){
     try{
-      const authFilePath = `${process.env.SESSIONS_FOLDER}/${this.phone}_cred.json`;
-      await fileManagement.deleteFile(authFilePath);
+      const authFilesPath = `${process.env.SESSIONS_FOLDER}/${this.phone}_cred`;
+      await fileManagement.deleteFolder(authFilesPath);
     }catch(e){
       logger.error(`Error in deleting auth file for ${this.phone}: `,e);
     }
   }
 
   private async handleConnectionClose(lastDisconnect){
+    logger.warn(logFileName,"CONNECTION_CLOSED");
+    console.log("close ",JSON.stringify(lastDisconnect,null,2));
     const shouldReconnect = (lastDisconnect.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
     if (shouldReconnect) {
-      logger.warn(logFileName,"CONNECTION_CLOSED (NOT_LOGGED_OUT) Retrying......");
+      logger.warn(logFileName,"(NOT_LOGGED_OUT) Retrying......");
       return await this.reconnectClient();
     }
     else {
       const reason = this.getDisconnectReason(lastDisconnect);
-      this.deleteAuthFile();
+      await this.deleteAuthFiles();
       await deviceModel.updateDevice(this.deviceId, {
         authState: false, reason
       });
@@ -229,7 +269,9 @@ export default class Whatsapp extends EventEmitter {
       this.qrInProcess = false;
       this.qrRequested = false;
       logger.warn(logFileName,"CONNECTION_CLOSED (LOGGEDOUT)", reason, this.phone);
-      this.emit("LOGGEDOUT", { phone: this.phone, reason: reason?.message });
+      socketManager.sendLoggedout({ phone: this.phone, reason: reason?.message });
+      // this.emit("LOGGEDOUT", { phone: this.phone, reason: reason?.message });
+
     }
   }
 
@@ -249,11 +291,12 @@ export default class Whatsapp extends EventEmitter {
     msg: IWhatsappTextMessage,
   ) => {
     try {
+      console.log("Sending message ",msg)
       const jid = getSerializedPhone(to);
       await this.client.presenceSubscribe(jid);
       await delay(500);
       const result = await this.client.sendMessage(jid, {
-        ...msg, detectLinks: true,
+        ...msg
       });
       logger.debug(logFileName,`Sent  Result client ${this.phone} :`,result);
 

@@ -71,6 +71,13 @@ export class SocketManager {
     webClient.emit(`${data.phone}_LOGGEDOUT`, data);
   }
 
+
+  public sendConnecting(data: any) {
+    if (!webClient) return console.log("webClient not connected..");
+    console.log("sendign logout to ", data);
+    webClient.emit(`${data.phone}_LOGGEDOUT`, data);
+  }
+
   public sendFailedMessageSendProgress(deviceId: string,progressData: IMessageProgress) {
     if (!webClient) return console.log("webClient not connected..");
     console.log("sendign failed message over to ", progressData);

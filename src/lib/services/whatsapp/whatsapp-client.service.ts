@@ -11,6 +11,7 @@ import { sanatizeMobile } from "../../../lib/utils";
 import instanceProvider from "./instance.provider";
 import logger from "../../../core/logger";
 import { HTTP400Error } from "../../../lib/utils/httpErrors";
+import { delay } from "@whiskeysockets/baileys";
 interface IWhatsappClient {
     [phone: string]: number;
 }
@@ -82,8 +83,15 @@ export class WhatsappClient {
             console.debug(logFileName,"got authenticated ", client.phone);
             socketManager.sendAuthenticated(client.phone);
         });
-       const result: any =  await client.initiClient();
-       if(result.error) return result;
+
+        await delay(500);
+        const result: any =  await client.initiClient();
+        if(result.error) {
+            console.log("Error in getting QR ",result);
+            return result;
+        };
+        await delay(100);
+
         client.getQr();
     }
 
@@ -100,9 +108,9 @@ export class WhatsappClient {
             console.debug(logFileName,`Removing client ${instanceId}`);
 
             let instance =  instanceProvider.getClassInstance(Whatsapp, instanceId);
-            instance.endClient();
+            instance?.endClient();
             instanceProvider.removeClassInstance(Whatsapp, instanceId);
-            instance =null;
+            instance = null;
             return {error:false,message:"client removed"};
 
         } catch (err) {
@@ -113,8 +121,11 @@ export class WhatsappClient {
 
     public sendTextMessage = async (from: string, to: string, message: IWhatsappTextMessage) => {
         try {
+            console.log(logFileName,`Sending Text Message to ${to} | from: ${from}`);
+
             logger.info(logFileName,`Sending Text Message to ${to} | from: ${from}`);
             const clientInstance = this.getClientInstanceByPhone(from);
+            console.log("clientInstance is ",clientInstance)
             if (!clientInstance){
                 logger.error(logFileName,`Client not found ${from}`);
                 return { error: true, message: "CLIENT_NOT_FOUND" };
@@ -198,7 +209,6 @@ export class WhatsappClient {
         }
     }
 
-
     public async initializeAllClients() {
         if(process.env.RECONNECT_CLIENT === "true"){
 
@@ -210,6 +220,7 @@ export class WhatsappClient {
             const device = devices[i];
             console.debug(logFileName,`client${i}:${device.phone}`);
             const client =  this.addClient(device._id,device.phone);
+            await delay(500);
             await client.initiClient();
         }
         

@@ -192,11 +192,11 @@ export class DeviceModel {
     public async logoutDevice(userId: string, deviceId: string) {
         const device = await this.findDeviceById(userId, deviceId);
         if (!device) throw new HTTP400Error("DEVICE_NOT_FOUND");
-        const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred.json`;
+        const authFilePath = `${process.env.SESSIONS_FOLDER}/${device.phone}_cred`;
 
-        await fileManagement.deleteFile(authFilePath);
         const data = await whatsappClientService.logoutClient(device.phone);
         if (data.error) throw new HTTP400Error(data.message);
+        await fileManagement.deleteFile(authFilePath);
 
         return { message: "DEVICE_LOGGED_OUT", device: device };
     }
