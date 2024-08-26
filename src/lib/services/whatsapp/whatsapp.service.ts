@@ -1,4 +1,4 @@
-import { sendMessage } from './../otp-handler';
+import { sendMessage } from "./../otp-handler";
 import { getSerializedPhone } from "./whatsapp-utils";
 import { IButtonMessage, IImageMessage, IReason, IWhatsappListMessage, IWhatsappTextMessage } from "./whatsapp.interface";
 import { EventEmitter } from "events";
@@ -291,7 +291,7 @@ export default class Whatsapp extends EventEmitter {
     msg: IWhatsappTextMessage,
   ) => {
     try {
-      console.log("Sending message ",msg)
+      console.log("Sending message ",msg);
       const jid = getSerializedPhone(to);
       await this.client.presenceSubscribe(jid);
       await delay(500);

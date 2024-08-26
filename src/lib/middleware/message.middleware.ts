@@ -17,7 +17,7 @@ export const validateAnyMessage =  (req: Request, res: Response, next: NextFunct
             throw new HTTP401Error("Invalid Message Type",`Message Type can be one of ${Object.values(EWhatsappMessageTypes).join(",")}`);
 
     }
-}
+};
 export const validateTextMessage = (req: Request, res: Response, next: NextFunction) => {
     const message = req.body.message;
     const valid = isWhatsappTextMessageType(message);

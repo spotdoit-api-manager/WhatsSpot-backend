@@ -125,7 +125,7 @@ export class WhatsappClient {
 
             logger.info(logFileName,`Sending Text Message to ${to} | from: ${from}`);
             const clientInstance = this.getClientInstanceByPhone(from);
-            console.log("clientInstance is ",clientInstance)
+            console.log("clientInstance is ",clientInstance);
             if (!clientInstance){
                 logger.error(logFileName,`Client not found ${from}`);
                 return { error: true, message: "CLIENT_NOT_FOUND" };

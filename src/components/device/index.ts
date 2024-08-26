@@ -1,4 +1,4 @@
-import { validateAnyMessage } from './../../lib/middleware/message.middleware';
+import { validateAnyMessage } from "./../../lib/middleware/message.middleware";
 import { DeviceKeyValidator } from "../../lib/middleware/device-key.middleware";
 import { s3UploadMulter } from "../../lib/services/s3";
 import deviceController from "./device.controller";

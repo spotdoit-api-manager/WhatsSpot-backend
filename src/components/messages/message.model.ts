@@ -202,7 +202,7 @@ export class MessageModel {
     }
 
     public async sendTypeMessage(messageType: EWhatsappMessageTypes,message: IWhatsappMessage,from: string,to: string){
-        logger.debug(`Sending Message Type: ${messageType}`)
+        logger.debug(`Sending Message Type: ${messageType}`);
         switch(messageType){
             case EWhatsappMessageTypes.TEXT_MESSAGE:
                 return await whatsappClientService.sendTextMessage(from, to, message as IWhatsappTextMessage);
@@ -213,7 +213,7 @@ export class MessageModel {
             // case EWhatsappMessageTypes.TEMPLATE_MESSAGE:
             //      return await whatsappClientService.sendTemplateMessage(from, to, message as IWhatsappTemplateMessage);    
             default:
-                logger.info(`Invalid Message Type: `,messageType)     
+                logger.info("Invalid Message Type: ",messageType);     
 
         }
     }
