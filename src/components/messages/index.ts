@@ -12,27 +12,27 @@ export default [
         escapeAuth: true,
         handler: [DeviceKeyValidator,validateTextMessage, messageController.queueTextMessage]
     },
-    {
-        path:"/message/list",
-        method: "post",
-        escapeAuth: true,
+    // {
+    //     path:"/message/list",
+    //     method: "post",
+    //     escapeAuth: true,
         
-        handler: [DeviceKeyValidator,validateListMessage, messageController.queueListMessage]
-    },
-    {
-        path:"/message/button",
-        method: "post",
-        escapeAuth: true,
+    //     handler: [DeviceKeyValidator,validateListMessage, messageController.queueListMessage]
+    // },
+    // {
+    //     path:"/message/button",
+    //     method: "post",
+    //     escapeAuth: true,
         
-        handler: [DeviceKeyValidator,validateBtnMessage, messageController.queueBtnMessage]
-    },
-    {
-        path:"/message/template",
-        method: "post",
-        escapeAuth: true,
+    //     handler: [DeviceKeyValidator,validateBtnMessage, messageController.queueBtnMessage]
+    // },
+    // {
+    //     path:"/message/template",
+    //     method: "post",
+    //     escapeAuth: true,
         
-        handler: [DeviceKeyValidator,validateTemplateMessage, messageController.queueTemplateMessage]
-    },
+    //     handler: [DeviceKeyValidator,validateTemplateMessage, messageController.queueTemplateMessage]
+    // },
     // fast messages
     {
         path:"/message/fast/text",
@@ -41,27 +41,27 @@ export default [
         
         handler: [DeviceKeyValidator,validateTextMessage, messageController.fastText]
     },
-    {
-        path:"/message/fast/list",
-        method: "post",
+    // {
+    //     path:"/message/fast/list",
+    //     method: "post",
         
-        escapeAuth: true,
-        handler: [DeviceKeyValidator,validateListMessage, messageController.fastList]
-    },
-    {
-        path:"/message/fast/button",
-        method: "post",
-        escapeAuth: true,
+    //     escapeAuth: true,
+    //     handler: [DeviceKeyValidator,validateListMessage, messageController.fastList]
+    // },
+    // {
+    //     path:"/message/fast/button",
+    //     method: "post",
+    //     escapeAuth: true,
         
-        handler: [DeviceKeyValidator,validateBtnMessage, messageController.fastBtn]
-    },
-    {
-        path:"/message/fast/template",
-        method: "post",
-        escapeAuth: true,
+    //     handler: [DeviceKeyValidator,validateBtnMessage, messageController.fastBtn]
+    // },
+    // {
+    //     path:"/message/fast/template",
+    //     method: "post",
+    //     escapeAuth: true,
         
-        handler: [DeviceKeyValidator,validateTemplateMessage, messageController.fastTemplate]
-    },
+    //     handler: [DeviceKeyValidator,validateTemplateMessage, messageController.fastTemplate]
+    // },
    
     {
         path:"/message/testMessage",
