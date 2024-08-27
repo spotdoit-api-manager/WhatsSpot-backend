@@ -257,9 +257,8 @@ export class UserModel {
     if (!user) throw new HTTP401Error("USER_NOT_FOUND");
     const otp = this.updateOtp(user._id);
     const otpData = await this.sendOtpToMobile(otp, parsedPhone);
-    if (otpData.proceed) {
-      return { phone: parsedPhone, _id: user.id };
-    }
+    if (otpData.proceed)  throw new HTTP401Error("ERROR_IN_SENDING_OTP");
+    return { phone: parsedPhone, _id: user.id };
   }
 
   public async resendOTP(id: string, body: any) {
