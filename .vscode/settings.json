@@ -23,10 +23,6 @@
   "typescript.referencesCodeLens.enabled": true,
   "appService.zipIgnorePattern": [".vscode{,/**}"],
   "appService.deploySubpath": "",
-  "cSpell.words": [
-    "EPLANS",
-    "PAYG",
-    "Paytm",
-    "sanatize"
-  ]
+  "cSpell.words": ["EPLANS", "PAYG", "Paytm", "sanatize"],
+  "typewriterScrollMode.enable": true
 }

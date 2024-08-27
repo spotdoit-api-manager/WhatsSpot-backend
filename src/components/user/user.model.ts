@@ -257,7 +257,7 @@ export class UserModel {
     if (!user) throw new HTTP401Error("USER_NOT_FOUND");
     const otp = this.updateOtp(user._id);
     const otpData = await this.sendOtpToMobile(otp, parsedPhone);
-    if (otpData.proceed)  throw new HTTP401Error("ERROR_IN_SENDING_OTP");
+    // if (otpData.proceed)  throw new HTTP401Error("ERROR_IN_SENDING_OTP");
     return { phone: parsedPhone, _id: user.id };
   }
 
@@ -267,9 +267,9 @@ export class UserModel {
     if (!user) throw new HTTP401Error("USER_NOT_FOUND");
     const otp = this.updateOtp(user._id);
     const otpData = await this.sendOtpToMobile(otp, body.phone);
-    if (otpData.proceed) {
-      return { phone: body.phone, _id: user.id };
-    }
+    // if (otpData.proceed) {
+    // }
+    return { phone: body.phone, _id: user.id };
   }
 
   private async findUserByPhone(phone: string) {
