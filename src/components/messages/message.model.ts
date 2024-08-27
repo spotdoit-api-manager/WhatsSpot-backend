@@ -48,7 +48,7 @@ export class MessageModel {
 
         const messagesBody: IMessage[] = [];
         if (body.isGroup) {
-            body.groups.forEach((group: IGroupList) => {
+            body?.groups?.forEach((group: IGroupList) => {
                 const newBody: IMessage = { phone: device.phone, userId, deviceId: deviceId, sendType: ESendType.QUEUE, to: group._id,messageType:body.messageType, message: body.message, status: EMessageStatus.PENDING, isGroup: true };
                 messagesBody.push(newBody);
             });
@@ -59,7 +59,7 @@ export class MessageModel {
         if (typeof (body.numbers) === "string") {
             numbers.push(body.numbers);
         } else {
-            body.numbers.forEach((phone: any) => {
+            body?.numbers?.forEach((phone: any) => {
                const parsedPhone = parsePhone(phone);
                 numbers.push(parsedPhone.number);
             });

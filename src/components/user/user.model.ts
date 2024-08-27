@@ -436,7 +436,7 @@ export class UserModel {
   }
   async sendOtpToMobile(otp: number, phone: string) {
     logger.debug(logFileName, `send this ${otp} to ${phone}`);
-    const message = `Your SpotDoit Services login OTP is ${otp}.`;
+    const message = `Your WhatsSpot login OTP is ${otp}.`;
     return await sendMessage(phone, message);
   }
 
