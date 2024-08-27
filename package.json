@@ -24,7 +24,8 @@
         "watch-node": "nodemon dist/server.js",
         "watch-test": "npm run test -- --watchAll",
         "watch-ts": "tsc -w",
-        "postinstall": "node patch.js"
+        "postinstall": "node patch.js",
+        "refresh": "git pull && npm run build && pm2 restart whatsSpotB"
     },
     "dependencies": {
         "@types/bcrypt": "^5.0.0",
