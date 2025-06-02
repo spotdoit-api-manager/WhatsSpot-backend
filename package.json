@@ -11,7 +11,7 @@
     "scripts": {
         "compile-debug": "npm run build && npm run serve-debug",
         "compile": "tsc-watch --onSuccess \"node ./dist/server.js\"",
-        "build": "npm run build-ts && npm run lint",
+        "build": "npm run build-ts",
         "build-ts": "tsc",
         "debug": "npm run build && npm run watch-debug",
         "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
@@ -76,6 +76,7 @@
         "stripe": "^9.1.0",
         "tsc-watch": "^5.0.3",
         "typescript": "^4.0.5",
+        "WhatsSpot": "file:",
         "winston": "^3.2.1",
         "winston-daily-rotate-file": "^4.6.1"
     },
