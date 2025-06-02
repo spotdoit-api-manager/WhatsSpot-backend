@@ -23,6 +23,7 @@ export const configCors = {
   adminAllowOrigin:[
     "http://localhost:4200", 
     "https://admin.whatsspot.in",
+    "*"
   ],
   allowOrigin: [
     "http://localhost:4200",
@@ -39,6 +40,7 @@ export const configCors = {
     "https://admin.whatsspot.in",
     "https://api.stripe.com",
     "https://hooks.stripe.com",
+    "*"
 
   
   ],
