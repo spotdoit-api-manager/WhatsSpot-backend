@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+import * as fs from 'fs';
 import { getSerializedPhone } from "./whatsapp-utils";
 import {  IReason, IWhatsappMessage, IWhatsappTextMessage } from "./whatsapp.interface";
 import { EventEmitter } from "events";
@@ -70,6 +71,12 @@ private interval;
     this.firstConnect = !notify;
     // if(!this.qrRequested) return;
     try {
+      // Define the folder path
+      const folderPath = `${process.env.SESSIONS_FOLDER}/${this.phone}_cred`;
+      // Ensure the folder exists
+      if (!fs.existsSync(folderPath)) {
+        fs.mkdirSync(folderPath, { recursive: true });
+      }
       const cred = await useMultiFileAuthState(`${process.env.SESSIONS_FOLDER}/${this.phone}_cred`);
       this.state =  cred.state;
       this.saveState = cred.saveCreds;
@@ -80,7 +87,7 @@ private interval;
         
          version,//:[2,2323,4],
         logger: this.logger, //`silent`
-        printQRInTerminal: false,
+        printQRInTerminal: true,
         auth: {
           creds: this.state.creds,
           /** caching makes the store faster to send/recv messages */
