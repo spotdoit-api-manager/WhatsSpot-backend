@@ -62,7 +62,7 @@
         "jsonwebtoken": "^8.5.1",
         "libphonenumber-js": "^1.9.53",
         "link-preview-js": "^2.1.13",
-        "lodash": "^4.17.19",
+        "lodash": "^4.17.23",
         "mailazy-node": "^0.2.0",
         "moment-timezone": "^0.5.32",
         "mongoose": "^5.7.5",
